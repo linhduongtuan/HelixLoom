@@ -45,6 +45,20 @@ impl App {
             ui.menu_button("File", |ui| {
                 item(ui, "New", "⌘N", true, Action::New);
                 item(ui, "Open…", "⌘O", true, Action::Open);
+                item(
+                    ui,
+                    "Duplicate Selection",
+                    "",
+                    true,
+                    Action::DuplicateSelection,
+                );
+                item(
+                    ui,
+                    "Duplicate Full Sequence",
+                    "",
+                    true,
+                    Action::DuplicateFull,
+                );
                 ui.separator();
                 item(ui, "Close", "⌘W", true, Action::CloseCurrent);
                 item(ui, "Save", "⌘S", true, Action::Save);
@@ -224,6 +238,15 @@ impl App {
                         });
                     }
                 });
+                ui.separator();
+                item(ui, "Silent Sites…", "", true, Action::SilentSites);
+                item(
+                    ui,
+                    "Find Diagnostic Site…",
+                    "",
+                    true,
+                    Action::DiagnosticSites,
+                );
             });
             ui.menu_button("ORFs", |ui| {
                 item(ui, "Find Next", "⇧⌘.", true, Action::OrfNext);

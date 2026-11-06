@@ -20,6 +20,7 @@ use super::windows::orfs::{OrfStep, OrfWin};
 use super::windows::phylocnn::PhyloCnnWin;
 use super::windows::primer3::Primer3Win;
 use super::windows::reads::ReadsWin;
+use super::windows::sitetools::SiteToolsWin;
 use super::windows::tools::{AlignWin, CalcWin, PcrWin};
 use super::windows::tree::TreeWin;
 use super::windows::treetools::TreeToolsWin;
@@ -60,6 +61,8 @@ pub enum Action {
     Example(Workspace),
     New,
     Open,
+    DuplicateSelection,
+    DuplicateFull,
     Save,
     SaveAs,
     ExportFasta,
@@ -89,6 +92,8 @@ pub enum Action {
     Linearize,
     EnzymeSelector,
     Digest,
+    SilentSites,
+    DiagnosticSites,
     ToggleHighlight,
     /// Put an enzyme's recognition sequence at the caret (index into the enzyme list).
     InsertSite {
@@ -153,6 +158,7 @@ pub struct App {
     pub find_win: FindWin,
     pub assembly: AssemblyWin,
     pub orf_win: OrfWin,
+    pub site_win: SiteToolsWin,
     pub feature_win: FeatureWin,
     pub align_win: AlignWin,
     pub pcr_win: PcrWin,
@@ -206,6 +212,7 @@ impl App {
             find_win: FindWin::default(),
             assembly: AssemblyWin::default(),
             orf_win: OrfWin::default(),
+            site_win: SiteToolsWin::default(),
             feature_win: FeatureWin::default(),
             align_win: AlignWin::default(),
             pcr_win: PcrWin::default(),
@@ -278,6 +285,8 @@ impl App {
             Action::Example(ws) => self.load_example(ws),
             Action::New => self.add_doc(Doc::new("Untitled", Vec::new())),
             Action::Open => self.pick_open(),
+            Action::DuplicateSelection => self.duplicate_current(false),
+            Action::DuplicateFull => self.duplicate_current(true),
             Action::Save => cur.into_iter().for_each(|i| self.save_doc(i, false, false)),
             Action::SaveAs => cur.into_iter().for_each(|i| self.save_doc(i, true, false)),
             Action::ExportFasta => cur.into_iter().for_each(|i| self.save_doc(i, true, true)),
@@ -290,6 +299,8 @@ impl App {
             Action::SelectRange => self.open_range(),
             Action::EnzymeSelector => self.enzyme_win.open = true,
             Action::Digest => self.digest_win.open = true,
+            Action::SilentSites => self.run_silent_sites(),
+            Action::DiagnosticSites => self.site_win.diagnostic_open = true,
             Action::ToggleMap => self.prefs.show_map = !self.prefs.show_map,
             Action::ToggleFeatures => self.prefs.show_features = !self.prefs.show_features,
             Action::Theme(mode) => self.prefs.theme = mode,
@@ -650,6 +661,7 @@ impl App {
         self.find_window(&ctx);
         self.assembly_windows(&ctx);
         self.orf_window(&ctx);
+        self.site_windows(&ctx);
         self.feature_window(&ctx);
         self.align_window(&ctx);
         self.pcr_window(&ctx);

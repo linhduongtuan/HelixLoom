@@ -6,8 +6,12 @@ use crate::seq::dna::{Hit, StartRule, Strand};
 use crate::seq::doc::Doc;
 use crate::seq::enzymes::{all_sites, Enzyme, Site};
 use crate::seq::primers::PrimerParams;
+use std::sync::atomic::{AtomicU64, Ordering};
 
 const UNDO_LIMIT: usize = 100;
+
+/// The next number a sequence opened in this run is told apart by.
+static NEXT_VIEW_ID: AtomicU64 = AtomicU64::new(1);
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub enum TransMode {
@@ -36,6 +40,9 @@ struct SiteCache {
 
 pub struct DocView {
     pub doc: Doc,
+    /// Told apart from every other sequence opened in this run (not its name, which two can share): a result that was
+    /// worked out from this sequence remembers it.
+    pub id: u64,
     undo: Vec<Doc>,
     redo: Vec<Doc>,
     /// Bumped on every edit; caches key off it.
@@ -57,6 +64,7 @@ impl DocView {
     pub fn new(doc: Doc) -> DocView {
         DocView {
             doc,
+            id: NEXT_VIEW_ID.fetch_add(1, Ordering::Relaxed),
             undo: Vec::new(),
             redo: Vec::new(),
             rev: 0,

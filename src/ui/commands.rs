@@ -150,6 +150,20 @@ const COMMANDS: &[Command] = &[
         "import load fasta genbank",
         Action::Open,
     ),
+    c(
+        "File",
+        "Duplicate selection",
+        "",
+        "copy new sequence part",
+        Action::DuplicateSelection,
+    ),
+    c(
+        "File",
+        "Duplicate full sequence",
+        "",
+        "copy new sequence whole clone",
+        Action::DuplicateFull,
+    ),
     c("File", "Save", "Cmd+S", "write", Action::Save),
     c(
         "File",
@@ -279,6 +293,20 @@ const COMMANDS: &[Command] = &[
         "",
         "enzyme sites",
         Action::ToggleHighlight,
+    ),
+    c(
+        "Analyse",
+        "Silent restriction sites…",
+        "",
+        "silent mutation codon protein make site enzyme",
+        Action::SilentSites,
+    ),
+    c(
+        "Analyse",
+        "Diagnostic restriction sites…",
+        "",
+        "mismatch primer mutation screen site enzyme",
+        Action::DiagnosticSites,
     ),
     c(
         "Analyse",

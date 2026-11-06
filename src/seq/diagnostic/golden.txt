@@ -1,0 +1,5769 @@
+CASE diagnostic 1
+circular 1
+seq TCAGGGGCTTTCtagcgacgacccatggatcaaTAGTAGATATCTGACAAAGGTGAATTCCAAACGCGCCAACTGGGAACTAATCCGTCTATACCACCATGGCGCGCCTAATGCGGGTCCGCAATC
+sel 23 108
+enz AscI EcoRV
+mode selected
+mismatches 3
+sites AciI 113 119
+sites ApoI 55
+sites AscI 101
+sites BfaI 12
+sites BssHII 102
+sites BstUI 65 103
+sites Cac8I 102
+sites DpnI 28
+sites EcoRI 55
+sites EcoRV 39
+sites HhaI 66 102 104
+sites MboI 28
+sites MluCI 56
+sites NcoI 23 97
+sites NlaIII 24 98
+out
+|DATE
+|TITLE 
+|From 23 to 107. 
+|Diagnostic Sites
+|
+|	26	tggatc
+|		<G><A><T>atc
+|	EcoRV	GATATC
+|
+|	28	gatcaa
+|		gat<A><T><C>
+|	EcoRV	GATATC
+|
+|	32	aaTAGT
+|		<G>aTA<T><C>
+|	EcoRV	GATATC
+|
+|	37	TAGATA
+|		<G>A<T>AT<C>
+|	EcoRV	GATATC
+|
+|	41	TATCTG
+|		<G>AT<A>T<C>
+|	EcoRV	GATATC
+|
+|	46	GACAAA
+|		GA<T>A<T><C>
+|	EcoRV	GATATC
+|
+|	55	GAATTC
+|		GA<T><A>TC
+|	EcoRV	GATATC
+|
+|	56	AATTCC
+|		<G>AT<A><T>C
+|	EcoRV	GATATC
+|
+|	63	AACGCGCC
+|		<G><G>CGCGCC
+|	AscI	GGCGCGCC
+|
+|	68	GCCAAC
+|		G<A><T>A<T>C
+|	EcoRV	GATATC
+|
+|	75	GGGAAC
+|		G<A><T>A<T>C
+|	EcoRV	GATATC
+|
+|	77	GAACTA
+|		GA<T><A>T<C>
+|	EcoRV	GATATC
+|
+|	80	CTAATC
+|		<G><A><T>ATC
+|	EcoRV	GATATC
+|
+|	88	TCTATA
+|		<G><A>TAT<C>
+|	EcoRV	GATATC
+|
+|	90	TATACC
+|		<G>ATA<T>C
+|	EcoRV	GATATC
+|
+|	98	CATGGC
+|		<G>AT<A><T>C
+|	EcoRV	GATATC
+|
+|
+END
+CASE diagnostic 2
+circular 0
+seq AAACCGACAAGAGAATCTACAAAGGGGGTAGCGACCGGTGAGTGATCGGGGCTAGCGTCCCACTTGGTATTAGGATCTGGAATCTTAACACTT
+sel 57 84
+enz BssHII AfeI
+mode selected
+mismatches 3
+sites AgeI 34
+sites BfaI 52
+sites BsaWI 34
+sites BstYI 73
+sites Cac8I 51
+sites DpnI 44 74
+sites HpaII 35
+sites MboI 44 74
+sites MseI 85
+sites NheI 51
+out
+|DATE
+|TITLE 
+|From 57 to 83. 
+|Diagnostic Sites
+|
+|	58	TCCCAC
+|		<G>C<G>C<G>C
+|	BssHII	GCGCGC
+|
+|	59	CCCACT
+|		<A><G>C<G>CT
+|	AfeI	AGCGCT
+|
+|	73	GGATCT
+|		<A>G<C><G>CT
+|	AfeI	AGCGCT
+|
+|
+END
+CASE diagnostic 3
+circular 1
+seq ACTAACGACTCTACGGTCGTCCGATGAAAGTTGTACCACTACTGGGTCATCAGGTCATAACTTTTGCAGTCTTACCCCGTACTGAACTTGCCCCCTCACCTGTGCTAAGTTTGGGCGGTGGGCGCGCAGTG
+sel 73 107
+enz Acc65I Hpy8I SmaI ClaI
+mode selected
+mismatches 3
+sites AciI 115
+sites BssHII 122
+sites BstUI 123
+sites Cac8I 122
+sites HhaI 122 124
+sites HpyCH4V 65
+sites RsaI 33 79
+out
+|DATE
+|TITLE 
+|From 73 to 106. 
+|Diagnostic Sites
+|
+|	74	ACCCCG
+|		<C>CC<G><G>G
+|	SmaI	CCCGGG
+|
+|	75	CCCCGT
+|		CCC<G>G<G>
+|	SmaI	CCCGGG
+|
+|	76	CCCGTA
+|		CCCG<G><G>
+|	SmaI	CCCGGG
+|
+|	77	CCGTAC
+|		<G><T>GTAC
+|	Hpy8I	GTNNAC
+|
+|	78	CGTACT
+|		<G>GTAC<C>
+|	Acc65I	GGTACC
+|
+|	79	GTACTG
+|		GTAC<A><C>
+|	Hpy8I	GTNNAC
+|
+|	81	ACTGAA
+|		<G><T>TGA<C>
+|	Hpy8I	GTNNAC
+|
+|	81	ACTGAA
+|		A<T><C>GA<T>
+|	ClaI	ATCGAT
+|
+|	82	CTGAAC
+|		<G>TGAAC
+|	Hpy8I	GTNNAC
+|
+|	83	TGAACT
+|		<G>G<T>AC<C>
+|	Acc65I	GGTACC
+|
+|	84	GAACTT
+|		G<T>AC<A><C>
+|	Hpy8I	GTNNAC
+|
+|	86	ACTTGC
+|		<G><T>TT<A>C
+|	Hpy8I	GTNNAC
+|
+|	87	CTTGCC
+|		<G><G>T<A>CC
+|	Acc65I	GGTACC
+|
+|	87	CTTGCC
+|		<G>TTG<A>C
+|	Hpy8I	GTNNAC
+|
+|	88	TTGCCC
+|		<G>TGC<A>C
+|	Hpy8I	GTNNAC
+|
+|	89	TGCCCC
+|		<G>G<T><A>CC
+|	Acc65I	GGTACC
+|
+|	89	TGCCCC
+|		<G><T>CC<A>C
+|	Hpy8I	GTNNAC
+|
+|	90	GCCCCC
+|		G<G><T><A>CC
+|	Acc65I	GGTACC
+|
+|	90	GCCCCC
+|		G<T>CC<A>C
+|	Hpy8I	GTNNAC
+|
+|	91	CCCCCT
+|		CCC<G><G><G>
+|	SmaI	CCCGGG
+|
+|	92	CCCCTC
+|		<G><T>CC<A>C
+|	Hpy8I	GTNNAC
+|
+|	92	CCCCTC
+|		CCC<G><G><G>
+|	SmaI	CCCGGG
+|
+|	93	CCCTCA
+|		CCC<G><G><G>
+|	SmaI	CCCGGG
+|
+|	94	CCTCAC
+|		<G><T>TCAC
+|	Hpy8I	GTNNAC
+|
+|	95	CTCACC
+|		<G><G><T>ACC
+|	Acc65I	GGTACC
+|
+|	95	CTCACC
+|		<G>TCA<A>C
+|	Hpy8I	GTNNAC
+|
+|	97	CACCTG
+|		C<C>C<G><G>G
+|	SmaI	CCCGGG
+|
+|	98	ACCTGT
+|		<C>CC<G>G<G>
+|	SmaI	CCCGGG
+|
+|	98	ACCTGT
+|		A<T>C<G><A>T
+|	ClaI	ATCGAT
+|
+|	99	CCTGTG
+|		CC<C>G<G>G
+|	SmaI	CCCGGG
+|
+|	100	CTGTGC
+|		<G>TGT<A>C
+|	Hpy8I	GTNNAC
+|
+|	101	TGTGCT
+|		<G>GT<A>C<C>
+|	Acc65I	GGTACC
+|
+|	102	GTGCTA
+|		GTGC<A><C>
+|	Hpy8I	GTNNAC
+|
+|
+END
+CASE diagnostic 4
+circular 1
+seq TTTGGTGGATGCTAATGACGACCGACTAATGCAATCCATACTTAAAGTGACTAATAACAAGCAGATGCATGTCGCC
+sel 2 40
+enz Hpy8I NsiI
+mode absent
+mismatches 1
+sites HpyCH4V 30 66
+sites MseI 42
+sites NlaIII 68
+sites NsiI 65
+sites NspI 67
+out
+|DATE
+|TITLE 
+|From 2 to 39. 
+|Diagnostic Sites
+|
+|	5	GTGG
+|		G<C>GG
+|	AciI	GCGG
+|
+|	5	GTGGAT
+|		GTGGA<C>
+|	Hpy8I	GTNNAC
+|
+|	6	TGGA
+|		T<C>GA
+|	TaqI	TCGA
+|
+|	7	GGATGC
+|		GGAT<C>C
+|	BamHI	GGATCC
+|
+|	7	GGATGC
+|		GGAT<C>C
+|	BstYI	RGATCY
+|
+|	7	GGATGC
+|		G<C>ATGC
+|	Cac8I	GCNNGC
+|
+|	7	GGATGC
+|		G<C>ATGC
+|	SphI	GCATGC
+|
+|	8	GATGCTAATG
+|		GATGCTAAT<C>
+|	BsaBI	GATNNNNATC
+|
+|	8	GATG
+|		GAT<C>
+|	MboI	GATC
+|
+|	10	TGCT
+|		<A>GCT
+|	AluI	AGCT
+|
+|	12	CTAA
+|		CTA<G>
+|	BfaI	CTAG
+|
+|	13	TAATGA
+|		T<C>ATGA
+|	BspHI	TCATGA
+|
+|	14	AATG
+|		AAT<T>
+|	MluCI	AATT
+|
+|	17	GACGAC
+|		GACG<T>C
+|	AatII	GACGTC
+|
+|	17	GACGAC
+|		GA<A>GAC
+|	BbsI	GAAGAC
+|
+|	17	GACGAC
+|		G<T>CGAC
+|	HincII	GTYRAC
+|
+|	17	GACGAC
+|		G<T>CGAC
+|	Hpy8I	GTNNAC
+|
+|	17	GACGACCGAC
+|		GACGACCG<T>C
+|	PshAI	GACNNNNGTC
+|
+|	17	GACGAC
+|		G<T>CGAC
+|	SalI	GTCGAC
+|
+|	17	GACGAC
+|		GACG<T>C
+|	ZraI	GACGTC
+|
+|	18	ACGA
+|		ACG<T>
+|	HpyCH4IV	ACGT
+|
+|	18	ACGA
+|		<T>CGA
+|	TaqI	TCGA
+|
+|	19	CGACCG
+|		CG<G>CCG
+|	EagI	CGGCCG
+|
+|	19	CGACCG
+|		CGA<T>CG
+|	PvuI	CGATCG
+|
+|	20	GACC
+|		G<G>CC
+|	HaeIII	GGCC
+|
+|	20	GACC
+|		GA<T>C
+|	MboI	GATC
+|
+|	22	CCGA
+|		CCG<C>
+|	AciI	CCGC
+|
+|	22	CCGA
+|		CCG<G>
+|	HpaII	CCGG
+|
+|	22	CCGA
+|		<T>CGA
+|	TaqI	TCGA
+|
+|	25	ACTAAT
+|		A<T>TAAT
+|	AseI	ATTAAT
+|
+|	25	ACTAAT
+|		ACTA<G>T
+|	SpeI	ACTAGT
+|
+|	26	CTAA
+|		CTA<G>
+|	BfaI	CTAG
+|
+|	28	AATG
+|		AAT<T>
+|	MluCI	AATT
+|
+|	31	GCAATC
+|		GCAA<G>C
+|	Cac8I	GCNNGC
+|
+|	33	AATC
+|		<G>ATC
+|	MboI	GATC
+|
+|	33	AATC
+|		AAT<T>
+|	MluCI	AATT
+|
+|	34	ATCCAT
+|		ATC<G>AT
+|	ClaI	ATCGAT
+|
+|	35	TCCA
+|		TC<G>A
+|	TaqI	TCGA
+|
+|
+END
+CASE diagnostic 5
+circular 0
+seq GCCCTATCCGTTTTGAGTAGCAATGTAGGAAGCGAAAGGAAGAGAGATGTTTATTCCCcgtaaacatgccattttagtgACGGAGACTCTTTTGTGAGTTCGAGGCGGTCGGTGAGAG
+sel 35 100
+enz BclI PshAI HincII
+mode selected
+mismatches 2
+sites AciI 105
+sites Hpy8I 60
+sites NlaIII 65
+sites NspI 64
+sites TaqI 100
+out
+|DATE
+|TITLE 
+|From 35 to 99. 
+|Diagnostic Sites
+|
+|	42	GAGAGATGTT
+|		GA<C>AGATGT<C>
+|	PshAI	GACNNNNGTC
+|
+|	48	TGTTTA
+|		TG<A>T<C>A
+|	BclI	TGATCA
+|
+|	49	GTTTAT
+|		GTT<R>A<C>
+|	HincII	GTYRAC
+|
+|	60	gtaaac
+|		gt<Y>aac
+|	HincII	GTYRAC
+|
+|	61	taaaca
+|		t<G>a<T>ca
+|	BclI	TGATCA
+|
+|	76	agtgAC
+|		<G><T>tgAC
+|	HincII	GTYRAC
+|
+|	82	GGAGAC
+|		G<T><Y>GAC
+|	HincII	GTYRAC
+|
+|	85	GACTCTTTTG
+|		GACTCTT<G>T<C>
+|	PshAI	GACNNNNGTC
+|
+|
+END
+CASE diagnostic 6
+circular 1
+seq CTGCCACCGGGATGTAACTTAGGAACCTTAGTACCGTGTATTGAACGGAACAACTTtgatcacaattaacggatccaGAATAGAAGCATATATACATCGCTAGACAGCAGGAGCTATAAAGCCCCATACAC
+sel 55 73
+enz NruI BclI PsiI AluI
+mode selected
+mismatches 3
+sites AluI 112
+sites BamHI 71
+sites BclI 57
+sites BfaI 100
+sites BstYI 71
+sites DpnI 58 72
+sites HpaII 7
+sites MboI 58 72
+sites MluCI 64
+sites MseI 66
+sites PaqCI 129
+sites RsaI 31
+out
+|DATE
+|TITLE 
+|From 55 to 72. 
+|Diagnostic Sites
+|
+|	57	tgatca
+|		t<T>at<A>a
+|	PsiI	TTATAA
+|
+|	57	tgat
+|		<A>g<C>t
+|	AluI	AGCT
+|
+|	59	atca
+|		a<G>c<T>
+|	AluI	AGCT
+|
+|	60	tcacaa
+|		tc<G>c<G>a
+|	NruI	TCGCGA
+|
+|	60	tcacaa
+|		t<G>a<T><C>a
+|	BclI	TGATCA
+|
+|	60	tcacaa
+|		t<T>a<T>aa
+|	PsiI	TTATAA
+|
+|	61	caca
+|		<A><G>c<T>
+|	AluI	AGCT
+|
+|	62	acaa
+|		a<G><C><T>
+|	AluI	AGCT
+|
+|	63	caatta
+|		<T><G>at<C>a
+|	BclI	TGATCA
+|
+|	63	caatta
+|		<T><T>at<A>a
+|	PsiI	TTATAA
+|
+|	63	caat
+|		<A><G><C>t
+|	AluI	AGCT
+|
+|	64	aattaa
+|		<T><T><A>taa
+|	PsiI	TTATAA
+|
+|	64	aatt
+|		a<G><C>t
+|	AluI	AGCT
+|
+|	65	atta
+|		a<G><C><T>
+|	AluI	AGCT
+|
+|	66	ttaacg
+|		t<G>a<T>c<A>
+|	BclI	TGATCA
+|
+|	66	ttaacg
+|		tta<T><A><A>
+|	PsiI	TTATAA
+|
+|	67	taacgg
+|		t<C><G>cg<A>
+|	NruI	TCGCGA
+|
+|	68	aacg
+|		a<G>c<T>
+|	AluI	AGCT
+|
+|	69	acgg
+|		a<G><C><T>
+|	AluI	AGCT
+|
+|	70	cgga
+|		<A>g<C><T>
+|	AluI	AGCT
+|
+|
+END
+CASE diagnostic 7
+circular 1
+seq AGATAGGCCCGATAATAGTAGGACCGAGATACAAGCGGGAAAAAGCGGCAAGGGCTGGGCTGACGAGCTCATGACAGTGAGAGACGTCCCGGTTTGTCCT
+sel 43 62
+enz BspHI AatII
+mode selected
+mismatches 1
+sites AatII 83
+sites AciI 35 45
+sites AluI 66
+sites BfaI 99
+sites BsmBI 81
+sites BspHI 69
+sites HaeIII 6
+sites HpaII 89
+sites HpyCH4IV 84
+sites NlaIII 70
+sites SacI 65
+sites ZraI 83
+out
+|DATE
+|TITLE 
+|From 43 to 61. 
+|Diagnostic Sites
+|
+|No sites Found
+END
+CASE diagnostic 8
+circular 1
+seq TCTAAAAGATTGCACGGAGCATTCAGTAGAACACGAGGCCGGTCCTCAATGCAAGACGAACGGATCCGGGGAGCTGCGCCGGCAGCGCGCCCGA
+sel 50 75
+enz ScaI BstYI ClaI Hpy8I
+mode absent
+mismatches 1
+sites AluI 72
+sites BamHI 62
+sites BssHII 85
+sites BssSI 32
+sites BstUI 86
+sites BstYI 62
+sites Cac8I 78 85
+sites DpnI 63 93
+sites HaeIII 37
+sites HhaI 76 85 87
+sites HpaII 39 66 79
+sites HpyCH4V 11 50
+sites MboI 63 93
+sites NaeI 78
+sites NgoMIV 78
+out
+|DATE
+|TITLE 
+|From 50 to 74. 
+|Diagnostic Sites
+|
+|	52	CAAGAC
+|		<G>AAGAC
+|	BbsI	GAAGAC
+|
+|	52	CAAG
+|		C<T>AG
+|	BfaI	CTAG
+|
+|	52	CAAG
+|		CA<T>G
+|	NlaIII	CATG
+|
+|	53	AAGACG
+|		<G>AGACG
+|	BsmBI	GAGACG
+|
+|	56	ACGA
+|		ACG<T>
+|	HpyCH4IV	ACGT
+|
+|	56	ACGA
+|		<T>CGA
+|	TaqI	TCGA
+|
+|	57	CGAACG
+|		CG<T>ACG
+|	BsiWI	CGTACG
+|
+|	57	CGAACG
+|		CGA<T>CG
+|	PvuI	CGATCG
+|
+|	58	GAACGG
+|		GA<G>CGG
+|	BsrBI	GAGCGG
+|
+|	58	GAAC
+|		G<T>AC
+|	RsaI	GTAC
+|
+|	58	GAACGGATCC
+|		GAACGGAT<T>C
+|	XmnI	GAANNNNTTC
+|
+|	59	AACGGA
+|		A<C>CGGA
+|	BsaWI	WCCGGW
+|
+|	60	ACGG
+|		<G>CGG
+|	AciI	GCGG
+|
+|	60	ACGG
+|		ACG<T>
+|	HpyCH4IV	ACGT
+|
+|	65	TCCGGG
+|		<C>CCGGG
+|	AvaI	CYCGRG
+|
+|	65	TCCGGG
+|		TCCGG<W>
+|	BsaWI	WCCGGW
+|
+|	65	TCCGGG
+|		TCCGG<A>
+|	BspEI	TCCGGA
+|
+|	65	TCCGGG
+|		<C>CCGGG
+|	SmaI	CCCGGG
+|
+|	65	TCCGGG
+|		<C>CCGGG
+|	XmaI	CCCGGG
+|
+|	66	CCGG
+|		CCG<C>
+|	AciI	CCGC
+|
+|	66	CCGG
+|		<G>CGG
+|	AciI	GCGG
+|
+|	66	CCGGGG
+|		CC<C>GGG
+|	AvaI	CYCGRG
+|
+|	66	CCGGGG
+|		CCG<C>GG
+|	SacII	CCGCGG
+|
+|	66	CCGGGG
+|		CC<C>GGG
+|	SmaI	CCCGGG
+|
+|	66	CCGGGG
+|		CC<C>GGG
+|	XmaI	CCCGGG
+|
+|	68	GGGG
+|		G<C>GG
+|	AciI	GCGG
+|
+|	70	GGAGCT
+|		GG<C>GCT
+|	HaeII	RGCGCY
+|
+|
+END
+CASE diagnostic 9
+circular 1
+seq TTTAATAAATGTAACCCACCTACGATCTGTCAGTGACCCGACGAAGGGAGGTTTACAGTTGTGTCAACCGgcggagtacagcccgttctggAAAACCACCAGCAATTCCGGCGCAAATATT
+sel -
+enz SalI HpyCH4IV BssHII SmaI
+mode selected
+mismatches 3
+sites AciI 71
+sites DpnI 24
+sites HhaI 111
+sites HincII 63
+sites HpaII 68 108
+sites Hpy8I 51 63
+sites MboI 24
+sites MluCI 104
+sites MseI 2
+sites RsaI 76
+sites SspI 116
+sites TatI 75
+out
+|DATE
+|TITLE 
+|From 0 to 120. 
+|Diagnostic Sites
+|
+|	3	TAAT
+|		<A><C><G>T
+|	HpyCH4IV	ACGT
+|
+|	4	AATA
+|		A<C><G><T>
+|	HpyCH4IV	ACGT
+|
+|	5	ATAA
+|		A<C><G><T>
+|	HpyCH4IV	ACGT
+|
+|	7	AAAT
+|		A<C><G>T
+|	HpyCH4IV	ACGT
+|
+|	8	AATG
+|		A<C><G><T>
+|	HpyCH4IV	ACGT
+|
+|	9	ATGT
+|		A<C>GT
+|	HpyCH4IV	ACGT
+|
+|	11	GTAACC
+|		GT<C><G><A>C
+|	SalI	GTCGAC
+|
+|	13	AACC
+|		A<C><G><T>
+|	HpyCH4IV	ACGT
+|
+|	14	ACCCAC
+|		<G><T>C<G>AC
+|	SalI	GTCGAC
+|
+|	14	ACCC
+|		AC<G><T>
+|	HpyCH4IV	ACGT
+|
+|	14	ACCCAC
+|		<G>C<G>C<G>C
+|	BssHII	GCGCGC
+|
+|	15	CCCA
+|		<A>C<G><T>
+|	HpyCH4IV	ACGT
+|
+|	15	CCCACC
+|		CCC<G><G><G>
+|	SmaI	CCCGGG
+|
+|	16	CCAC
+|		<A>C<G><T>
+|	HpyCH4IV	ACGT
+|
+|	18	ACCTAC
+|		<G><T>C<G>AC
+|	SalI	GTCGAC
+|
+|	18	ACCT
+|		AC<G>T
+|	HpyCH4IV	ACGT
+|
+|	19	CCTA
+|		<A>C<G><T>
+|	HpyCH4IV	ACGT
+|
+|	19	CCTACG
+|		CC<C><G><G>G
+|	SmaI	CCCGGG
+|
+|	21	TACGAT
+|		<G><T>CGA<C>
+|	SalI	GTCGAC
+|
+|	22	ACGA
+|		ACG<T>
+|	HpyCH4IV	ACGT
+|
+|	22	ACGATC
+|		<G>CG<C><G>C
+|	BssHII	GCGCGC
+|
+|	23	CGAT
+|		<A><C><G>T
+|	HpyCH4IV	ACGT
+|
+|	25	ATCT
+|		A<C><G>T
+|	HpyCH4IV	ACGT
+|
+|	26	TCTG
+|		<A>C<G><T>
+|	HpyCH4IV	ACGT
+|
+|	27	CTGT
+|		<A><C>GT
+|	HpyCH4IV	ACGT
+|
+|	29	GTCAGT
+|		GTC<G><A><C>
+|	SalI	GTCGAC
+|
+|	30	TCAG
+|		<A>C<G><T>
+|	HpyCH4IV	ACGT
+|
+|	30	TCAGTG
+|		<C>C<C>G<G>G
+|	SmaI	CCCGGG
+|
+|	31	CAGT
+|		<A><C>GT
+|	HpyCH4IV	ACGT
+|
+|	32	AGTGAC
+|		<G><T><C>GAC
+|	SalI	GTCGAC
+|
+|	32	AGTG
+|		A<C><G><T>
+|	HpyCH4IV	ACGT
+|
+|	33	GTGACC
+|		GT<C><G><A>C
+|	SalI	GTCGAC
+|
+|	33	GTGA
+|		<A><C>G<T>
+|	HpyCH4IV	ACGT
+|
+|	33	GTGACC
+|		G<C>G<C><G>C
+|	BssHII	GCGCGC
+|
+|	36	ACCC
+|		AC<G><T>
+|	HpyCH4IV	ACGT
+|
+|	36	ACCCGA
+|		<G>C<G>CG<C>
+|	BssHII	GCGCGC
+|
+|	36	ACCCGA
+|		<C>CC<G>G<G>
+|	SmaI	CCCGGG
+|
+|	37	CCCGAC
+|		<G><T>CGAC
+|	SalI	GTCGAC
+|
+|	37	CCCG
+|		<A>C<G><T>
+|	HpyCH4IV	ACGT
+|
+|	37	CCCGAC
+|		CCCG<G><G>
+|	SmaI	CCCGGG
+|
+|	38	CCGA
+|		<A>CG<T>
+|	HpyCH4IV	ACGT
+|
+|	38	CCGACG
+|		CC<C><G><G>G
+|	SmaI	CCCGGG
+|
+|	40	GACGAA
+|		G<T>CGA<C>
+|	SalI	GTCGAC
+|
+|	41	ACGA
+|		ACG<T>
+|	HpyCH4IV	ACGT
+|
+|	42	CGAAGG
+|		C<C><C><G>GG
+|	SmaI	CCCGGG
+|
+|	43	GAAGGG
+|		<C><C><C>GGG
+|	SmaI	CCCGGG
+|
+|	44	AAGG
+|		A<C>G<T>
+|	HpyCH4IV	ACGT
+|
+|	45	AGGG
+|		A<C>G<T>
+|	HpyCH4IV	ACGT
+|
+|	46	GGGA
+|		<A><C>G<T>
+|	HpyCH4IV	ACGT
+|
+|	46	GGGAGG
+|		G<C>G<C>G<C>
+|	BssHII	GCGCGC
+|
+|	48	GAGG
+|		<A><C>G<T>
+|	HpyCH4IV	ACGT
+|
+|	49	AGGT
+|		A<C>GT
+|	HpyCH4IV	ACGT
+|
+|	50	GGTT
+|		<A><C><G>T
+|	HpyCH4IV	ACGT
+|
+|	51	GTTTAC
+|		GT<C><G>AC
+|	SalI	GTCGAC
+|
+|	51	GTTT
+|		<A><C><G>T
+|	HpyCH4IV	ACGT
+|
+|	55	ACAG
+|		AC<G><T>
+|	HpyCH4IV	ACGT
+|
+|	56	CAGT
+|		<A><C>GT
+|	HpyCH4IV	ACGT
+|
+|	57	AGTT
+|		A<C><G>T
+|	HpyCH4IV	ACGT
+|
+|	58	GTTGTG
+|		GT<C>G<A><C>
+|	SalI	GTCGAC
+|
+|	59	TTGT
+|		<A><C>GT
+|	HpyCH4IV	ACGT
+|
+|	61	GTGT
+|		<A><C>GT
+|	HpyCH4IV	ACGT
+|
+|	63	GTCAAC
+|		GTC<G>AC
+|	SalI	GTCGAC
+|
+|	64	TCAA
+|		<A>C<G><T>
+|	HpyCH4IV	ACGT
+|
+|	66	AACC
+|		A<C><G><T>
+|	HpyCH4IV	ACGT
+|
+|	66	AACCGg
+|		<C><C>C<G>Gg
+|	SmaI	CCCGGG
+|
+|	67	ACCGgc
+|		<G><T>CG<A>c
+|	SalI	GTCGAC
+|
+|	67	ACCG
+|		AC<G><T>
+|	HpyCH4IV	ACGT
+|
+|	67	ACCGgc
+|		<G>C<G><C>gc
+|	BssHII	GCGCGC
+|
+|	67	ACCGgc
+|		<C>CCGg<G>
+|	SmaI	CCCGGG
+|
+|	68	CCGg
+|		<A>CG<T>
+|	HpyCH4IV	ACGT
+|
+|	68	CCGgcg
+|		CC<C>g<G>g
+|	SmaI	CCCGGG
+|
+|	69	CGgc
+|		<A><C>g<T>
+|	HpyCH4IV	ACGT
+|
+|	69	CGgcgg
+|		<G><C>gcg<C>
+|	BssHII	GCGCGC
+|
+|	69	CGgcgg
+|		C<C><C><G>gg
+|	SmaI	CCCGGG
+|
+|	70	Ggcgga
+|		G<T>cg<A><C>
+|	SalI	GTCGAC
+|
+|	70	Ggcgga
+|		<C><C>cgg<G>
+|	SmaI	CCCGGG
+|
+|	71	gcggag
+|		g<T><C>ga<C>
+|	SalI	GTCGAC
+|
+|	71	gcgg
+|		<A>cg<T>
+|	HpyCH4IV	ACGT
+|
+|	71	gcggag
+|		gcg<C><G><C>
+|	BssHII	GCGCGC
+|
+|	71	gcggag
+|		<C>c<C>g<G>g
+|	SmaI	CCCGGG
+|
+|	72	cgga
+|		<A><C>g<T>
+|	HpyCH4IV	ACGT
+|
+|	74	gagtac
+|		g<T><C><G>ac
+|	SalI	GTCGAC
+|
+|	74	gagt
+|		<A><C>gt
+|	HpyCH4IV	ACGT
+|
+|	74	gagtac
+|		g<C>g<C><G>c
+|	BssHII	GCGCGC
+|
+|	75	agta
+|		a<C><G><T>
+|	HpyCH4IV	ACGT
+|
+|	76	gtacag
+|		gt<C><G>a<C>
+|	SalI	GTCGAC
+|
+|	78	acag
+|		ac<G><T>
+|	HpyCH4IV	ACGT
+|
+|	79	cagc
+|		<A><C>g<T>
+|	HpyCH4IV	ACGT
+|
+|	79	cagccc
+|		<G><C>gc<G>c
+|	BssHII	GCGCGC
+|
+|	80	agcc
+|		a<C><G><T>
+|	HpyCH4IV	ACGT
+|
+|	81	gccc
+|		<A>c<G><T>
+|	HpyCH4IV	ACGT
+|
+|	81	gcccgt
+|		gc<G>cg<C>
+|	BssHII	GCGCGC
+|
+|	81	gcccgt
+|		<C>cc<G>g<G>
+|	SmaI	CCCGGG
+|
+|	82	cccg
+|		<A>c<G><T>
+|	HpyCH4IV	ACGT
+|
+|	82	cccgtt
+|		cccg<G><G>
+|	SmaI	CCCGGG
+|
+|	83	ccgt
+|		<A>cgt
+|	HpyCH4IV	ACGT
+|
+|	83	ccgttc
+|		<G>cg<C><G>c
+|	BssHII	GCGCGC
+|
+|	84	cgtt
+|		<A><C><G>t
+|	HpyCH4IV	ACGT
+|
+|	86	ttct
+|		<A><C><G>t
+|	HpyCH4IV	ACGT
+|
+|	86	ttctgg
+|		<C><C>c<G>gg
+|	SmaI	CCCGGG
+|
+|	87	tctg
+|		<A>c<G><T>
+|	HpyCH4IV	ACGT
+|
+|	87	tctggA
+|		<C>c<C>gg<G>
+|	SmaI	CCCGGG
+|
+|	88	ctggAA
+|		<G>t<C>gA<C>
+|	SalI	GTCGAC
+|
+|	88	ctgg
+|		<A><C>g<T>
+|	HpyCH4IV	ACGT
+|
+|	89	tggA
+|		<A><C>g<T>
+|	HpyCH4IV	ACGT
+|
+|	91	gAAAAC
+|		g<T><C><G>AC
+|	SalI	GTCGAC
+|
+|	92	AAAA
+|		A<C><G><T>
+|	HpyCH4IV	ACGT
+|
+|	93	AAAC
+|		A<C><G><T>
+|	HpyCH4IV	ACGT
+|
+|	94	AACCAC
+|		<G><T>C<G>AC
+|	SalI	GTCGAC
+|
+|	94	AACC
+|		A<C><G><T>
+|	HpyCH4IV	ACGT
+|
+|	95	ACCA
+|		AC<G><T>
+|	HpyCH4IV	ACGT
+|
+|	96	CCAC
+|		<A>C<G><T>
+|	HpyCH4IV	ACGT
+|
+|	97	CACCAG
+|		C<C>C<G><G>G
+|	SmaI	CCCGGG
+|
+|	98	ACCA
+|		AC<G><T>
+|	HpyCH4IV	ACGT
+|
+|	98	ACCAGC
+|		<G>C<G><C>GC
+|	BssHII	GCGCGC
+|
+|	98	ACCAGC
+|		<C>CC<G>G<G>
+|	SmaI	CCCGGG
+|
+|	99	CCAG
+|		<A>C<G><T>
+|	HpyCH4IV	ACGT
+|
+|	99	CCAGCA
+|		CC<C>G<G><G>
+|	SmaI	CCCGGG
+|
+|	100	CAGC
+|		<A><C>G<T>
+|	HpyCH4IV	ACGT
+|
+|	101	AGCA
+|		A<C><G><T>
+|	HpyCH4IV	ACGT
+|
+|	102	GCAA
+|		<A>C<G><T>
+|	HpyCH4IV	ACGT
+|
+|	103	CAAT
+|		<A><C><G>T
+|	HpyCH4IV	ACGT
+|
+|	104	AATT
+|		A<C><G>T
+|	HpyCH4IV	ACGT
+|
+|	105	ATTC
+|		A<C><G><T>
+|	HpyCH4IV	ACGT
+|
+|	106	TTCCGG
+|		<C><C>C<G>GG
+|	SmaI	CCCGGG
+|
+|	107	TCCGGC
+|		<G><T>CG<A>C
+|	SalI	GTCGAC
+|
+|	107	TCCG
+|		<A>C<G><T>
+|	HpyCH4IV	ACGT
+|
+|	107	TCCGGC
+|		<G>C<G><C>GC
+|	BssHII	GCGCGC
+|
+|	107	TCCGGC
+|		<C>CCGG<G>
+|	SmaI	CCCGGG
+|
+|	108	CCGG
+|		<A>CG<T>
+|	HpyCH4IV	ACGT
+|
+|	108	CCGGCG
+|		CC<C>G<G>G
+|	SmaI	CCCGGG
+|
+|	109	CGGC
+|		<A><C>G<T>
+|	HpyCH4IV	ACGT
+|
+|	109	CGGCGC
+|		<G><C>GCGC
+|	BssHII	GCGCGC
+|
+|	110	GGCGCA
+|		G<T>CG<A><C>
+|	SalI	GTCGAC
+|
+|	111	GCGC
+|		<A>CG<T>
+|	HpyCH4IV	ACGT
+|
+|	111	GCGCAA
+|		GCGC<G><C>
+|	BssHII	GCGCGC
+|
+|	113	GCAA
+|		<A>C<G><T>
+|	HpyCH4IV	ACGT
+|
+|	115	AAAT
+|		A<C><G>T
+|	HpyCH4IV	ACGT
+|
+|	116	AATA
+|		A<C><G><T>
+|	HpyCH4IV	ACGT
+|
+|	117	ATAT
+|		A<C><G>T
+|	HpyCH4IV	ACGT
+|
+|	118	TATT
+|		<A><C><G>T
+|	HpyCH4IV	ACGT
+|
+|
+END
+CASE diagnostic 10
+circular 1
+seq TTGCGTTCACGTGAGAAGCGGTTGGTCTATCTGCCACGCCTATCGGTGAGCGACCAGTGGGGAATCTACGGATTGAGGGTGAGTCCGCCTGAGTACTTGAATATCGGTAAAGGAGTCCTCGCCTAAACTGGGGACGCGGGATGGCCTTCCGTTTGGCGCCACTAGCGATTAGCCCGGGCGACGCGTA
+sel -
+enz MboI SmaI MluI NspI AfeI
+mode selected
+mismatches 1
+sites AciI 18 85 136
+sites AvaI 173
+sites BfaI 162
+sites BsaAI 8
+sites BstUI 135 182
+sites HaeII 155
+sites HaeIII 143
+sites HhaI 156
+sites HpaII 174
+sites Hpy8I 5
+sites HpyCH4IV 9
+sites KasI 155
+sites MluI 181
+sites NarI 155
+sites PmlI 8
+sites RsaI 93
+sites ScaI 92
+sites SfoI 155
+sites SmaI 173
+sites SrfI 172
+sites TatI 92
+sites XmaI 173
+out
+|DATE
+|TITLE 
+|From 0 to 186. 
+|Diagnostic Sites
+|
+|	5	GTTC
+|		G<A>TC
+|	MboI	GATC
+|
+|	17	AGCGGT
+|		AGCG<C>T
+|	AfeI	AGCGCT
+|
+|	24	GGTC
+|		G<A>TC
+|	MboI	GATC
+|
+|	28	TATC
+|		<G>ATC
+|	MboI	GATC
+|
+|	36	ACGCCT
+|		ACGC<G>T
+|	MluI	ACGCGT
+|
+|	41	TATC
+|		<G>ATC
+|	MboI	GATC
+|
+|	48	GAGC
+|		GA<T>C
+|	MboI	GATC
+|
+|	52	GACC
+|		GA<T>C
+|	MboI	GATC
+|
+|	63	AATC
+|		<G>ATC
+|	MboI	GATC
+|
+|	71	GATT
+|		GAT<C>
+|	MboI	GATC
+|
+|	102	TATC
+|		<G>ATC
+|	MboI	GATC
+|
+|	134	ACGCGG
+|		ACGCG<T>
+|	MluI	ACGCGT
+|
+|	135	CGCGGG
+|		C<C>CGGG
+|	SmaI	CCCGGG
+|
+|	140	GATG
+|		GAT<C>
+|	MboI	GATC
+|
+|	164	AGCGAT
+|		AGCG<C>T
+|	AfeI	AGCGCT
+|
+|	167	GATT
+|		GAT<C>
+|	MboI	GATC
+|
+|
+END
+CASE diagnostic 11
+circular 1
+seq GACGGGCGAACAacgcgttatgatggccctcggCCTAAGAAGTCTTAGGTACTTTCCCGGTCCCGTGGATATGTCTAGCTAGCCCTCAAAATTCGTCTCCCCCGAACGGGAGACGATAAGTCCTGACTAGATCCGCCAGTTTGGAGGATCACGTTACAGGTGAAGACTTATACATCTTCACGGG
+sel 62 74
+enz BsmBI FspI
+mode selected
+mismatches 3
+sites AciI 133
+sites AluI 77
+sites ApoI 89
+sites BbsI 162
+sites BfaI 75 79 127
+sites BsmBI 94 110
+sites BstUI 14
+sites BstYI 129
+sites Cac8I 78
+sites DpnI 130 147
+sites HaeIII 25 32
+sites HpaII 57
+sites HpyCH4IV 151
+sites MboI 130 147
+sites MluCI 90
+sites MluI 13
+sites NheI 78
+sites RsaI 49
+out
+|DATE
+|TITLE 
+|From 62 to 73. 
+|Diagnostic Sites
+|
+|	64	CGTGGA
+|		CGT<C><T><C>
+|	BsmBI	CGTCTC
+|
+|	64	CGTGGA
+|		<T>G<C>G<C>A
+|	FspI	TGCGCA
+|
+|	66	TGGATA
+|		TG<C><G><C>A
+|	FspI	TGCGCA
+|
+|	68	GATATG
+|		GA<G>A<C>G
+|	BsmBI	GAGACG
+|
+|
+END
+CASE diagnostic 12
+circular 0
+seq GTAAGGGTCTTGGCCGGCCATATGGTGCCGTTCGCATAGCTGCACCGCACGGTGGAGCCTGGGGTCCAT
+sel -
+enz FseI NdeI
+mode absent
+mismatches 1
+sites AciI 45
+sites AluI 38
+sites Cac8I 13
+sites FseI 12
+sites HaeIII 12 16
+sites HpaII 14
+sites HpyCH4V 41
+sites NaeI 13
+sites NdeI 19
+sites NgoMIV 13
+out
+|DATE
+|TITLE 
+|From 0 to 68. 
+|Diagnostic Sites
+|
+|	1	GTAA
+|		<T>TAA
+|	MseI	TTAA
+|
+|	1	GTAA
+|		GTA<C>
+|	RsaI	GTAC
+|
+|	5	GGGTCT
+|		GG<A>TCT
+|	BstYI	RGATCY
+|
+|	6	GGTCTT
+|		GGTCT<C>
+|	BsaI	GGTCTC
+|
+|	6	GGTC
+|		G<A>TC
+|	MboI	GATC
+|
+|	7	GTCTTG
+|		GTCTT<C>
+|	BbsI	GTCTTC
+|
+|	9	CTTG
+|		CT<A>G
+|	BfaI	CTAG
+|
+|	9	CTTG
+|		C<A>TG
+|	NlaIII	CATG
+|
+|	11	TGGCCG
+|		<C>GGCCG
+|	EagI	CGGCCG
+|
+|	11	TGGCCG
+|		TGGCC<A>
+|	MscI	TGGCCA
+|
+|	15	CGGCCA
+|		CGGCC<G>
+|	EagI	CGGCCG
+|
+|	15	CGGCCA
+|		<T>GGCCA
+|	MscI	TGGCCA
+|
+|	19	CATA
+|		CAT<G>
+|	NlaIII	CATG
+|
+|	21	TATG
+|		<C>ATG
+|	NlaIII	CATG
+|
+|	24	GGTGCC
+|		GGT<A>CC
+|	Acc65I	GGTACC
+|
+|	24	GGTGCC
+|		GG<C>GCC
+|	HaeII	RGCGCY
+|
+|	24	GGTGCC
+|		GG<C>GCC
+|	KasI	GGCGCC
+|
+|	24	GGTGCC
+|		GGT<A>CC
+|	KpnI	GGTACC
+|
+|	24	GGTGCC
+|		GG<C>GCC
+|	NarI	GGCGCC
+|
+|	24	GGTGCC
+|		GG<C>GCC
+|	SfoI	GGCGCC
+|
+|	25	GTGC
+|		G<C>GC
+|	HhaI	GCGC
+|
+|	25	GTGC
+|		GT<A>C
+|	RsaI	GTAC
+|
+|	28	CCGTTC
+|		CCG<C>TC
+|	BsrBI	CCGCTC
+|
+|	28	CCGT
+|		<A>CGT
+|	HpyCH4IV	ACGT
+|
+|	29	CGTTCG
+|		CGT<A>CG
+|	BsiWI	CGTACG
+|
+|	29	CGTTCG
+|		CG<A>TCG
+|	PvuI	CGATCG
+|
+|	30	GTTCGC
+|		GTTC<A>C
+|	Hpy8I	GTNNAC
+|
+|	30	GTTC
+|		G<A>TC
+|	MboI	GATC
+|
+|	30	GTTC
+|		GT<A>C
+|	RsaI	GTAC
+|
+|	31	TTCGCA
+|		TTCG<A>A
+|	BstBI	TTCGAA
+|
+|	31	TTCGCA
+|		T<G>CGCA
+|	FspI	TGCGCA
+|
+|	32	TCGC
+|		<G>CGC
+|	HhaI	GCGC
+|
+|	32	TCGC
+|		TCG<A>
+|	TaqI	TCGA
+|
+|	33	CGCA
+|		CGC<G>
+|	BstUI	CGCG
+|
+|	35	CATA
+|		CAT<G>
+|	NlaIII	CATG
+|
+|	36	ATAG
+|		<C>TAG
+|	BfaI	CTAG
+|
+|	37	TAGCTG
+|		<C>AGCTG
+|	PvuII	CAGCTG
+|
+|	40	CTGCAC
+|		<G>TGCAC
+|	ApaLI	GTGCAC
+|
+|	40	CTGCAC
+|		<G>TGCAC
+|	Hpy8I	GTNNAC
+|
+|	40	CTGCAC
+|		CTGCA<G>
+|	PstI	CTGCAG
+|
+|	42	GCAC
+|		GC<G>C
+|	HhaI	GCGC
+|
+|	42	GCAC
+|		G<T>AC
+|	RsaI	GTAC
+|
+|	44	ACCGCA
+|		ACCG<G>A
+|	BsaWI	WCCGGW
+|
+|	45	CCGCAC
+|		CCGC<T>C
+|	BsrBI	CCGCTC
+|
+|	45	CCGC
+|		<G>CGC
+|	HhaI	GCGC
+|
+|	46	CGCACG
+|		CG<T>ACG
+|	BsiWI	CGTACG
+|
+|	46	CGCA
+|		CGC<G>
+|	BstUI	CGCG
+|
+|	47	GCAC
+|		GC<G>C
+|	HhaI	GCGC
+|
+|	47	GCAC
+|		G<T>AC
+|	RsaI	GTAC
+|
+|	48	CACG
+|		C<G>CG
+|	BstUI	CGCG
+|
+|	48	CACG
+|		CA<T>G
+|	NlaIII	CATG
+|
+|	49	ACGG
+|		ACG<T>
+|	HpyCH4IV	ACGT
+|
+|	52	GTGGAG
+|		GTGGA<C>
+|	Hpy8I	GTNNAC
+|
+|	53	TGGA
+|		T<C>GA
+|	TaqI	TCGA
+|
+|	54	GGAGCC
+|		GGA<T>CC
+|	BamHI	GGATCC
+|
+|	54	GGAGCC
+|		GGA<T>CC
+|	BstYI	RGATCY
+|
+|	54	GGAGCC
+|		GG<C>GCC
+|	HaeII	RGCGCY
+|
+|	54	GGAGCC
+|		GG<C>GCC
+|	KasI	GGCGCC
+|
+|	54	GGAGCC
+|		GG<C>GCC
+|	NarI	GGCGCC
+|
+|	54	GGAGCC
+|		GG<C>GCC
+|	SfoI	GGCGCC
+|
+|	55	GAGC
+|		G<C>GC
+|	HhaI	GCGC
+|
+|	55	GAGC
+|		GA<T>C
+|	MboI	GATC
+|
+|	57	GCCTGGGGTC
+|		G<A>CTGGGGTC
+|	PshAI	GACNNNNGTC
+|
+|	58	CCTGGG
+|		CC<C>GGG
+|	AvaI	CYCGRG
+|
+|	58	CCTGGG
+|		CCT<A>GG
+|	AvrII	CCTAGG
+|
+|	58	CCTG
+|		C<A>TG
+|	NlaIII	CATG
+|
+|	58	CCTGGG
+|		CC<C>GGG
+|	SmaI	CCCGGG
+|
+|	58	CCTGGG
+|		CC<C>GGG
+|	XmaI	CCCGGG
+|
+|	59	CTGGGG
+|		CT<C>GGG
+|	AvaI	CYCGRG
+|
+|	59	CTGG
+|		CT<A>G
+|	BfaI	CTAG
+|
+|	62	GGGTCC
+|		GGG<C>CC
+|	ApaI	GGGCCC
+|
+|	62	GGGTCC
+|		GG<A>TCC
+|	BamHI	GGATCC
+|
+|	62	GGGTCC
+|		GG<A>TCC
+|	BstYI	RGATCY
+|
+|	63	GGTC
+|		G<A>TC
+|	MboI	GATC
+|
+|	64	GTCCAT
+|		GTCCA<C>
+|	Hpy8I	GTNNAC
+|
+|	64	GTCC
+|		GT<A>C
+|	RsaI	GTAC
+|
+|	65	TCCA
+|		TC<G>A
+|	TaqI	TCGA
+|
+|
+END
+CASE diagnostic 13
+circular 0
+seq GGACTACCGTAACCCATAGGTTTAATATATGCCATAAAGGCCTCTCCAAGGTTAGAACACGACCTCGTGCCTTTCGCGACCAGTTCGATTGTAAGTGGGTAACGCGAAAAAGTCTCACTGTCATATACAGGNGCCGTATGAGACGAGTAGCACGCAATTTGGTCTGACCTATCTA
+sel 54 88
+enz ApoI BsaBI KpnI
+mode selected
+mismatches 2
+sites BsmBI 140
+sites BssSI 64
+sites BstUI 75 103
+sites Cac8I 150
+sites HaeIII 39
+sites MluCI 156
+sites MseI 22
+sites NruI 74
+sites StuI 38
+sites TaqI 85
+out
+|DATE
+|TITLE 
+|From 54 to 87. 
+|Diagnostic Sites
+|
+|	55	GAACAC
+|		GAA<T><T>C
+|	ApoI	RAATTY
+|
+|	55	GAACACGACC
+|		GA<T>CACGA<T>C
+|	BsaBI	GATNNNNATC
+|
+|	61	GACCTC
+|		GA<A><T>TC
+|	ApoI	RAATTY
+|
+|	66	CGTGCC
+|		<G>GT<A>CC
+|	KpnI	GGTACC
+|
+|	69	GCCTTT
+|		G<A><A>TTT
+|	ApoI	RAATTY
+|
+|	76	GCGACC
+|		G<G><T>ACC
+|	KpnI	GGTACC
+|
+|	81	CAGTTC
+|		<R>A<A>TTC
+|	ApoI	RAATTY
+|
+|
+END
+CASE diagnostic 14
+circular 0
+seq TAAGCATGGACAACAATTCCTTTACCGGTCTTCTACTCGAGAAAACACGCATGTTACGAGCGGTGCGCTTGTCACGGAGACTGAGCCTCGATTAAATTCCAAGCTACCTTTCAAACCGGAAGATGTACCCAGGTGACTCGAAGGAAAACGCACCATTCAACGACCGCCCCACCCTTCGTTT
+sel -
+enz BbsI BsmBI BstYI KasI SpeI
+mode selected
+mismatches 3
+sites AciI 60 164
+sites AgeI 24
+sites AluI 102
+sites ApoI 94
+sites AvaI 36
+sites BbsI 28
+sites BsaWI 24 115
+sites BsrBI 58
+sites HhaI 65
+sites HpaII 25 116
+sites MluCI 15 95
+sites MseI 92
+sites NlaIII 5 50
+sites NspI 49
+sites RsaI 125
+sites TaqI 37 88 138
+sites XhoI 36
+out
+|DATE
+|TITLE 
+|From 0 to 180. 
+|Diagnostic Sites
+|
+|	1	TAAGCA
+|		<G>AAG<A><C>
+|	BbsI	GAAGAC
+|
+|	4	GCATGG
+|		G<G>AT<C><Y>
+|	BstYI	RGATCY
+|
+|	6	ATGGAC
+|		<G><A><A>GAC
+|	BbsI	GAAGAC
+|
+|	7	TGGACA
+|		<G><A>GAC<G>
+|	BsmBI	GAGACG
+|
+|	8	GGACAA
+|		G<A>A<G>A<C>
+|	BbsI	GAAGAC
+|
+|	8	GGACAA
+|		GGA<T><C><Y>
+|	BstYI	RGATCY
+|
+|	9	GACAAC
+|		GA<A><G>AC
+|	BbsI	GAAGAC
+|
+|	9	GACAAC
+|		G<T>C<T><T>C
+|	BbsI	GTCTTC
+|
+|	9	GACAAC
+|		GA<G>A<C><G>
+|	BsmBI	GAGACG
+|
+|	9	GACAAC
+|		G<G>C<G><C>C
+|	KasI	GGCGCC
+|
+|	10	ACAACA
+|		A<G>A<T>C<Y>
+|	BstYI	RGATCY
+|
+|	10	ACAACA
+|		AC<T>A<G><T>
+|	SpeI	ACTAGT
+|
+|	11	CAACAA
+|		<G>AA<G>A<C>
+|	BbsI	GAAGAC
+|
+|	12	AACAAT
+|		A<C><T>A<G>T
+|	SpeI	ACTAGT
+|
+|	13	ACAATT
+|		A<G>A<T><C>T
+|	BstYI	RGATCY
+|
+|	13	ACAATT
+|		AC<T>A<G>T
+|	SpeI	ACTAGT
+|
+|	14	CAATTC
+|		<G>AA<G><A>C
+|	BbsI	GAAGAC
+|
+|	14	CAATTC
+|		<G><T><C>TTC
+|	BbsI	GTCTTC
+|
+|	14	CAATTC
+|		C<G><T><C>TC
+|	BsmBI	CGTCTC
+|
+|	14	CAATTC
+|		<R><G>AT<C>C
+|	BstYI	RGATCY
+|
+|	15	AATTCC
+|		A<G><A>TCC
+|	BstYI	RGATCY
+|
+|	16	ATTCCT
+|		A<G><A><T>CT
+|	BstYI	RGATCY
+|
+|	16	ATTCCT
+|		A<C>T<A><G>T
+|	SpeI	ACTAGT
+|
+|	17	TTCCTT
+|		<G>TC<T>T<C>
+|	BbsI	GTCTTC
+|
+|	18	TCCTTT
+|		<G><T>CTT<C>
+|	BbsI	GTCTTC
+|
+|	19	CCTTTA
+|		C<G>T<C>T<C>
+|	BsmBI	CGTCTC
+|
+|	20	CTTTAC
+|		<G>T<C>T<T>C
+|	BbsI	GTCTTC
+|
+|	20	CTTTAC
+|		C<G>T<C><T>C
+|	BsmBI	CGTCTC
+|
+|	24	ACCGGT
+|		AC<T><A>GT
+|	SpeI	ACTAGT
+|
+|	25	CCGGTC
+|		C<G><T><C>TC
+|	BsmBI	CGTCTC
+|
+|	26	CGGTCT
+|		<R>G<A>TCT
+|	BstYI	RGATCY
+|
+|	27	GGTCTT
+|		<C>GTCT<C>
+|	BsmBI	CGTCTC
+|
+|	27	GGTCTT
+|		GG<A><T><C>T
+|	BstYI	RGATCY
+|
+|	28	GTCTTC
+|		G<G><A>T<C>C
+|	BstYI	RGATCY
+|
+|	28	GTCTTC
+|		G<G>C<G><C>C
+|	KasI	GGCGCC
+|
+|	29	TCTTCT
+|		<R><G><A>TCT
+|	BstYI	RGATCY
+|
+|	29	TCTTCT
+|		<A>CT<A><G>T
+|	SpeI	ACTAGT
+|
+|	30	CTTCTA
+|		C<G>TCT<C>
+|	BsmBI	CGTCTC
+|
+|	31	TTCTAC
+|		<G>TCT<T>C
+|	BbsI	GTCTTC
+|
+|	32	TCTACT
+|		<A>CTA<G>T
+|	SpeI	ACTAGT
+|
+|	33	CTACTC
+|		<G>T<C><T>TC
+|	BbsI	GTCTTC
+|
+|	33	CTACTC
+|		C<G><T>CTC
+|	BsmBI	CGTCTC
+|
+|	34	TACTCG
+|		<G>A<G><A>CG
+|	BsmBI	GAGACG
+|
+|	35	ACTCGA
+|		ACT<A>G<T>
+|	SpeI	ACTAGT
+|
+|	37	TCGAGA
+|		<A>C<T>AG<T>
+|	SpeI	ACTAGT
+|
+|	38	CGAGAA
+|		<G><A>AGA<C>
+|	BbsI	GAAGAC
+|
+|	39	GAGAAA
+|		GA<A><G>A<C>
+|	BbsI	GAAGAC
+|
+|	39	GAGAAA
+|		GAGA<C><G>
+|	BsmBI	GAGACG
+|
+|	40	AGAAAA
+|		AGA<T><C><Y>
+|	BstYI	RGATCY
+|
+|	41	GAAAAC
+|		GAA<G>AC
+|	BbsI	GAAGAC
+|
+|	41	GAAAAC
+|		GA<G>A<C><G>
+|	BsmBI	GAGACG
+|
+|	41	GAAAAC
+|		G<G>A<T><C>C
+|	BstYI	RGATCY
+|
+|	42	AAAACA
+|		<G>A<G>AC<G>
+|	BsmBI	GAGACG
+|
+|	42	AAAACA
+|		A<G>A<T>C<Y>
+|	BstYI	RGATCY
+|
+|	43	AAACAC
+|		<G>AA<G>AC
+|	BbsI	GAAGAC
+|
+|	43	AAACAC
+|		A<G>A<T><C>C
+|	BstYI	RGATCY
+|
+|	44	AACACG
+|		<G>A<G>ACG
+|	BsmBI	GAGACG
+|
+|	45	ACACGC
+|		A<G>A<T><C>C
+|	BstYI	RGATCY
+|
+|	45	ACACGC
+|		AC<T><A>G<T>
+|	SpeI	ACTAGT
+|
+|	46	CACGCA
+|		<G><G>CGC<C>
+|	KasI	GGCGCC
+|
+|	47	ACGCAT
+|		AC<T><A><G>T
+|	SpeI	ACTAGT
+|
+|	48	CGCATG
+|		CG<T><C>T<C>
+|	BsmBI	CGTCTC
+|
+|	49	GCATGT
+|		G<G>AT<C>T
+|	BstYI	RGATCY
+|
+|	49	GCATGT
+|		<A>C<T><A>GT
+|	SpeI	ACTAGT
+|
+|	50	CATGTT
+|		C<G>T<C>T<C>
+|	BsmBI	CGTCTC
+|
+|	51	ATGTTA
+|		<G>T<C>TT<C>
+|	BbsI	GTCTTC
+|
+|	52	TGTTAC
+|		<C>GT<C><T>C
+|	BsmBI	CGTCTC
+|
+|	52	TGTTAC
+|		<R>G<A>T<C>C
+|	BstYI	RGATCY
+|
+|	53	GTTACG
+|		G<A><G>ACG
+|	BsmBI	GAGACG
+|
+|	55	TACGAG
+|		<G>A<A>GA<C>
+|	BbsI	GAAGAC
+|
+|	56	ACGAGC
+|		AC<T>AG<T>
+|	SpeI	ACTAGT
+|
+|	57	CGAGCG
+|		<R>GA<T>C<Y>
+|	BstYI	RGATCY
+|
+|	57	CGAGCG
+|		<G>G<C>GC<C>
+|	KasI	GGCGCC
+|
+|	58	GAGCGG
+|		GAG<A><C>G
+|	BsmBI	GAGACG
+|
+|	59	AGCGGT
+|		AG<A><T><C>T
+|	BstYI	RGATCY
+|
+|	59	AGCGGT
+|		<G>GCG<C><C>
+|	KasI	GGCGCC
+|
+|	59	AGCGGT
+|		A<C><T><A>GT
+|	SpeI	ACTAGT
+|
+|	60	GCGGTG
+|		G<A>G<A><C>G
+|	BsmBI	GAGACG
+|
+|	61	CGGTGC
+|		CG<T><C><T>C
+|	BsmBI	CGTCTC
+|
+|	61	CGGTGC
+|		<R>G<A>T<C>C
+|	BstYI	RGATCY
+|
+|	62	GGTGCG
+|		G<A><G><A>CG
+|	BsmBI	GAGACG
+|
+|	62	GGTGCG
+|		GG<A><T>C<Y>
+|	BstYI	RGATCY
+|
+|	62	GGTGCG
+|		GG<C>GC<C>
+|	KasI	GGCGCC
+|
+|	63	GTGCGC
+|		GT<C><T><T>C
+|	BbsI	GTCTTC
+|
+|	64	TGCGCT
+|		<R>G<A><T>CT
+|	BstYI	RGATCY
+|
+|	64	TGCGCT
+|		<G>GCGC<C>
+|	KasI	GGCGCC
+|
+|	66	CGCTTG
+|		<G><T>CTT<C>
+|	BbsI	GTCTTC
+|
+|	66	CGCTTG
+|		CG<T><C>T<C>
+|	BsmBI	CGTCTC
+|
+|	67	GCTTGT
+|		G<G><A>T<C>T
+|	BstYI	RGATCY
+|
+|	67	GCTTGT
+|		<A>CT<A>GT
+|	SpeI	ACTAGT
+|
+|	68	CTTGTC
+|		<G>T<C><T>TC
+|	BbsI	GTCTTC
+|
+|	68	CTTGTC
+|		C<G>T<C>TC
+|	BsmBI	CGTCTC
+|
+|	70	TGTCAC
+|		<C>GTC<T>C
+|	BsmBI	CGTCTC
+|
+|	71	GTCACG
+|		GTC<T><T><C>
+|	BbsI	GTCTTC
+|
+|	71	GTCACG
+|		G<A><G>ACG
+|	BsmBI	GAGACG
+|
+|	71	GTCACG
+|		G<G>C<G>C<C>
+|	KasI	GGCGCC
+|
+|	76	GGAGAC
+|		G<A>AGAC
+|	BbsI	GAAGAC
+|
+|	76	GGAGAC
+|		GGA<T><C>C
+|	BstYI	RGATCY
+|
+|	76	GGAGAC
+|		GG<C>G<C>C
+|	KasI	GGCGCC
+|
+|	77	GAGACT
+|		GAGAC<G>
+|	BsmBI	GAGACG
+|
+|	77	GAGACT
+|		G<G><A><T>CT
+|	BstYI	RGATCY
+|
+|	78	AGACTG
+|		<C>G<T>CT<C>
+|	BsmBI	CGTCTC
+|
+|	78	AGACTG
+|		AGA<T><C><Y>
+|	BstYI	RGATCY
+|
+|	79	GACTGA
+|		G<T>CT<T><C>
+|	BbsI	GTCTTC
+|
+|	80	ACTGAG
+|		ACT<A><G><T>
+|	SpeI	ACTAGT
+|
+|	82	TGAGCC
+|		<G><A>AG<A>C
+|	BbsI	GAAGAC
+|
+|	82	TGAGCC
+|		<R>GA<T>CC
+|	BstYI	RGATCY
+|
+|	82	TGAGCC
+|		<G>G<C>GCC
+|	KasI	GGCGCC
+|
+|	83	GAGCCT
+|		GAG<A>C<G>
+|	BsmBI	GAGACG
+|
+|	83	GAGCCT
+|		G<G><A><T>CT
+|	BstYI	RGATCY
+|
+|	84	AGCCTC
+|		<G><T>C<T>TC
+|	BbsI	GTCTTC
+|
+|	84	AGCCTC
+|		<C>G<T>CTC
+|	BsmBI	CGTCTC
+|
+|	84	AGCCTC
+|		AG<A><T><C>C
+|	BstYI	RGATCY
+|
+|	84	AGCCTC
+|		<G>GC<G><C>C
+|	KasI	GGCGCC
+|
+|	85	GCCTCG
+|		G<T>CT<T><C>
+|	BbsI	GTCTTC
+|
+|	85	GCCTCG
+|		G<A><G><A>CG
+|	BsmBI	GAGACG
+|
+|	85	GCCTCG
+|		G<G><A>TC<Y>
+|	BstYI	RGATCY
+|
+|	85	GCCTCG
+|		G<G>C<G>C<C>
+|	KasI	GGCGCC
+|
+|	86	CCTCGA
+|		C<G>TC<T><C>
+|	BsmBI	CGTCTC
+|
+|	86	CCTCGA
+|		<A>CT<A>G<T>
+|	SpeI	ACTAGT
+|
+|	88	TCGATT
+|		<A>C<T>A<G>T
+|	SpeI	ACTAGT
+|
+|	89	CGATTA
+|		CG<T><C>T<C>
+|	BsmBI	CGTCTC
+|
+|	89	CGATTA
+|		<R>GAT<C><Y>
+|	BstYI	RGATCY
+|
+|	90	GATTAA
+|		GA<A><G>A<C>
+|	BbsI	GAAGAC
+|
+|	91	ATTAAA
+|		A<C>TA<G><T>
+|	SpeI	ACTAGT
+|
+|	94	AAATTC
+|		<G>AA<G><A>C
+|	BbsI	GAAGAC
+|
+|	94	AAATTC
+|		<G><T><C>TTC
+|	BbsI	GTCTTC
+|
+|	94	AAATTC
+|		A<G>AT<C>C
+|	BstYI	RGATCY
+|
+|	95	AATTCC
+|		A<G><A>TCC
+|	BstYI	RGATCY
+|
+|	99	CCAAGC
+|		<A>C<T>AG<T>
+|	SpeI	ACTAGT
+|
+|	100	CAAGCT
+|		<G>AAG<A><C>
+|	BbsI	GAAGAC
+|
+|	100	CAAGCT
+|		<R><G>A<T>CT
+|	BstYI	RGATCY
+|
+|	102	AGCTAC
+|		<G><T>CT<T>C
+|	BbsI	GTCTTC
+|
+|	102	AGCTAC
+|		AG<A>T<C>C
+|	BstYI	RGATCY
+|
+|	102	AGCTAC
+|		<G>GC<G><C>C
+|	KasI	GGCGCC
+|
+|	103	GCTACC
+|		G<A><G>AC<G>
+|	BsmBI	GAGACG
+|
+|	103	GCTACC
+|		G<G><A><T>CC
+|	BstYI	RGATCY
+|
+|	103	GCTACC
+|		G<G><C><G>CC
+|	KasI	GGCGCC
+|
+|	103	GCTACC
+|		<A>CTA<G><T>
+|	SpeI	ACTAGT
+|
+|	104	CTACCT
+|		<R><G>A<T>CT
+|	BstYI	RGATCY
+|
+|	106	ACCTTT
+|		<G><T>CTT<C>
+|	BbsI	GTCTTC
+|
+|	106	ACCTTT
+|		A<G><A>T<C>T
+|	BstYI	RGATCY
+|
+|	106	ACCTTT
+|		AC<T><A><G>T
+|	SpeI	ACTAGT
+|
+|	107	CCTTTC
+|		<G><T><C>TTC
+|	BbsI	GTCTTC
+|
+|	107	CCTTTC
+|		C<G>T<C>TC
+|	BsmBI	CGTCTC
+|
+|	111	TCAAAC
+|		<G><A>A<G>AC
+|	BbsI	GAAGAC
+|
+|	112	CAAACC
+|		<G>AA<G><A>C
+|	BbsI	GAAGAC
+|
+|	112	CAAACC
+|		<G>A<G>AC<G>
+|	BsmBI	GAGACG
+|
+|	112	CAAACC
+|		<R><G>A<T>CC
+|	BstYI	RGATCY
+|
+|	113	AAACCG
+|		<G>A<G><A>CG
+|	BsmBI	GAGACG
+|
+|	113	AAACCG
+|		A<G>A<T>C<Y>
+|	BstYI	RGATCY
+|
+|	115	ACCGGA
+|		AC<T><A>G<T>
+|	SpeI	ACTAGT
+|
+|	117	CGGAAG
+|		<G><A>GA<C>G
+|	BsmBI	GAGACG
+|
+|	118	GGAAGA
+|		GGA<T><C><Y>
+|	BstYI	RGATCY
+|
+|	119	GAAGAT
+|		GAAGA<C>
+|	BbsI	GAAGAC
+|
+|	119	GAAGAT
+|		G<G>A<T><C>T
+|	BstYI	RGATCY
+|
+|	120	AAGATG
+|		<G>AGA<C>G
+|	BsmBI	GAGACG
+|
+|	121	AGATGT
+|		AGAT<C>T
+|	BstYI	RGATCY
+|
+|	121	AGATGT
+|		A<C><T><A>GT
+|	SpeI	ACTAGT
+|
+|	122	GATGTA
+|		GA<A>G<A><C>
+|	BbsI	GAAGAC
+|
+|	123	ATGTAC
+|		<G>T<C>T<T>C
+|	BbsI	GTCTTC
+|
+|	123	ATGTAC
+|		A<G><A>T<C>C
+|	BstYI	RGATCY
+|
+|	124	TGTACC
+|		<C>GT<C><T>C
+|	BsmBI	CGTCTC
+|
+|	124	TGTACC
+|		<R>G<A><T>CC
+|	BstYI	RGATCY
+|
+|	124	TGTACC
+|		<G>G<C><G>CC
+|	KasI	GGCGCC
+|
+|	125	GTACCC
+|		G<A>A<G><A>C
+|	BbsI	GAAGAC
+|
+|	125	GTACCC
+|		GT<C><T><T>C
+|	BbsI	GTCTTC
+|
+|	125	GTACCC
+|		G<G>A<T>CC
+|	BstYI	RGATCY
+|
+|	125	GTACCC
+|		G<G><C><G>CC
+|	KasI	GGCGCC
+|
+|	128	CCCAGG
+|		<A>C<T>AG<T>
+|	SpeI	ACTAGT
+|
+|	129	CCAGGT
+|		<A>C<T><A>GT
+|	SpeI	ACTAGT
+|
+|	130	CAGGTG
+|		<G>AG<A><C>G
+|	BsmBI	GAGACG
+|
+|	131	AGGTGA
+|		AG<A>T<C><Y>
+|	BstYI	RGATCY
+|
+|	132	GGTGAC
+|		G<A><A>GAC
+|	BbsI	GAAGAC
+|
+|	132	GGTGAC
+|		<C>GT<C><T>C
+|	BsmBI	CGTCTC
+|
+|	132	GGTGAC
+|		GG<A><T><C>C
+|	BstYI	RGATCY
+|
+|	132	GGTGAC
+|		GG<C>G<C>C
+|	KasI	GGCGCC
+|
+|	133	GTGACT
+|		G<A>GAC<G>
+|	BsmBI	GAGACG
+|
+|	133	GTGACT
+|		G<G><A><T>CT
+|	BstYI	RGATCY
+|
+|	134	TGACTC
+|		<C>G<T>CTC
+|	BsmBI	CGTCTC
+|
+|	134	TGACTC
+|		<R>GA<T><C>C
+|	BstYI	RGATCY
+|
+|	135	GACTCG
+|		G<T>CT<T><C>
+|	BbsI	GTCTTC
+|
+|	135	GACTCG
+|		GA<G><A>CG
+|	BsmBI	GAGACG
+|
+|	135	GACTCG
+|		G<G><A>TC<Y>
+|	BstYI	RGATCY
+|
+|	135	GACTCG
+|		G<G>C<G>C<C>
+|	KasI	GGCGCC
+|
+|	136	ACTCGA
+|		ACT<A>G<T>
+|	SpeI	ACTAGT
+|
+|	138	TCGAAG
+|		<G><A>GA<C>G
+|	BsmBI	GAGACG
+|
+|	140	GAAGGA
+|		GAAG<A><C>
+|	BbsI	GAAGAC
+|
+|	141	AAGGAA
+|		<G>A<A>GA<C>
+|	BbsI	GAAGAC
+|
+|	143	GGAAAA
+|		G<A>A<G>A<C>
+|	BbsI	GAAGAC
+|
+|	143	GGAAAA
+|		GGA<T><C><Y>
+|	BstYI	RGATCY
+|
+|	144	GAAAAC
+|		GAA<G>AC
+|	BbsI	GAAGAC
+|
+|	144	GAAAAC
+|		GA<G>A<C><G>
+|	BsmBI	GAGACG
+|
+|	144	GAAAAC
+|		G<G>A<T><C>C
+|	BstYI	RGATCY
+|
+|	145	AAAACG
+|		<G>A<G>ACG
+|	BsmBI	GAGACG
+|
+|	145	AAAACG
+|		A<G>A<T>C<Y>
+|	BstYI	RGATCY
+|
+|	146	AAACGC
+|		<G>AA<G><A>C
+|	BbsI	GAAGAC
+|
+|	146	AAACGC
+|		A<G>A<T><C>C
+|	BstYI	RGATCY
+|
+|	147	AACGCA
+|		<G><G>CGC<C>
+|	KasI	GGCGCC
+|
+|	149	CGCACC
+|		CG<T><C><T>C
+|	BsmBI	CGTCTC
+|
+|	149	CGCACC
+|		<R>G<A><T>CC
+|	BstYI	RGATCY
+|
+|	149	CGCACC
+|		<G>GC<G>CC
+|	KasI	GGCGCC
+|
+|	150	GCACCA
+|		G<G>A<T>C<Y>
+|	BstYI	RGATCY
+|
+|	152	ACCATT
+|		AC<T>A<G>T
+|	SpeI	ACTAGT
+|
+|	153	CCATTC
+|		<G><T><C>TTC
+|	BbsI	GTCTTC
+|
+|	153	CCATTC
+|		C<G><T><C>TC
+|	BsmBI	CGTCTC
+|
+|	153	CCATTC
+|		<R><G>AT<C>C
+|	BstYI	RGATCY
+|
+|	156	TTCAAC
+|		<G>TC<T><T>C
+|	BbsI	GTCTTC
+|
+|	157	TCAACG
+|		<G><A><G>ACG
+|	BsmBI	GAGACG
+|
+|	159	AACGAC
+|		<G>A<A>GAC
+|	BbsI	GAAGAC
+|
+|	159	AACGAC
+|		<G><G>CG<C>C
+|	KasI	GGCGCC
+|
+|	160	ACGACC
+|		<G><A>GAC<G>
+|	BsmBI	GAGACG
+|
+|	160	ACGACC
+|		A<G><A><T>CC
+|	BstYI	RGATCY
+|
+|	160	ACGACC
+|		AC<T>A<G><T>
+|	SpeI	ACTAGT
+|
+|	161	CGACCG
+|		CG<T>C<T><C>
+|	BsmBI	CGTCTC
+|
+|	161	CGACCG
+|		<R>GA<T>C<Y>
+|	BstYI	RGATCY
+|
+|	162	GACCGC
+|		GA<A><G><A>C
+|	BbsI	GAAGAC
+|
+|	162	GACCGC
+|		G<T>C<T><T>C
+|	BbsI	GTCTTC
+|
+|	162	GACCGC
+|		G<G>C<G><C>C
+|	KasI	GGCGCC
+|
+|	163	ACCGCC
+|		A<G><A><T>CC
+|	BstYI	RGATCY
+|
+|	163	ACCGCC
+|		<G><G>CGCC
+|	KasI	GGCGCC
+|
+|	164	CCGCCC
+|		C<G><T>C<T>C
+|	BsmBI	CGTCTC
+|
+|	165	CGCCCC
+|		CG<T>C<T>C
+|	BsmBI	CGTCTC
+|
+|	165	CGCCCC
+|		<R>G<A><T>CC
+|	BstYI	RGATCY
+|
+|	165	CGCCCC
+|		<G>GC<G>CC
+|	KasI	GGCGCC
+|
+|	166	GCCCCA
+|		G<G>C<G>C<C>
+|	KasI	GGCGCC
+|
+|	167	CCCCAC
+|		C<G><T>C<T>C
+|	BsmBI	CGTCTC
+|
+|	168	CCCACC
+|		<G><G>C<G>CC
+|	KasI	GGCGCC
+|
+|	169	CCACCC
+|		C<G><T>C<T>C
+|	BsmBI	CGTCTC
+|
+|	169	CCACCC
+|		<R><G>A<T>CC
+|	BstYI	RGATCY
+|
+|	171	ACCCTT
+|		AC<T><A><G>T
+|	SpeI	ACTAGT
+|
+|	172	CCCTTC
+|		<G><T>CTTC
+|	BbsI	GTCTTC
+|
+|	172	CCCTTC
+|		C<G><T><C>TC
+|	BsmBI	CGTCTC
+|
+|	174	CTTCGT
+|		C<G>TC<T><C>
+|	BsmBI	CGTCTC
+|
+|	174	CTTCGT
+|		<A><C>T<A>GT
+|	SpeI	ACTAGT
+|
+|	175	TTCGTT
+|		<G>TC<T>T<C>
+|	BbsI	GTCTTC
+|
+|
+END
+CASE diagnostic 15
+circular 1
+seq CGCTGTCGACCACGACTGTCTATGGGCctagggaaattatgcagtaacATAATCAGAGACCTGACTCGGATTATCTAAGCTCTTCTATTGCCTTGTATTN
+sel 40 75
+enz SapI BsaI AciI PmlI HpyCH4IV
+mode selected
+mismatches 3
+sites AluI 78
+sites AvrII 27
+sites BfaI 28
+sites BsaI 56
+sites HaeIII 25
+sites HincII 5
+sites Hpy8I 5
+sites HpyCH4V 40
+sites MluCI 35
+sites SalI 5
+sites SapI 79
+sites TaqI 6
+out
+|DATE
+|TITLE 
+|From 40 to 74. 
+|Diagnostic Sites
+|
+|	41	gcag
+|		<C>c<G><C>
+|	AciI	CCGC
+|
+|	41	gcag
+|		gc<G>g
+|	AciI	GCGG
+|
+|	41	gcag
+|		<A>c<G><T>
+|	HpyCH4IV	ACGT
+|
+|	42	cagt
+|		c<C>g<C>
+|	AciI	CCGC
+|
+|	42	cagt
+|		<G><C>g<G>
+|	AciI	GCGG
+|
+|	42	cagt
+|		<A><C>gt
+|	HpyCH4IV	ACGT
+|
+|	43	agtaac
+|		<G>gt<C><T>c
+|	BsaI	GGTCTC
+|
+|	43	agta
+|		a<C><G><T>
+|	HpyCH4IV	ACGT
+|
+|	44	gtaacA
+|		g<A><G>ac<C>
+|	BsaI	GAGACC
+|
+|	44	gtaa
+|		g<C><G><G>
+|	AciI	GCGG
+|
+|	45	taac
+|		<C><C><G>c
+|	AciI	CCGC
+|
+|	46	aacATA
+|		<C>ac<G>T<G>
+|	PmlI	CACGTG
+|
+|	46	aacA
+|		a<C><G><T>
+|	HpyCH4IV	ACGT
+|
+|	47	acAT
+|		<C>c<G><C>
+|	AciI	CCGC
+|
+|	47	acAT
+|		<G>c<G><G>
+|	AciI	GCGG
+|
+|	47	acAT
+|		ac<G>T
+|	HpyCH4IV	ACGT
+|
+|	48	cATA
+|		c<C><G><C>
+|	AciI	CCGC
+|
+|	49	ATAA
+|		A<C><G><T>
+|	HpyCH4IV	ACGT
+|
+|	50	TAAT
+|		<A><C><G>T
+|	HpyCH4IV	ACGT
+|
+|	51	AATC
+|		<C><C><G>C
+|	AciI	CCGC
+|
+|	51	AATC
+|		A<C><G><T>
+|	HpyCH4IV	ACGT
+|
+|	52	ATCA
+|		A<C><G><T>
+|	HpyCH4IV	ACGT
+|
+|	53	TCAGAGA
+|		<G><A>AGAG<C>
+|	SapI	GAAGAGC
+|
+|	53	TCAG
+|		<C>C<G><C>
+|	AciI	CCGC
+|
+|	53	TCAG
+|		<G>C<G>G
+|	AciI	GCGG
+|
+|	53	TCAG
+|		<A>C<G><T>
+|	HpyCH4IV	ACGT
+|
+|	54	CAGAGA
+|		<G>AGA<C><C>
+|	BsaI	GAGACC
+|
+|	54	CAGA
+|		C<C>G<C>
+|	AciI	CCGC
+|
+|	54	CAGA
+|		<G><C>G<G>
+|	AciI	GCGG
+|
+|	54	CAGA
+|		<A><C>G<T>
+|	HpyCH4IV	ACGT
+|
+|	55	AGAGACC
+|		<G><A>AGA<G>C
+|	SapI	GAAGAGC
+|
+|	55	AGAG
+|		<G><C><G>G
+|	AciI	GCGG
+|
+|	55	AGAG
+|		A<C><G><T>
+|	HpyCH4IV	ACGT
+|
+|	56	GAGA
+|		<C><C>G<C>
+|	AciI	CCGC
+|
+|	56	GAGA
+|		G<C>G<G>
+|	AciI	GCGG
+|
+|	56	GAGA
+|		<A><C>G<T>
+|	HpyCH4IV	ACGT
+|
+|	57	AGAC
+|		<C><C><G>C
+|	AciI	CCGC
+|
+|	57	AGAC
+|		A<C><G><T>
+|	HpyCH4IV	ACGT
+|
+|	58	GACCTG
+|		G<G><T>CT<C>
+|	BsaI	GGTCTC
+|
+|	58	GACC
+|		<C><C><G>C
+|	AciI	CCGC
+|
+|	58	GACC
+|		G<C><G><G>
+|	AciI	GCGG
+|
+|	58	GACCTG
+|		<C>AC<G>TG
+|	PmlI	CACGTG
+|
+|	59	ACCT
+|		<C>C<G><C>
+|	AciI	CCGC
+|
+|	59	ACCT
+|		<G>C<G><G>
+|	AciI	GCGG
+|
+|	59	ACCT
+|		AC<G>T
+|	HpyCH4IV	ACGT
+|
+|	60	CCTG
+|		CC<G><C>
+|	AciI	CCGC
+|
+|	60	CCTG
+|		<G>C<G>G
+|	AciI	GCGG
+|
+|	60	CCTG
+|		<A>C<G><T>
+|	HpyCH4IV	ACGT
+|
+|	61	CTGACT
+|		<G><A>GAC<C>
+|	BsaI	GAGACC
+|
+|	61	CTGA
+|		C<C>G<C>
+|	AciI	CCGC
+|
+|	61	CTGA
+|		<G><C>G<G>
+|	AciI	GCGG
+|
+|	61	CTGA
+|		<A><C>G<T>
+|	HpyCH4IV	ACGT
+|
+|	62	TGACTC
+|		<G>G<T>CTC
+|	BsaI	GGTCTC
+|
+|	62	TGAC
+|		<C><C><G>C
+|	AciI	CCGC
+|
+|	63	GACTCG
+|		GA<G><A>C<C>
+|	BsaI	GAGACC
+|
+|	63	GACT
+|		G<C><G><G>
+|	AciI	GCGG
+|
+|	63	GACTCG
+|		<C>AC<G><T>G
+|	PmlI	CACGTG
+|
+|	63	GACT
+|		<A><C><G>T
+|	HpyCH4IV	ACGT
+|
+|	64	ACTC
+|		<C>C<G>C
+|	AciI	CCGC
+|
+|	64	ACTC
+|		<G>C<G><G>
+|	AciI	GCGG
+|
+|	64	ACTC
+|		AC<G><T>
+|	HpyCH4IV	ACGT
+|
+|	65	CTCG
+|		C<C><G><C>
+|	AciI	CCGC
+|
+|	65	CTCG
+|		<G><C><G>G
+|	AciI	GCGG
+|
+|	65	CTCGGA
+|		C<A>CG<T><G>
+|	PmlI	CACGTG
+|
+|	66	TCGG
+|		<C>CG<C>
+|	AciI	CCGC
+|
+|	66	TCGG
+|		<G>CGG
+|	AciI	GCGG
+|
+|	66	TCGG
+|		<A>CG<T>
+|	HpyCH4IV	ACGT
+|
+|	67	CGGA
+|		C<C>G<C>
+|	AciI	CCGC
+|
+|	67	CGGA
+|		<G><C>G<G>
+|	AciI	GCGG
+|
+|	67	CGGA
+|		<A><C>G<T>
+|	HpyCH4IV	ACGT
+|
+|	68	GGATTA
+|		GG<T><C>T<C>
+|	BsaI	GGTCTC
+|
+|	68	GGAT
+|		G<C><G><G>
+|	AciI	GCGG
+|
+|	68	GGAT
+|		<A><C><G>T
+|	HpyCH4IV	ACGT
+|
+|	69	GATTATC
+|		G<C>T<C><T>TC
+|	SapI	GCTCTTC
+|
+|	69	GATTATC
+|		GA<A><G>A<G>C
+|	SapI	GAAGAGC
+|
+|	69	GATT
+|		G<C><G><G>
+|	AciI	GCGG
+|
+|	69	GATT
+|		<A><C><G>T
+|	HpyCH4IV	ACGT
+|
+|	70	ATTATC
+|		<G><G>T<C>TC
+|	BsaI	GGTCTC
+|
+|	70	ATTA
+|		A<C><G><T>
+|	HpyCH4IV	ACGT
+|
+|	71	TTAT
+|		<A><C><G>T
+|	HpyCH4IV	ACGT
+|
+|	72	TATC
+|		<C><C><G>C
+|	AciI	CCGC
+|
+|
+END
+CASE diagnostic 16
+circular 1
+seq GTTAGTTCTACTCAGGCCTCCTTATTACCGTTGTAATTGAGACTGTTGATAAGACGTACGGCGCCAATAGCAGGCTAT
+sel 34 59
+enz KasI BssSI
+mode absent
+mismatches 1
+sites BsiWI 55
+sites Cac8I 70
+sites HaeII 60
+sites HaeIII 15
+sites HhaI 61
+sites HpyCH4IV 54
+sites KasI 60
+sites MluCI 35
+sites NarI 60
+sites RsaI 56
+sites SfoI 60
+sites StuI 14
+out
+|DATE
+|TITLE 
+|From 34 to 58. 
+|Diagnostic Sites
+|
+|	37	TTGA
+|		TT<A>A
+|	MseI	TTAA
+|
+|	37	TTGA
+|		T<C>GA
+|	TaqI	TCGA
+|
+|	39	GAGACT
+|		GAGAC<C>
+|	BsaI	GAGACC
+|
+|	39	GAGACT
+|		GAGAC<G>
+|	BsmBI	GAGACG
+|
+|	45	GTTGAT
+|		GTTGA<C>
+|	HincII	GTYRAC
+|
+|	45	GTTGAT
+|		GTTGA<C>
+|	Hpy8I	GTNNAC
+|
+|	46	TTGA
+|		TT<A>A
+|	MseI	TTAA
+|
+|	46	TTGA
+|		T<C>GA
+|	TaqI	TCGA
+|
+|	47	TGATAA
+|		TGAT<C>A
+|	BclI	TGATCA
+|
+|	47	TGATAA
+|		T<T>ATAA
+|	PsiI	TTATAA
+|
+|	48	GATA
+|		GAT<C>
+|	MboI	GATC
+|
+|	49	ATAA
+|		<T>TAA
+|	MseI	TTAA
+|
+|	50	TAAGAC
+|		<G>AAGAC
+|	BbsI	GAAGAC
+|
+|	51	AAGACG
+|		<G>AGACG
+|	BsmBI	GAGACG
+|
+|	53	GACGTA
+|		GACGT<C>
+|	AatII	GACGTC
+|
+|	53	GACGTA
+|		GACGT<G>
+|	BmgBI	GACGTG
+|
+|	53	GACGTA
+|		<Y>ACGTA
+|	BsaAI	YACGTR
+|
+|	53	GACGTA
+|		<T>ACGTA
+|	SnaBI	TACGTA
+|
+|	53	GACGTA
+|		GACGT<C>
+|	ZraI	GACGTC
+|
+|
+END
+CASE diagnostic 17
+circular 1
+seq AGCCTGGGAGCGCAGCAAGGGCCTGTAAGCTGACCACGTGAAGGACTCTAAAGGAACCGTGGATGGTTGCGCATAAATA
+sel 21 74
+enz FspI XmnI PmlI AvrII
+mode selected
+mismatches 3
+sites AluI 28
+sites BsaAI 35
+sites FspI 68
+sites HaeIII 20
+sites HhaI 10 69
+sites HpyCH4IV 36
+sites PmlI 35
+out
+|DATE
+|TITLE 
+|From 21 to 73. 
+|Diagnostic Sites
+|
+|	22	CCTGTA
+|		C<A><C>GT<G>
+|	PmlI	CACGTG
+|
+|	22	CCTGTA
+|		CCT<A><G><G>
+|	AvrII	CCTAGG
+|
+|	24	TGTAAG
+|		<C><C>TA<G>G
+|	AvrII	CCTAGG
+|
+|	25	GTAAGCTGAC
+|		G<A>AAGCT<T><T>C
+|	XmnI	GAANNNNTTC
+|
+|	26	TAAGCT
+|		T<G><C>GC<A>
+|	FspI	TGCGCA
+|
+|	26	TAAGCTGACC
+|		<G>AAGCTG<T><T>C
+|	XmnI	GAANNNNTTC
+|
+|	27	AAGCTG
+|		<C>A<C><G>TG
+|	PmlI	CACGTG
+|
+|	28	AGCTGA
+|		<T>GC<G><C>A
+|	FspI	TGCGCA
+|
+|	31	TGACCA
+|		TG<C><G>CA
+|	FspI	TGCGCA
+|
+|	32	GACCACGTGA
+|		GA<A>CACGT<T><C>
+|	XmnI	GAANNNNTTC
+|
+|	33	ACCACG
+|		<C>C<T>A<G>G
+|	AvrII	CCTAGG
+|
+|	34	CCACGT
+|		CC<T><A>G<G>
+|	AvrII	CCTAGG
+|
+|	37	CGTGAA
+|		<T>G<C>G<C>A
+|	FspI	TGCGCA
+|
+|	39	TGAAGGACTC
+|		<G><A>AAGGA<T>TC
+|	XmnI	GAANNNNTTC
+|
+|	39	TGAAGG
+|		<C><C><T>AGG
+|	AvrII	CCTAGG
+|
+|	40	GAAGGACTCT
+|		GAAGGACT<T><C>
+|	XmnI	GAANNNNTTC
+|
+|	47	TCTAAA
+|		<C>CTA<G><G>
+|	AvrII	CCTAGG
+|
+|	48	CTAAAG
+|		C<C><T>A<G>G
+|	AvrII	CCTAGG
+|
+|	49	TAAAGGAACC
+|		<G>AAAGGA<T><T>C
+|	XmnI	GAANNNNTTC
+|
+|	49	TAAAGG
+|		<C><C><T>AGG
+|	AvrII	CCTAGG
+|
+|	53	GGAACCGTGG
+|		G<A>AACCGT<T><C>
+|	XmnI	GAANNNNTTC
+|
+|	54	GAACCGTGGA
+|		GAACCGT<T><T><C>
+|	XmnI	GAANNNNTTC
+|
+|	56	ACCGTG
+|		<C><A>CGTG
+|	PmlI	CACGTG
+|
+|	57	CCGTGG
+|		CC<T><A>GG
+|	AvrII	CCTAGG
+|
+|	58	CGTGGA
+|		<T>G<C>G<C>A
+|	FspI	TGCGCA
+|
+|	58	CGTGGA
+|		C<C>T<A>G<G>
+|	AvrII	CCTAGG
+|
+|	61	GGATGGTTGC
+|		G<A>ATGGTT<T>C
+|	XmnI	GAANNNNTTC
+|
+|
+END
+CASE diagnostic 18
+circular 0
+seq CACGTNAAGGCGAATAAGAGATCTGCCTCCCCTACTCGCGTAGGCCCTTCCGACGTCTCAGAGTACAGCTACAGCGCGAAGAGAGTCGACGTGTTGTCTTTTATAGGTCTATAGTG
+sel -
+enz XhoI BglII TatI DpnI
+mode selected
+mismatches 2
+sites AatII 52
+sites AluI 67
+sites BglII 19
+sites BmgBI 88
+sites BsmBI 54
+sites BstUI 37 75
+sites BstYI 19
+sites DpnI 20
+sites HaeIII 43
+sites HhaI 74
+sites HincII 85
+sites Hpy8I 85
+sites HpyCH4IV 2 53 89
+sites MboI 20
+sites RsaI 63
+sites SalI 85
+sites TaqI 86
+sites TatI 62
+sites ZraI 52
+out
+|DATE
+|TITLE 
+|From 0 to 115. 
+|Diagnostic Sites
+|
+|	17	AGAGAT
+|		AGA<T><C>T
+|	BglII	AGATCT
+|
+|	19	AGATCT
+|		AG<T><A>CT
+|	TatI	WGTACW
+|
+|	31	CCTACT
+|		<W><G>TACT
+|	TatI	WGTACW
+|
+|	35	CTCGCG
+|		CTCG<A>G
+|	XhoI	CTCGAG
+|
+|	53	ACGTCT
+|		A<G><A>TCT
+|	BglII	AGATCT
+|
+|	65	ACAGCT
+|		A<G>A<T>CT
+|	BglII	AGATCT
+|
+|	68	GCTACA
+|		<W><G>TACA
+|	TatI	WGTACW
+|
+|	69	CTACAG
+|		CT<C><G>AG
+|	XhoI	CTCGAG
+|
+|	75	CGCGAA
+|		C<T>CGA<G>
+|	XhoI	CTCGAG
+|
+|	84	AGTCGA
+|		AGT<A><C>A
+|	TatI	WGTACW
+|
+|	85	GTCGAC
+|		<C>TCGA<G>
+|	XhoI	CTCGAG
+|
+|	92	TGTTGT
+|		TGT<A><C>T
+|	TatI	WGTACW
+|
+|	95	TGTCTT
+|		TGT<A><C>T
+|	TatI	WGTACW
+|
+|	100	TTTATA
+|		T<G>TA<C>A
+|	TatI	WGTACW
+|
+|	105	AGGTCT
+|		AG<A>TCT
+|	BglII	AGATCT
+|
+|	105	AGGTCT
+|		AG<T><A>CT
+|	TatI	WGTACW
+|
+|	108	TCTATA
+|		T<G>TA<C>A
+|	TatI	WGTACW
+|
+|	109	CTATAG
+|		CT<C><G>AG
+|	XhoI	CTCGAG
+|
+|	110	TATAGT
+|		T<G>TA<C>T
+|	TatI	WGTACW
+|
+|
+END
+CASE diagnostic 19
+circular 0
+seq TGATTTGTTTCTGGATGTAGGGACGAAGGAATCACCACTACAAGTAGCAAGGCGCTGGGTGCCAATTAATCGTAAGATTCTTCGCAACACAGAGAAGTTAAGATTCTAGTGACACAGTCATCAC
+sel 47 80
+enz PvuI SwaI AclI AseI MscI
+mode selected
+mismatches 2
+sites AseI 65
+sites BfaI 106
+sites HaeII 51
+sites HhaI 52
+sites MluCI 64
+sites MseI 66 98
+out
+|DATE
+|TITLE 
+|From 47 to 79. 
+|Diagnostic Sites
+|
+|	53	CGCTGG
+|		CG<A>T<C>G
+|	PvuI	CGATCG
+|
+|	59	GTGCCA
+|		<T><G>GCCA
+|	MscI	TGGCCA
+|
+|	60	TGCCAA
+|		TG<G>C<C>A
+|	MscI	TGGCCA
+|
+|	67	TAATCG
+|		<C><G>ATCG
+|	PvuI	CGATCG
+|
+|	69	ATCGTA
+|		A<A>CGT<T>
+|	AclI	AACGTT
+|
+|	74	AAGATT
+|		AA<C><G>TT
+|	AclI	AACGTT
+|
+|
+END
+CASE diagnostic 20
+circular 1
+seq AGGTGAGTGGGCCCTCTAACCCGAGTTGAGCGGTCATGTTTGCGGTGTANCTGCTTCTGAGGGTCAATCTTATCAGGCTACTGTT
+sel 22 60
+enz ApaI AseI AvaI
+mode absent
+mismatches 1
+sites AciI 30 42
+sites ApaI 9
+sites AvaI 20
+sites BsrBI 28
+sites HaeIII 10
+sites NlaIII 35
+out
+|DATE
+|TITLE 
+|From 22 to 59. 
+|Diagnostic Sites
+|
+|	24	AGTT
+|		AG<C>T
+|	AluI	AGCT
+|
+|	24	AGTT
+|		A<A>TT
+|	MluCI	AATT
+|
+|	25	GTTGAG
+|		GTTGA<C>
+|	HincII	GTYRAC
+|
+|	25	GTTGAG
+|		GTTGA<C>
+|	Hpy8I	GTNNAC
+|
+|	26	TTGA
+|		TT<A>A
+|	MseI	TTAA
+|
+|	26	TTGA
+|		T<C>GA
+|	TaqI	TCGA
+|
+|	28	GAGC
+|		G<C>GC
+|	HhaI	GCGC
+|
+|	28	GAGC
+|		GA<T>C
+|	MboI	GATC
+|
+|	29	AGCGGT
+|		AGCG<C>T
+|	AfeI	AGCGCT
+|
+|	29	AGCGGT
+|		A<C>CGGT
+|	AgeI	ACCGGT
+|
+|	29	AGCG
+|		AGC<T>
+|	AluI	AGCT
+|
+|	29	AGCGGT
+|		A<C>CGGT
+|	BsaWI	WCCGGW
+|
+|	29	AGCG
+|		<C>GCG
+|	BstUI	CGCG
+|
+|	29	AGCGGT
+|		AGCG<C>T
+|	HaeII	RGCGCY
+|
+|	30	GCGGTC
+|		GCGG<G>C
+|	Cac8I	GCNNGC
+|
+|	30	GCGG
+|		GCG<C>
+|	HhaI	GCGC
+|
+|	30	GCGG
+|		<C>CGG
+|	HpaII	CCGG
+|
+|	32	GGTC
+|		G<A>TC
+|	MboI	GATC
+|
+|	34	TCATGT
+|		TCATG<A>
+|	BspHI	TCATGA
+|
+|	34	TCATGT
+|		<R>CATGT
+|	NspI	RCATGY
+|
+|	34	TCATGT
+|		<A>CATGT
+|	PciI	ACATGT
+|
+|	36	ATGT
+|		A<C>GT
+|	HpyCH4IV	ACGT
+|
+|	38	GTTTGC
+|		G<C>TTGC
+|	Cac8I	GCNNGC
+|
+|	38	GTTTGC
+|		GTTT<A>C
+|	Hpy8I	GTNNAC
+|
+|	41	TGCGGT
+|		T<C>CGGT
+|	BsaWI	WCCGGW
+|
+|	41	TGCG
+|		<C>GCG
+|	BstUI	CGCG
+|
+|	41	TGCG
+|		TGC<A>
+|	HpyCH4V	TGCA
+|
+|	42	GCGG
+|		GCG<C>
+|	HhaI	GCGC
+|
+|	42	GCGG
+|		<C>CGG
+|	HpaII	CCGG
+|
+|	45	GTGTAN
+|		GTGTA<C>
+|	Hpy8I	GTNNAC
+|
+|	46	TGTA
+|		TG<C>A
+|	HpyCH4V	TGCA
+|
+|	47	GTAN
+|		GTA<C>
+|	RsaI	GTAC
+|
+|	49	ANCT
+|		A<G>CT
+|	AluI	AGCT
+|
+|	52	TGCT
+|		<A>GCT
+|	AluI	AGCT
+|
+|	52	TGCT
+|		TGC<A>
+|	HpyCH4V	TGCA
+|
+|
+END
+CASE diagnostic 21
+circular 0
+seq TGTCCCGGTTTAAGCAGGTTGGTACCCGGCCGGAGCATCTAGACTGGGAACAACGCAACACGTTCTTGGAAGTTCCAGGTCGATCACAAGCTACTCG
+sel -
+enz KpnI EagI HpyCH4IV TatI
+mode selected
+mismatches 1
+sites Acc65I 21
+sites AluI 89
+sites BfaI 39
+sites DpnI 82
+sites EagI 27
+sites HaeIII 28
+sites HpaII 5 26 30
+sites HpyCH4IV 60
+sites KpnI 21
+sites MboI 82
+sites MseI 10
+sites RsaI 22
+sites TaqI 80
+sites XbaI 38
+out
+|DATE
+|TITLE 
+|From 0 to 96. 
+|Diagnostic Sites
+|
+|	16	AGGT
+|		A<C>GT
+|	HpyCH4IV	ACGT
+|
+|	53	ACGC
+|		ACG<T>
+|	HpyCH4IV	ACGT
+|
+|	70	AAGT
+|		A<C>GT
+|	HpyCH4IV	ACGT
+|
+|	77	AGGT
+|		A<C>GT
+|	HpyCH4IV	ACGT
+|
+|
+END
+CASE diagnostic 22
+circular 1
+seq TCTTGCCGGCTTCCCTGCGTTGTTGCTCGCGAATTTAGAACTCCTTCGAAGAAGCCGAGACGGTCAAGACTATTCCATTAGCTCCAACGAAGGGAAAGTCTCGGAGGTATTGTTCCTTTAGGTCCTGAACGATGCAGCGGTATATCGCAGGTGTAGTGTGATTCATC
+sel -
+enz BsaWI XmaI BstBI ApoI
+mode selected
+mismatches 1
+sites AciI 137
+sites AluI 80
+sites ApoI 31
+sites BsmBI 57
+sites BstBI 45
+sites BstUI 28
+sites Cac8I 5 25
+sites HpaII 6
+sites HpyCH4V 133
+sites MluCI 32
+sites NaeI 5
+sites NgoMIV 5
+sites NruI 27
+sites PaqCI 147
+sites TaqI 46
+sites XmnI 38
+out
+|DATE
+|TITLE 
+|From 0 to 166. 
+|Diagnostic Sites
+|
+|	35	TTAGAA
+|		TT<C>GAA
+|	BstBI	TTCGAA
+|
+|	38	GAACTC
+|		GAA<T>TC
+|	ApoI	RAATTY
+|
+|	95	AAAGTC
+|		AAA<T>TC
+|	ApoI	RAATTY
+|
+|	123	TCCTGA
+|		TCC<G>GA
+|	BsaWI	WCCGGW
+|
+|	136	AGCGGT
+|		A<C>CGGT
+|	BsaWI	WCCGGW
+|
+|
+END
+CASE diagnostic 23
+circular 0
+seq CAATACCTTCTATAACGAACTATGTCAATTAATCGGTACACTTTGCTATGAGTAGTTCAATCAGTGGGTGTCGCCTAATTTACGTTAGTTTCGCTTGCAGTAATACCCTGGCATCATGAGCCTATTTACTGCGGCTAGGGGACAAGCTCAAACGCTATCTTTG
+sel -
+enz AseI SbfI AvrII BspHI BsiWI
+mode selected
+mismatches 2
+sites AciI 131
+sites AluI 145
+sites AseI 28
+sites BfaI 135
+sites BspHI 114
+sites Cac8I 93
+sites Hpy8I 36
+sites HpyCH4IV 82
+sites HpyCH4V 96
+sites MluCI 27 77
+sites MseI 29
+sites NlaIII 115
+sites RsaI 36
+out
+|DATE
+|TITLE 
+|From 0 to 162. 
+|Diagnostic Sites
+|
+|	13	TAACGA
+|		T<C>A<T>GA
+|	BspHI	TCATGA
+|
+|	16	CGAACT
+|		CG<T>AC<G>
+|	BsiWI	CGTACG
+|
+|	19	ACTATG
+|		<C>CTA<G>G
+|	AvrII	CCTAGG
+|
+|	24	GTCAAT
+|		<A>T<T>AAT
+|	AseI	ATTAAT
+|
+|	35	GGTACA
+|		<C>GTAC<G>
+|	BsiWI	CGTACG
+|
+|	45	GCTATG
+|		<C>CTA<G>G
+|	AvrII	CCTAGG
+|
+|	46	CTATGA
+|		<T><C>ATGA
+|	BspHI	TCATGA
+|
+|	48	ATGAGT
+|		AT<T>A<A>T
+|	AseI	ATTAAT
+|
+|	51	AGTAGT
+|		A<T>TA<A>T
+|	AseI	ATTAAT
+|
+|	56	TTCAAT
+|		<A>T<T>AAT
+|	AseI	ATTAAT
+|
+|	60	ATCAGT
+|		AT<T>A<A>T
+|	AseI	ATTAAT
+|
+|	74	CCTAAT
+|		<A><T>TAAT
+|	AseI	ATTAAT
+|
+|	74	CCTAAT
+|		CCTA<G><G>
+|	AvrII	CCTAGG
+|
+|	78	ATTTAC
+|		ATT<A>A<T>
+|	AseI	ATTAAT
+|
+|	79	TTTACG
+|		<C><G>TACG
+|	BsiWI	CGTACG
+|
+|	83	CGTTAG
+|		CGT<A><C>G
+|	BsiWI	CGTACG
+|
+|	84	GTTAGT
+|		<A>TTA<A>T
+|	AseI	ATTAAT
+|
+|	94	CTTGCAGT
+|		C<C>TGCAG<G>
+|	SbfI	CCTGCAGG
+|
+|	99	AGTAAT
+|		A<T>TAAT
+|	AseI	ATTAAT
+|
+|	106	CCCTGG
+|		CC<T><A>GG
+|	AvrII	CCTAGG
+|
+|	107	CCTGGC
+|		CCT<A>G<G>
+|	AvrII	CCTAGG
+|
+|	111	GCATCA
+|		<T>CAT<G>A
+|	BspHI	TCATGA
+|
+|	121	CCTATT
+|		CCTA<G><G>
+|	AvrII	CCTAGG
+|
+|	124	ATTTAC
+|		ATT<A>A<T>
+|	AseI	ATTAAT
+|
+|	125	TTTACT
+|		<A>TTA<A>T
+|	AseI	ATTAAT
+|
+|	134	GCTAGG
+|		<C>CTAGG
+|	AvrII	CCTAGG
+|
+|	149	CAAACG
+|		C<G><T>ACG
+|	BsiWI	CGTACG
+|
+|
+END
+CASE diagnostic 24
+circular 0
+seq CAACCAAACCCCTTCCAGTACCCGTTCGACAGGATTGCTACTCTAAACGCCCTCCTCGATCCTTGTGGAGCCTAAC
+sel -
+enz Acc65I NdeI TaqI PacI
+mode absent
+mismatches 1
+sites DpnI 58
+sites MboI 58
+sites RsaI 18
+sites TaqI 26 56
+out
+|DATE
+|TITLE 
+|From 0 to 75. 
+|Diagnostic Sites
+|
+|	6	AAACCCCTTC
+|		<G>AACCCCTTC
+|	XmnI	GAANNNNTTC
+|
+|	9	CCCC
+|		CC<G>C
+|	AciI	CCGC
+|
+|	14	TCCAGT
+|		TCC<G>GT
+|	BsaWI	WCCGGW
+|
+|	14	TCCA
+|		T<G>CA
+|	HpyCH4V	TGCA
+|
+|	15	CCAG
+|		C<T>AG
+|	BfaI	CTAG
+|
+|	15	CCAG
+|		CC<G>G
+|	HpaII	CCGG
+|
+|	17	AGTACC
+|		<G>GTACC
+|	Acc65I	GGTACC
+|
+|	17	AGTACC
+|		<G>GTACC
+|	KpnI	GGTACC
+|
+|	17	AGTACC
+|		AGTAC<T>
+|	ScaI	AGTACT
+|
+|	17	AGTACC
+|		AGTAC<W>
+|	TatI	WGTACW
+|
+|	18	GTACCC
+|		GTAC<A>C
+|	Hpy8I	GTNNAC
+|
+|	18	GTACCCGTTC
+|		G<A>ACCCGTTC
+|	XmnI	GAANNNNTTC
+|
+|	20	ACCCGT
+|		ACC<G>GT
+|	AgeI	ACCGGT
+|
+|	20	ACCCGT
+|		ACC<G>GT
+|	BsaWI	WCCGGW
+|
+|	20	ACCCGT
+|		AC<G>CGT
+|	MluI	ACGCGT
+|
+|	21	CCCG
+|		C<G>CG
+|	BstUI	CGCG
+|
+|	21	CCCG
+|		CC<G>G
+|	HpaII	CCGG
+|
+|	22	CCGT
+|		CCG<C>
+|	AciI	CCGC
+|
+|	22	CCGTTC
+|		CCG<C>TC
+|	BsrBI	CCGCTC
+|
+|	22	CCGT
+|		CCG<G>
+|	HpaII	CCGG
+|
+|	22	CCGT
+|		<A>CGT
+|	HpyCH4IV	ACGT
+|
+|	23	CGTTCG
+|		CGT<A>CG
+|	BsiWI	CGTACG
+|
+|	23	CGTTCG
+|		CG<A>TCG
+|	PvuI	CGATCG
+|
+|	25	TTCGAC
+|		TTCGA<A>
+|	BstBI	TTCGAA
+|
+|	25	TTCGAC
+|		<G>TCGAC
+|	HincII	GTYRAC
+|
+|	25	TTCGAC
+|		<G>TCGAC
+|	Hpy8I	GTNNAC
+|
+|	25	TTCGAC
+|		<G>TCGAC
+|	SalI	GTCGAC
+|
+|	29	ACAGGA
+|		AC<C>GGA
+|	BsaWI	WCCGGW
+|
+|	30	CAGG
+|		C<C>GG
+|	HpaII	CCGG
+|
+|	30	CAGG
+|		CA<T>G
+|	NlaIII	CATG
+|
+|	33	GATTGC
+|		G<C>TTGC
+|	Cac8I	GCNNGC
+|
+|	33	GATT
+|		<A>ATT
+|	MluCI	AATT
+|
+|	36	TGCT
+|		<A>GCT
+|	AluI	AGCT
+|
+|	36	TGCT
+|		TGC<A>
+|	HpyCH4V	TGCA
+|
+|	38	CTAC
+|		CTA<G>
+|	BfaI	CTAG
+|
+|	42	TCTAAA
+|		T<T>TAAA
+|	DraI	TTTAAA
+|
+|	42	TCTAAA
+|		TCTA<G>A
+|	XbaI	TCTAGA
+|
+|	43	CTAA
+|		CTA<G>
+|	BfaI	CTAG
+|
+|	43	CTAAAC
+|		<G>TAAAC
+|	Hpy8I	GTNNAC
+|
+|	43	CTAA
+|		<T>TAA
+|	MseI	TTAA
+|
+|	44	TAAA
+|		T<T>AA
+|	MseI	TTAA
+|
+|	46	AACGCC
+|		A<G>CGCC
+|	HaeII	RGCGCY
+|
+|	47	ACGC
+|		<C>CGC
+|	AciI	CCGC
+|
+|	47	ACGC
+|		<G>CGC
+|	HhaI	GCGC
+|
+|	47	ACGC
+|		ACG<T>
+|	HpyCH4IV	ACGT
+|
+|	48	CGCC
+|		CGC<G>
+|	BstUI	CGCG
+|
+|	48	CGCC
+|		<G>GCC
+|	HaeIII	GGCC
+|
+|	49	GCCCTC
+|		GCCC<G>C
+|	Cac8I	GCNNGC
+|
+|	49	GCCC
+|		G<G>CC
+|	HaeIII	GGCC
+|
+|	49	GCCC
+|		GC<G>C
+|	HhaI	GCGC
+|
+|	51	CCTC
+|		CC<G>C
+|	AciI	CCGC
+|
+|	54	CCTC
+|		CC<G>C
+|	AciI	CCGC
+|
+|	54	CCTCGATCCTTGTGG
+|		CC<A>CGATCCTTGTGG
+|	XcmI	CCANNNNNNNNNTGG
+|
+|	55	CTCGAT
+|		CTCGA<G>
+|	AvaI	CYCGRG
+|
+|	55	CTCG
+|		CT<A>G
+|	BfaI	CTAG
+|
+|	55	CTCG
+|		C<G>CG
+|	BstUI	CGCG
+|
+|	55	CTCGAT
+|		<A>TCGAT
+|	ClaI	ATCGAT
+|
+|	55	CTCGAT
+|		CTCGA<G>
+|	XhoI	CTCGAG
+|
+|	57	CGATCC
+|		<G>GATCC
+|	BamHI	GGATCC
+|
+|	57	CGATCC
+|		<R>GATCC
+|	BstYI	RGATCY
+|
+|	57	CGATCC
+|		CGATC<G>
+|	PvuI	CGATCG
+|
+|	62	CTTG
+|		CT<A>G
+|	BfaI	CTAG
+|
+|	62	CTTGTG
+|		CT<C>GTG
+|	BssSI	CTCGTG
+|
+|	62	CTTG
+|		C<A>TG
+|	NlaIII	CATG
+|
+|	65	GTGG
+|		G<C>GG
+|	AciI	GCGG
+|
+|	65	GTGGAG
+|		GTGGA<C>
+|	Hpy8I	GTNNAC
+|
+|	66	TGGA
+|		TG<C>A
+|	HpyCH4V	TGCA
+|
+|	67	GGAGCC
+|		GGA<T>CC
+|	BamHI	GGATCC
+|
+|	67	GGAGCC
+|		GGA<T>CC
+|	BstYI	RGATCY
+|
+|	67	GGAGCC
+|		GG<C>GCC
+|	HaeII	RGCGCY
+|
+|	67	GGAGCC
+|		GG<C>GCC
+|	KasI	GGCGCC
+|
+|	67	GGAGCC
+|		GG<C>GCC
+|	NarI	GGCGCC
+|
+|	67	GGAGCC
+|		GG<C>GCC
+|	SfoI	GGCGCC
+|
+|	68	GAGC
+|		G<C>GC
+|	HhaI	GCGC
+|
+|	69	AGCC
+|		AGC<T>
+|	AluI	AGCT
+|
+|	69	AGCC
+|		<G>GCC
+|	HaeIII	GGCC
+|
+|	72	CTAA
+|		CTA<G>
+|	BfaI	CTAG
+|
+|	72	CTAA
+|		<T>TAA
+|	MseI	TTAA
+|
+|
+END
+CASE diagnostic 25
+circular 0
+seq CTCACGTCGTACGATCCCCGCATAGACTTTTCTACATGAAAGTTGACAAATCGAATTCCAGAAATTACTACGTATGCCCGATCTGACCCGATT
+sel 9 22
+enz PmlI BmgBI NgoMIV
+mode selected
+mismatches 3
+sites AciI 18
+sites ApoI 53
+sites BmgBI 3
+sites BsaAI 69
+sites BsiWI 8
+sites DpnI 13 80
+sites EcoRI 53
+sites HincII 42
+sites Hpy8I 42
+sites HpyCH4IV 4 70
+sites MboI 13 80
+sites MluCI 54 63
+sites NlaIII 35
+sites RsaI 9
+sites SnaBI 69
+sites TaqI 51
+out
+|DATE
+|TITLE 
+|From 9 to 21. 
+|Diagnostic Sites
+|
+|	10	TACGAT
+|		<C>ACG<T><G>
+|	PmlI	CACGTG
+|
+|	10	TACGAT
+|		<C>ACG<T><C>
+|	BmgBI	CACGTC
+|
+|	10	TACGAT
+|		<G>ACG<T><G>
+|	BmgBI	GACGTG
+|
+|	16	CCCCGC
+|		C<A>C<G><T>C
+|	BmgBI	CACGTC
+|
+|	16	CCCCGC
+|		<G>CC<G>GC
+|	NgoMIV	GCCGGC
+|
+|	17	CCCGCA
+|		C<A>CG<T><G>
+|	PmlI	CACGTG
+|
+|	17	CCCGCA
+|		C<A>CG<T><C>
+|	BmgBI	CACGTC
+|
+|	17	CCCGCA
+|		<G>CCG<G><C>
+|	NgoMIV	GCCGGC
+|
+|
+END
+CASE diagnostic 26
+circular 0
+seq GGCCGTCAGATCAATGCTTTGACGCCGGTCGGCTAACATATTCCCTTGAAGCCTTTAGAGTGAACATGCCTCCAGG
+sel -
+enz PshAI MboI
+mode selected
+mismatches 3
+sites DpnI 9
+sites HaeIII 1
+sites HpaII 25
+sites Hpy8I 60
+sites MboI 9
+sites NlaIII 65
+sites NspI 64
+sites PshAI 21
+out
+|DATE
+|TITLE 
+|From 0 to 75. 
+|Diagnostic Sites
+|
+|	1	GGCC
+|		G<A><T>C
+|	MboI	GATC
+|
+|	2	GCCGTCAGAT
+|		G<A>CGTCAG<T><C>
+|	PshAI	GACNNNNGTC
+|
+|	2	GCCG
+|		G<A><T><C>
+|	MboI	GATC
+|
+|	4	CGTC
+|		<G><A>TC
+|	MboI	GATC
+|
+|	5	GTCA
+|		G<A><T><C>
+|	MboI	GATC
+|
+|	7	CAGA
+|		<G>A<T><C>
+|	MboI	GATC
+|
+|	9	GATCAATGCT
+|		GA<C>CAATG<T><C>
+|	PshAI	GACNNNNGTC
+|
+|	12	CAAT
+|		<G>A<T><C>
+|	MboI	GATC
+|
+|	13	AATG
+|		<G>AT<C>
+|	MboI	GATC
+|
+|	14	ATGC
+|		<G><A><T>C
+|	MboI	GATC
+|
+|	16	GCTT
+|		G<A>T<C>
+|	MboI	GATC
+|
+|	17	CTTT
+|		<G><A>T<C>
+|	MboI	GATC
+|
+|	18	TTTG
+|		<G><A>T<C>
+|	MboI	GATC
+|
+|	20	TGAC
+|		<G><A><T>C
+|	MboI	GATC
+|
+|	21	GACG
+|		GA<T><C>
+|	MboI	GATC
+|
+|	22	ACGC
+|		<G><A><T>C
+|	MboI	GATC
+|
+|	23	CGCC
+|		<G><A><T>C
+|	MboI	GATC
+|
+|	24	GCCGGTCGGC
+|		G<A>CGGTCG<T>C
+|	PshAI	GACNNNNGTC
+|
+|	24	GCCG
+|		G<A><T><C>
+|	MboI	GATC
+|
+|	27	GGTC
+|		G<A>TC
+|	MboI	GATC
+|
+|	28	GTCGGCTAAC
+|		G<A>CGGCT<G><T>C
+|	PshAI	GACNNNNGTC
+|
+|	28	GTCG
+|		G<A><T><C>
+|	MboI	GATC
+|
+|	30	CGGC
+|		<G><A><T>C
+|	MboI	GATC
+|
+|	31	GGCTAACATA
+|		G<A>CTAAC<G>T<C>
+|	PshAI	GACNNNNGTC
+|
+|	31	GGCT
+|		G<A><T><C>
+|	MboI	GATC
+|
+|	32	GCTA
+|		G<A>T<C>
+|	MboI	GATC
+|
+|	34	TAACATATTC
+|		<G>A<C>CATA<G>TC
+|	PshAI	GACNNNNGTC
+|
+|	34	TAAC
+|		<G>A<T>C
+|	MboI	GATC
+|
+|	35	AACATATTCC
+|		<G>ACATAT<G><T>C
+|	PshAI	GACNNNNGTC
+|
+|	35	AACA
+|		<G>A<T><C>
+|	MboI	GATC
+|
+|	37	CATA
+|		<G>AT<C>
+|	MboI	GATC
+|
+|	39	TATT
+|		<G>AT<C>
+|	MboI	GATC
+|
+|	40	ATTC
+|		<G><A>TC
+|	MboI	GATC
+|
+|	41	TTCC
+|		<G><A><T>C
+|	MboI	GATC
+|
+|	42	TCCC
+|		<G><A><T>C
+|	MboI	GATC
+|
+|	44	CCTT
+|		<G><A>T<C>
+|	MboI	GATC
+|
+|	45	CTTG
+|		<G><A>T<C>
+|	MboI	GATC
+|
+|	48	GAAGCCTTTA
+|		GA<C>GCCT<G>T<C>
+|	PshAI	GACNNNNGTC
+|
+|	48	GAAG
+|		GA<T><C>
+|	MboI	GATC
+|
+|	49	AAGC
+|		<G>A<T>C
+|	MboI	GATC
+|
+|	50	AGCC
+|		<G><A><T>C
+|	MboI	GATC
+|
+|	51	GCCTTTAGAG
+|		G<A>CTTTAG<T><C>
+|	PshAI	GACNNNNGTC
+|
+|	51	GCCT
+|		G<A><T><C>
+|	MboI	GATC
+|
+|	52	CCTT
+|		<G><A>T<C>
+|	MboI	GATC
+|
+|	53	CTTT
+|		<G><A>T<C>
+|	MboI	GATC
+|
+|	54	TTTA
+|		<G><A>T<C>
+|	MboI	GATC
+|
+|	56	TAGA
+|		<G>A<T><C>
+|	MboI	GATC
+|
+|	58	GAGT
+|		GA<T><C>
+|	MboI	GATC
+|
+|	59	AGTG
+|		<G><A>T<C>
+|	MboI	GATC
+|
+|	60	GTGA
+|		G<A><T><C>
+|	MboI	GATC
+|
+|	62	GAAC
+|		GA<T>C
+|	MboI	GATC
+|
+|	63	AACATGCCTC
+|		<G>ACATGC<G>TC
+|	PshAI	GACNNNNGTC
+|
+|	63	AACA
+|		<G>A<T><C>
+|	MboI	GATC
+|
+|	65	CATG
+|		<G>AT<C>
+|	MboI	GATC
+|
+|	66	ATGC
+|		<G><A><T>C
+|	MboI	GATC
+|
+|	67	TGCC
+|		<G><A><T>C
+|	MboI	GATC
+|
+|	68	GCCT
+|		G<A><T><C>
+|	MboI	GATC
+|
+|	69	CCTC
+|		<G><A>TC
+|	MboI	GATC
+|
+|	70	CTCC
+|		<G><A><T>C
+|	MboI	GATC
+|
+|	73	CAGG
+|		<G>A<T><C>
+|	MboI	GATC
+|
+|
+END
+CASE diagnostic 27
+circular 0
+seq GTTAACCGCCTGGATCATGCAGGATAGAGCTACTTTTGGTAGAGCGACAAAGTAGATCTCAAAAGGCTTAGGCCTCAAATCTCCCCCTACTGGTCTCATTGAGTCTGTTGCTGGAGGACCAGGTCGGTACGGTGG
+sel -
+enz StuI ApaLI MseI
+mode selected
+mismatches 2
+sites AciI 6
+sites AluI 28
+sites BglII 54
+sites BsaI 92
+sites BstYI 54
+sites DpnI 13 55
+sites HaeIII 71
+sites HincII 1
+sites HpaI 1
+sites Hpy8I 1
+sites HpyCH4V 18
+sites MboI 13 55
+sites MseI 2
+sites NlaIII 16
+sites RsaI 127
+sites StuI 70
+out
+|DATE
+|TITLE 
+|From 0 to 134. 
+|Diagnostic Sites
+|
+|	1	GTTAAC
+|		GT<G><C>AC
+|	ApaLI	GTGCAC
+|
+|	1	GTTA
+|		<T>T<A>A
+|	MseI	TTAA
+|
+|	3	TAAC
+|		T<T>A<A>
+|	MseI	TTAA
+|
+|	6	CCGCCT
+|		<A><G>GCCT
+|	StuI	AGGCCT
+|
+|	11	TGGA
+|		T<T><A>A
+|	MseI	TTAA
+|
+|	14	ATCA
+|		<T>T<A>A
+|	MseI	TTAA
+|
+|	15	TCAT
+|		T<T>A<A>
+|	MseI	TTAA
+|
+|	17	ATGCAG
+|		<G>TGCA<C>
+|	ApaLI	GTGCAC
+|
+|	18	TGCA
+|		T<T><A>A
+|	MseI	TTAA
+|
+|	24	ATAG
+|		<T>TA<A>
+|	MseI	TTAA
+|
+|	25	TAGA
+|		T<T><A>A
+|	MseI	TTAA
+|
+|	26	AGAGCT
+|		AG<G><C>CT
+|	StuI	AGGCCT
+|
+|	30	CTAC
+|		<T>TA<A>
+|	MseI	TTAA
+|
+|	34	TTTT
+|		TT<A><A>
+|	MseI	TTAA
+|
+|	35	TTTG
+|		TT<A><A>
+|	MseI	TTAA
+|
+|	36	TTGG
+|		TT<A><A>
+|	MseI	TTAA
+|
+|	39	GTAG
+|		<T>TA<A>
+|	MseI	TTAA
+|
+|	40	TAGA
+|		T<T><A>A
+|	MseI	TTAA
+|
+|	47	ACAA
+|		<T><T>AA
+|	MseI	TTAA
+|
+|	48	CAAA
+|		<T><T>AA
+|	MseI	TTAA
+|
+|	52	GTAG
+|		<T>TA<A>
+|	MseI	TTAA
+|
+|	53	TAGA
+|		T<T><A>A
+|	MseI	TTAA
+|
+|	54	AGATCT
+|		AG<G><C>CT
+|	StuI	AGGCCT
+|
+|	58	CTCA
+|		<T>T<A>A
+|	MseI	TTAA
+|
+|	59	TCAA
+|		T<T>AA
+|	MseI	TTAA
+|
+|	60	CAAA
+|		<T><T>AA
+|	MseI	TTAA
+|
+|	61	AAAA
+|		<T><T>AA
+|	MseI	TTAA
+|
+|	63	AAGGCT
+|		A<G>G<C>CT
+|	StuI	AGGCCT
+|
+|	64	AGGCTT
+|		AGGC<C>T
+|	StuI	AGGCCT
+|
+|	67	CTTA
+|		<T>T<A>A
+|	MseI	TTAA
+|
+|	68	TTAG
+|		TTA<A>
+|	MseI	TTAA
+|
+|	74	CTCA
+|		<T>T<A>A
+|	MseI	TTAA
+|
+|	75	TCAA
+|		T<T>AA
+|	MseI	TTAA
+|
+|	76	CAAA
+|		<T><T>AA
+|	MseI	TTAA
+|
+|	87	CTAC
+|		<T>TA<A>
+|	MseI	TTAA
+|
+|	91	TGGTCT
+|		<A>GG<C>CT
+|	StuI	AGGCCT
+|
+|	95	CTCA
+|		<T>T<A>A
+|	MseI	TTAA
+|
+|	96	TCAT
+|		T<T>A<A>
+|	MseI	TTAA
+|
+|	99	TTGA
+|		TT<A>A
+|	MseI	TTAA
+|
+|	100	TGAG
+|		T<T>A<A>
+|	MseI	TTAA
+|
+|	108	TTGC
+|		TT<A><A>
+|	MseI	TTAA
+|
+|	112	TGGA
+|		T<T><A>A
+|	MseI	TTAA
+|
+|	114	GAGGAC
+|		G<T>G<C>AC
+|	ApaLI	GTGCAC
+|
+|	115	AGGACC
+|		AGG<C>C<T>
+|	StuI	AGGCCT
+|
+|	121	AGGTCG
+|		AGG<C>C<T>
+|	StuI	AGGCCT
+|
+|	127	GTAC
+|		<T>TA<A>
+|	MseI	TTAA
+|
+|
+END
+CASE diagnostic 28
+circular 1
+seq CCAAGCCTACCGTCATTGCCACAGACTAGGACGTCTGTGAATAtatgcggtgagttcgttcttgCATCTAAATCC
+sel 9 69
+enz SgrAI NlaIII
+mode absent
+mismatches 1
+sites AatII 30
+sites AciI 47
+sites BfaI 26
+sites HpyCH4IV 31
+sites HpyCH4V 63
+sites ZraI 30
+out
+|DATE
+|TITLE 
+|From 9 to 68. 
+|Diagnostic Sites
+|
+|	10	CCGT
+|		CCG<G>
+|	HpaII	CCGG
+|
+|	14	CATT
+|		<A>ATT
+|	MluCI	AATT
+|
+|	14	CATT
+|		CAT<G>
+|	NlaIII	CATG
+|
+|	16	TTGCCA
+|		T<G>GCCA
+|	MscI	TGGCCA
+|
+|	17	TGCC
+|		<G>GCC
+|	HaeIII	GGCC
+|
+|	25	ACTAGG
+|		<C>CTAGG
+|	AvrII	CCTAGG
+|
+|	25	ACTAGG
+|		ACTAG<T>
+|	SpeI	ACTAGT
+|
+|	29	GGAC
+|		GG<C>C
+|	HaeIII	GGCC
+|
+|	29	GGAC
+|		G<T>AC
+|	RsaI	GTAC
+|
+|	30	GACGTC
+|		<C>ACGTC
+|	BmgBI	CACGTC
+|
+|	30	GACGTC
+|		GACGT<G>
+|	BmgBI	GACGTG
+|
+|	30	GACGTCTGTG
+|		GACGTCTGT<C>
+|	PshAI	GACNNNNGTC
+|
+|	32	CGTCTG
+|		CGTCT<C>
+|	BsmBI	CGTCTC
+|
+|	37	GTGAAT
+|		GTGAA<C>
+|	Hpy8I	GTNNAC
+|
+|	38	TGAA
+|		T<T>AA
+|	MseI	TTAA
+|
+|	39	GAATAt
+|		GAAT<T>t
+|	ApoI	RAATTY
+|
+|	39	GAATAtatgc
+|		GAATAtat<T>c
+|	XmnI	GAANNNNTTC
+|
+|	40	AATA
+|		AAT<T>
+|	MluCI	AATT
+|
+|	40	AATAta
+|		AATAt<T>
+|	SspI	AATATT
+|
+|	42	TAtatg
+|		<C>Atatg
+|	NdeI	CATATG
+|
+|	43	Atatgc
+|		A<C>atgc
+|	NspI	RCATGY
+|
+|	44	tatg
+|		<C>atg
+|	NlaIII	CATG
+|
+|	46	tgcggt
+|		t<C>cggt
+|	BsaWI	WCCGGW
+|
+|	46	tgcg
+|		<C>gcg
+|	BstUI	CGCG
+|
+|	47	gcgg
+|		gcg<C>
+|	HhaI	GCGC
+|
+|	47	gcgg
+|		<C>cgg
+|	HpaII	CCGG
+|
+|	52	gagttc
+|		ga<A>ttc
+|	ApoI	RAATTY
+|
+|	52	gagttc
+|		ga<A>ttc
+|	EcoRI	GAATTC
+|
+|	52	gagttc
+|		gag<C>tc
+|	SacI	GAGCTC
+|
+|	52	gagttcgttc
+|		ga<A>ttcgttc
+|	XmnI	GAANNNNTTC
+|
+|	53	agtt
+|		ag<C>t
+|	AluI	AGCT
+|
+|	53	agtt
+|		a<A>tt
+|	MluCI	AATT
+|
+|	54	gttc
+|		g<A>tc
+|	MboI	GATC
+|
+|	54	gttc
+|		gt<A>c
+|	RsaI	GTAC
+|
+|	56	tcgt
+|		tcg<A>
+|	TaqI	TCGA
+|
+|	58	gttc
+|		g<A>tc
+|	MboI	GATC
+|
+|	58	gttc
+|		gt<A>c
+|	RsaI	GTAC
+|
+|	60	tcttgC
+|		<G>cttgC
+|	Cac8I	GCNNGC
+|
+|	61	cttg
+|		c<A>tg
+|	NlaIII	CATG
+|
+|	62	ttgCAT
+|		<A>tgCAT
+|	NsiI	ATGCAT
+|
+|	64	gCATCT
+|		g<G>ATCT
+|	BstYI	RGATCY
+|
+|	64	gCATCT
+|		gCAT<G>T
+|	NspI	RCATGY
+|
+|	65	CATC
+|		<G>ATC
+|	MboI	GATC
+|
+|	65	CATC
+|		CAT<G>
+|	NlaIII	CATG
+|
+|	66	ATCT
+|		A<G>CT
+|	AluI	AGCT
+|
+|
+END
+CASE diagnostic 29
+circular 1
+seq TAGGCTTGCAGAACCGGCATTAACACTTGGGTTGAGTTCGGCTCCTACTGAAGAATATCGACGATGCCGTGGCGCCAGGCTCTCTGAAACGATGGGACTGCGACCGCACTCGCTAT
+sel 34 90
+enz SfoI AflII HpyCH4V PaqCI
+mode selected
+mismatches 2
+sites AciI 104
+sites Cac8I 4
+sites HaeII 71
+sites HhaI 72
+sites HpaII 14
+sites HpyCH4V 7
+sites KasI 71
+sites MseI 20
+sites NarI 71
+sites SfoI 71
+sites TaqI 58
+out
+|DATE
+|TITLE 
+|From 34 to 89. 
+|Diagnostic Sites
+|
+|	37	TTCG
+|		T<G>C<A>
+|	HpyCH4V	TGCA
+|
+|	40	GGCTCC
+|		GGC<G>CC
+|	SfoI	GGCGCC
+|
+|	40	GGCT
+|		<T>GC<A>
+|	HpyCH4V	TGCA
+|
+|	42	CTCCTAC
+|		C<A>CCT<G>C
+|	PaqCI	CACCTGC
+|
+|	43	TCCT
+|		T<G>C<A>
+|	HpyCH4V	TGCA
+|
+|	46	TACT
+|		T<G>C<A>
+|	HpyCH4V	TGCA
+|
+|	48	CTGAAG
+|		CT<T>AAG
+|	AflII	CTTAAG
+|
+|	49	TGAA
+|		TG<C>A
+|	HpyCH4V	TGCA
+|
+|	52	AGAA
+|		<T>G<C>A
+|	HpyCH4V	TGCA
+|
+|	58	TCGA
+|		T<G><C>A
+|	HpyCH4V	TGCA
+|
+|	63	GATGCC
+|		G<G><C>GCC
+|	SfoI	GGCGCC
+|
+|	65	TGCC
+|		TGC<A>
+|	HpyCH4V	TGCA
+|
+|	70	TGGC
+|		TG<C><A>
+|	HpyCH4V	TGCA
+|
+|	71	GGCG
+|		<T>GC<A>
+|	HpyCH4V	TGCA
+|
+|	73	CGCC
+|		<T>GC<A>
+|	HpyCH4V	TGCA
+|
+|	74	GCCA
+|		<T><G>CA
+|	HpyCH4V	TGCA
+|
+|	78	GGCTCT
+|		GGC<G>C<C>
+|	SfoI	GGCGCC
+|
+|	78	GGCT
+|		<T>GC<A>
+|	HpyCH4V	TGCA
+|
+|	84	CTGAAA
+|		CT<T>AA<G>
+|	AflII	CTTAAG
+|
+|	85	TGAA
+|		TG<C>A
+|	HpyCH4V	TGCA
+|
+|
+END
+CASE diagnostic 30
+circular 0
+seq CAATGTGGCATGCCACAGTATCTGTTAGGAGCTGGGAACAGAGGACGCGGTCCCTATGCATCGTTCTGCCGATCGCAGCAAAGTACGTCCGCTGATGCCTCTCATCTCCGATGGTCGGTTTGGTTGATGAAAAGGCCATCAAA
+sel -
+enz KpnI NspI AflII SalI HindIII
+mode selected
+mismatches 3
+sites AciI 47 89
+sites AluI 30
+sites BstUI 46
+sites Cac8I 8
+sites DpnI 71
+sites HaeIII 134
+sites HpyCH4IV 85
+sites HpyCH4V 57
+sites MboI 71
+sites NlaIII 9
+sites NsiI 56
+sites NspI 8
+sites PvuI 70
+sites RsaI 83
+sites SphI 8
+out
+|DATE
+|TITLE 
+|From 0 to 142. 
+|Diagnostic Sites
+|
+|	1	CAATGT
+|		<R><C>ATGT
+|	NspI	RCATGY
+|
+|	2	AATGTG
+|		AA<G><C>T<T>
+|	HindIII	AAGCTT
+|
+|	3	ATGTGG
+|		A<C><A>TG<Y>
+|	NspI	RCATGY
+|
+|	4	TGTGGC
+|		<G>GT<A><C>C
+|	KpnI	GGTACC
+|
+|	5	GTGGCA
+|		GT<C>G<A><C>
+|	SalI	GTCGAC
+|
+|	6	TGGCAT
+|		<A><A>GC<T>T
+|	HindIII	AAGCTT
+|
+|	7	GGCATG
+|		GG<T>A<C><C>
+|	KpnI	GGTACC
+|
+|	9	CATGCC
+|		<G><G>T<A>CC
+|	KpnI	GGTACC
+|
+|	10	ATGCCA
+|		A<A>GC<T><T>
+|	HindIII	AAGCTT
+|
+|	11	TGCCAC
+|		<G><T>C<G>AC
+|	SalI	GTCGAC
+|
+|	12	GCCACA
+|		G<G><T>AC<C>
+|	KpnI	GGTACC
+|
+|	13	CCACAG
+|		C<T><T><A>AG
+|	AflII	CTTAAG
+|
+|	15	ACAGTA
+|		ACA<T><G><Y>
+|	NspI	RCATGY
+|
+|	16	CAGTAT
+|		<A>AG<C><T>T
+|	HindIII	AAGCTT
+|
+|	17	AGTATC
+|		<G>GTA<C>C
+|	KpnI	GGTACC
+|
+|	18	GTATCT
+|		G<C>AT<G>T
+|	NspI	RCATGY
+|
+|	19	TATCTG
+|		<A>A<G>CT<T>
+|	HindIII	AAGCTT
+|
+|	20	ATCTGT
+|		A<C><A>TGT
+|	NspI	RCATGY
+|
+|	23	TGTTAG
+|		<C><T>T<A>AG
+|	AflII	CTTAAG
+|
+|	24	GTTAGG
+|		G<G>TA<C><C>
+|	KpnI	GGTACC
+|
+|	24	GTTAGG
+|		<C>TTA<A>G
+|	AflII	CTTAAG
+|
+|	27	AGGAGC
+|		<G>G<T>A<C>C
+|	KpnI	GGTACC
+|
+|	27	AGGAGC
+|		A<C><A><T>GC
+|	NspI	RCATGY
+|
+|	28	GGAGCT
+|		GG<T><A>C<C>
+|	KpnI	GGTACC
+|
+|	28	GGAGCT
+|		G<C>A<T><G>T
+|	NspI	RCATGY
+|
+|	29	GAGCTG
+|		<A>AGCT<T>
+|	HindIII	AAGCTT
+|
+|	30	AGCTGG
+|		A<C><A>TG<Y>
+|	NspI	RCATGY
+|
+|	31	GCTGGG
+|		GC<A><T>G<Y>
+|	NspI	RCATGY
+|
+|	34	GGGAAC
+|		GG<T>A<C>C
+|	KpnI	GGTACC
+|
+|	34	GGGAAC
+|		G<T><C><G>AC
+|	SalI	GTCGAC
+|
+|	35	GGAACA
+|		GG<T>AC<C>
+|	KpnI	GGTACC
+|
+|	38	ACAGAG
+|		ACA<T><G><Y>
+|	NspI	RCATGY
+|
+|	39	CAGAGG
+|		C<T><T>A<A>G
+|	AflII	CTTAAG
+|
+|	40	AGAGGA
+|		A<C>A<T>G<Y>
+|	NspI	RCATGY
+|
+|	41	GAGGAC
+|		G<T><C>GAC
+|	SalI	GTCGAC
+|
+|	42	AGGACG
+|		<G>G<T>AC<C>
+|	KpnI	GGTACC
+|
+|	43	GGACGC
+|		GG<T><A><C>C
+|	KpnI	GGTACC
+|
+|	43	GGACGC
+|		G<C>A<T>GC
+|	NspI	RCATGY
+|
+|	44	GACGCG
+|		G<T>CG<A><C>
+|	SalI	GTCGAC
+|
+|	45	ACGCGG
+|		AC<A><T>G<Y>
+|	NspI	RCATGY
+|
+|	45	ACGCGG
+|		A<A>GC<T><T>
+|	HindIII	AAGCTT
+|
+|	47	GCGGTC
+|		GC<A><T><G>C
+|	NspI	RCATGY
+|
+|	47	GCGGTC
+|		G<T><C>G<A>C
+|	SalI	GTCGAC
+|
+|	48	CGGTCC
+|		<G>G<T><A>CC
+|	KpnI	GGTACC
+|
+|	49	GGTCCC
+|		GGT<A>CC
+|	KpnI	GGTACC
+|
+|	50	GTCCCT
+|		GTC<G><A><C>
+|	SalI	GTCGAC
+|
+|	52	CCCTAT
+|		<R>C<A>T<G>T
+|	NspI	RCATGY
+|
+|	53	CCTATG
+|		C<T>TA<A>G
+|	AflII	CTTAAG
+|
+|	54	CTATGC
+|		<R><C>ATGC
+|	NspI	RCATGY
+|
+|	56	ATGCAT
+|		A<A>GC<T>T
+|	HindIII	AAGCTT
+|
+|	57	TGCATC
+|		<G>G<T>A<C>C
+|	KpnI	GGTACC
+|
+|	58	GCATCG
+|		GCAT<G><Y>
+|	NspI	RCATGY
+|
+|	59	CATCGT
+|		<A>A<G>C<T>T
+|	HindIII	AAGCTT
+|
+|	60	ATCGTT
+|		<G>TCG<A><C>
+|	SalI	GTCGAC
+|
+|	60	ATCGTT
+|		A<A><G><C>TT
+|	HindIII	AAGCTT
+|
+|	61	TCGTTC
+|		<R>C<A>T<G>C
+|	NspI	RCATGY
+|
+|	62	CGTTCT
+|		<G>GT<A>C<C>
+|	KpnI	GGTACC
+|
+|	63	GTTCTG
+|		<C>TT<A><A>G
+|	AflII	CTTAAG
+|
+|	64	TTCTGC
+|		<R><C><A>TGC
+|	NspI	RCATGY
+|
+|	64	TTCTGC
+|		<G>TC<G><A>C
+|	SalI	GTCGAC
+|
+|	65	TCTGCC
+|		<G><G>T<A>CC
+|	KpnI	GGTACC
+|
+|	66	CTGCCG
+|		CT<T><A><A>G
+|	AflII	CTTAAG
+|
+|	68	GCCGAT
+|		GC<A><T><G>T
+|	NspI	RCATGY
+|
+|	68	GCCGAT
+|		G<T>CGA<C>
+|	SalI	GTCGAC
+|
+|	71	GATCGC
+|		G<G>T<A><C>C
+|	KpnI	GGTACC
+|
+|	71	GATCGC
+|		G<C><A><T>GC
+|	NspI	RCATGY
+|
+|	72	ATCGCA
+|		<G>TCG<A><C>
+|	SalI	GTCGAC
+|
+|	74	CGCAGC
+|		<G>G<T>A<C>C
+|	KpnI	GGTACC
+|
+|	75	GCAGCA
+|		GCA<T><G><Y>
+|	NspI	RCATGY
+|
+|	76	CAGCAA
+|		<A>AGC<T><T>
+|	HindIII	AAGCTT
+|
+|	78	GCAAAG
+|		GCA<T><G><Y>
+|	NspI	RCATGY
+|
+|	78	GCAAAG
+|		<C><T><T>AAG
+|	AflII	CTTAAG
+|
+|	79	CAAAGT
+|		<R><C>A<T>GT
+|	NspI	RCATGY
+|
+|	80	AAAGTA
+|		AA<G><C>T<T>
+|	HindIII	AAGCTT
+|
+|	81	AAGTAC
+|		A<C><A>T<G>C
+|	NspI	RCATGY
+|
+|	81	AAGTAC
+|		AAG<C><T><T>
+|	HindIII	AAGCTT
+|
+|	82	AGTACG
+|		<G>GTAC<C>
+|	KpnI	GGTACC
+|
+|	82	AGTACG
+|		<C><T>TA<A>G
+|	AflII	CTTAAG
+|
+|	83	GTACGT
+|		G<C>A<T>GT
+|	NspI	RCATGY
+|
+|	84	TACGTC
+|		<G><T>CG<A>C
+|	SalI	GTCGAC
+|
+|	85	ACGTCC
+|		AC<A>T<G>C
+|	NspI	RCATGY
+|
+|	86	CGTCCG
+|		<G>GT<A>C<C>
+|	KpnI	GGTACC
+|
+|	86	CGTCCG
+|		C<T>T<A><A>G
+|	AflII	CTTAAG
+|
+|	87	GTCCGC
+|		G<C><A><T>GC
+|	NspI	RCATGY
+|
+|	87	GTCCGC
+|		GTC<G><A>C
+|	SalI	GTCGAC
+|
+|	89	CCGCTG
+|		<A><A>GCT<T>
+|	HindIII	AAGCTT
+|
+|	91	GCTGAT
+|		GC<A><T><G>T
+|	NspI	RCATGY
+|
+|	91	GCTGAT
+|		G<T><C>GA<C>
+|	SalI	GTCGAC
+|
+|	92	CTGATG
+|		CT<T>A<A>G
+|	AflII	CTTAAG
+|
+|	93	TGATGC
+|		<R><C>ATGC
+|	NspI	RCATGY
+|
+|	94	GATGCC
+|		G<G>T<A>CC
+|	KpnI	GGTACC
+|
+|	94	GATGCC
+|		G<T><C>G<A>C
+|	SalI	GTCGAC
+|
+|	95	ATGCCT
+|		A<A>GC<T>T
+|	HindIII	AAGCTT
+|
+|	97	GCCTCT
+|		GC<A>T<G>T
+|	NspI	RCATGY
+|
+|	101	CTCATC
+|		CT<T>A<A><G>
+|	AflII	CTTAAG
+|
+|	101	CTCATC
+|		<G>TC<G><A>C
+|	SalI	GTCGAC
+|
+|	102	TCATCT
+|		<R>CAT<G>T
+|	NspI	RCATGY
+|
+|	103	CATCTC
+|		<A>A<G>CT<T>
+|	HindIII	AAGCTT
+|
+|	104	ATCTCC
+|		A<C><A>T<G>C
+|	NspI	RCATGY
+|
+|	104	ATCTCC
+|		<G>TC<G><A>C
+|	SalI	GTCGAC
+|
+|	107	TCCGAT
+|		<G><T>CGA<C>
+|	SalI	GTCGAC
+|
+|	108	CCGATG
+|		C<T><T>A<A>G
+|	AflII	CTTAAG
+|
+|	109	CGATGG
+|		<R><C>ATG<Y>
+|	NspI	RCATGY
+|
+|	110	GATGGT
+|		G<C><A><T>GT
+|	NspI	RCATGY
+|
+|	111	ATGGTC
+|		<G>T<C>G<A>C
+|	SalI	GTCGAC
+|
+|	111	ATGGTC
+|		A<A>G<C>T<T>
+|	HindIII	AAGCTT
+|
+|	113	GGTCGG
+|		GGT<A><C><C>
+|	KpnI	GGTACC
+|
+|	114	GTCGGT
+|		G<C><A><T>GT
+|	NspI	RCATGY
+|
+|	114	GTCGGT
+|		GTCG<A><C>
+|	SalI	GTCGAC
+|
+|	115	TCGGTT
+|		<A><A>G<C>TT
+|	HindIII	AAGCTT
+|
+|	116	CGGTTT
+|		<A><A>G<C>TT
+|	HindIII	AAGCTT
+|
+|	117	GGTTTG
+|		GGT<A><C><C>
+|	KpnI	GGTACC
+|
+|	118	GTTTGG
+|		G<C><A>TG<Y>
+|	NspI	RCATGY
+|
+|	118	GTTTGG
+|		<C>TT<A><A>G
+|	AflII	CTTAAG
+|
+|	120	TTGGTT
+|		<A><A>G<C>TT
+|	HindIII	AAGCTT
+|
+|	122	GGTTGA
+|		GGT<A><C><C>
+|	KpnI	GGTACC
+|
+|	122	GGTTGA
+|		G<C><A>TG<Y>
+|	NspI	RCATGY
+|
+|	123	GTTGAT
+|		<C>TT<A>A<G>
+|	AflII	CTTAAG
+|
+|	123	GTTGAT
+|		GT<C>GA<C>
+|	SalI	GTCGAC
+|
+|	124	TTGATG
+|		<C>T<T>A<A>G
+|	AflII	CTTAAG
+|
+|	125	TGATGA
+|		<R><C>ATG<Y>
+|	NspI	RCATGY
+|
+|	126	GATGAA
+|		G<T><C>GA<C>
+|	SalI	GTCGAC
+|
+|	127	ATGAAA
+|		<C>T<T>AA<G>
+|	AflII	CTTAAG
+|
+|	129	GAAAAG
+|		<C><T><T>AAG
+|	AflII	CTTAAG
+|
+|	130	AAAAGG
+|		A<C>A<T>G<Y>
+|	NspI	RCATGY
+|
+|	131	AAAGGC
+|		A<C>A<T>GC
+|	NspI	RCATGY
+|
+|	132	AAGGCC
+|		AAG<C><T><T>
+|	HindIII	AAGCTT
+|
+|	133	AGGCCA
+|		A<A>GC<T><T>
+|	HindIII	AAGCTT
+|
+|	134	GGCCAT
+|		G<T>C<G>A<C>
+|	SalI	GTCGAC
+|
+|	135	GCCATC
+|		G<G><T>A<C>C
+|	KpnI	GGTACC
+|
+|	135	GCCATC
+|		GC<A><T><G>C
+|	NspI	RCATGY
+|
+|	135	GCCATC
+|		G<T>C<G><A>C
+|	SalI	GTCGAC
+|
+|	136	CCATCA
+|		<R>CAT<G><Y>
+|	NspI	RCATGY
+|
+|	137	CATCAA
+|		C<T>T<A>A<G>
+|	AflII	CTTAAG
+|
+|	138	ATCAAA
+|		<C>T<T>AA<G>
+|	AflII	CTTAAG
+|
+|	138	ATCAAA
+|		<G>TC<G>A<C>
+|	SalI	GTCGAC
+|
+|
+END

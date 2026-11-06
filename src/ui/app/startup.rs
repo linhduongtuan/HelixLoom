@@ -59,6 +59,23 @@ impl App {
                 self.pcr_win.rev = String::from_utf8_lossy(&reverse).into_owned();
                 self.find_products();
             }
+            "silent" | "diagnostic" => {
+                // the coding stretch of the demo plasmid, and enzymes that make a few places
+                self.docs[0].select(326, 446);
+                self.selected = [
+                    "BamHI", "EcoRV", "HindIII", "KpnI", "NheI", "PstI", "SacI", "XhoI",
+                ]
+                .iter()
+                .map(|s| s.to_string())
+                .collect();
+                if view == "silent" {
+                    self.run_silent_sites();
+                } else {
+                    self.site_win.diagnostic_open = true;
+                    self.site_win.mismatches = 2;
+                    self.run_diagnostic_sites();
+                }
+            }
             "calc" => {
                 self.calc_win.open = true;
                 self.calc_win.text = "ATGGCGTTTGAACGGCTCAA".into();

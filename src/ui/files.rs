@@ -149,6 +149,23 @@ impl App {
         self.tab = Tab::Doc(self.docs.len() - 1);
     }
 
+    /// File > Duplicate Selection (a new sequence made of the selected bases; of all of them when none are selected) and
+    /// Duplicate Full Sequence (`whole`), opened in a tab of its own (`duplicate_window`).
+    pub fn duplicate_current(&mut self, whole: bool) {
+        let Some(i) = self.current_doc() else {
+            return self.say("Open a sequence first.");
+        };
+        let range = if whole {
+            None
+        } else {
+            self.docs[i].selection()
+        };
+        let copy = self.docs[i].doc.duplicate(range);
+        let message = format!("Duplicated {} bases.", copy.len());
+        self.add_doc(copy);
+        self.say(message);
+    }
+
     pub(super) fn close_tab(&mut self, i: usize) {
         if i >= self.docs.len() {
             return;
@@ -205,5 +222,48 @@ impl App {
                 self.close_tab(i);
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::ui::app::Startup;
+
+    #[test]
+    fn duplicating_opens_a_new_tab_with_the_selection_or_with_the_whole() {
+        let mut app = App::new(Startup::default());
+        let before = app.docs.len();
+        app.docs[0].select(100, 160);
+        app.duplicate_current(false);
+        assert_eq!(app.docs.len(), before + 1);
+        assert_eq!(app.current_doc(), Some(before), "the new tab is in front");
+        let copy = &app.docs[before].doc;
+        assert_eq!(
+            (copy.len(), copy.circular, copy.name.as_str()),
+            (60, false, "New_DNA")
+        );
+
+        // with nothing selected "Duplicate Selection" copies all of it, circle and all
+        app.docs[0].place_caret(5);
+        app.tab = Tab::Doc(0);
+        app.duplicate_current(false);
+        let (whole, first) = (&app.docs[before + 1].doc, &app.docs[0].doc);
+        assert_eq!((whole.len(), whole.circular), (first.len(), first.circular));
+
+        // "Duplicate Full Sequence" copies all of it even with a selection
+        app.docs[0].select(1, 4);
+        app.tab = Tab::Doc(0);
+        app.duplicate_current(true);
+        assert_eq!(app.docs[before + 2].doc.len(), app.docs[0].doc.len());
+    }
+
+    #[test]
+    fn duplicating_without_a_sequence_says_so_and_opens_nothing() {
+        let mut app = App::new(Startup::default());
+        app.docs.clear();
+        app.duplicate_current(true);
+        assert!(app.docs.is_empty());
+        assert_eq!(app.status, "Open a sequence first.");
     }
 }

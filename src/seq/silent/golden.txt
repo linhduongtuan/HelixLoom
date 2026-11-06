@@ -1,0 +1,4335 @@
+CASE silent 1
+circular 0
+seq GTCCTTCTAATATTTTAGGGACATCCATTCTGACAAGGACTCTCTTGGNTAGTACAGCAT
+sel -
+enz -
+sites RsaI 52
+sites SspI 9
+sites TatI 51
+out
+|DATE
+|TITLE 
+|From 1 to 60. 
+|Silent Sites
+|
+|	1	GTC CTT
+|		GT<A> CTT
+|	RsaI	GTA C  
+|		 V   L
+|
+|	4	CTT CTA ATA
+|		CT<A> <T>TA ATA
+|	AseI	  A TTA AT 
+|		 L   L   I
+|
+|	7	CTA ATA
+|		<T>TA ATA
+|	MseI	TTA A  
+|		 L   I
+|
+|	7	CTA ATA
+|		CT<G> AT<C>
+|	DpnI	  G ATC    
+|		 L   I
+|
+|	7	CTA ATA
+|		CT<G> AT<C>
+|	MboI	  G ATC    
+|		 L   I
+|
+|	7	CTA ATA
+|		CTA AT<T>
+|	MluCI	  A ATT    
+|		 L   I
+|
+|	13	TTT TAG
+|		TT<C> TAG
+|	BfaI	  C TAG    
+|		 F   *
+|
+|	13	TTT TAG
+|		TTT TA<A>
+|	MseI	  T TAA    
+|		 F   *
+|
+|	19	GGA CAT
+|		GG<C> CAT
+|	HaeIII	GGC C  
+|		 G   H
+|
+|	28	TTC TGA
+|		TTC T<A><G>
+|	BfaI	  C TAG    
+|		 F   *
+|
+|	28	TTC TGA
+|		TT<T> T<A>A
+|	MseI	  T TAA    
+|		 F   *
+|
+|	34	CAA GGA CTC
+|		CAA GG<C> CTC
+|	StuI	  A GGC CT 
+|		 Q   G   L
+|
+|	37	GGA CTC
+|		GG<T> CTC
+|	BsaI	GGT CTC    
+|		 G   L
+|
+|	37	GGA CTC
+|		GG<C> CTC
+|	HaeIII	GGC C  
+|		 G   L
+|
+|	37	GGA CTC TCT
+|		GG<C> <T>T<A> <A><G>T
+|	AflII	  C TTA AG 
+|		 G   L   S
+|
+|	40	CTC TCT
+|		<T>T<A> <A><G>T
+|	MseI	TTA A  
+|		 L   S
+|
+|	40	CTC TCT TGG
+|		CTC <A><G><C> TGG
+|	PvuII	  C AGC TG 
+|		 L   S   W
+|
+|	43	TCT TGG
+|		<A><G><C> TGG
+|	AluI	AGC T  
+|		 S   W
+|
+|	43	TCT TGG
+|		TC<A> TGG
+|	NlaIII	 CA TG 
+|		 S   W
+|
+|	52	GTA CAG
+|		GT<G> CAG
+|	HpyCH4V	 TG CA 
+|		 V   Q
+|
+|
+END
+CASE silent 2
+circular 0
+seq TATTCATAAATTAACTCTCCGGGCGTGGGAGGTGTCGTGAGCAGAAATAGTGAATCAAGTGTCCATAGGGTCACATAACGGGCCANTGGGACTAACAGGATTCTGACTGCTTAAGAA
+sel -
+enz SfoI MboI SacII PsiI AflII ApoI ApaLI NarI SrfI BmgBI XcmI AluI
+sites AflII 110
+sites HaeIII 81
+sites HpaII 19
+sites MluCI 9
+sites MseI 11 111
+out
+|DATE
+|TITLE 
+|From 1 to 117. 
+|Silent Sites
+|
+|	4	TCA TAA
+|		<A><G><C> TAA
+|	AluI	AGC T  
+|		 S   *
+|
+|	7	TAA ATT
+|		TA<G> AT<C>
+|	MboI	  G ATC    
+|		 *   I
+|
+|	10	ATT AAC TCT
+|		AT<A> AA<T> TCT
+|	ApoI	  R AAT TY 
+|		 I   N   S
+|
+|	16	TCT CCG GGC
+|		<A><G><C> CCG GGC
+|	SrfI	 GC CCG GGC    
+|		 S   P   G
+|
+|	43	AGA AAT AGT
+|		AGA AAT <T><C>T
+|	ApoI	  R AAT TY 
+|		 R   N   S
+|
+|	55	TCA AGT
+|		<A><G><C> <T><C>T
+|	AluI	AGC T  
+|		 S   S
+|
+|	61	GTC CAT
+|		GT<G> CA<C>
+|	ApaLI	GTG CAC    
+|		 V   H
+|
+|	79	CGG GCC
+|		CG<A> GC<T>
+|	AluI	  A GCT    
+|		 R   A
+|
+|	97	AGG ATT CTG
+|		AG<A> ATT CTG
+|	ApoI	 RA ATT Y  
+|		 R   I   L
+|
+|	97	AGG ATT
+|		AGG AT<C>
+|	MboI	  G ATC    
+|		 R   I
+|
+|	106	ACT GCT
+|		AC<A> GCT
+|	AluI	  A GCT    
+|		 T   A
+|
+|
+END
+CASE silent 3
+circular 1
+seq CACGTGGTCGACCTTTCATCAACGGAAGACTCTCGTGGCCCGGATATCTCATTTACGCAGTCTGCTGACCAGCCTCCGGCAGGCTAACCGGTATT
+sel 54 78
+enz HaeIII AvrII HhaI BsaWI EcoRV Hpy8I
+sites AgeI 87
+sites BbsI 25
+sites BsaAI 1
+sites BsaWI 87
+sites BssSI 32
+sites Cac8I 79
+sites EcoRV 43
+sites HaeIII 37
+sites HincII 7
+sites HpaII 40 76 88
+sites Hpy8I 7
+sites HpyCH4IV 2
+sites PmlI 1
+sites SalI 7
+sites TaqI 8
+out
+|DATE
+|TITLE 
+|From 55 to 78. 
+|Silent Sites
+|
+|	61	TCT GCT
+|		<A><G><C> GCT
+|	HhaI	 GC GC 
+|		 S   A
+|
+|	61	TCT GCT
+|		TC<G> GC<C>
+|	HaeIII	  G GCC    
+|		 S   A
+|
+|
+END
+CASE silent 4
+circular 0
+seq AAGGAGATAAAGGAACCACCGTTTCCACGAGTGTTTTAAACACCGAACTGCCATCCCGCGCGAGTGATAGACGTGCGTGTGTTAAGCTGTAACCTACAGTAATTCCCACCTATACATGCGGGTACATATACCGTTGTGTCTCC
+sel -
+enz BclI AbsI BsrBI SspI TatI
+sites AciI 56 118
+sites AluI 85
+sites BmgBI 70
+sites BssSI 26
+sites BstUI 57 59
+sites DraI 35
+sites HhaI 58
+sites HpyCH4IV 71
+sites MluCI 101
+sites MseI 36 82
+sites NlaIII 115
+sites NspI 114
+sites RsaI 122
+out
+|DATE
+|TITLE 
+|From 1 to 143. 
+|Silent Sites
+|
+|	55	CCC GCG CGA
+|		CCC GC<T> CGA
+|	BsrBI	 CC GCT C  
+|		 P   A   R
+|
+|	76	CGT GTG TTA
+|		CGT GT<A> <C>TA
+|	TatI	  W GTA CW 
+|		 R   V   L
+|
+|
+END
+CASE silent 5
+circular 0
+seq GGTGAGGCATCGGTATCCTTCGCCatcaccaatttacgtaatttcGGACGCTTTCGAATGTCACTGGACAGGCGCTTTTCTCCGTGACATTAAGATGCGCAGATCTCCTGACATTCGAGTGACCT
+sel -
+enz SacII BmgBI FspI AbsI PsiI SrfI BspEI SmaI SgrAI BsaWI
+sites BglII 101
+sites BsaAI 35
+sites BstBI 53
+sites BstYI 101
+sites DpnI 102
+sites FspI 96
+sites HaeII 71
+sites HhaI 72 97
+sites HpyCH4IV 36
+sites MboI 102
+sites MluCI 31 40
+sites MseI 90
+sites SnaBI 35
+sites TaqI 54 115
+out
+|DATE
+|TITLE 
+|From 1 to 125. 
+|Silent Sites
+|
+|	34	tta cgt aat
+|		TT<G> CG<C> AAT
+|	FspI	 TG CGC A  
+|		 L   R   N
+|
+|	34	tta cgt aat
+|		<C>T<C> CG<G> AAT
+|	BspEI	 TC CGG A  
+|		 L   R   N
+|
+|	34	tta cgt aat
+|		<C>T<C> CG<G> AAT
+|	BsaWI	 WC CGG W  
+|		 L   R   N
+|
+|	52	TTT CGA ATG
+|		TT<C> CG<G> ATG
+|	BspEI	 TC CGG A  
+|		 F   R   M
+|
+|	52	TTT CGA ATG
+|		TT<C> CG<G> ATG
+|	BsaWI	 WC CGG W  
+|		 F   R   M
+|
+|	67	GAC AGG CGC
+|		GAC <C>GG <A>G<A>
+|		GAC <C>GG <A>G<G>
+|	BsaWI	 WC CGG W  
+|		 D   R   R
+|
+|
+END
+CASE silent 6
+circular 1
+seq TAGTAATTCAAAATGACCGACCAATGGAAGCTAGGTTCAAGGTTATCGTGGAGCTTGGCTTGTCAGCGCACCACACCCCACGGTGTTGAAGCCCCATTGAGCTGCTTATATTTGGCG
+sel 19 77
+enz NarI XhoI AflII ApaLI BsaI AfeI BstUI BsaBI BssHII SgrDI
+sites AluI 29 52 100
+sites BfaI 31
+sites HhaI 66
+sites MluCI 5
+out
+|DATE
+|TITLE 
+|From 20 to 77. 
+|Silent Sites
+|
+|	29	AGC TAG GTT
+|		<T><C><T> TA<A> GTT
+|	AflII	 CT TAA G  
+|		 S   *   V
+|
+|	47	CGT GGA
+|		CG<C> GGA
+|	BstUI	CGC G  
+|		 R   G
+|
+|	50	GGA GCT
+|		GG<C> GC<C>
+|	NarI	GGC GCC    
+|		 G   A
+|
+|	50	GGA GCT
+|		GG<C> GC<G>
+|	BstUI	  C GCG    
+|		 G   A
+|
+|	59	CTT GTC AGC
+|		CT<G> GTC <T><C>C
+|	BsaI	  G GTC TC 
+|		 L   V   S
+|
+|	65	AGC GCA
+|		AGC GC<T>
+|	AfeI	AGC GCT    
+|		 S   A
+|
+|	65	AGC GCA CCA
+|		AG<T> GCA CCA
+|	ApaLI	 GT GCA C  
+|		 S   A   P
+|
+|	65	AGC GCA CCA
+|		AGC GC<G> CCA
+|	BssHII	 GC GCG C  
+|		 S   A   P
+|
+|	65	AGC GCA CCA
+|		<T><C><G> GC<G> CCA
+|	NarI	  G GCG CC 
+|		 S   A   P
+|
+|	65	AGC GCA
+|		AGC GC<G>
+|	BstUI	  C GCG    
+|		 S   A
+|
+|
+END
+CASE silent 7
+circular 0
+seq GTCTTCACCACGGTCGTTGAGTATAAGGCCAGAAAAATGAATCCAAGATACTTAGTGTGCTCCGTCAANGATCAGTCCCGGGACAACACAGGCAGGACGCACTGAAGAGGGCTCCGTATCTATTCCCATACGGTCGGGAGCTATGTCGCCGTCTGTGTGTCCTCTTAAGAGTATCGACGTTGATAGTCAGTTTATTTAACTCACTACAACAACCTCGGGAATCATGCAACCGTCTAT
+sel -
+enz PaqCI HaeIII HaeII SspI XmaI
+sites AflII 164
+sites AluI 139
+sites AvaI 77 214
+sites DpnI 70
+sites HaeIII 27
+sites HpaII 78
+sites HpyCH4IV 177
+sites HpyCH4V 225
+sites MboI 70
+sites MseI 165 196
+sites NlaIII 223
+sites SmaI 77
+sites TaqI 174
+sites XmaI 77
+out
+|DATE
+|TITLE 
+|From 1 to 237. 
+|Silent Sites
+|
+|	91	GGC AGG
+|		GGC <C>GG
+|	HaeIII	GGC C  
+|		 G   R
+|
+|	109	GGG CTC
+|		GG<C> CTC
+|	HaeIII	GGC C  
+|		 G   L
+|
+|	145	GTC GCC
+|		GT<G> GCC
+|	HaeIII	  G GCC    
+|		 V   A
+|
+|	175	CGA CGT TGA
+|		CG<G> CG<C> TGA
+|	HaeII	 RG CGC Y  
+|		 R   R   *
+|
+|
+END
+CASE silent 8
+circular 0
+seq GATTGGTCGTTACTTATCATTCATATGCGCTGATAGACTCCCAGGCATAACTTGCGTCTAGTATAGTAAGGCCGCtgggaaaataattagaggaatTCCCCACTGGTTAGAGTAT
+sel -
+enz AatII HpaII SalI KpnI HpyCH4V EcoRI NdeI NruI MscI SfiI BstBI
+sites AciI 72
+sites ApoI 93
+sites BfaI 58
+sites EcoRI 93
+sites HaeIII 70
+sites HhaI 27
+sites MluCI 85 94
+sites NdeI 22
+out
+|DATE
+|TITLE 
+|From 1 to 115. 
+|Silent Sites
+|
+|	40	CCC AGG
+|		CCC <C>GG
+|	HpaII	  C CGG    
+|		 P   R
+|
+|	52	TTG CGT
+|		<C>T<C> CG<G>
+|	HpaII	  C CGG    
+|		 L   R
+|
+|	70	GGC CGC
+|		GGC CG<G>
+|	HpaII	  C CGG    
+|		 G   R
+|
+|	106	GTT AGA
+|		GT<C> <C>G<G>
+|	HpaII	  C CGG    
+|		 V   R
+|
+|
+END
+CASE silent 9
+circular 1
+seq GAACGTGCaccctcagatctcagaccagtGAGATTCTTTGAACGGACGGGCCACCCGGTAGATCGAAGCCCCTGGCGCGGCCGCGCCGTTACGAATCG
+sel -
+enz SwaI PaqCI AfeI NspI TatI BstZ17I DpnI NotI MseI
+sites AciI 77 81
+sites ApaLI 5
+sites BglII 15
+sites BstUI 76 82
+sites BstYI 15
+sites DpnI 16 61
+sites EagI 78
+sites HaeIII 49 79
+sites HhaI 75 83
+sites HpaII 55
+sites Hpy8I 5
+sites HpyCH4IV 3
+sites HpyCH4V 6
+sites MboI 16 61
+sites NotI 77
+sites TaqI 63
+out
+|DATE
+|TITLE 
+|From 1 to 98. 
+|Silent Sites
+|
+|	19	ctc aga
+|		<T>T<A> AGA
+|	MseI	TTA A  
+|		 L   R
+|
+|	64	CGA AGC
+|		CGA <T><C>C
+|	DpnI	 GA TC 
+|		 R   S
+|
+|
+END
+CASE silent 10
+circular 1
+seq CCAGCTAGCCGCAGTTTCTTAGAACAAGCTAGACGTGTTATACGCTTGATGCGGCTCGCCATACCAATCGAGGTTCGTAATTCTGAGATGCCGCGTNG
+sel 18 71
+enz SacII XmaI NruI BsrBI SmaI BsaI PstI
+sites AciI 9 51 91
+sites AluI 3 27
+sites BfaI 5 29
+sites BmgBI 32
+sites BstUI 92
+sites Cac8I 4 54 98
+sites HpyCH4IV 33
+sites MluCI 79
+sites NheI 4
+sites TaqI 68
+out
+|DATE
+|TITLE 
+|From 19 to 71. 
+|Silent Sites
+|
+|	55	CTC GCC ATA
+|		CTC GC<G> ATA
+|	NruI	 TC GCG A  
+|		 L   A   I
+|
+|
+END
+CASE silent 11
+circular 0
+seq ATACCGCTAACGCGCGCTGAGGTACCACGTCATTTCGGCATCAGTTCGACAGATCGCTAAAGTGACGGTAAGTCAACCTCGAGGGGCGAGGGGAAGAAGAGTCGGA
+sel -
+enz HindIII PmeI PvuI ApoI AgeI AbsI BsrGI HincII
+sites AbsI 77
+sites Acc65I 21
+sites AciI 4
+sites AvaI 78
+sites BmgBI 26
+sites BssHII 12
+sites BstUI 11 13
+sites Cac8I 12
+sites DpnI 52
+sites HhaI 12 14
+sites HincII 72
+sites Hpy8I 72
+sites HpyCH4IV 27
+sites KpnI 21
+sites MboI 52
+sites RsaI 22
+sites TaqI 46 79
+sites XhoI 78
+out
+|DATE
+|TITLE 
+|From 1 to 106. 
+|Silent Sites
+|
+|	4	CCG CTA ACG
+|		CCG <T>TA ACG
+|	HincII	  G TYR AC 
+|		 P   L   T
+|
+|	37	GGC ATC AGT
+|		GG<A> AT<T> <T><C>T
+|	ApoI	 RA ATT Y  
+|		 G   I   S
+|
+|	43	AGT TCG ACA
+|		<T><C><G> TCG ACA
+|	HincII	  G TYR AC 
+|		 S   S   T
+|
+|	49	ACA GAT CGC
+|		AC<C> GAT CGC
+|	PvuI	  C GAT CG 
+|		 T   D   R
+|
+|	52	GAT CGC TAA
+|		GA<C> CG<G> TAA
+|	AgeI	 AC CGG T  
+|		 D   R   *
+|
+|
+END
+CASE silent 12
+circular 1
+seq GCCGAAGGTGTGTAACAGATCCCAGAACTATTAAAAGTTGCGTTTAATAGGGAGGACTTGCATCCTCGTTTGCGACACTACGGCAAAGCAAACGCGAGAGAAATCCGGTCCGACCGCCTGGGTGACGGTGGTGCCCGGTCAAACACTAGAGAAGAATCCTG
+sel 26 123
+enz PacI AvaI SacI SmaI PsiI BsaI BsrBI
+sites AciI 114
+sites BfaI 146
+sites BsaWI 104
+sites BstUI 93
+sites BstYI 17
+sites DpnI 18
+sites HaeIII 161
+sites HpaII 105 135
+sites HpyCH4V 59
+sites MboI 18
+sites MseI 31 44
+out
+|DATE
+|TITLE 
+|From 27 to 123. 
+|Silent Sites
+|
+|	54	GGA CTT
+|		GG<T> CT<C>
+|	BsaI	GGT CTC    
+|		 G   L
+|
+|	60	GCA TCC TCG
+|		GC<C> TC<G> <A><G><C>
+|		GC<C> TC<G> <A><G><T>
+|	AvaI	  C YCG RG 
+|		 A   S   S
+|
+|	60	GCA TCC TCG
+|		GC<G> <A><G>C TCG
+|	SacI	  G AGC TC 
+|		 A   S   S
+|
+|	114	CCG CCT GGG
+|		CC<C> CC<G> GGG
+|	AvaI	  C YCG RG 
+|		 P   P   G
+|
+|	114	CCG CCT GGG
+|		CC<C> CC<G> GGG
+|	SmaI	  C CCG GG 
+|		 P   P   G
+|
+|	117	CCT GGG
+|		CC<C> GGG
+|	AvaI	CYC GRG    
+|		 P   G
+|
+|	117	CCT GGG
+|		CC<C> GGG
+|	SmaI	CCC GGG    
+|		 P   G
+|
+|
+END
+CASE silent 13
+circular 0
+seq CGGACTAATGTTGCCGGTACAATACCGCATGCGTACACTTCGGAAGTTTGAGGGCGAAAATCGTAGCTACGTTTCACACCTGTGCCTAGTACGTTGTACATCTCGCCGGCGGAGGTTTCACGGAGCATGTAAGTACGTGAAGGAGGCGCCTATCTGAGAGTACCACTGGCAgcgaaatggatggtcgcgtccTTGCCTACGA
+sel -
+enz SgfI NruI SgrAI AvaI NarI KpnI
+sites AciI 25 109
+sites AluI 65
+sites BfaI 86
+sites BsaAI 134
+sites BsrGI 95
+sites BstUI 186
+sites Cac8I 27 105
+sites HaeII 145
+sites HhaI 146
+sites HpaII 14 106
+sites Hpy8I 33
+sites HpyCH4IV 69 91 135
+sites KasI 145
+sites MreI 104
+sites NaeI 105
+sites NarI 145
+sites NgoMIV 105
+sites NlaIII 28 126
+sites NspI 27 125
+sites RsaI 17 33 89 96 133 160
+sites SfoI 145
+sites SgrAI 104
+sites SphI 27
+sites TatI 95
+out
+|DATE
+|TITLE 
+|From 1 to 202. 
+|Silent Sites
+|
+|	16	GGT ACA
+|		GGT AC<C>
+|	KpnI	GGT ACC    
+|		 G   T
+|
+|	76	ACA CCT GTG
+|		ACA CC<G> GTG
+|	SgrAI	 CR CCG GYG    
+|		 T   P   V
+|
+|	79	CCT GTG CCT
+|		CC<G> GT<A> CCT
+|	KpnI	  G GTA CC 
+|		 P   V   P
+|
+|	82	GTG CCT AGT
+|		GT<C> CC<G> AGT
+|	AvaI	  C YCG RG 
+|		 V   P   S
+|
+|	115	GTT TCA CGG
+|		GT<C> TC<G> <A>GG
+|	AvaI	  C YCG RG 
+|		 V   S   R
+|
+|	118	TCA CGG
+|		TC<G> CG<A>
+|	NruI	TCG CGA    
+|		 S   R
+|
+|	133	GTA CGT GAA
+|		GT<T> CG<C> GAA
+|	NruI	  T CGC GA 
+|		 V   R   E
+|
+|	157	AGA GTA CCA
+|		AG<G> GTA CCA
+|	KpnI	  G GTA CC 
+|		 R   V   P
+|
+|	184	gtc gcg tcc
+|		GTC GCG <A><G>C
+|	NruI	 TC GCG A  
+|		 V   A   S
+|
+|
+END
+CASE silent 14
+circular 0
+seq CATGATCACCTGCTCAGTTGACTTCGTTCGTACGATAACCATGGCCAACTAAGCTAACTAAAGGTCCTGCGGGGGTTGCGTGTATGACCCCCTCCAGAACCCATGCGAGAAAAATGAAGGCTTAAAGGGAATGTCCATCGTTCCTAGTTG
+sel -
+enz BclI SmaI PshAI MscI SacI HpyCH4IV NarI XmnI BstBI ClaI
+sites AciI 69
+sites AluI 52
+sites BclI 3
+sites BfaI 144
+sites BsiWI 29
+sites DpnI 4
+sites HaeIII 43
+sites HincII 17
+sites Hpy8I 17
+sites MboI 4
+sites MscI 42
+sites MseI 122
+sites NcoI 39
+sites NlaIII 1 40 102
+sites PaqCI 7
+sites RsaI 30
+out
+|DATE
+|TITLE 
+|From 1 to 150. 
+|Silent Sites
+|
+|	19	TGA CTT CGT TCG
+|		TGA CTT CG<G> TCG
+|	PshAI	 GA CNN NNG TC 
+|		 *   L   R   S
+|
+|	22	CTT CGT TCG
+|		CTT CG<A> <A><G><C>
+|		CTT CG<A> <A><G><T>
+|	BstBI	 TT CGA A  
+|		 L   R   S
+|
+|	22	CTT CGT
+|		CT<A> CGT
+|	HpyCH4IV	  A CGT    
+|		 L   R
+|
+|	43	GGC CAA CTA AGC
+|		GG<A> CAA CT<G> <T><C>C
+|	PshAI	 GA CNN NNG TC 
+|		 G   Q   L   S
+|
+|	67	CTG CGG
+|		CT<A> CG<T>
+|	HpyCH4IV	  A CGT    
+|		 L   R
+|
+|	76	TTG CGT
+|		TT<A> CGT
+|	HpyCH4IV	  A CGT    
+|		 L   R
+|
+|	115	TGA AGG
+|		TGA <C>G<T>
+|	HpyCH4IV	  A CGT    
+|		 *   R
+|
+|	130	AAT GTC
+|		AA<C> GTC
+|	HpyCH4IV	 AC GT 
+|		 N   V
+|
+|	136	CAT CGT TCC
+|		CAT CG<A> TCC
+|	ClaI	 AT CGA T  
+|		 H   R   S
+|
+|
+END
+CASE silent 15
+circular 0
+seq TTCCTTAACCCATGGGTAACGTCACACCAGAAGAGCTTGTAAGAGCAAGGCTCCGGTTGAATGGAGACAGTCATTTCCCGACAGAATTAGGGCCCAAGATCAATACGCATTCTGTGTCAACAG
+sel -
+enz HpyCH4IV ClaI HhaI PsiI SapI
+sites AluI 34
+sites ApaI 90
+sites BsaWI 52
+sites DpnI 98
+sites HaeIII 91
+sites HincII 116
+sites HpaII 53
+sites Hpy8I 116
+sites HpyCH4IV 19
+sites MboI 98
+sites MluCI 85
+sites MseI 5
+sites NcoI 10
+sites NlaIII 11
+sites SapI 30
+out
+|DATE
+|TITLE 
+|From 1 to 123. 
+|Silent Sites
+|
+|	37	TTG TAA
+|		TT<A> TAA
+|	PsiI	TTA TAA    
+|		 L   *
+|
+|	70	GTC ATT TCC
+|		GT<T> AT<A> <A><G>C
+|	PsiI	 TT ATA A  
+|		 V   I   S
+|
+|	76	TCC CGA
+|		TC<A> CG<T>
+|	HpyCH4IV	  A CGT    
+|		 S   R
+|
+|	76	TCC CGA
+|		TC<G> CG<C>
+|	HhaI	  G CGC    
+|		 S   R
+|
+|	94	CCA AGA
+|		CCA <C>G<T>
+|	HpyCH4IV	  A CGT    
+|		 P   R
+|
+|	94	CCA AGA
+|		CC<G> <C>G<C>
+|	HhaI	  G CGC    
+|		 P   R
+|
+|	97	AGA TCA ATA
+|		AGA TC<G> ATA
+|	ClaI	  A TCG AT 
+|		 R   S   I
+|
+|	103	ATA CGC
+|		ATA CG<T>
+|	HpyCH4IV	  A CGT    
+|		 I   R
+|
+|
+END
+CASE silent 16
+circular 1
+seq CGGAGCCGACGGAACGCAGGGACGCACGAGCTTTAAAGTGGCCGGGTTATAACGACCGCTACAAACTACAACCGAGCTTTCTGAGTTAACTGCGACCCACCTTGCGATACCGTCTATACAAGTTGGCTAGGCCCTTATATATTCCATTTAAGCTTACGTGCGGGTTTCCGGTGGTAGCCCAGCCT
+sel -
+enz HindIII Hpy8I AatII ApoI BamHI AscI SfiI AbsI
+sites AciI 56 160
+sites AluI 29 75 151
+sites BfaI 127
+sites BsaAI 155
+sites BsaWI 167
+sites BssSI 25
+sites DraI 32
+sites HaeIII 40 130
+sites HincII 85
+sites HindIII 150
+sites HpaI 85
+sites HpaII 42 168
+sites Hpy8I 85
+sites HpyCH4IV 156
+sites MseI 33 86 148
+sites PsiI 47
+out
+|DATE
+|TITLE 
+|From 1 to 185. 
+|Silent Sites
+|
+|	1	CGG AGC CGA
+|		CG<T> <T><C><A> CGA
+|	Hpy8I	 GT NNA C  
+|		 R   S   R
+|
+|	19	GGG ACG CAC
+|		GG<T> AC<A> CAC
+|	Hpy8I	 GT NNA C  
+|		 G   T   H
+|
+|	37	AGT GGC CGG
+|		AGT GG<A> CGG
+|	Hpy8I	 GT NNA C  
+|		 S   G   R
+|
+|	112	GTC TAT
+|		GTC TA<C>
+|	Hpy8I	GTN NAC    
+|		 V   Y
+|
+|	112	GTC TAT ACA
+|		GT<G> TAT ACA
+|	Hpy8I	  G TNN AC 
+|		 V   Y   T
+|
+|	151	AGC TTA CGT
+|		AG<T> TTA CGT
+|	Hpy8I	 GT NNA C  
+|		 S   L   R
+|
+|
+END
+CASE silent 17
+circular 1
+seq CTATGGTCGCCGTTTTCGTTAAGTTGCGATACGCATTAAAAGGCTGCGGCCACTTATCTTTGTNGCACAGGTGTTGCAGGTCGCAGGTAAGCTACCGGAACCTAGAATGCGTTCATCGTGTGCCTCCGAATGTAGCCGAGTCGCTCACCAAGGCGCACTTCACGCGTTCGGAGATTTGGCACATGCCAATGTTCCGAATGGCAAGCGGGTCCAACAAAGGCCAAT
+sel -
+enz KpnI DraI SgfI DpnI StuI SwaI SphI Cac8I HindIII SfiI BamHI
+sites AciI 46 205
+sites AluI 90
+sites BfaI 102
+sites BsaWI 94
+sites BstUI 163
+sites Cac8I 201
+sites HaeIII 48 219
+sites HhaI 153
+sites HpaII 95
+sites HpyCH4V 75
+sites MluI 162
+sites MseI 19 36
+sites NlaIII 182
+sites NspI 181
+sites XmnI 105
+out
+|DATE
+|TITLE 
+|From 1 to 225. 
+|Silent Sites
+|
+|	76	GCA GGT
+|		GCA GG<C>
+|	Cac8I	GCN NGC    
+|		 A   G
+|
+|	79	GGT CGC AGG
+|		GG<C> CG<G> <C>GG
+|	Cac8I	 GC NNG C  
+|		 G   R   R
+|
+|	97	GGA ACC
+|		GG<T> ACC
+|	KpnI	GGT ACC    
+|		 G   T
+|
+|	121	TGC CTC CGA
+|		TGC CT<G> CGA
+|	Cac8I	 GC NNG C  
+|		 C   L   R
+|
+|	139	AGT CGC TCA CCA
+|		<T><C><G> CG<A> TC<G> CCA
+|	SgfI	  G CGA TCG C  
+|		 S   R   S   P
+|
+|	142	CGC TCA
+|		CG<A> TCA
+|	DpnI	 GA TC 
+|		 R   S
+|
+|	142	CGC TCA CCA
+|		CGC TC<G> CCA
+|	Cac8I	 GC NNG C  
+|		 R   S   P
+|
+|	163	CGC GTT CGG
+|		CGC GT<G> CGG
+|	Cac8I	 GC NNG C  
+|		 R   V   R
+|
+|	178	GGC ACA
+|		GG<T> AC<C>
+|	KpnI	GGT ACC    
+|		 G   T
+|
+|	205	GCG GGT
+|		GCG GG<C>
+|	Cac8I	GCN NGC    
+|		 A   G
+|
+|
+END
+CASE silent 18
+circular 0
+seq TATAGCCGATCCCTAGTCACGATTACGTATGCACAGCGTGCTTCCAGAGACTAACTAAAACCCAAACGTGGACGCAACGGCACTCTGATTTCGGCGTTGCCCAGGATGCGTATTCCTGCAAGGTGGGCTTTGAGCAGCAGAAACGATCGCACGTCATGTGAATCCGTCGTAGCAGTCACCGCCAAAACTTGCC
+sel 112 183
+enz SrfI SfiI SnaBI MboI BsmBI BsrGI XmaI
+sites AciI 179
+sites BfaI 13
+sites BmgBI 150
+sites BsaAI 24
+sites Cac8I 36
+sites DpnI 8 145
+sites Hpy8I 68
+sites HpyCH4IV 25 66 151
+sites HpyCH4V 30 117
+sites MboI 8 145
+sites NlaIII 155
+sites PvuI 144
+sites SnaBI 24
+out
+|DATE
+|TITLE 
+|From 113 to 183. 
+|Silent Sites
+|
+|No sites Found
+END
+CASE silent 19
+circular 0
+seq TTCCGAGTAAAAAACCGTTTTGTGCGTCTGCACCCTCAAGGGTCGGCGACTCACAACACGGGCTTCTTTACGCGCGCTGTATGGTTTACGCCCGACAGCCAGAGTTAGTGGACTTCCACGTAATATTGCTAAAAGCGATATTAGGACTTTGTTCGGTGGATATACACACTCCCCTATCCACCAGGCGAACACCTGTCCATCCGTGGCGCACGCTGCGCTGCTATACACACTACCGCGACAGAGAAACGGCG
+sel 167 237
+enz HindIII TaqI AatII MluI BstYI ClaI SpeI SspI XcmI MboI
+sites AciI 233
+sites BsaAI 117
+sites BssHII 72
+sites BstUI 71 73 234
+sites Cac8I 72 208
+sites HhaI 72 74 206 215
+sites Hpy8I 84 108
+sites HpyCH4IV 118
+sites HpyCH4V 29
+sites SspI 122
+out
+|DATE
+|TITLE 
+|From 168 to 237. 
+|Silent Sites
+|
+|	177	TCC ACC
+|		TC<G> ACC
+|	TaqI	TCG A  
+|		 S   T
+|
+|	180	ACC AGG
+|		AC<G> <C>G<T>
+|	MluI	ACG CGT    
+|		 T   R
+|
+|	180	ACC AGG
+|		AC<T> <C>G<A>
+|	TaqI	  T CGA    
+|		 T   R
+|
+|	192	CCT GTC CAT CCG TGG
+|		CC<A> GTC CAT CCG TGG
+|	XcmI	CCA NNN NNN NNN TGG    
+|		 P   V   H   P   W
+|
+|	213	CTG CGC
+|		CT<T> CG<A>
+|	TaqI	  T CGA    
+|		 L   R
+|
+|	231	TAC CGC
+|		TA<T> CG<A>
+|	TaqI	  T CGA    
+|		 Y   R
+|
+|
+END
+CASE silent 20
+circular 1
+seq GTTTGAGTTACGGAGGCCCGTGACGACATACCAGAGACTGCCATCACGGCAATCTTAGAACTCAACAACCCATCATCGGGCTGAATTGCCACGACTGGGGGAGTCAGTCTGTCTATCTCAAGAAGGAACGTACCGACGCGTACTATAACTTGTGGTGAACTGTCCAGAGGTTCCCGAATCGAGCCCG
+sel 101 167
+enz BbsI ClaI EagI NarI NgoMIV BmgBI XbaI FspI AscI SapI
+sites BstUI 137
+sites HaeIII 15
+sites HpaII 185
+sites Hpy8I 155
+sites HpyCH4IV 128
+sites MluCI 84
+sites MluI 136
+sites RsaI 130 140
+sites TaqI 179
+out
+|DATE
+|TITLE 
+|From 102 to 167. 
+|Silent Sites
+|
+|No sites Found
+END
+CASE silent 21
+circular 0
+seq GCAGGATCCAGTTTCGCCGCCGCATCAAGTTTGGGCTCGCGGCAAGCTCGGCAATGGCGTGGCCAGAGTTGAACTTAGTCCGCCCGGAGCCCAAGGTCCATCATGTAATGGATCCCGGCCAGT
+sel -
+enz AscI SgfI BstUI MfeI XbaI SfiI Acc65I ApaLI NheI SspI MluI BamHI
+sites AciI 17 20 39 80
+sites AluI 45
+sites BamHI 4 110
+sites BstUI 38
+sites BstYI 4 110
+sites Cac8I 35 42
+sites DpnI 5 111
+sites HaeIII 61 117
+sites HpaII 84 115
+sites MboI 5 111
+sites MscI 60
+sites NlaIII 102
+out
+|DATE
+|TITLE 
+|From 1 to 123. 
+|Silent Sites
+|
+|	13	TTC GCC
+|		TTC GC<G>
+|	BstUI	  C GCG    
+|		 F   A
+|
+|	19	GCC GCA
+|		GCC GC<G>
+|	BstUI	  C GCG    
+|		 A   A
+|
+|	22	GCA TCA
+|		GC<T> <A><G><C>
+|	NheI	GCT AGC    
+|		 A   S
+|
+|	34	GGC TCG
+|		GG<A> TC<C>
+|	BamHI	GGA TCC    
+|		 G   S
+|
+|	37	TCG CGG
+|		TC<T> <A>G<A>
+|	XbaI	TCT AGA    
+|		 S   R
+|
+|	43	CAA GCT CGG CAA
+|		CA<G> GC<G> CG<C> CAA
+|	AscI	  G GCG CGC C  
+|		 Q   A   R   Q
+|
+|	46	GCT CGG
+|		GC<G> CGG
+|	BstUI	 CG CG 
+|		 A   R
+|
+|	58	CGT GGC
+|		CG<C> GGC
+|	BstUI	CGC G  
+|		 R   G
+|
+|	79	TCC GCC CGG
+|		<A><G><T> GC<A> CGG
+|	ApaLI	 GT GCA C  
+|		 S   A   R
+|
+|	79	TCC GCC
+|		TCC GC<G>
+|	BstUI	  C GCG    
+|		 S   A
+|
+|	82	GCC CGG
+|		GC<G> CGG
+|	BstUI	 CG CG 
+|		 A   R
+|
+|	82	GCC CGG AGC CCA
+|		GC<G> CG<A> <T><C><G> CCA
+|	SgfI	  G CGA TCG C  
+|		 A   R   S   P
+|
+|	91	CCA AGG
+|		CC<G> <C>GG
+|	BstUI	 CG CG 
+|		 P   R
+|
+|	115	CCG GCC
+|		CC<C> GC<G>
+|	BstUI	  C GCG    
+|		 P   A
+|
+|	118	GCC AGT
+|		GC<T> AG<C>
+|	NheI	GCT AGC    
+|		 A   S
+|
+|
+END
+CASE silent 22
+circular 1
+seq GTGAGTGGGTCCGCTGCTCACCTACAAGGAAGCAGAGACTCCTCGCCCCCGGAAACCAAATATTCCATACCTTGTTAGTGTCGGCAGTATACGGATCACTTGGAGCGCCTNCTCAATAATCTTAGTGGCACG
+sel 23 98
+enz XmaI BsiWI ApoI BsaWI BstYI DpnI SgfI PshAI NruI Cac8I
+sites AciI 11
+sites BstZ17I 87
+sites DpnI 94
+sites HaeII 104
+sites HhaI 105
+sites HpaII 49
+sites Hpy8I 87
+sites MboI 94
+sites SspI 59
+out
+|DATE
+|TITLE 
+|From 24 to 98. 
+|Silent Sites
+|
+|	27	AGG AAG CAG
+|		<C>G<C> AAG CAG
+|	Cac8I	 GC NNG C  
+|		 R   K   Q
+|
+|	36	AGA CTC CTC
+|		<C>G<C> CT<G> CTC
+|	Cac8I	 GC NNG C  
+|		 R   L   L
+|
+|	39	CTC CTC GCC
+|		CT<G> CTC GCC
+|	Cac8I	  G CNN GC 
+|		 L   L   A
+|
+|	45	GCC CCC GGA
+|		GCC CC<G> GGA
+|	XmaI	  C CCG GG 
+|		 A   P   G
+|
+|	48	CCC GGA
+|		CCC GG<G>
+|	XmaI	CCC GGG    
+|		 P   G
+|
+|	57	CAA ATA TTC
+|		CAA AT<T> TTC
+|	ApoI	 RA ATT Y  
+|		 Q   I   F
+|
+|	57	CAA ATA TTC
+|		CA<G> AT<C> TTC
+|	BstYI	 RG ATC Y  
+|		 Q   I   F
+|
+|	57	CAA ATA
+|		CA<G> AT<C>
+|	DpnI	  G ATC    
+|		 Q   I
+|
+|	93	GGA TCA
+|		GGA TC<C>
+|		GGA TC<T>
+|	BstYI	RGA TCY    
+|		 G   S
+|
+|
+END
+CASE silent 23
+circular 0
+seq ATTATTTATTGGTACACACTATATAATACATGAGCGGTGCTTAGTCTACTGACCGACCTCTCGCATACGACGAACACTGCTAACATCTCGAGATACTAGATC
+sel -
+enz XhoI PshAI ClaI PvuI HaeII
+sites AciI 34
+sites AvaI 87
+sites BfaI 96
+sites BsrBI 32
+sites DpnI 99
+sites Hpy8I 12 44
+sites MboI 99
+sites NlaIII 29
+sites RsaI 12
+sites TaqI 88
+sites XhoI 87
+out
+|DATE
+|TITLE 
+|From 1 to 102. 
+|Silent Sites
+|
+|	55	GAC CTC TCG CAT
+|		GAC CTC <A><G><T> CAT
+|	PshAI	GAC NNN NGT C  
+|		 D   L   S   H
+|
+|
+END
+CASE silent 24
+circular 1
+seq TCGCTCAAAGGGTATTATGGTACACGGTTAAGCCGCGTCGGCTgggtatcaaagcgtacgtcgtGCTTATATTCAACCCGGGTGCTATCATCGGGACGTGACGCGAGGATACAGCCGAGGCCGAATTCCCAACCTTCGTTACGGATCTCTATAGAATNAGA
+sel -
+enz SgfI XcmI FspI SmaI AseI AvrII PciI EcoRI ZraI
+sites AciI 33
+sites ApoI 123
+sites AvaI 77
+sites BmgBI 95
+sites BsiWI 55
+sites BstUI 34 102
+sites BstYI 143
+sites DpnI 144 160
+sites EcoRI 123
+sites HaeIII 119
+sites HpaII 78
+sites Hpy8I 20
+sites HpyCH4IV 58 96
+sites MboI 144 160
+sites MluCI 124
+sites MseI 28
+sites RsaI 20 56
+sites SmaI 77
+sites XmaI 77
+out
+|DATE
+|TITLE 
+|From 1 to 161. 
+|Silent Sites
+|
+|	31	AGC CGC GTC
+|		<T><C>C CG<G> GTC
+|	SmaI	 CC CGG G  
+|		 S   R   V
+|
+|	55	cgt acg tcg
+|		CG<G> ACG TCG
+|	ZraI	  G ACG TC 
+|		 R   T   S
+|
+|	106	AGG ATA CAG
+|		AG<A> AT<T> CAG
+|	EcoRI	 GA ATT C  
+|		 R   I   Q
+|
+|	115	CCG AGG
+|		CC<T> AGG
+|	AvrII	CCT AGG    
+|		 P   R
+|
+|	139	TTA CGG ATC
+|		TT<G> CG<C> ATC
+|	FspI	 TG CGC A  
+|		 L   R   I
+|
+|
+END
+CASE silent 25
+circular 1
+seq ATACTACTTGTACCCCGTGCTTGGTCCTTCTAGGTGACTACCGTATAGATACAGTGTCTCTATCGAGGTATGCAGTACGATGTCATTTAAATAACAAAACCCACGGAGTCGTAAGGATGATAACCGTACTCGTACCTCA
+sel -
+enz SacII AciI KpnI SgfI HpaI AscI SwaI SbfI
+sites BfaI 30
+sites DraI 86
+sites HpyCH4V 71
+sites MseI 87
+sites RsaI 10 75 126 132
+sites SwaI 85
+sites TaqI 63
+out
+|DATE
+|TITLE 
+|From 1 to 139. 
+|Silent Sites
+|
+|	7	CTT GTA CCC
+|		CT<G> GTA CCC
+|	KpnI	  G GTA CC 
+|		 L   V   P
+|
+|	13	CCC CGT
+|		CC<G> CG<G>
+|	SacII	CCG CGG    
+|		 P   R
+|
+|	13	CCC CGT
+|		CC<G> CGT
+|	AciI	CCG C  
+|		 P   R
+|
+|	13	CCC CGT
+|		CCC CG<C>
+|	AciI	  C CGC    
+|		 P   R
+|
+|	61	TAT CGA GGT
+|		TA<C> CG<C> GGT
+|	SacII	  C CGC GG 
+|		 Y   R   G
+|
+|	61	TAT CGA
+|		TA<C> CG<C>
+|	AciI	  C CGC    
+|		 Y   R
+|
+|
+END
+CASE silent 26
+circular 1
+seq AACATTACCCACCCTCAGGTTTAACCTTCCTCAGGCACTTATTCGCTTTTTACATGCTATATGACAGCGGCAGATTGGTCATTTAACCTTAGACGACTGCCCCACGAGATCCGTGAAAGCAGGTTTCCAAATAGTTCGTGTTAGACCAATCAACAGACAGATACTTCGAGCGATAATTGCGGTAATCCTACTCACTCGCACGTAGGCTCTAGTGTCAGATGGTGGTAGCGGCGAGAAATTTA
+sel 106 225
+enz PvuII ApaI Cac8I PshAI HpaII
+sites AciI 67 179 228
+sites ApoI 236
+sites BfaI 209
+sites BsaAI 199
+sites BssSI 103
+sites BstYI 107
+sites DpnI 108
+sites DraI 239
+sites HpyCH4IV 200
+sites MboI 108
+sites MluCI 175 237
+sites MseI 21 83 240
+sites NlaIII 53
+sites NspI 52
+sites TaqI 166
+out
+|DATE
+|TITLE 
+|From 107 to 225. 
+|Silent Sites
+|
+|	119	GCA GGT
+|		GCA GG<C>
+|	Cac8I	GCN NGC    
+|		 A   G
+|
+|	119	GCA GGT
+|		GC<C> GGT
+|	HpaII	 CC GG 
+|		 A   G
+|
+|	134	GTT CGT
+|		GT<C> CG<G>
+|	HpaII	  C CGG    
+|		 V   R
+|
+|	137	CGT GTT AGA
+|		CG<C> GT<G> <C>GA
+|	Cac8I	 GC NNG C  
+|		 R   V   R
+|
+|	140	GTT AGA
+|		GT<C> <C>G<G>
+|	HpaII	  C CGG    
+|		 V   R
+|
+|	152	AAC AGA
+|		AAC <C>G<G>
+|	HpaII	  C CGG    
+|		 N   R
+|
+|	164	CTT CGA GCG
+|		CT<G> CGA GCG
+|	Cac8I	  G CNN GC 
+|		 L   R   A
+|
+|	164	CTT CGA
+|		CT<C> CG<G>
+|	HpaII	  C CGG    
+|		 L   R
+|
+|	194	ACT CGC
+|		AC<C> CG<G>
+|	HpaII	  C CGG    
+|		 T   R
+|
+|
+END
+CASE silent 27
+circular 0
+seq CTTAACACCGTTCATGAGGCGTGGCGATGCATGGGTACGCGTCCGACCACTCCAAGCCATCATGGACGCCGATTCGAGATCATAAGGGAAACAGTCTCACCAGGTACGTACTGAGTGCTAGAGAGGACCAGGCATAGATTCGAGTCTGGAGATAAATTATCCAATCC
+sel 102 162
+enz KasI HpaI EcoRV BamHI MboI MluCI SpeI SphI KpnI EagI PvuI
+sites BfaI 118
+sites BsaAI 105
+sites BspHI 12
+sites BstUI 38
+sites DpnI 78
+sites HpyCH4IV 106
+sites HpyCH4V 28
+sites MboI 78
+sites MluCI 155
+sites MluI 37
+sites MseI 2
+sites NlaIII 13 30 61
+sites NsiI 27
+sites RsaI 35 104 108
+sites SnaBI 105
+sites TaqI 74 140
+out
+|DATE
+|TITLE 
+|From 103 to 162. 
+|Silent Sites
+|
+|	103	GGT ACG
+|		GGT AC<C>
+|	KpnI	GGT ACC    
+|		 G   T
+|
+|
+END
+CASE silent 28
+circular 0
+seq ACGCAGCGTTTGGGAAGATAACTGCTAACTCTAATGATATATTTACTTGAACGGGGCGAAGCTGCTCTATACCACTTGATAACAATCTCTCGGTAAAA
+sel -
+enz BbsI TaqI SacI FspI HpaII BfaI FseI
+sites AluI 60
+sites BsaBI 78
+out
+|DATE
+|TITLE 
+|From 1 to 98. 
+|Silent Sites
+|
+|	10	TTG GGA
+|		<C>T<A> GGA
+|	BfaI	CTA G  
+|		 L   G
+|
+|	13	GGA AGA
+|		GG<T> <C>GA
+|	TaqI	  T CGA    
+|		 G   R
+|
+|	13	GGA AGA
+|		GG<C> <C>G<G>
+|	HpaII	  C CGG    
+|		 G   R
+|
+|	16	AGA TAA
+|		<C>G<C> TA<G>
+|	BfaI	  C TAG    
+|		 R   *
+|
+|	46	CTT GAA
+|		CT<A> GAA
+|	BfaI	CTA G  
+|		 L   E
+|
+|	46	CTT GAA
+|		CT<C> GAA
+|	TaqI	 TC GA 
+|		 L   E
+|
+|	88	TCT CGG
+|		TC<G> <A>GG
+|	TaqI	TCG A  
+|		 S   R
+|
+|	88	TCT CGG
+|		TCT <A>GG
+|	BfaI	 CT AG 
+|		 S   R
+|
+|	88	TCT CGG
+|		TCT CG<A>
+|	TaqI	  T CGA    
+|		 S   R
+|
+|	88	TCT CGG
+|		TC<C> CGG
+|	HpaII	  C CGG    
+|		 S   R
+|
+|	91	CGG TAA
+|		CG<C> TA<G>
+|	BfaI	  C TAG    
+|		 R   *
+|
+|
+END
+CASE silent 29
+circular 1
+seq GGTGatcccaaaaaatcctatgcctTTTCGAAGCGGTTTCTGTGTACTTCCACGTAAATAAAGTTCTTGCGTAGAACCGGTAGTCCGCCACTCACCCTTCGCTCGTTCACCAATACTAGTGCTAGTCCCAGTTAGACTGTGTAGCTCGTCCACCGGCGGTAGTATTACGTGGCTTTTCTCAGATCTTGATCTCAATAAGC
+sel -
+enz AseI BsrBI BstZ17I BspEI RsaI ScaI SbfI
+sites AciI 33 85 156 199
+sites AgeI 76
+sites AluI 143
+sites BfaI 116 122
+sites BglII 181
+sites BsaAI 51 166
+sites BsaBI 182
+sites BsaWI 76
+sites BstBI 27
+sites BstYI 181
+sites DpnI 4 182 188
+sites HpaII 77 153
+sites Hpy8I 42 105 148
+sites HpyCH4IV 52 167
+sites MboI 4 182 188
+sites RsaI 44
+sites SgrAI 151
+sites SpeI 115
+sites TaqI 28
+sites TatI 43
+out
+|DATE
+|TITLE 
+|From 1 to 200. 
+|Silent Sites
+|
+|	16	tcc tat
+|		TC<G> TA<C>
+|	RsaI	  G TAC    
+|		 S   Y
+|
+|	49	TCC ACG
+|		<A><G><T> AC<T>
+|	ScaI	AGT ACT    
+|		 S   T
+|
+|	49	TCC ACG
+|		<A><G><T> ACG
+|	RsaI	 GT AC 
+|		 S   T
+|
+|	67	TTG CGT AGA
+|		<C>T<C> CG<G> AGA
+|	BspEI	 TC CGG A  
+|		 L   R   R
+|
+|	73	AGA ACC
+|		<C>G<T> ACC
+|	RsaI	 GT AC 
+|		 R   T
+|
+|	88	CCA CTC
+|		CC<G> CTC
+|	BsrBI	CCG CTC    
+|		 P   L
+|
+|	97	CTT CGC TCG
+|		CT<C> CG<G> <A><G><C>
+|		CT<C> CG<G> <A><G><T>
+|	BspEI	 TC CGG A  
+|		 L   R   S
+|
+|	97	CTT CGC TCG
+|		CT<C> CGC TCG
+|	BsrBI	  C CGC TC 
+|		 L   R   S
+|
+|	148	GTC CAC
+|		GT<A> CAC
+|	RsaI	GTA C  
+|		 V   H
+|
+|	160	TAG TAT TAC
+|		TAG TA<C> TAC
+|	ScaI	 AG TAC T  
+|		 *   Y   Y
+|
+|	160	TAG TAT
+|		TAG TA<C>
+|	RsaI	  G TAC    
+|		 *   Y
+|
+|	178	CTC AGA TCT
+|		CTC <C>G<G> <A><G>T
+|	BspEI	 TC CGG A  
+|		 L   R   S
+|
+|	178	CTC AGA TCT
+|		CTC <C>G<C> TCT
+|	BsrBI	  C CGC TC 
+|		 L   R   S
+|
+|
+END
+CASE silent 30
+circular 0
+seq CTAACCTTGGTAATCCGAATCAAAACTAAGGTGTTTTCTAACCGCGACAATTATATAACACCTTACGTTCATCGTGATTCCGACTGTAGAGGGAGGGATGGTAAGAAGTAATCCCACACTCCTGGTTAAGGCTATCCCGCCGGCGCTAGGGTACCGGA
+sel -
+enz KasI SacI SgrAI NotI AvaI AseI EcoRI
+sites Acc65I 150
+sites AciI 42 137
+sites BfaI 146
+sites BsaWI 153
+sites BstUI 43
+sites Cac8I 139
+sites HaeII 142
+sites HhaI 143
+sites HpaII 140 154
+sites HpyCH4IV 65
+sites KpnI 150
+sites MluCI 49
+sites MreI 138
+sites MseI 126
+sites NaeI 139
+sites NgoMIV 139
+sites RsaI 151
+sites SgrAI 138
+out
+|DATE
+|TITLE 
+|From 1 to 158. 
+|Silent Sites
+|
+|	88	AGA GGG AGG
+|		<C>G<C> GG<C> <C>G<C>
+|	NotI	 GC GGC CGC    
+|		 R   G   R
+|
+|	118	ACT CCT GGT
+|		AC<C> CC<G> GGT
+|	AvaI	  C YCG RG 
+|		 T   P   G
+|
+|	121	CCT GGT
+|		CC<C> GG<G>
+|	AvaI	CYC GRG    
+|		 P   G
+|
+|	142	GGC GCT
+|		GGC GC<C>
+|	KasI	GGC GCC    
+|		 G   A
+|
+|	142	GGC GCT AGG
+|		GG<A> GCT <C>GG
+|	SacI	 GA GCT C  
+|		 G   A   R
+|
+|	145	GCT AGG GTA
+|		GCT <C>GG GTA
+|	AvaI	 CY CGR G  
+|		 A   R   V
+|
+|
+END
+CASE silent 31
+circular 0
+seq GGGGATCCTGCCGCTTTAGCCGTTATCATACTCCCTCTCGCGTTACCAGTTGGATGTTGCTCATACAGATACGAAGTAGTTGGGGCGACGATGGATGCTCTACCATATAGGCGTAGCATTCGTGGGTTTGGGCATTGGCAAGCTATAACCACTTAGGGTAGCTCTAGCCTGCTAAACGTTAATACCAGACTCTCTATGAGCCGCGCGCAAGGCGCAGAGTCCCAGAAGGACCTAAA
+sel 146 208
+enz SrfI BstZ17I AgeI NruI AscI PciI BclI NlaIII BsiWI NheI AclI
+sites AciI 11 201
+sites AclI 175
+sites AluI 141 160
+sites BamHI 3
+sites BfaI 164
+sites BssHII 203
+sites BstUI 39 202 204
+sites BstYI 3
+sites Cac8I 138 167 203
+sites DpnI 4
+sites HhaI 203 205 212
+sites HpyCH4IV 176
+sites MboI 4
+sites MseI 179
+out
+|DATE
+|TITLE 
+|From 147 to 208. 
+|Silent Sites
+|
+|	156	GGG TAG CTC
+|		GG<C> TAG CTC
+|	NheI	 GC TAG C  
+|		 G   *   L
+|
+|	186	CAG ACT CTC
+|		CA<A> AC<G> <T>T<A>
+|		CA<A> AC<G> <T>T<G>
+|	AclI	  A ACG TT 
+|		 Q   T   L
+|
+|
+END
+CASE silent 32
+circular 0
+seq TTATATGCTACGTTGGTTTAATTCTCAAATAAATATTTAGCGTAAACCGTTCAGCCTGCTGGGGGATTCCTGCCATATGGAAAGACATGTCTAGCTATGGAACTGTAGCGCCCCACGCCAGCTCCCCGATCGACTCCGGAACGATAGCAACT
+sel 50 83
+enz EcoRI BsaAI HpaI BssSI MscI PmlI SacII SrfI PshAI
+sites AluI 93 120
+sites BfaI 91
+sites BsaWI 135
+sites BspEI 135
+sites Cac8I 54 117
+sites DpnI 128
+sites HaeII 107
+sites HhaI 108
+sites HpaII 136
+sites Hpy8I 42
+sites HpyCH4IV 10
+sites MboI 128
+sites MluCI 20
+sites MseI 18
+sites NdeI 74
+sites NlaIII 86
+sites NspI 85
+sites PciI 85
+sites PvuI 127
+sites SspI 32
+sites TaqI 130
+out
+|DATE
+|TITLE 
+|From 51 to 83. 
+|Silent Sites
+|
+|	63	GGG ATT CCT
+|		GG<A> ATT CCT
+|	EcoRI	 GA ATT C  
+|		 G   I   P
+|
+|
+END
+CASE silent 33
+circular 0
+seq CTCTATGCTCGAGATATAAGAAAACAATATGAAAGAAATAAGCACAGCTCTCATGCCCATCCCGTGGCCGGCCGGTTCAAAGACCTTTGT
+sel -
+enz AciI MseI MreI HpyCH4IV PsiI FseI BspEI BstYI AfeI XmaI BfaI AvrII
+sites AluI 46
+sites AvaI 8
+sites Cac8I 67
+sites EagI 69
+sites FseI 66
+sites HaeIII 66 70
+sites HpaII 68 72
+sites NaeI 67
+sites NgoMIV 67
+sites NlaIII 52
+sites TaqI 9
+sites XhoI 8
+out
+|DATE
+|TITLE 
+|From 1 to 90. 
+|Silent Sites
+|
+|	7	GCT CGA GAT
+|		GC<C> CG<G> GAT
+|	XmaI	 CC CGG G  
+|		 A   R   D
+|
+|	7	GCT CGA
+|		GCT <A>GA
+|	BfaI	 CT AG 
+|		 A   R
+|
+|	7	GCT CGA
+|		GC<C> CG<C>
+|	AciI	  C CGC    
+|		 A   R
+|
+|	7	GCT CGA
+|		GC<A> CG<T>
+|	HpyCH4IV	  A CGT    
+|		 A   R
+|
+|	16	ATA AGA AAA
+|		AT<C> <C>G<G> AAA
+|	BspEI	 TC CGG A  
+|		 I   R   K
+|
+|	16	ATA AGA
+|		AT<C> <C>G<C>
+|	AciI	  C CGC    
+|		 I   R
+|
+|	16	ATA AGA
+|		ATA <C>G<T>
+|	HpyCH4IV	  A CGT    
+|		 I   R
+|
+|	31	GAA AGA
+|		GAA <C>G<T>
+|	HpyCH4IV	  A CGT    
+|		 E   R
+|
+|	46	AGC TCT
+|		<T><C><T> <A><G>T
+|	BfaI	 CT AG 
+|		 S   S
+|
+|	70	GGC CGG
+|		GGC CG<C>
+|	AciI	  C CGC    
+|		 G   R
+|
+|	70	GGC CGG
+|		GG<A> CG<T>
+|	HpyCH4IV	  A CGT    
+|		 G   R
+|
+|	76	TTC AAA
+|		TT<T> AAA
+|	MseI	 TT AA 
+|		 F   K
+|
+|	79	AAA GAC CTT
+|		AAA GA<T> CTT
+|	BstYI	  R GAT CY 
+|		 K   D   L
+|
+|
+END
+CASE silent 34
+circular 0
+seq TATGGTGTGGTGCGAGGTTCGTCTATATCGGTTGTGAACCACGCCCGGCTAGACTCAGTTTGCTAGCACTTGGCGCCAGAAAATGTGTTTGCACGGAGGTGTCGGAATCGGGGATCTATACAGGCGCGCTACGGCTG
+sel 83 131
+enz SgrAI KasI AseI Acc65I StuI AscI Cac8I MseI SfoI PacI NotI
+sites BfaI 49 63
+sites BssHII 124
+sites BstUI 125
+sites BstYI 112
+sites Cac8I 62 124
+sites DpnI 113
+sites HaeII 72
+sites HhaI 73 124 126
+sites HpaII 45
+sites Hpy8I 34
+sites HpyCH4V 90
+sites KasI 72
+sites MboI 113
+sites NarI 72
+sites NheI 62
+sites SfoI 72
+out
+|DATE
+|TITLE 
+|From 84 to 131. 
+|Silent Sites
+|
+|	117	TAT ACA GGC GCG
+|		TA<C> AC<C> GGC GCG
+|	SgrAI	  C RCC GGY G  
+|		 Y   T   G   A
+|
+|	123	GGC GCG
+|		GGC GC<C>
+|	KasI	GGC GCC    
+|		 G   A
+|
+|	123	GGC GCG
+|		GGC GC<C>
+|	SfoI	GGC GCC    
+|		 G   A
+|
+|
+END
+CASE silent 35
+circular 0
+seq TGGGGTTTTGCTTCGAAATCATAACTGCTTGTTTCAAGCGCTAGTTAGAAATCCCAATTTAATCATGCTACATCCACTTGGCTATTCCGTCTGGAACCCGGTGAATCAACTTCACACCATGTACTTAATGTAAGTTGTCCGCATTTCGCACAAGACCCCTTTAGTGTCTGTCGAGCATGCGGCGGCATATGCCCGGGGGGGGCGGGCTGTCACCGTCAGCGCATTTGGGGCA
+sel -
+enz HincII XhoI AseI SgrDI BbsI
+sites AciI 139 179 182 202
+sites AfeI 37
+sites AvaI 192
+sites BfaI 41
+sites BstBI 12
+sites Cac8I 175 202
+sites HaeII 37
+sites HhaI 38 219
+sites HpaII 98 193
+sites MluCI 56
+sites MseI 59 125
+sites NdeI 186
+sites NlaIII 64 118 176
+sites NspI 175
+sites RsaI 121
+sites SmaI 192
+sites SphI 175
+sites TaqI 13 171
+sites TatI 120
+sites XmaI 192
+out
+|DATE
+|TITLE 
+|From 1 to 232. 
+|Silent Sites
+|
+|	19	TCA TAA CTG
+|		<A><G><T> TAA CTG
+|	HincII	 GT YRA C  
+|		 S   *   L
+|
+|	31	GTT TCA AGC
+|		GT<C> TC<G> AGC
+|	XhoI	  C TCG AG 
+|		 V   S   S
+|
+|	70	ACA TCC ACT
+|		AC<G> TC<G> AC<G>
+|	SgrDI	 CG TCG ACG    
+|		 T   S   T
+|
+|	70	ACA TCC ACT
+|		AC<G> TC<A> ACT
+|		AC<G> TC<G> ACT
+|	HincII	  G TYR AC 
+|		 T   S   T
+|
+|	91	CTG GAA
+|		CT<C> GA<G>
+|	XhoI	CTC GAG    
+|		 L   E
+|
+|	103	GAA TCA ACT
+|		GA<G> TCA ACT
+|	HincII	  G TYR AC 
+|		 E   S   T
+|
+|	214	CGT CAG CGC
+|		CGT CA<A> CGC
+|	HincII	 GT YRA C  
+|		 R   Q   R
+|
+|
+END
+CASE silent 36
+circular 1
+seq CATTCTGCTTCGGCACTTCTAGCCATAATTATGTAGACCAATACATTACTCTCATAAGCTTCACGGTTAGCGCGCGCTGACACTGAGGGCGAAGAGTCTCACTTGTTAGCTGTCCAGAGTAAATCAAGTAGCTCGTGTCTTAAGCTGATGTCTGCCACTGGGTGAGCAGCTTGGCGGTGCTTCACCAACATTCTCACTCTTTTCTTTTAAC
+sel -
+enz EagI StuI XmnI DpnI Cac8I HpyCH4IV HpaII SacI AluI TaqI FspI BssHII
+sites AciI 174
+sites AflII 139
+sites AluI 57 108 130 143 168
+sites BfaI 19
+sites BssHII 70 72
+sites BssSI 132
+sites BstUI 71 73
+sites Cac8I 70 72
+sites HhaI 70 72 74
+sites HindIII 56
+sites Hpy8I 33
+sites MluCI 27
+sites MseI 140 207
+out
+|DATE
+|TITLE 
+|From 1 to 211. 
+|Silent Sites
+|
+|	4	TCT GCT
+|		TC<A> GCT
+|	AluI	  A GCT    
+|		 S   A
+|
+|	7	GCT TCG
+|		GCT <A><G><C>
+|	Cac8I	GCN NGC    
+|		 A   S
+|
+|	10	TCG GCA CTT
+|		<A><G><C> GC<G> CTT
+|	Cac8I	 GC NNG C  
+|		 S   A   L
+|
+|	10	TCG GCA CTT
+|		<A><G><C> GC<G> CTT
+|	BssHII	 GC GCG C  
+|		 S   A   L
+|
+|	10	TCG GCA
+|		TC<A> GC<T>
+|	AluI	  A GCT    
+|		 S   A
+|
+|	16	CTT CTA GCC
+|		CT<G> CTA GCC
+|	Cac8I	  G CNN GC 
+|		 L   L   A
+|
+|	19	CTA GCC
+|		CTA GC<T>
+|	AluI	  A GCT    
+|		 L   A
+|
+|	22	GCC ATA
+|		GC<G> AT<C>
+|	DpnI	  G ATC    
+|		 A   I
+|
+|	43	ACA TTA
+|		AC<G> TTA
+|	HpyCH4IV	ACG T  
+|		 T   L
+|
+|	52	TCA TAA
+|		<A><G><C> TAA
+|	AluI	AGC T  
+|		 S   *
+|
+|	55	TAA GCT TCA
+|		TA<G> GC<C> TCA
+|	StuI	 AG GCC T  
+|		 *   A   S
+|
+|	58	GCT TCA
+|		GCT <A><G><C>
+|	Cac8I	GCN NGC    
+|		 A   S
+|
+|	61	TCA CGG
+|		TC<G> <A>GG
+|	TaqI	TCG A  
+|		 S   R
+|
+|	61	TCA CGG TTA
+|		<A><G><C> CGG <C>TA
+|	Cac8I	 GC NNG C  
+|		 S   R   L
+|
+|	61	TCA CGG
+|		TCA CG<T>
+|	HpyCH4IV	  A CGT    
+|		 S   R
+|
+|	61	TCA CGG
+|		TC<C> CGG
+|	HpaII	  C CGG    
+|		 S   R
+|
+|	61	TCA CGG
+|		TC<T> CG<A>
+|	TaqI	  T CGA    
+|		 S   R
+|
+|	64	CGG TTA GCG
+|		CGG <C>TA GCG
+|	Cac8I	  G CNN GC 
+|		 R   L   A
+|
+|	67	TTA GCG
+|		TTA GC<T>
+|	AluI	  A GCT    
+|		 L   A
+|
+|	70	GCG CGC
+|		GC<A> CG<T>
+|	HpyCH4IV	  A CGT    
+|		 A   R
+|
+|	70	GCG CGC
+|		GC<C> CG<G>
+|	HpaII	  C CGG    
+|		 A   R
+|
+|	70	GCG CGC
+|		GC<T> CG<A>
+|	TaqI	  T CGA    
+|		 A   R
+|
+|	73	CGC GCT
+|		CG<A> GCT
+|	AluI	  A GCT    
+|		 R   A
+|
+|	103	TTG TTA GCT
+|		TTG <C>TA GCT
+|	Cac8I	  G CNN GC 
+|		 L   L   A
+|
+|	118	AGT AAA
+|		<T><C><G> AAA
+|	TaqI	TCG A  
+|		 S   K
+|
+|	121	AAA TCA AGT
+|		AA<G> <A><G><C> <T><C>T
+|	SacI	  G AGC TC 
+|		 K   S   S
+|
+|	124	TCA AGT
+|		<A><G><C> <T><C>T
+|	AluI	AGC T  
+|		 S   S
+|
+|	124	TCA AGT
+|		TC<G> AGT
+|	TaqI	TCG A  
+|		 S   S
+|
+|	130	AGC TCG
+|		<T><C><G> <A><G><C>
+|		<T><C><G> <A><G><T>
+|	TaqI	TCG A  
+|		 S   S
+|
+|	151	TCT GCC
+|		TC<A> GC<T>
+|	AluI	  A GCT    
+|		 S   A
+|
+|	157	ACT GGG
+|		AC<C> GGG
+|	HpaII	 CC GG 
+|		 T   G
+|
+|	163	TGA GCA
+|		TGA GC<T>
+|	AluI	  A GCT    
+|		 *   A
+|
+|	196	ACT CTT
+|		AC<G> <T>T<A>
+|		AC<G> <T>T<G>
+|	HpyCH4IV	ACG T  
+|		 T   L
+|
+|
+END
+CASE silent 37
+circular 0
+seq CGTCAGAGAGAGCAAAAATGCCTTGAATTATTAGATTACCGTCTCATTCTAACCTTCCCATggggctcttccggactaggatAAAATGTGCAT
+sel -
+enz XmaI KasI XbaI SphI HindIII BsrBI HpyCH4V
+sites BfaI 76
+sites BsaWI 70
+sites BsmBI 40
+sites BspEI 70
+sites HpaII 71
+sites HpyCH4V 89
+sites MluCI 26
+sites NcoI 58
+sites NlaIII 59
+sites SapI 65
+out
+|DATE
+|TITLE 
+|From 1 to 93. 
+|Silent Sites
+|
+|	19	TGC CTT GAA
+|		TG<T> CT<A> GAA
+|	XbaI	  T CTA GA 
+|		 C   L   E
+|
+|	28	TTA TTA GAT
+|		<C>T<T> <C>TA GAT
+|	XbaI	  T CTA GA 
+|		 L   L   D
+|
+|
+END
+CASE silent 38
+circular 0
+seq AGTAGTTTATCCTCATCCTGCCCACATTACAATACCAGGTTTGACGCTATGTGGAAAGTCTGAAAAAATTTGATAGAAAGACGTTCCGGAGACGGCAGTACGCAGCCCTTTAATCTGTGCTGGTATGTGCAACGGAGGATCTATCTAGTCTGGCGAGTCACCTA
+sel -
+enz StuI MluI BstZ17I BsmBI BglII SmaI NotI SpeI AflII
+sites ApoI 66
+sites BfaI 145
+sites BsaWI 85
+sites BsmBI 89
+sites BspEI 85
+sites BstYI 137
+sites DpnI 138
+sites HpaII 86
+sites HpyCH4IV 81
+sites HpyCH4V 128
+sites MboI 138
+sites MluCI 67
+sites MseI 110
+sites RsaI 98
+out
+|DATE
+|TITLE 
+|From 1 to 164. 
+|Silent Sites
+|
+|	1	AGT AGT TTA
+|		<T><C><G> <T><C>T <C>TA
+|	BsmBI	 CG TCT C  
+|		 S   S   L
+|
+|	4	AGT TTA TCC
+|		AG<C> TTA <A><G>C
+|	AflII	  C TTA AG 
+|		 S   L   S
+|
+|	34	ACC AGG
+|		AC<G> <C>G<T>
+|	MluI	ACG CGT    
+|		 T   R
+|
+|	82	CGT TCC
+|		<A>G<A> TC<T>
+|	BglII	AGA TCT    
+|		 R   S
+|
+|
+END
+CASE silent 39
+circular 1
+seq AGTATTGGGTAACTCGCCGGCGGGTTGGACAATCGGGTCGTATACTAAGAATTTTCGCACGGNGGGCTGAGCTAAGCATGTTGATCCGTGTATGTCAGGCTGATATTAGatatcaattccaatcactgatATGTCCTTCGTCTCCG
+sel 69 139
+enz SphI BspEI BsrGI NdeI NcoI BsaAI SgrAI XmnI MscI BsmBI
+sites AciI 20
+sites AluI 70
+sites ApoI 49
+sites BsmBI 139
+sites BstZ17I 40
+sites Cac8I 16
+sites DpnI 83
+sites EcoRV 109
+sites HpaII 17
+sites Hpy8I 40
+sites MboI 83
+sites MluCI 50 115
+sites MreI 15
+sites NaeI 16
+sites NgoMIV 16
+sites NlaIII 77
+sites NspI 76
+sites SgrAI 15
+out
+|DATE
+|TITLE 
+|From 70 to 139. 
+|Silent Sites
+|
+|	76	GCA TGT
+|		GCA TG<C>
+|	SphI	GCA TGC    
+|		 A   C
+|
+|	91	TAT GTC
+|		TA<C> GT<A>
+|		TA<C> GT<G>
+|	BsaAI	YAC GTR    
+|		 Y   V
+|
+|	97	AGG CTG
+|		<C>G<T> CT<C>
+|	BsmBI	CGT CTC    
+|		 R   L
+|
+|	130	tAT GTC
+|		TA<C> GT<A>
+|		TA<C> GT<G>
+|	BsaAI	YAC GTR    
+|		 Y   V
+|
+|
+END
+CASE silent 40
+circular 0
+seq CACGAAACACCAGTTTTGGCTTGTACAAGCTCAGCCTTGGAAAGGCGCACAGTGGACTCGTCGACGGGATGTCCGACAAGCctcgtgcgaggatggcaggcgAAACTATTGTAGTCCAGTGAC
+sel -
+enz PaqCI HpyCH4IV XcmI FseI SgrDI Cac8I SrfI
+sites AluI 28
+sites BsrGI 22
+sites BssSI 82
+sites Cac8I 96
+sites HhaI 45
+sites HincII 60
+sites Hpy8I 52 60
+sites RsaI 23
+sites SalI 60
+sites SgrDI 59
+sites TaqI 61
+sites TatI 22
+out
+|DATE
+|TITLE 
+|From 1 to 123. 
+|Silent Sites
+|
+|	13	GTT TTG GCT
+|		GT<G> <C>TG GCT
+|	Cac8I	  G CNN GC 
+|		 V   L   A
+|
+|	19	GCT TGT
+|		GCT TG<C>
+|	Cac8I	GCN NGC    
+|		 A   C
+|
+|	25	ACA AGC
+|		AC<G> <T><C>C
+|	HpyCH4IV	ACG T  
+|		 T   S
+|
+|	25	ACA AGC TCA GCC TTG GAA
+|		AC<C> AGC TCA GCC TTG GAA
+|	XcmI	 CC ANN NNN NNN NTG G  
+|		 T   S   S   A   L   E
+|
+|	31	TCA GCC TTG
+|		<A><G><C> GC<G> <C>TG
+|	Cac8I	 GC NNG C  
+|		 S   A   L
+|
+|	40	GAA AGG
+|		GAA <C>G<T>
+|	HpyCH4IV	  A CGT    
+|		 E   R
+|
+|	76	ACA AGC
+|		AC<G> <T><C>C
+|	HpyCH4IV	ACG T  
+|		 T   S
+|
+|	85	gtg cga
+|		GT<A> CG<T>
+|	HpyCH4IV	  A CGT    
+|		 V   R
+|
+|	91	gga tgg cag
+|		GG<C> TGG CAG
+|	Cac8I	 GC NNG C  
+|		 G   W   Q
+|
+|
+END
+CASE silent 41
+circular 1
+seq CACTTCAATTAACGCCAGAGTTCAGGGAACGAAAGCGCTTCCCGAATTATAAATATATTAACTGTAACTCATGAGGGTACAAGCCAGGCGACGCATCGTGGTGTGAGTAGGTTATCTTAAATATTAGGTAAAGTGGAAAAAATC
+sel -
+enz ScaI MseI PsiI BstYI FspI
+sites AfeI 34
+sites BspHI 69
+sites HaeII 34
+sites HhaI 35
+sites MluCI 7 45
+sites MseI 9 58 117
+sites NlaIII 70
+sites PsiI 47
+sites RsaI 77
+sites SspI 120
+out
+|DATE
+|TITLE 
+|From 1 to 144. 
+|Silent Sites
+|
+|	4	TTC AAT
+|		TT<T> AAT
+|	MseI	 TT AA 
+|		 F   N
+|
+|	49	ATA AAT
+|		AT<T> AAT
+|	MseI	 TT AA 
+|		 I   N
+|
+|	112	TTA TCT
+|		TTA <A><G>T
+|	MseI	TTA A  
+|		 L   S
+|
+|	118	TAA ATA TTA
+|		TA<G> AT<C> TTA
+|	BstYI	 RG ATC Y  
+|		 *   I   L
+|
+|
+END
+CASE silent 42
+circular 0
+seq CTACTGTTAGGCTGAGCTCTGGTCGGTTCGGGCTGTGAGGGCGAATTATCGTACTTCACCCTGGCCCAAGCGGCCCATCTGACACAAACTGGCCTACGTGCATCGCCCGCGAGTTTGCTGATATCTTAGCTGC
+sel 74 87
+enz NarI SfiI NgoMIV PciI BfaI BstBI BsaAI MfeI AatII MscI
+sites AciI 70 107
+sites AluI 15 128
+sites BsaAI 95
+sites BstUI 108
+sites Cac8I 105
+sites EcoRV 120
+sites HaeIII 63 72 91
+sites HpyCH4IV 96
+sites HpyCH4V 99
+sites MluCI 44
+sites RsaI 51
+sites SacI 14
+sites SfiI 63
+out
+|DATE
+|TITLE 
+|From 75 to 87. 
+|Silent Sites
+|
+|	75	CCA TCT
+|		CC<T> <A><G>T
+|	BfaI	 CT AG 
+|		 P   S
+|
+|
+END
+CASE silent 43
+circular 1
+seq CAGTTTTTACTAACGGACGTTACAATTACAATTCATCGAGCCACAACGCGCTCTCCCGGTCGTGTTCGGATTATATACCATCTTAGGTAACTCGGATGCAGATCGCCTCGCGTGACACTGCAGGCAGAAGTCCTTATACGCCAAAGTGGTTTCTA
+sel 31 123
+enz BsaBI AclI AbsI PshAI HpyCH4IV
+sites BsaBI 95
+sites BstUI 47 109
+sites Cac8I 120
+sites DpnI 101
+sites HhaI 48
+sites HpaII 56
+sites HpyCH4IV 17
+sites HpyCH4V 97 119
+sites MboI 101
+sites MluCI 24 30
+sites PstI 118
+sites TaqI 36
+out
+|DATE
+|TITLE 
+|From 32 to 123. 
+|Silent Sites
+|
+|	44	CAA CGC
+|		CAA CG<T>
+|	HpyCH4IV	  A CGT    
+|		 Q   R
+|
+|
+END
+CASE silent 44
+circular 1
+seq GTTTCTGGAATTGCCTCCAAATCCCCGACTCCGAAGAATATCACCCGCTAGGGTAGGCCGTGTAATAGTCGTCTGGATCTTGCCTGGACTGCAGGCCTGACAATCAACCCTTGTGTATTGTGActgcagtaataagtatcctttCACGGATCGTAAAGACCAGCACACT
+sel -
+enz ApaLI PstI BbsI PsiI SfiI BssSI SfoI
+sites AciI 45
+sites BfaI 48
+sites BstYI 75
+sites Cac8I 91
+sites DpnI 76 149
+sites HaeIII 56 94
+sites HpyCH4V 90 125
+sites MboI 76 149
+sites MluCI 9
+sites PstI 89 124
+sites StuI 93
+out
+|DATE
+|TITLE 
+|From 1 to 169. 
+|Silent Sites
+|
+|	40	ATC ACC CGC
+|		ATC AC<G> <A>G<A>
+|		ATC AC<G> <A>G<G>
+|	BssSI	  C ACG AG 
+|		 I   T   R
+|
+|	52	GGT AGG CCG
+|		GG<A> AG<A> CCG
+|	BbsI	 GA AGA C  
+|		 G   R   P
+|
+|	52	GGT AGG CCG
+|		GG<G> <C>G<C> CCG
+|	SfoI	 GG CGC C  
+|		 G   R   P
+|
+|	79	CTT GCC TGG ACT GCA
+|		CT<G> GCC TGG AC<G> GC<C>
+|	SfiI	  G GCC NNN NNG GCC    
+|		 L   A   W   T   A
+|
+|	118	TTG TGA
+|		TT<A> T<A>A
+|	PsiI	TTA TAA    
+|		 L   *
+|
+|	154	TAA AGA CCA
+|		T<G>A AGA CCA
+|	BbsI	 GA AGA C  
+|		 *   R   P
+|
+|
+END
+CASE silent 45
+circular 1
+seq CCCTCGTTTCCTAATTGTAGAGTCCCTGTAGTCCGATTTTTGCATGCCCCCCCACTTGACTACATAACTCTATAGGCTTGGATCCGATACAAGCGCTCTTCACATGCAACCACATTGGGGCAAACAGAAGCGAAGTATATTTGGATCGGTGGGTGTGACAGGAGAGGTCGTATTTTTAGCAACAGCTACCCCAAGCAGAAGTGTCTTGG
+sel 75 126
+enz BstZ17I NgoMIV KasI AluI NarI Hpy8I NcoI
+sites AfeI 92
+sites AluI 184
+sites BamHI 80
+sites BstYI 80
+sites Cac8I 42
+sites DpnI 81 144
+sites HaeII 92
+sites HaeIII 208
+sites HhaI 93
+sites HpyCH4V 41 105
+sites MboI 81 144
+sites MluCI 13
+sites NlaIII 43 103
+sites NspI 42 102
+sites SapI 95
+sites SphI 42
+out
+|DATE
+|TITLE 
+|From 76 to 126. 
+|Silent Sites
+|
+|	97	TCT TCA
+|		<A><G><C> TCA
+|	AluI	AGC T  
+|		 S   S
+|
+|	97	TCT TCA CAT
+|		<A><G>T TCA CAT
+|	Hpy8I	 GT NNA C  
+|		 S   S   H
+|
+|
+END
+CASE silent 46
+circular 1
+seq TACGGCGTGTCTGAGGAATCCGGGTGAGTTTCATCCTGCGGCTTGCCGTCTTTGGATTTGAGTACACACATCATATGGTGCTTACTAATACAAGCGACGGATCTATTTGCCTATTAATACACCTGCGGGCCTGCCAGACGGAACCATTAAAT
+sel 9 59
+enz SphI SgrDI PaqCI SgrAI NdeI BmgBI PshAI SgfI
+sites AciI 38 125
+sites AseI 113
+sites BstYI 99
+sites Cac8I 41 125 129
+sites DpnI 100
+sites HaeIII 128
+sites HpaII 20
+sites Hpy8I 62
+sites MboI 100
+sites MluCI 150
+sites MseI 114 147
+sites NdeI 72
+sites PaqCI 120
+sites RsaI 62
+sites TatI 61
+out
+|DATE
+|TITLE 
+|From 10 to 59. 
+|Silent Sites
+|
+|	40	GGC TTG CCG TCT
+|		GG<A> <C>TG CCG TCT
+|	PshAI	 GA CNN NNG TC 
+|		 G   L   P   S
+|
+|
+END
+CASE silent 47
+circular 1
+seq CGAACTGATCCGCAGAGAATCCACCGTCTATAACGGTGCGTGATGAATAGTCTGATATAAGCGGCTATGCGTTGAGCCAACTGCGAGTGAATCGAGAGGAAGCTACAAAACGAACCCGATTTGCTTATATACCCGACGGAACACAGACAGGGGTCCAACTTTCTAATCGTGTCTGCAGGTACGCTACGCAAAAAGTCGCGCGACACTCTACTAGTG
+sel 88 164
+enz NlaIII StuI BsmBI XcmI SpeI SgrAI
+sites AciI 10 61
+sites AluI 101
+sites BfaI 211
+sites BstUI 197 199
+sites DpnI 7
+sites HhaI 198
+sites HpyCH4V 174
+sites MboI 7
+sites PshAI 146
+sites PstI 173
+sites RsaI 179
+sites SpeI 210
+sites TaqI 92
+out
+|DATE
+|TITLE 
+|From 89 to 164. 
+|Silent Sites
+|
+|No sites Found
+END
+CASE silent 48
+circular 1
+seq CAATACAGCCACCCAAGCCGATTTTTCGGGCCAGAACTACAGTTCTGGCGTGTGTATTACCGCTTGCGTAAACGGTCAATGTCTTTGGCCGGGCTATATCGCTGAATTACCGAAATTTGCTGACACGACTCGAGATAGAGTGATCCGGATCAAGTAGGAACC
+sel 97 122
+enz SphI StuI BsaAI DpnI NarI MboI
+sites AciI 60
+sites ApoI 113
+sites AvaI 129
+sites BsaBI 142
+sites BsaWI 144
+sites BspEI 144
+sites Cac8I 62
+sites DpnI 142 148
+sites HaeIII 29 87
+sites HpaII 89 145
+sites Hpy8I 68
+sites MboI 142 148
+sites MluCI 105 114
+sites TaqI 130
+sites XhoI 129
+out
+|DATE
+|TITLE 
+|From 98 to 122. 
+|Silent Sites
+|
+|No sites Found
+END
+CASE silent 49
+circular 1
+seq TCTATGTAGGTGCGCTACAATCACTATAGCCCATGCTAAGGTGTACACTGATGTAGCCTCGCGCAATCTCCTCAGGGGCTACAACGTGAGTTCCTG
+sel 58 92
+enz SmaI ApoI SacII BmgBI NheI SgrAI
+sites BsrGI 42
+sites BstUI 60
+sites HhaI 12 61
+sites Hpy8I 41 43
+sites HpyCH4IV 84
+sites NlaIII 32
+sites RsaI 43
+sites TatI 42
+out
+|DATE
+|TITLE 
+|From 59 to 92. 
+|Silent Sites
+|
+|	62	CGC AAT CTC
+|		CG<A> AAT <T>T<A>
+|		CG<G> AAT <T>T<A>
+|		CG<A> AAT <T>T<G>
+|		CG<G> AAT <T>T<G>
+|	ApoI	  R AAT TY 
+|		 R   N   L
+|
+|	71	CTC AGG GGC
+|		CTC <C>G<C> GGC
+|	SacII	  C CGC GG 
+|		 L   R   G
+|
+|
+END
+CASE silent 50
+circular 1
+seq TGATTGGTACAGATCTTCATGCTCATGTTACCCGTTGGCCGAAGGTCGTCAATAGCCATATGTGAAGCCTCTTGTGCCCTGGTTAATCACGATTTAATGGGTCCCAGGATTTATAGTTAGGCCTACAATGTCACTATGACCAGTGTGGTAGTATACTTCCGGGCAGGAANGTTCCGTTCAGCAGCCAGTCCAAGAGCACAGCACAATCG
+sel -
+enz ClaI EcoRV NsiI ApoI HincII PciI BspEI
+sites BglII 11
+sites BstYI 11
+sites BstZ17I 151
+sites DpnI 12
+sites HaeIII 37 120
+sites HpaII 159
+sites Hpy8I 151
+sites MboI 12
+sites MseI 83 94
+sites NdeI 57
+sites NlaIII 18 24
+sites RsaI 7
+sites StuI 119
+out
+|DATE
+|TITLE 
+|From 1 to 209. 
+|Silent Sites
+|
+|	10	CAG ATC TTC
+|		CA<A> AT<T> TTC
+|	ApoI	 RA ATT Y  
+|		 Q   I   F
+|
+|	37	GGC CGA AGG
+|		GG<T> CGA <C>GG
+|	HincII	 GT YRA C  
+|		 G   R   R
+|
+|	46	TCG TCA ATA
+|		TC<A> TC<G> ATA
+|	ClaI	  A TCG AT 
+|		 S   S   I
+|
+|	82	GTT AAT
+|		GTT AA<C>
+|	HincII	GTY RAC    
+|		 V   N
+|
+|	106	AGG ATT TAT
+|		AG<A> ATT TAT
+|	ApoI	 RA ATT Y  
+|		 R   I   Y
+|
+|	172	TTC CGT TCA
+|		TTC CG<G> <A><G><C>
+|		TTC CG<G> <A><G><T>
+|	BspEI	 TC CGG A  
+|		 F   R   S
+|
+|
+END
+CASE silent 51
+circular 0
+seq CATCAGTTTATAAACAGTAGGTCCATGGTATGAGGGACCGTTGTGTACCGATCGAAAAATGCCCGGGACCCGGGGTTTCAGAATCTGACGACCTCGAGTGTACCTCGGACtagaatgtggagcatattcgtCCGGGGGTGCGTCGTATGGCGACGCTGGTCGGACCTTAACTAGGTAAAAGCTGTAAATTATCCCTGGA
+sel 87 146
+enz SnaBI SmaI BstBI BsmBI MluI PshAI
+sites AluI 180
+sites AvaI 62 69 93
+sites BfaI 110 171
+sites DpnI 50
+sites HpaII 63 70 132
+sites Hpy8I 43 98
+sites MboI 50
+sites MluCI 187
+sites MseI 167
+sites NcoI 23
+sites NlaIII 24
+sites PshAI 152
+sites PsiI 8
+sites PvuI 49
+sites RsaI 45 100
+sites SmaI 62 69
+sites TaqI 52 94
+sites XhoI 93
+sites XmaI 62 69
+out
+|DATE
+|TITLE 
+|From 88 to 146. 
+|Silent Sites
+|
+|	109	ACt aga
+|		AC<G> <C>G<T>
+|	MluI	ACG CGT    
+|		 T   R
+|
+|
+END
+CASE silent 52
+circular 1
+seq AGGATGGAATATtactcgcggaacgatggtctgACCTGCCAGTATGCTGANCCCCTCCTTCCACGAAAGATTATGTGTCTTAAATATTGTTTCGGGATGATGATAAGACCCCAGTAATGAATGCATACAAGCCCAAGTCTGTAAGT
+sel -
+enz BsmBI AfeI AvaI AclI SgrAI PmeI XhoI AbsI ApaLI SspI SmaI
+sites AciI 18
+sites BstUI 17
+sites HpyCH4V 122
+sites MseI 80
+sites NsiI 121
+sites SspI 8 83
+out
+|DATE
+|TITLE 
+|From 1 to 146. 
+|Silent Sites
+|
+|	13	tac tcg cgg
+|		TAC TCG <A>GG
+|	AvaI	  C YCG RG 
+|		 Y   S   R
+|
+|	13	tac tcg cgg
+|		TAC TCG <A>GG
+|	XhoI	  C TCG AG 
+|		 Y   S   R
+|
+|	58	CTT CCA CGA
+|		CT<C> CC<G> <A>GA
+|	AvaI	  C YCG RG 
+|		 L   P   R
+|
+|	127	ACA AGC CCA
+|		AC<G> <T><C><T> CCA
+|	BsmBI	 CG TCT C  
+|		 T   S   P
+|
+|	130	AGC CCA AGT
+|		AGC CC<G> AGT
+|	AvaI	  C YCG RG 
+|		 S   P   S
+|
+|
+END
+CASE silent 53
+circular 1
+seq TAAATACTGCTGCGTCGCAGTAAGAGTGGAAGGAGATCCATAACCTGGTGGAATGTTCACCCTGTACGGGAGCTCCTTAACCCTCGGTGCTGCTCATGTCCAGAAAGTGATAATTGCGGGTAGGTGTAACTATATTGTACGTGGGGTGGAACACTCCGCCTTGTAAACGCGTTTCCAAGGCTCGGTAGTATATGGGAACGCAATTAATAGACGATACACGACGGT
+sel -
+enz HaeII MluI NcoI AvrII BbsI HindIII RsaI PacI ApaI SgfI SbfI
+sites AciI 116 156
+sites AluI 71
+sites AseI 203
+sites BsaAI 138
+sites BstUI 168
+sites BstYI 34
+sites DpnI 35
+sites Hpy8I 55 163
+sites HpyCH4IV 139
+sites MboI 35
+sites MluCI 112 202
+sites MluI 167
+sites MseI 77 204 225
+sites NlaIII 95
+sites RsaI 64 137
+sites SacI 70
+out
+|DATE
+|TITLE 
+|From 1 to 225. 
+|Silent Sites
+|
+|	13	CGT CGC AGT
+|		CG<G> CGC <T><C>T
+|	HaeII	 RG CGC Y  
+|		 R   R   S
+|
+|	28	GGA AGG AGA
+|		GG<G> <C>G<C> <C>GA
+|	HaeII	 RG CGC Y  
+|		 G   R   R
+|
+|	28	GGA AGG AGA
+|		GGA AG<A> <C>GA
+|	BbsI	 GA AGA C  
+|		 G   R   R
+|
+|	55	GTT CAC
+|		GT<A> CAC
+|	RsaI	GTA C  
+|		 V   H
+|
+|	82	CCT CGG
+|		CCT <A>GG
+|	AvrII	CCT AGG    
+|		 P   R
+|
+|	130	CTA TAT
+|		CT<G> TA<C>
+|	RsaI	  G TAC    
+|		 L   Y
+|
+|	148	GGA ACA
+|		GG<T> ACA
+|	RsaI	 GT AC 
+|		 G   T
+|
+|	175	CCA AGG
+|		CC<T> AGG
+|	AvrII	CCT AGG    
+|		 P   R
+|
+|	178	AGG CTC GGT
+|		<C>G<C> CT<A> GGT
+|	AvrII	  C CTA GG 
+|		 R   L   G
+|
+|
+END
+CASE silent 54
+circular 0
+seq TGCAGAGAACACTCGTTTAGGAACACTCAAAACCACACATGTCCTGGGTGGACCTCCCGCCGGCGTCACATATGAAATGATCTGCTGGTAACGGCCCGTGG
+sel -
+enz SpeI MreI HincII HpaI AluI NdeI SmaI
+sites AciI 57
+sites Cac8I 59
+sites DpnI 79
+sites HaeIII 93
+sites HpaII 60
+sites Hpy8I 48
+sites HpyCH4V 1
+sites MboI 79
+sites MreI 58
+sites NaeI 59
+sites NdeI 69
+sites NgoMIV 59
+sites NlaIII 38
+sites NspI 37
+sites PciI 37
+sites SgrAI 58
+sites XcmI 33
+out
+|DATE
+|TITLE 
+|From 1 to 101. 
+|Silent Sites
+|
+|	13	TCG TTT
+|		<A><G><C> TTT
+|	AluI	AGC T  
+|		 S   F
+|
+|	40	TGT CCT GGG
+|		TG<C> CC<G> GGG
+|	SmaI	  C CCG GG 
+|		 C   P   G
+|
+|	43	CCT GGG
+|		CC<C> GGG
+|	SmaI	CCC GGG    
+|		 P   G
+|
+|	52	ACC TCC
+|		AC<T> <A><G><T>
+|	SpeI	ACT AGT    
+|		 T   S
+|
+|	55	TCC CGC CGG
+|		<A><G><T> CG<A> CGG
+|	HincII	 GT YRA C  
+|		 S   R   R
+|
+|	82	CTG CTG GTA
+|		CT<A> CT<A> GTA
+|	SpeI	  A CTA GT 
+|		 L   L   V
+|
+|	91	ACG GCC
+|		AC<A> GC<T>
+|	AluI	  A GCT    
+|		 T   A
+|
+|
+END
+CASE silent 55
+circular 1
+seq CAACATCGAGGGCACGGATTCATCGCTTTCATGTCTTCAATGCGATGTGCGCTAATGCTACGTAGAAGGACGTATCCGACTGGTGGAAGCGAACAGCTGGGGCAGAGATGAACATGCTCAACATAAGTATGTAAGCGAAAGTACCTGCTGACCTTTCAGTGGCAGTTCTCGTTTTGATTAAAGATCC
+sel 110 162
+enz RsaI SgrDI ApaI PvuII NgoMIV BssHII BspHI NheI BstZ17I SnaBI
+sites AluI 95
+sites BbsI 33
+sites BsaAI 59
+sites BstYI 182
+sites DpnI 183
+sites HhaI 49
+sites HpyCH4IV 60 70
+sites MboI 183
+sites MseI 178
+sites NlaIII 30 113
+sites NspI 112
+sites PvuII 94
+sites RsaI 141
+sites SnaBI 59
+sites TaqI 6
+out
+|DATE
+|TITLE 
+|From 111 to 162. 
+|Silent Sites
+|
+|	141	GTA CCT GCT
+|		GT<G> CC<G> GCT
+|	NgoMIV	  G CCG GC 
+|		 V   P   A
+|
+|	144	CCT GCT GAC
+|		CC<A> GCT GAC
+|	PvuII	 CA GCT G  
+|		 P   A   D
+|
+|
+END
+CASE silent 56
+circular 1
+seq CGTTTACAGGGTTCGGCAGTCACTTGAACGAAGTCGTTGAATGACGGTTCGATACACGACACATCTAAATACTTTATAGGAACTGTACCGTTTGATCTATCCAAATCCGGCATGTCATATACTCGCCGCGACACGAGAAAGCGATGCATAGTGATTGCATAGCTTGTCTAGGAATGTGCTAAC
+sel 98 166
+enz BamHI DpnI ApoI ScaI ApaLI HpaII SgrAI
+sites AciI 126
+sites AluI 161
+sites BfaI 168
+sites BssSI 132
+sites BstUI 127
+sites DpnI 94
+sites HpaII 107
+sites Hpy8I 2
+sites HpyCH4V 145 156
+sites MboI 94
+sites NlaIII 111
+sites NsiI 144
+sites NspI 110
+sites RsaI 85
+sites TaqI 49
+out
+|DATE
+|TITLE 
+|From 99 to 166. 
+|Silent Sites
+|
+|	102	CAA ATC CGG
+|		CAA AT<T> CGG
+|	ApoI	 RA ATT Y  
+|		 Q   I   R
+|
+|	102	CAA ATC
+|		CA<G> ATC
+|	DpnI	  G ATC    
+|		 Q   I
+|
+|	114	GTC ATA
+|		GT<G> AT<C>
+|	DpnI	  G ATC    
+|		 V   I
+|
+|	126	CCG CGA
+|		CC<C> CG<G>
+|	HpaII	  C CGG    
+|		 P   R
+|
+|
+END
+CASE silent 57
+circular 0
+seq GGAGGTCCCGTACAGGTCCGCGTTCTCTTATCGGGGTGTGTGGCGGAAAATGGTTCCTGTAGGCACTCGACTAGGTGTGCTGACTTTCAACATATCATAATTGGGAAGCATTGGGAGAGGGCCTTTGTCGCGGAGCCATTTACCGAGGCTATTCCGTTACATCAGTTACAAAGTTTGCTTCGCGGAGGTTCTAAGTATTGGACATCAGGTCCCCGGCTT
+sel -
+enz PmlI BfaI ApoI SwaI MboI BsaI ScaI
+sites AciI 18 43 130 182
+sites BfaI 71
+sites BstUI 19 129 181
+sites HaeIII 120
+sites HpaII 213
+sites MluCI 99
+sites RsaI 10
+sites TaqI 67
+out
+|DATE
+|TITLE 
+|From 1 to 219. 
+|Silent Sites
+|
+|	19	CGC GTT CTC
+|		CG<A> GT<A> CTC
+|	ScaI	  A GTA CT 
+|		 R   V   L
+|
+|	52	GGT TCC
+|		GG<A> TCC
+|	MboI	 GA TC 
+|		 G   S
+|
+|	67	TCG ACT
+|		<A><G><T> ACT
+|	ScaI	AGT ACT    
+|		 S   T
+|
+|	148	GCT ATT
+|		GC<G> AT<C>
+|	MboI	  G ATC    
+|		 A   I
+|
+|	187	GGT TCT
+|		GG<A> TCT
+|	MboI	 GA TC 
+|		 G   S
+|
+|	193	AAG TAT TGG
+|		AAG TA<C> TGG
+|	ScaI	 AG TAC T  
+|		 K   Y   W
+|
+|	202	ACA TCA
+|		AC<T> <A><G><C>
+|		AC<T> <A><G><T>
+|	BfaI	 CT AG 
+|		 T   S
+|
+|	211	CCC CGG
+|		CC<T> <A>GG
+|	BfaI	 CT AG 
+|		 P   R
+|
+|
+END
+CASE silent 58
+circular 0
+seq CATAAGATCCGGGGCGTACGACTTTCTACACCGATAGCGACGAGGTCGTGGCCCCAATTAATTACGAACCCGGTACGGCACACTTTGGATACCGGTCTGCCAGGTATTATNGTATGACCGCAGTAAGCGCCCGCCTAGGCTCACAAGCACCGGAAAGATATGGAAGGCTTCCGCAAAGCAACCCAATTATTTAACGGAAACACCCATAAT
+sel -
+enz MauBI HpaI NheI SacI BsaAI AvrII BssSI
+sites AciI 118 131 171
+sites AgeI 91
+sites AseI 57
+sites AvrII 134
+sites BfaI 135
+sites BsaWI 91 149
+sites BsiWI 15
+sites BstYI 5
+sites Cac8I 129
+sites DpnI 6
+sites HaeII 126
+sites HaeIII 50
+sites HhaI 127
+sites HpaII 9 70 92 150
+sites MboI 6
+sites MluCI 56 60 185
+sites MseI 58 191
+sites RsaI 16 73
+out
+|DATE
+|TITLE 
+|From 1 to 210. 
+|Silent Sites
+|
+|	7	ATC CGG GGC
+|		AT<A> CG<T> GGC
+|	BsaAI	 YA CGT R  
+|		 I   R   G
+|
+|	37	GCG ACG AGG
+|		GC<C> ACG AGG
+|	BssSI	  C ACG AG 
+|		 A   T   R
+|
+|	40	ACG AGG TCG
+|		AC<A> <C>G<T> <A><G><C>
+|		AC<A> <C>G<T> <A><G><T>
+|	BsaAI	 YA CGT R  
+|		 T   R   S
+|
+|	124	TAA GCG CCC
+|		T<G>A GC<T> CCC
+|	SacI	 GA GCT C  
+|		 *   A   P
+|
+|	136	TAG GCT CAC
+|		T<G><A> GCT CAC
+|	SacI	 GA GCT C  
+|		 *   A   H
+|
+|
+END
+CASE silent 59
+circular 1
+seq AGGACCAGTGCACCTTATCGGCTCAGAGTAGGGGCATGGCCGATATTccgcagcgacattcgacgagcTTATCGCAGTTGGGGGCATTTGACTGCGTGATGTATCCGTATGGATCGGATTTAGCGGGTATTCGCTGTAAAGCTTATGATCGTGTCATTAACACTTATACAAGGGTGGTATAAAGAACACG
+sel 53 175
+enz HindIII XmnI AvrII HaeIII HpyCH4IV
+sites AciI 48 123
+sites AluI 66 140
+sites ApaLI 8
+sites BssSI 187
+sites DpnI 112 147
+sites HaeIII 38
+sites HindIII 139
+sites Hpy8I 8
+sites HpyCH4V 9
+sites MboI 112 147
+sites MseI 157
+sites NlaIII 35
+sites TaqI 60
+out
+|DATE
+|TITLE 
+|From 54 to 175. 
+|Silent Sites
+|
+|	63	acg agc
+|		ACG <T><C>C
+|	HpyCH4IV	ACG T  
+|		 T   S
+|
+|	63	acg agc TTA
+|		AC<A> AGC TTA
+|	HindIII	  A AGC TT 
+|		 T   S   L
+|
+|	81	GGG GCA
+|		GGG GC<C>
+|	HaeIII	  G GCC    
+|		 G   A
+|
+|	120	TTA GCG
+|		TT<G> GC<C>
+|	HaeIII	  G GCC    
+|		 L   A
+|
+|	129	ATT CGC
+|		AT<A> CG<T>
+|	HpyCH4IV	  A CGT    
+|		 I   R
+|
+|	138	AAA GCT
+|		AA<G> GC<C>
+|	HaeIII	  G GCC    
+|		 K   A
+|
+|	162	ACT TAT
+|		AC<G> TAT
+|	HpyCH4IV	ACG T  
+|		 T   Y
+|
+|	168	ACA AGG
+|		ACA <C>G<T>
+|	HpyCH4IV	  A CGT    
+|		 T   R
+|
+|
+END
+CASE silent 60
+circular 0
+seq AAGCATGATCTACAGTAACCCATGAAGCCAGACTGTGAGAAACTCAAAAATTAATCAAATCGCGACGCCGTAGACGAATCGTACCGGATTATACGAGCATGCTTACGTAGTTCAGGGGCGGAAAAACGTGCGCTTTTCAATCCTGTGATCTGAGGCTTTCCTTTCATCGAGCCTGCGTGCTTGGTCATG
+sel -
+enz NotI SfiI PshAI NgoMIV AscI SacI PvuI HincII HaeIII
+sites AciI 118
+sites AseI 50
+sites BsaAI 104
+sites BsaWI 83
+sites BstUI 61
+sites Cac8I 97 171 175
+sites DpnI 7 147
+sites HhaI 130
+sites HpaII 84
+sites Hpy8I 70
+sites HpyCH4IV 105 126
+sites MboI 7 147
+sites MluCI 49
+sites MseI 51
+sites NlaIII 4 21 98 186
+sites NruI 60
+sites NspI 97
+sites RsaI 81
+sites SnaBI 104
+sites SphI 97
+sites TaqI 167
+out
+|DATE
+|TITLE 
+|From 1 to 189. 
+|Silent Sites
+|
+|	70	GTA GAC
+|		GT<C> GAC
+|		GT<T> GAC
+|	HincII	GTY RAC    
+|		 V   D
+|
+|	94	CGA GCA
+|		CG<G> GC<C>
+|	HaeIII	  G GCC    
+|		 R   A
+|
+|	106	CGT AGT
+|		CG<A> <T><C><G>
+|	PvuI	CGA TCG    
+|		 R   S
+|
+|	106	CGT AGT TCA
+|		CG<G> AG<C> TCA
+|	SacI	  G AGC TC 
+|		 R   S   S
+|
+|	115	GGG GCG
+|		GGG GC<C>
+|	HaeIII	  G GCC    
+|		 G   A
+|
+|	127	CGT GCG CTT
+|		CG<A> GC<T> CTT
+|	SacI	 GA GCT C  
+|		 R   A   L
+|
+|	127	CGT GCG
+|		CG<G> GC<C>
+|	HaeIII	  G GCC    
+|		 R   A
+|
+|	169	GAG CCT GCG
+|		GAG CC<G> GCG
+|	NgoMIV	  G CCG GC 
+|		 E   P   A
+|
+|	172	CCT GCG
+|		CC<G> GC<C>
+|	HaeIII	  G GCC    
+|		 P   A
+|
+|
+END
+CASE silent 61
+circular 1
+seq GACTCCGTGCGTTCGAGGGTAACGTGGTACTGTAACCGAACTAGGTGTAACGACAGCATTATTCGGAGTTTCTACGGCATATGTGTATGCGCACTGGGCGATCTAACACGTGCGAATGACGTAATACCGGCGCCCCTGGACCAGTCTGAAATACGCGGACTATCTCATCGACCCGCAGTGAAGAAGACGTTCCGTATTGATGAAATAGGGACTCGTCTAGGGGCTTTTAATGACCTGCATGCTCTCGTCGGAATAGC
+sel -
+enz NspI SgrAI FseI NdeI BspEI SphI MauBI
+sites AciI 155 173
+sites BbsI 183
+sites BfaI 41 217
+sites BsaAI 107
+sites BstUI 154
+sites Cac8I 237
+sites DpnI 100
+sites FspI 88
+sites HaeII 129
+sites HhaI 89 130
+sites HpaII 127
+sites HpyCH4IV 22 108 119 187
+sites HpyCH4V 236
+sites KasI 129
+sites MboI 100
+sites MseI 227
+sites NarI 129
+sites NdeI 78
+sites NlaIII 238
+sites NspI 237
+sites PmlI 107
+sites RsaI 27
+sites SfoI 129
+sites SphI 237
+sites TaqI 13 168
+sites XmnI 183
+out
+|DATE
+|TITLE 
+|From 1 to 257. 
+|Silent Sites
+|
+|	7	GTG CGT TCG
+|		GT<C> CG<G> <A><G><C>
+|		GT<C> CG<G> <A><G><T>
+|	BspEI	 TC CGG A  
+|		 V   R   S
+|
+|	61	ATT CGG AGT
+|		AT<C> CGG AGT
+|	BspEI	 TC CGG A  
+|		 I   R   S
+|
+|	106	ACA CGT GCG
+|		AC<G> CG<C> GCG
+|	MauBI	 CG CGC GCG    
+|		 T   R   A
+|
+|	169	CGA CCC GCA
+|		CG<G> CC<G> GC<C>
+|	FseI	 GG CCG GCC    
+|		 R   P   A
+|
+|	190	TTC CGT ATT
+|		TTC CG<G> ATT
+|	BspEI	 TC CGG A  
+|		 F   R   I
+|
+|
+END
+CASE silent 62
+circular 1
+seq ACAGCACTGTATCGAAACCGCTCTCATCTGTTAACTGCTTACAAGAGTAAAGATTATTCTGACACGTGGGTAACCGGTCAAATGTGCGAAATAGCTTCACCCGCACATTCCCTTGGACAAACGAGATCCTCGAACGAACAAAGCAGGTTGCGTGCATGAGTGTGAATATATCATCCACTAGGAACCCGTATCTAT
+sel -
+enz Hpy8I SbfI DraI NheI PvuI XhoI PvuII XmaI HpyCH4IV HincII HindIII SpeI
+sites AciI 18 101
+sites AgeI 73
+sites AluI 93
+sites BfaI 178
+sites BsaAI 63
+sites BsaWI 73
+sites BsrBI 18
+sites BstYI 124
+sites Cac8I 150
+sites DpnI 125
+sites HincII 30
+sites HpaI 30
+sites HpaII 74
+sites Hpy8I 30
+sites HpyCH4IV 64
+sites HpyCH4V 153
+sites MboI 125
+sites MseI 31
+sites NlaIII 155
+sites PmlI 63
+sites TaqI 12 130
+out
+|DATE
+|TITLE 
+|From 1 to 195. 
+|Silent Sites
+|
+|	19	CGC TCT
+|		CG<A> TC<G>
+|	PvuI	CGA TCG    
+|		 R   S
+|
+|	19	CGC TCT CAT
+|		CG<T> TC<A> CAT
+|	Hpy8I	 GT NNA C  
+|		 R   S   H
+|
+|	94	GCT TCA
+|		GCT <A><G><C>
+|	NheI	GCT AGC    
+|		 A   S
+|
+|	121	ACG AGA
+|		AC<A> <C>G<T>
+|	HpyCH4IV	  A CGT    
+|		 T   R
+|
+|	124	AGA TCC
+|		<C>GA TC<G>
+|	PvuI	CGA TCG    
+|		 R   S
+|
+|	124	AGA TCC TCG
+|		<C>G<C> TC<G> <A><G><C>
+|		<C>G<C> TC<G> <A><G><T>
+|	XhoI	  C TCG AG 
+|		 R   S   S
+|
+|	142	AGC AGG TTG
+|		AG<T> AG<A> <C>TG
+|	Hpy8I	 GT NNA C  
+|		 S   R   L
+|
+|	142	AGC AGG TTG
+|		AG<T> <C>G<A> <C>TG
+|	HincII	 GT YRA C  
+|		 S   R   L
+|
+|	142	AGC AGG
+|		<T><C><A> <C>G<T>
+|	HpyCH4IV	  A CGT    
+|		 S   R
+|
+|	148	TTG CGT
+|		TT<A> CGT
+|	HpyCH4IV	  A CGT    
+|		 L   R
+|
+|	160	GTG TGA ATA
+|		GT<T> T<A>A ATA
+|	DraI	 TT TAA A  
+|		 V   *   I
+|
+|	181	GGA ACC CGT
+|		GG<T> AC<A> CGT
+|	Hpy8I	 GT NNA C  
+|		 G   T   R
+|
+|	184	ACC CGT
+|		AC<A> CGT
+|	HpyCH4IV	  A CGT    
+|		 T   R
+|
+|
+END
+CASE silent 63
+circular 1
+seq GTCTTCGGTAAGGAAGATGTCCGTTCTCCTCGCGGGATTATTACCCTGATGATCTAGATTGGCTCTGGGCTCGGTTCTTAGGATGTAAGGGACATCGGATTTGTTGTTTGCGGATCTATCGATAAGAATAAGCGAGTTGAGATGCATGCTCTCACTCGTTGATAAGAGGT
+sel -
+enz TatI SgrDI KpnI BsaWI SapI BbsI SrfI HhaI
+sites AciI 32 110
+sites BbsI 1
+sites BfaI 54
+sites BstUI 31
+sites BstYI 112
+sites Cac8I 144
+sites ClaI 118
+sites DpnI 51 113
+sites HpyCH4V 143
+sites MboI 51 113
+sites NlaIII 145
+sites NsiI 142
+sites NspI 144
+sites SphI 144
+sites TaqI 119
+sites XbaI 53
+out
+|DATE
+|TITLE 
+|From 1 to 170. 
+|Silent Sites
+|
+|	13	GAA GAT
+|		GAA GA<C>
+|	BbsI	GAA GAC    
+|		 E   D
+|
+|	19	GTC CGT TCT
+|		GTC CG<G> TCT
+|	BsaWI	 WC CGG W  
+|		 V   R   S
+|
+|	19	GTC CGT
+|		GT<G> CG<C>
+|	HhaI	  G CGC    
+|		 V   R
+|
+|	28	CCT CGC
+|		CC<G> CGC
+|	HhaI	  G CGC    
+|		 P   R
+|
+|	64	TCT GGG
+|		TC<C> GG<A>
+|		TC<C> GG<T>
+|	BsaWI	WCC GGW    
+|		 S   G
+|
+|	85	GTA AGG
+|		GT<G> <C>G<C>
+|	HhaI	  G CGC    
+|		 V   R
+|
+|	130	AAG CGA
+|		AAG CG<C>
+|	HhaI	  G CGC    
+|		 K   R
+|
+|	148	GCT CTC
+|		GC<G> CTC
+|	HhaI	GCG C  
+|		 A   L
+|
+|	154	ACT CGT
+|		AC<G> CG<C>
+|	HhaI	  G CGC    
+|		 T   R
+|
+|
+END
+CASE silent 64
+circular 1
+seq AGAAAAACTTGAACATAACCGATAGCAGAGCACTAAGCTTTGAGCCTTCTCTACTTGGGCTCAGCCTCGATCACTTCTTTAACCGTTCACCTTCAAACTCCTGCATTACATAAGTATGTCGTTATACCGCGACAGTGCTTGCGTAACTTATTGTAAGTGTTTATACCAAGGACGCGGGCTGCAAGC
+sel 43 101
+enz PacI HaeIII BsaBI DpnI SacII AciI XhoI MluI BspHI
+sites AciI 127 174
+sites AluI 36
+sites BstUI 128 173
+sites Cac8I 137 174 181
+sites DpnI 69
+sites HindIII 35
+sites Hpy8I 85
+sites HpyCH4V 102 180
+sites MboI 69
+sites MseI 79
+sites TaqI 67
+out
+|DATE
+|TITLE 
+|From 44 to 101. 
+|Silent Sites
+|
+|	56	TGG GCT
+|		TGG GC<C>
+|	HaeIII	  G GCC    
+|		 W   A
+|
+|	65	CCT CGA
+|		CC<G> CG<G>
+|	SacII	CCG CGG    
+|		 P   R
+|
+|	65	CCT CGA
+|		CC<G> CGA
+|	AciI	CCG C  
+|		 P   R
+|
+|	65	CCT CGA
+|		CC<C> CG<C>
+|	AciI	  C CGC    
+|		 P   R
+|
+|
+END
+CASE silent 65
+circular 0
+seq TTTCGGTGCTACAGTACGCGTGATTGCTACGCCGGCCGAGGGTTGGTCGCCTTAGTGCGTTTTGGCAGCGTCCTTGGCACCGGCGGCGTTCTGCTCAACGTAGCGTAGGGGGTTATTAGCGTGCTAGCTTAATATTTATAACATCGCTGTG
+sel 72 147
+enz AclI AflII SgrAI Hpy8I NlaIII FspI BstBI NruI PsiI NgoMIV HpyCH4IV
+sites AciI 83
+sites AluI 126
+sites BfaI 124
+sites BstUI 17
+sites Cac8I 31 119 123
+sites EagI 33
+sites HaeIII 34
+sites HpaII 32 80
+sites HpyCH4IV 98
+sites MluI 16
+sites MseI 129
+sites NaeI 31
+sites NgoMIV 31
+sites NheI 123
+sites PsiI 136
+sites RsaI 14
+sites SgrAI 78
+sites SspI 131
+out
+|DATE
+|TITLE 
+|From 73 to 147. 
+|Silent Sites
+|
+|	85	GGC GTT CTG
+|		GG<T> GT<A> CTG
+|	Hpy8I	 GT NNA C  
+|		 G   V   L
+|
+|	97	AAC GTA
+|		AAC GT<T>
+|	AclI	AAC GTT    
+|		 N   V
+|
+|	103	GCG TAG GGG
+|		GC<T> TA<A> GGG
+|	AflII	 CT TAA G  
+|		 A   *   G
+|
+|	103	GCG TAG
+|		GC<A> T<G>G
+|	NlaIII	 CA TG 
+|		 A   *
+|
+|	112	GTT ATT AGC
+|		GTT AT<A> AGC
+|	PsiI	 TT ATA A  
+|		 V   I   S
+|
+|	118	AGC GTG CTA
+|		AG<T> GT<A> CTA
+|	Hpy8I	 GT NNA C  
+|		 S   V   L
+|
+|	127	GCT TAA
+|		GC<A> T<G>A
+|	NlaIII	 CA TG 
+|		 A   *
+|
+|
+END
+CASE silent 66
+circular 0
+seq GGAGACGCTTGTGTCATTAATGCGTATAGTGGGCTATAAACCATATTCACGCAGACGTCCTTGCCGAAAATGTACGGGATAGGGCCGCGTTGTTGCGTGTAACACTTCGTTTCACCAGAAGA
+sel 36 118
+enz KpnI BsaAI HincII AgeI ZraI MreI BsmBI DraI DpnI ApoI
+sites AatII 54
+sites AciI 85
+sites AseI 16
+sites BstUI 86
+sites HaeIII 83
+sites HpyCH4IV 55
+sites MseI 17
+sites RsaI 72
+sites ZraI 54
+out
+|DATE
+|TITLE 
+|From 37 to 118. 
+|Silent Sites
+|
+|	40	ACC ATA
+|		AC<G> AT<C>
+|	DpnI	  G ATC    
+|		 T   I
+|
+|	55	ACG TCC TTG
+|		ACG TC<T> <C>TG
+|	BsmBI	 CG TCT C  
+|		 T   S   L
+|
+|	76	GGG ATA
+|		GGG AT<C>
+|	DpnI	  G ATC    
+|		 G   I
+|
+|	106	TTC GTT TCA
+|		TTC GT<C> TCA
+|	BsmBI	  C GTC TC 
+|		 F   V   S
+|
+|
+END
+CASE silent 67
+circular 0
+seq GGTGTTCCGACTCGAGCGTCATGGAGGCTTTATCCGAGTACTAGATCGCGGCGTCTGTGTGACAGAATTTTCCGGAAAGGCAATAGTATTATCGGCCCCACAGCTAGCATGCTACCCCTCCCCCCCGTGCAGTGAGTTGAGCCGAGGCGCCCCGCGGCATAC
+sel 44 105
+enz MluCI BspEI KpnI SbfI PacI NarI EcoRV SspI BsaWI
+sites AciI 48 152 154
+sites AluI 102
+sites ApoI 65
+sites AvaI 11
+sites BfaI 41 104
+sites BsaWI 71
+sites BspEI 71
+sites BstUI 47 153
+sites Cac8I 103 107
+sites DpnI 44
+sites HaeII 146
+sites HaeIII 94
+sites HhaI 147
+sites HpaII 72
+sites HpyCH4V 128
+sites KasI 146
+sites MboI 44
+sites MluCI 66
+sites NarI 146
+sites NheI 103
+sites NlaIII 20 108
+sites NspI 107
+sites RsaI 38
+sites SacII 152
+sites ScaI 37
+sites SfoI 146
+sites SphI 107
+sites TaqI 12
+sites TatI 37
+sites XhoI 11
+out
+|DATE
+|TITLE 
+|From 45 to 105. 
+|Silent Sites
+|
+|	84	TAG TAT TAT
+|		TA<A> TAT TAT
+|	SspI	 AA TAT T  
+|		 *   Y   Y
+|
+|
+END
+CASE silent 68
+circular 0
+seq CAGTCACATGTCCCGGTTAGAAAACAATGCTGCGACATCGCTGAGCCTAAANACATCCAGTCCAGAACGCGTGATTGCGCCTAGAGCAGAGGCAGAAGTTTTGTTGACAGTGAACACGACAATGTGGCACTGGAAAATCTCGATACAGGCGGGCATCTCAGCGCAACAATGGTTC
+sel 50 122
+enz SalI BspEI ApoI FspI SacI AbsI AclI
+sites AciI 149
+sites BfaI 81
+sites BstUI 68
+sites Cac8I 149
+sites HhaI 77 161
+sites HincII 103
+sites HpaII 13
+sites Hpy8I 103 110
+sites MluI 67
+sites NlaIII 7
+sites NspI 6
+sites PciI 6
+sites TaqI 140
+out
+|DATE
+|TITLE 
+|From 51 to 122. 
+|Silent Sites
+|
+|	96	AAG TTT
+|		AA<A> TTT
+|	ApoI	RAA TTY    
+|		 K   F
+|
+|
+END
+CASE silent 69
+circular 1
+seq GTGGGTATCTGGGTGGATCAAACTAACCAGTTTTAGTCTGGTGTTGCACTTCCACGCTGGGAGCAGCCGGGGAGATATTCTGATGCAGGTGGTTAACGTAGCTTACTCCTGAGCTAGGTTTACGAAGGTTTAAATTCACACCCATACGTATACCCGATTTTATCGGTTTACTCTGATTCTCATGTCGACTAAGCGGTTCTGATCGGTCGGCGTTTCATTAAGGGATTCCCACCGCGT
+sel 147 172
+enz NlaIII XbaI BsrGI MfeI XcmI PshAI HhaI AatII SalI BbsI
+sites AciI 193 232
+sites AluI 100 112
+sites ApoI 132
+sites BfaI 114
+sites BsaAI 145
+sites BstUI 233
+sites BstZ17I 148
+sites DpnI 16 201
+sites DraI 129
+sites HincII 92 184
+sites HpaI 92
+sites HpaII 67
+sites Hpy8I 92 118 148 166 184
+sites HpyCH4IV 96 146
+sites HpyCH4V 45 84
+sites MboI 16 201
+sites MluCI 133
+sites MseI 93 130 218
+sites NlaIII 181
+sites PaqCI 85
+sites SalI 184
+sites SnaBI 145
+sites TaqI 185
+sites XcmI 27
+out
+|DATE
+|TITLE 
+|From 148 to 172. 
+|Silent Sites
+|
+|No sites Found
+END
+CASE silent 70
+circular 1
+seq ACATAAACAAGTGGGCCGGCCTTTGGCTCAAAGGACGCTACTTCGACTTTTGGGGTTGATCTTCGGGTATTAATCTCGAAGCAAAGTCCTCAGCGACATAATAGGATCTCTGTATCAGTGAGAT
+sel 16 60
+enz MfeI FseI ZraI SphI AvrII NsiI HindIII BstYI AfeI BsiWI
+sites AseI 69
+sites BstYI 104
+sites Cac8I 15
+sites DpnI 58 105
+sites FseI 14
+sites HaeIII 14 18
+sites HpaII 16
+sites MboI 58 105
+sites MseI 70
+sites NaeI 15
+sites NgoMIV 15
+sites TaqI 43 76
+out
+|DATE
+|TITLE 
+|From 17 to 60. 
+|Silent Sites
+|
+|	32	AGG ACG
+|		<C>G<T> ACG
+|	BsiWI	CGT ACG    
+|		 R   T
+|
+|	47	CTT TTG GGG
+|		CT<C> <C>T<A> GGG
+|	AvrII	  C CTA GG 
+|		 L   L   G
+|
+|
+END
+CASE silent 71
+circular 0
+seq GTAACCTTCAGTCCACTTCGCCTGCACCCTGATTACCCTACTTCAACTCGATGGAGAGCCGGAGCACGTTAGGATCTTATcaagtgtctcatgtaaaaataTCCCTATTAGACTATCGGCAGATCTATGTCGCGACAGCGGATGTCGGTGTAGAGTAGAATGGATCTTTGTGTGAACAACTAAGATGTGGGGAATGCCAGGCAAGCCTCTTACACCTGTGCATTGGCGCACAGCGTGG
+sel -
+enz BmgBI EcoRV NruI BsrGI SbfI BspHI PmeI
+sites AciI 138
+sites BglII 121
+sites BstUI 131
+sites BstYI 72 121 162
+sites Cac8I 20 201
+sites DpnI 73 122 163
+sites HhaI 226
+sites HpaII 59
+sites Hpy8I 11 172
+sites HpyCH4IV 66
+sites HpyCH4V 23 219
+sites MboI 73 122 163
+sites NlaIII 90
+sites NruI 130
+sites TaqI 48
+out
+|DATE
+|TITLE 
+|From 1 to 238. 
+|Silent Sites
+|
+|	37	CCT ACT TCA
+|		CC<C> AC<G> TCA
+|	BmgBI	  C ACG TC 
+|		 P   T   S
+|
+|	130	TCG CGA CAG
+|		TC<A> CG<T> CAG
+|	BmgBI	 CA CGT C  
+|		 S   R   Q
+|
+|	154	AGT AGA
+|		<T><C><G> <C>GA
+|	NruI	TCG CGA    
+|		 S   R
+|
+|	196	GCC AGG CAA
+|		GC<A> <C>G<T> CAA
+|	BmgBI	 CA CGT C  
+|		 A   R   Q
+|
+|
+END
+CASE silent 72
+circular 1
+seq TTGGGGTCAGAGCTAAACCAGAGGCTCTCAGTGGGGATCAAAGGTCTTCTGCTACGTTCAGAAGGGACGGACTACGCATCTATCAGGAGGCAGTAACTTACTAGCTGTCTCTCGCTTTTTG
+sel 3 61
+enz BssHII HpaII ClaI DraI BsmBI MluI AvaI
+sites AluI 11 103
+sites BbsI 44
+sites BfaI 101
+sites DpnI 36
+sites HpyCH4IV 54
+sites MboI 36
+out
+|DATE
+|TITLE 
+|From 4 to 61. 
+|Silent Sites
+|
+|	22	AGG CTC
+|		<C>G<T> CTC
+|	BsmBI	CGT CTC    
+|		 R   L
+|
+|	52	CTA CGT
+|		CT<C> CG<G>
+|	HpaII	  C CGG    
+|		 L   R
+|
+|
+END
+CASE silent 73
+circular 0
+seq GTAGGAACCCTGGCGGACTTACCTCGATCTGGATCAGATCTGNTAATTCGTGAAGTTGCCGTACCTGGCTCTATCTGTCTGTAGCCACCATCTCATACTAATCTGATCACGCTATTATCACAACACTCCGCTACACCAAA
+sel -
+enz AflII HhaI BclI BsmBI AbsI BsrGI Hpy8I RsaI BsaAI NgoMIV
+sites AciI 13 128
+sites BclI 104
+sites BglII 36
+sites BsaBI 26
+sites BstYI 36
+sites DpnI 26 32 37 105
+sites MboI 26 32 37 105
+sites MluCI 45
+sites RsaI 61
+sites TaqI 24
+out
+|DATE
+|TITLE 
+|From 1 to 140. 
+|Silent Sites
+|
+|	4	GGA ACC CTG
+|		GG<T> AC<A> CTG
+|	Hpy8I	 GT NNA C  
+|		 G   T   L
+|
+|	4	GGA ACC
+|		GG<T> ACC
+|	RsaI	 GT AC 
+|		 G   T
+|
+|	22	CCT CGA TCT
+|		CC<A> CG<T> <A><G>T
+|	BsaAI	 YA CGT R  
+|		 P   R   S
+|
+|	22	CCT CGA
+|		CC<G> CG<C>
+|	HhaI	  G CGC    
+|		 P   R
+|
+|	46	ATT CGT GAA
+|		AT<A> CGT GAA
+|	BsaAI	 YA CGT R  
+|		 I   R   E
+|
+|	88	CCA TCT CAT
+|		CC<G> TCT CAT
+|	BsmBI	 CG TCT C  
+|		 P   S   H
+|
+|	112	CTA TTA TCA
+|		CT<C> TTA <A><G><C>
+|		CT<C> TTA <A><G><T>
+|	AflII	  C TTA AG 
+|		 L   L   S
+|
+|	118	TCA CAA CAC
+|		<A><G><T> CAA CAC
+|	Hpy8I	 GT NNA C  
+|		 S   Q   H
+|
+|	127	TCC GCT
+|		<A><G>C GCT
+|	HhaI	 GC GC 
+|		 S   A
+|
+|
+END
+CASE silent 74
+circular 1
+seq CGAGGCGCCTCTCCGCCCGAACCGTGATGTCATTAGTTCAAACTAAATGAAACAATCGGGCATATTGCGATACTCACTTAAGGCGCGTCAATCATGATGCCGAGTTCTACAGGGGCTCGAGGCTAGACCACGCTTGGACGTATCCCAACTAATGAGACTGCTGGACACACTTGTATCGGTATATAAGTCGTCTGACCTGGATGAACCGTACTACTTGGCAGATTGGATTGACGGGGTAACTC
+sel 112 130
+enz TaqI NruI Acc65I BamHI HhaI SacII BssHII
+sites AciI 13
+sites AflII 77
+sites AvaI 116
+sites BfaI 123
+sites BspHI 92
+sites BstUI 84
+sites HaeII 4
+sites HhaI 5 83
+sites HpyCH4IV 138
+sites KasI 4
+sites MseI 78
+sites NarI 4
+sites NlaIII 93
+sites RsaI 208
+sites SfoI 4
+sites TaqI 117
+sites XhoI 116
+out
+|DATE
+|TITLE 
+|From 113 to 130. 
+|Silent Sites
+|
+|	122	GCT AGA
+|		GC<G> <C>GA
+|	HhaI	GCG C  
+|		 A   R
+|
+|	122	GCT AGA
+|		GC<G> <C>G<C>
+|	BssHII	GCG CGC    
+|		 A   R
+|
+|	122	GCT AGA
+|		GCT <C>GA
+|	TaqI	  T CGA    
+|		 A   R
+|
+|	122	GCT AGA
+|		GC<G> <C>G<C>
+|	HhaI	  G CGC    
+|		 A   R
+|
+|
+END
+CASE silent 75
+circular 0
+seq CTCAAGCCATGGAGACTCCGCATTGTCACGCCCTATCCAAGAGCCGTACCTTATGCGTCACGCTTCGAGAATAGCTCCTAATGCCATCAAACACGATGCAGCTACGTGACGAGAGCAGTACTCAGATAAAATCTACATCACCCACCTTTGATTCCCCAAATAGGGCAGGCCTTTTGTGCTACCACTTTTAGACAGCCCCACT
+sel -
+enz HaeII XbaI EagI SphI BspHI StuI
+sites AciI 18
+sites AluI 73 100
+sites BsaAI 103
+sites Cac8I 165
+sites HaeIII 168
+sites HpyCH4IV 104
+sites HpyCH4V 97
+sites NcoI 7
+sites NlaIII 8
+sites RsaI 46 118
+sites ScaI 117
+sites StuI 167
+sites TaqI 65
+sites TatI 117
+out
+|DATE
+|TITLE 
+|From 1 to 202. 
+|Silent Sites
+|
+|	10	TGG AGA CTC
+|		TGG <C>G<C> CTC
+|	HaeII	 RG CGC Y  
+|		 W   R   L
+|
+|	58	TCA CGC
+|		TC<T> <A>G<A>
+|	XbaI	TCT AGA    
+|		 S   R
+|
+|	76	TCC TAA
+|		TC<A> T<G>A
+|	BspHI	TCA TGA    
+|		 S   *
+|
+|
+END
+CASE silent 76
+circular 0
+seq CGTTGGACAGCTGGCCAAAGATTACTCCTGTTTGGGAGAGTTTAGCTATGTGCGTAACCCTTGTACCCGAAGTGGGTAGAATAGTCGCGATCCGTGTAACTCAATAATAATAATTAACACTGATCTACGATAATAGTTAAAGAGTGCCTTGAAGCGAAAGTACC
+sel -
+enz BsrGI NruI MscI PmlI NsiI SphI MauBI TatI SwaI
+sites AluI 9 44
+sites BstUI 86
+sites Cac8I 10
+sites DpnI 89 122
+sites HaeIII 13
+sites MboI 89 122
+sites MluCI 112
+sites MscI 12
+sites MseI 114 137
+sites NruI 85
+sites PvuII 8
+sites RsaI 63 160
+out
+|DATE
+|TITLE 
+|From 1 to 164. 
+|Silent Sites
+|
+|	124	TCT ACG
+|		<A><G>T AC<A>
+|		<A><G>T AC<T>
+|	TatI	WGT ACW    
+|		 S   T
+|
+|
+END
+CASE silent 77
+circular 1
+seq CAGAAAGACATGCCGTATTTTAGAATGCGTGATGTATTACCAGAATCCCATCGGTGCAGCTTCTCAGCTAGCCGTGACAACGTGGCATTGTCTACCGATTCGCCCCGCGATGACATGGAGTACATACCTTCTTCACATCTATTTCCGGTCTCGGTTGTCATGTCCTTCAATTGGTTTAGCGTCCGT
+sel 52 65
+enz HindIII NruI NarI BamHI XbaI BstBI BglII BspHI
+sites AciI 105
+sites AluI 58 66
+sites BfaI 68
+sites BsaI 147
+sites BsaWI 144
+sites BstUI 106
+sites Cac8I 67
+sites HpaII 145
+sites Hpy8I 90
+sites HpyCH4IV 80
+sites HpyCH4V 55
+sites MfeI 168
+sites MluCI 169
+sites NheI 67
+sites NlaIII 9 114 159
+sites NspI 8
+sites RsaI 120
+sites TatI 119
+out
+|DATE
+|TITLE 
+|From 53 to 65. 
+|Silent Sites
+|
+|	53	GGT GCA
+|		GG<C> GC<C>
+|	NarI	GGC GCC    
+|		 G   A
+|
+|
+END
+CASE silent 78
+circular 1
+seq TGGACGCACTAGGCACAAGTATTTGCGCATGCCTAGCGTTGTAGTCCTTTCGGCCACATCGCTTTCCGATCTATCAGTAATGTGTGCTTGGTACCGTGGGTACCTGTAATTGTAGTTGTTCTTAAGTAGGCCATGCAATCTGACTCGCGCATGTAACTCAGCCT
+sel -
+enz NaeI FspI AvaI BspEI Acc65I
+sites Acc65I 90 99
+sites AflII 121
+sites BfaI 9 33
+sites BstUI 146
+sites Cac8I 27
+sites DpnI 68
+sites FspI 24
+sites HaeIII 52 129
+sites HhaI 25 147
+sites HpyCH4V 134
+sites KpnI 90 99
+sites MboI 68
+sites MluCI 108
+sites MseI 122
+sites NlaIII 28 132 150
+sites NspI 27 149
+sites RsaI 91 100
+sites SphI 27
+out
+|DATE
+|TITLE 
+|From 1 to 164. 
+|Silent Sites
+|
+|	64	TTC CGA TCT
+|		TTC CG<G> <A><G>T
+|	BspEI	 TC CGG A  
+|		 F   R   S
+|
+|	142	GAC TCG CGC
+|		GAC TCG <A>G<A>
+|		GAC TCG <A>G<G>
+|	AvaI	  C YCG RG 
+|		 D   S   R
+|
+|
+END
+CASE silent 79
+circular 0
+seq ACACATGCAGTTACGGCCCTACCAGTGAGATTAGATGCAGGATCGTGGAGCAATTCCGTAATTTGTTTCTCGAGGAGCCATACGATGTAGCTCATCCCGTACCTAGATTGCAGAGTGTGGTAAATGGGGAGGGCCAGAAGCGTAATGAATACGTAAGCTTGAGGCCTCTATATACGACAGCCTAGTTGTCCGACTCATTGCCCGATATGAATTCAGAGAGGCTTTCGTGTAGTCGTCAAGTACTC
+sel 189 222
+enz AciI SfoI EagI SnaBI BssHII Cac8I ScaI HpaI HincII PshAI
+sites AluI 89 156
+sites ApoI 209
+sites AvaI 69
+sites BfaI 103 182
+sites BsaAI 150
+sites DpnI 41
+sites EcoRI 209
+sites HaeIII 15 132 163
+sites HindIII 155
+sites HpyCH4IV 151
+sites HpyCH4V 6 36 109
+sites MboI 41
+sites MluCI 52 60 210
+sites NlaIII 4
+sites NspI 3
+sites RsaI 99 240
+sites ScaI 239
+sites SnaBI 150
+sites StuI 162
+sites TaqI 70
+sites TatI 239
+sites XhoI 69
+out
+|DATE
+|TITLE 
+|From 190 to 222. 
+|Silent Sites
+|
+|No sites Found
+END
+CASE silent 80
+circular 0
+seq GCGTTGTACCATTGGCACTGCTCTGCCCGATATTAGGTATCTAGATAGGTCTCCCCGGAGATCCTTCTGCCTCGANAACGTGAAGTGACATGAGAAGTAGTGTAATAAA
+sel -
+enz NgoMIV MluI BsiWI SfoI MboI
+sites BfaI 41
+sites BsaI 48
+sites BstYI 59
+sites DpnI 60
+sites HpaII 55
+sites HpyCH4IV 78
+sites MboI 60
+sites NlaIII 89
+sites RsaI 6
+sites TaqI 72
+sites XbaI 40
+out
+|DATE
+|TITLE 
+|From 1 to 109. 
+|Silent Sites
+|
+|No sites Found
+END

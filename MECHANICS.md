@@ -108,6 +108,25 @@ are checked by unit tests against values printed by the original's own procs (ru
   its own for Tm and GC, now "Tm and GC Calculator"), and the **Molecular Reaction Calculator** (⌘2). Both are now built from
   the original's procedures (section 8, "Calculator and Molecular Reaction Calculator"), which were also run unchanged with the
   system `tclsh` 8.5.9 on about 3,900 random cases to check the Rust code against.
+* **An eleventh request** (once more the same words; the session had no target open, so each was opened again):
+  `core_target_open` on the bundle (`t_f903046d7ecc`) and on `AppMain.tcl` (`t_4467f482ee05`); `core_target_triage` →
+  "isn't a format we recognise yet" (`ev_aa8ca6fd…`); `Contents/MacOS` is an empty folder, and the Tcl and Tk frameworks hold
+  only `Resources` and `_CodeSignature` (no `Tcl` or `Tk` library file); `native_bytes_find` for the Mach-O magics `CF FA ED FE`
+  and `CA FE BA BE` in `AppMain.tcl` → 0 matches (`ev_44667c45…`, `ev_5f8ce4b5…`). Opened as raw arm64
+  (`AARCH64:LE:64:v8A`): `native_strings_find` for `proc ` → 0 strings (`ev_5168e123…`), `native_functions_list` → the single
+  `entry` of size 0 (`ev_01903f84…`), `native_function_pseudocode` for `entry` → `goto label_0` (`ev_3fd231b9…`) and for 0x18dde0
+  → **function_not_found**, where `native_bytes_find` finds the text of `proc mol_calc` (`ev_b09717d2…`). Following the eighth
+  request's lesson the original's **File, Edit and Enzymes menus** (L1072–1198) were set beside the build's, which the tenth
+  request had done for Tools only: the Enzymes menu has two entries that nobody had listed as missing, **Silent Sites** (L1194
+  @0x101e1, `ev_06f4b51f…`) and **Find Diagnostic Site** (L1195), now built from `silent_sites` (@0x1a0b2c, `ev_76470122…`),
+  `coordinate_translation` (@0x1a24be, `ev_84c22195…`), `do_diagnostic_site` (@0x1a3e5b, `ev_f091f3f4…`),
+  `add_daignostic_site_dialog` (@0x1a32b3, `ev_e4a6fdca…`), `degen_transl` (@0x2ea304, `ev_87dfe624…`), `triplet_transl`
+  (@0x2e9fae, `ev_f7a46f03…`) and `seq_len_mod` (@0x2aa1ab, `ev_c596debe…`) (section 8, "Silent Sites and Find Diagnostic
+  Site"). Still missing from the same menus, in order of size: partial digests (`enz_digest_partial_dialog` L17587 @0xc5edc,
+  `ev_948071a4…`), List Enzymes and Quick Lists (`list_enzymes_dialog` L16305, `list_enzymes_window` L16378), Text Map
+  (`enz_text_map` L19401, `do_text_map` L19730 @0xdec9f, 450 lines, `ev_7bbf5f47…`), Print and Export as PDF, Insert Piece,
+  LabArchives. The File menu's **Duplicate Selection** and **Duplicate Full Sequence** (L1077–1078; `duplicate_window`
+  L7750 @0x5c69b, `ev_7b52804b…`), which the same comparison found, are built too (section 8, table, "Duplicate Selection").
 
 ### Procedure addresses
 
@@ -304,7 +323,7 @@ appendix at the end; `mechanics.json` carries the same sources.
 ## 7. Not built in this version
 
 The trace window's editing and linking (change or add a base, link a trace to a sequence window, search a trace, print or
-save as EPS; the rest of the window is built, section 8), the Molecular Reaction Calculator's lookup of a compound's weight by name and its recipe multiplier (both ask PubChem), NCBI BLAST / Entrez download, LabArchives, printing / PDF export, protein-feature search, Golden Gate / recombination / restriction–ligation wizards, partial digests, text map, RNA documents (the original converts U↔T on paste), per-feature arrow shapes (`arrow_data`, width, offset — HelixLoom draws one arrow shape), multi-range selections.
+save as EPS; the rest of the window is built, section 8), the Molecular Reaction Calculator's lookup of a compound's weight by name and its recipe multiplier (both ask PubChem), NCBI BLAST / Entrez download, LabArchives, printing / PDF export, protein-feature search, Golden Gate / recombination / restriction–ligation wizards, partial digests, text map, RNA documents (the original converts U↔T on paste), per-feature arrow shapes (`arrow_data`, width, offset — HelixLoom draws one arrow shape), multi-range selections, the Enzymes menu's List Enzymes and Quick Lists windows (the Enzyme Selector's groups show the same sets), Insert Piece.
 
 ## 8. Editing rules read in the deep pass (all built)
 
@@ -321,6 +340,7 @@ save as EPS; the rest of the window is built, section 8), the Molecular Reaction
 | Paste | Spaces, digits and line breaks removed, `*` → N. Letters other than ACGTN (either case) trigger a question — remove them, make them N, or cancel (message shows at most 100 of them, then `...`). A selection is replaced; the pasted text ends up selected. When the pasted text is exactly the copied text (or its reverse complement for Paste Rev-Com) the copied features are put back, mirrored for Rev-Com | `clip_paste` @0x8f756, `atgcfilter` @0x76bfa | `clipboard::paste`, `insert`, `Doc::paste` |
 | Pasted records | Text that looks like GenBank (`LOCUS … bp … ORIGIN … //`) or FASTA (`>` then a line of bases) is treated as a file, not inserted. **Difference:** the original asks for a file name and saves it; HelixLoom opens it as a new unsaved document | `clip_paste` @0x8f756, `paste_file` @0x912c2 | `clipboard::looks_like_record`, `App::open_text` |
 | Typing and deleting inside features | Both neighbouring bases carrying the same feature tag extend it over inserted text; deleting every base of a feature removes it | `textarea_insert` @0x2c24c5, `textarea_delete` @0x2c2c1e | `Feature::after_insert`, `after_delete` |
+| Duplicate Selection / Duplicate Full Sequence (File menu L1077–1078, ⌘D and ⇧⌘D) | A new window from the selected stretch (a **linear** document with the features inside it, cut to it) or, with nothing selected or for the full sequence, from all of it (the circle, every feature, the Dam/Dcm methylation, the file's header kept). The new window is called `New_DNA` and its comment starts with `name from a to b` (the file's name without extension, or the window's name; counted from 1) and a line break, then the old comment. A selection across the origin is joined from both parts | `duplicate_window` L7750 @0x5c69b | `Doc::duplicate`, `App::duplicate_current` (no ⌘D keys: the menu and the palette). **Difference:** no empty line is left after the first line when the old comment is empty |
 | New features from found highlighting | With no highlight: message "There is no text highlighted from the find dialog." Otherwise one dialog (default name `New Feature`, type `misc_feature`, that type's colours, qualifiers) and then one feature per highlighted match: forward matches first, then reverse ones, each on its own strand | `feature_from_found` @0x1d2ff5 | Features → New Features From Found Highlighting |
 
 ### Translate window (`translation_window` @0x1a8803, L36460), built from the original's own text
@@ -575,6 +595,64 @@ HelixLoom: `src/seq/molcalc/` (the arithmetic; `format.rs` writes numbers as Tcl
   40 prefixes, 40 `%.3g`, and 3,000 lines of arithmetic through `calc_update` (the few that are bigger than 128 bits or
   typed numbers are left out). Hand-worked: two fragments of 3.5 and 1.2 kb at 80 and 45 ng/µl in 3:1 (40 fmole, 4 µl, 2x)
   need 0.30 and 0.57 µl.
+
+### Silent Sites and Find Diagnostic Site (`silent_sites` @0x1a0b2c L35791, `do_diagnostic_site` @0x1a3e5b L36062), built from the original's own text
+
+Enzymes menu, L1194 @0x101e1 and L1195. Other procedures: `coordinate_translation` L35922 @0x1a24be;
+`add_daignostic_site_dialog` L35993 @0x1a32b3; `degen_transl` L64442 @0x2ea304; `triplet_transl` L64424 @0x2e9fae;
+`seq_len_mod` L58532 @0x2aa1ab; the start values `info(enz_make_diag_enz)` L66963 and `info(enz_make_diag_mm)` L66964.
+HelixLoom: `src/seq/{silent,diagnostic,sitesearch}.rs` and `src/ui/windows/sitetools.rs` (Enzymes menu, command palette,
+`--view silent` and `--view diagnostic`).
+
+* **Silent Sites.** The DNA searched is the selection or all of it (the original also takes a selection across the origin;
+  HelixLoom has no such selection); the enzymes are the ones chosen in the Enzyme Selector, or **all of them when none is
+  chosen** (a message box in the original, a line in the window here). Each enzyme's flat recognition sequence (`flatpat`: the
+  `N`s at both ends cut off, `read_enzymes` L64461) is read in its three frames with two `N` on each side (`degen_transl`);
+  each codon becomes the set of residues it can code for in the **standard code** (`triplet_transl` has a table of its own; all
+  21 residues is "any"), and the three lists of sets are looked for in the translation of the DNA (in the genetic code
+  chosen) with `regexp -all`, so **matches do not overlap**. The frames are tried in the order 2, 1, 0 (the bases of the first
+  codon that come before the site). A place whose site start already is a site of that enzyme anywhere in the sequence (both
+  strands, as the Enzyme Selector counts them, so Dam and Dcm blocking applies) is dropped. The rest are sorted by the start of
+  the site, ties keeping the order enzyme, frame, position.
+* **The changed bases** (`coordinate_translation`). The site, padded with `N` (the frame in front, to whole codons behind), is
+  laid over the codons one by one: a codon of plain bases is taken as it is; `NNN` keeps the DNA's codon; otherwise each
+  letter keeps the DNA's base when it allows it and takes the site's letter when not. When that codes for another residue, the
+  first codon in the original's list for the residue (L35946; **its stop list holds TGG, which codes for Trp: kept**) that the
+  site's letters allow is taken, its ambiguity codes set back to the DNA's bases where they allow. A residue with no codon in
+  the list (an ambiguous codon of the DNA is `X`) gives `xxx`. An ambiguous result is spelled out with every base it allows
+  (`S` is `GC`, not `CG`: the order of the original's table), **the first letter changing fastest**.
+* **The window.** The date, the name, `From a to b.` (from 1), `Silent Sites`, a blank line, then for each place: its
+  position (the first base of the first codon, through `seq_len_mod`) and the DNA's codons; a line for each variant, a changed
+  base in red (`<…>` in the copied text); the enzyme and its site cut into threes (three spaces after the site, so the line
+  ends in spaces); the residues three spaces apart; a blank line; `No sites Found` when there is none. A click selects the codons
+  (in the original it goes to them through `alignlink2`).
+* **Find Diagnostic Site.** Options: **selected** or **absent** enzymes (absent: no site in the whole sequence) and **1, 2 or 3
+  mismatches**; at the start, selected and 1. Enzymes that need methylated DNA are left out (the 16 names of L36099, which the
+  original lists in other loops too). Each enzyme's flat sequence is tried on the forward strand and, unless it is its own
+  reverse complement, on the reverse; at every place of the DNA (selection or all; upper case) the letters its pattern letter
+  does not allow are counted (an ambiguity code allows itself, the codes inside it and the bases it covers: `B` is `BYSKCGT`;
+  a plain base only itself), and a place with at least 1 and at most the chosen number is listed, sorted by position (stable).
+  The window shows the position from 1, the DNA, the DNA with the pattern's letter written in red where the DNA does not fit
+  it, the enzyme and the pattern. **Quirk:** the heading counts the stretch from 0 (`From 0 to 156.`) while the positions under
+  it count from 1; HelixLoom's heading counts from 1.
+* **Checked** with the original's own procedures, cut out unchanged and run with `tclsh` 8.5.9 on random inputs with a
+  stand-in for the text window (`silent_sites`, `coordinate_translation`, `degen_transl`, `triplet_transl`, `translate`,
+  `read_enzymes` on Default_Enzymes.txt, `findenzymes`, `do_diagnostic_site`, `enz_site_usage_filter`, `enz_count`): 80 silent
+  cases (429 places, 23 with several variants; linear and circular, with a selection, with lower case and an `N` in the DNA)
+  and 30 diagnostic cases (selected and absent, 1 to 3 mismatches). HelixLoom writes **the same window text** in every case
+  (`src/seq/silent/golden.txt`, `src/seq/diagnostic/golden.txt`), and the sites it finds for all 116 enzymes in the 110
+  sequences equal the lists `findenzymes` made (the `sites` lines of the same files).
+* **Differences kept.** A row you can click instead of text (the whole row selects its bases; searching again after such a
+  click goes on with the stretch the list was made from, while a stretch you select yourself is the one searched); the copied
+  text has `HelixLoom` where the original writes the date; the chosen enzymes keep the order of the enzyme list (the original
+  sorts the chosen names with `lsort -unique`, L16209, which is name order too, as the list is); a selection across the
+  origin is not searched. **Own limits (estimated):** 100,000 places, 1,024 variants of a place, 1,000 rows drawn (Copy as
+  text has all of them). A search runs in the window's thread without a way to stop it: measured in a release build with all
+  116 enzymes, 1 Mb of random DNA takes 0.2 s (it stops at the 100,000 places) and 5 Mb of one repeated base takes 1 to 3 s,
+  after the sequence's own site list (2 to 3 s for 5 Mb, which the Enzyme Selector needs as well).
+* **Letters the original does not keep.** `read_enzymes` keeps only `A C G T N W S Y R K M B D H V` of a pattern (a `U` goes)
+  before it cuts the `N`s off the ends, as `flat_pattern` does. A `*` or `?` in the DNA matches whatever the site says
+  (`string match "*$orig_char*"`), so `substitute` keeps it.
 
 ## 9. Added by the person during the build (not in the original)
 

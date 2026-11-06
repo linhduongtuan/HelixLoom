@@ -383,6 +383,22 @@
   {"name": "Calculator: e", "group": "calculators", "value": "exp(1)", "source": "AppMain.tcl:34206 proc calc_update @0x18d6ad"},
   {"name": "Calculator: whole numbers are kept exactly up to this many bits (the original's have no limit; beyond it HelixLoom goes on with a real number)", "group": "calculators", "value": 128, "unit": "bits", "estimated": true},
   {"name": "Calculator: longest line that is worked out (a longer one gives the mistake line; not in the original)", "group": "calculators", "value": 1000, "unit": "bytes", "estimated": true},
-  {"name": "Calculator: deepest nesting of brackets, calls, signs, powers and conditions (a deeper line gives the mistake line; not in the original)", "group": "calculators", "value": 100, "unit": "levels", "estimated": true}
+  {"name": "Calculator: deepest nesting of brackets, calls, signs, powers and conditions (a deeper line gives the mistake line; not in the original)", "group": "calculators", "value": 100, "unit": "levels", "estimated": true},
+  {"name": "Silent Sites: frames looked at, in this order (bases of the first codon that come before the site)", "group": "enzymes", "value": "2 1 0", "source": "AppMain.tcl:35835 proc silent_sites @0x1a0b2c"},
+  {"name": "Silent Sites: N put on each side of the site when it is read in its three frames", "group": "enzymes", "value": 2, "unit": "bases", "source": "AppMain.tcl:64445 proc degen_transl @0x2ea304"},
+  {"name": "Silent Sites: residues a codon may code for, at which it counts as any residue", "group": "enzymes", "value": 21, "unit": "residues", "source": "AppMain.tcl:64432 proc triplet_transl @0x2e9fae"},
+  {"name": "Silent Sites: spaces after the site before it is cut into codons", "group": "enzymes", "value": 3, "unit": "spaces", "source": "AppMain.tcl:35881 proc silent_sites @0x1a0b2c"},
+  {"name": "Silent Sites: spaces between the residues of the translation line", "group": "enzymes", "value": 3, "unit": "spaces", "source": "AppMain.tcl:35882 proc silent_sites @0x1a0b2c"},
+  {"name": "Silent Sites: enzymes searched when none is chosen", "group": "enzymes", "value": "all", "source": "AppMain.tcl:35814 proc silent_sites @0x1a0b2c"},
+  {"name": "Diagnostic Sites: enzymes searched at the start", "group": "enzymes", "value": "selected", "source": "AppMain.tcl:66963 set info(enz_make_diag_enz)"},
+  {"name": "Diagnostic Sites: mismatches at the start", "group": "enzymes", "value": 1, "unit": "bases", "source": "AppMain.tcl:66964 set info(enz_make_diag_mm)"},
+  {"name": "Diagnostic Sites: most mismatches the dialog offers", "group": "enzymes", "value": 3, "unit": "bases", "source": "AppMain.tcl:36014 proc add_daignostic_site_dialog @0x1a32b3"},
+  {"name": "Diagnostic Sites: enzymes left out because they need methylated DNA", "group": "enzymes", "value": "AbaSI AoxI BisI BlsI DpnI FspEI GlaI GluI KroI LpnPI MalI MspJI MteI PcsI PkrI SgeI", "source": "AppMain.tcl:36099 proc do_diagnostic_site @0x1a3e5b"},
+  {"name": "Diagnostic Sites: most places listed before the search stops (not in the original)", "group": "enzymes", "value": 100000, "unit": "places", "estimated": true},
+  {"name": "Silent Sites: most places looked at before the search stops (not in the original)", "group": "enzymes", "value": 100000, "unit": "places", "estimated": true},
+  {"name": "Silent Sites: most variants made of one place (not in the original)", "group": "enzymes", "value": 1024, "unit": "variants", "estimated": true},
+  {"name": "Silent and Diagnostic Sites: most rows a window draws, Copy as text has them all (not in the original)", "group": "enzymes", "value": 1000, "unit": "rows", "estimated": true},
+  {"name": "Duplicate: name of the new document", "group": "files", "value": "New_DNA", "source": "AppMain.tcl:7816 proc duplicate_window @0x5c69b"},
+  {"name": "Duplicate Selection: the new document is circular", "group": "files", "value": false, "source": "AppMain.tcl:7763 proc duplicate_window @0x5c69b"}
  ]
 }

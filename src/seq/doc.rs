@@ -132,6 +132,36 @@ impl Doc {
             .collect()
     }
 
+    /// A new document made of `range`, or of all of this one (`duplicate_window`, AppMain.tcl L7750 @0x5c69b). A stretch
+    /// becomes a linear document with the features inside it; the whole keeps the circle, every feature and the methylation.
+    /// The name is the original's `New_DNA`, and the comment starts with where it came from, `name from a to b`, as the
+    /// original writes it (the file's name without its extension, or the name of the window), then the old comment.
+    pub fn duplicate(&self, range: Option<(usize, usize)>) -> Doc {
+        let (a, b) = match range {
+            Some((a, b)) => (a.min(b.min(self.len())), b.min(self.len())),
+            None => (0, self.len()),
+        };
+        let source = match self.path.as_ref().and_then(|p| p.file_stem()) {
+            Some(stem) => stem.to_string_lossy().into_owned(),
+            None => self.name.clone(),
+        };
+        let mut copy = Doc::new("New_DNA", self.slice(a, b).to_vec());
+        copy.circular = range.is_none() && self.circular;
+        copy.features = match range {
+            Some(_) => self.features_in(a, b, false),
+            None => self.features.clone(),
+        };
+        copy.definition = self.definition.clone();
+        copy.methylated = self.methylated;
+        // the original's comment box ends without a newline when the old comment is empty; here no empty line is kept
+        let from = format!("{source} from {} to {b}", a + 1);
+        copy.comment = [from.as_str(), self.comment.as_str()]
+            .join("\n")
+            .trim_end_matches('\n')
+            .to_string();
+        copy
+    }
+
     /// Replace `[a, b)` with `bases` and lay the copied `features` over the new bases (`clip_paste`).
     pub fn paste(&mut self, a: usize, b: usize, bases: &[u8], features: Vec<Feature>) {
         self.replace(a, b, bases);
@@ -341,6 +371,46 @@ mod tests {
             ([0xC9, 0, 0], [0xC9, 0, 0])
         );
         assert_eq!(d.slice(7, 13), b"GAATTC");
+    }
+
+    #[test]
+    fn a_duplicated_stretch_is_linear_and_keeps_the_features_inside_it() {
+        let mut d = doc();
+        d.circular = true;
+        d.comment = "made by hand".into();
+        let copy = d.duplicate(Some((3, 12)));
+        assert_eq!(copy.name, "New_DNA");
+        assert_eq!(copy.seq, b"AAGGGGGCC".to_vec());
+        assert!(!copy.circular, "a stretch is never a circle");
+        // the gene 5..10 sits at 2..7 in the copy; the second feature, 10..15, is cut to 10..12 and so is 7..9
+        assert_eq!(copy.features.len(), 2);
+        assert_eq!(copy.features[0].spans, vec![(2, 7)]);
+        assert_eq!(copy.features[1].spans, vec![(7, 9)]);
+        assert_eq!(copy.comment, "t from 4 to 12\nmade by hand");
+    }
+
+    #[test]
+    fn a_duplicated_whole_keeps_the_circle_the_features_and_the_methylation() {
+        let mut d = doc();
+        d.circular = true;
+        d.methylated = false;
+        d.definition = "a plasmid".into();
+        let copy = d.duplicate(None);
+        assert_eq!(copy.seq, d.seq);
+        assert!(copy.circular && !copy.methylated);
+        assert_eq!(copy.features, d.features);
+        assert_eq!(copy.definition, "a plasmid");
+        assert_eq!(copy.comment, "t from 1 to 20", "no empty line after it");
+    }
+
+    #[test]
+    fn a_duplicate_names_the_file_without_its_extension_and_survives_a_bad_range() {
+        let mut d = doc();
+        d.path = Some(PathBuf::from("/data/pUC19.gb"));
+        assert_eq!(d.duplicate(None).comment, "pUC19 from 1 to 20");
+        // the range is cut to the sequence, and an upside-down one is empty
+        assert_eq!(d.duplicate(Some((15, 99))).seq, b"TTTTT".to_vec());
+        assert!(d.duplicate(Some((30, 10))).seq.is_empty());
     }
 
     #[test]

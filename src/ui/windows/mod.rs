@@ -11,6 +11,7 @@ pub mod orfs;
 pub mod phylocnn;
 pub mod primer3;
 pub mod reads;
+pub mod sitetools;
 pub mod tools;
 #[cfg(test)]
 mod tools_pcr_tests;

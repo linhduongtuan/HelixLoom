@@ -18,7 +18,7 @@ interface is no longer modelled on ApE's. See [CREDITS.md](CREDITS.md).*
 
 | Workspace | What you can do |
 |-----------|-----------------|
-| **Sequences** | Read and edit DNA, see circular and linear maps, restriction sites and digests, ORFs, features, primers and PCR; assemble reads into contigs; Gibson and other assemblies; calculators (Tm and GC, molar-ratio reactions, master mixes, molarity) |
+| **Sequences** | Read and edit DNA, see circular and linear maps, restriction sites and digests (with silent and diagnostic sites), ORFs, features, primers and PCR; assemble reads into contigs; Gibson and other assemblies; calculators (Tm and GC, molar-ratio reactions, master mixes, molarity) |
 | **Signals** | Open Sanger traces (.ab1, .scf), see the quality of every base, trim the weak ends, reverse-complement, export; summarise and clean sequencing reads (FASTQ) |
 | **Alignment** | Multiple sequence alignment with the built-in aligner or MAFFT; a viewer with conservation, consensus and identity |
 | **Phylogeny** | Distance, maximum-likelihood (with model choice) and Bayesian trees with bootstrap support, or IQ-TREE; PhyloCNN epidemic estimates |
