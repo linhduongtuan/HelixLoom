@@ -1,0 +1,300 @@
+molarity	0	g	/L	mole	/mL	g/mol	2425.5	ATGCGTA	9.5	uL	ok	0	2425.5	 =  0 pg , 0 pmole 
+molarity	0.5	%(wt/vol)		umole	/uL	g/mol	58.44	GGGGCCCC	4.1	mmole	ok	0.0856	58.44	 = 47.9 mL, 240 mg
+molarity	100	pg	/L	g	/uL	g/mol	342.3		100	umole	ok	1e-16	342.3	   
+molarity	0	g	/L	pg	/mL	nucleotides RNA	342.3	NNNN	47.2	L	ok	0	342.3	 =  0 pg 
+molarity	2.5	umole		nmole	/L	g/mol	993.3		100	ng	ok	2.5e+03	993.3	
+molarity	390.07	g	/L	nmole	/uL	nucleotides ssDNA	1000		29.8	uL	ok	1.26	1000	 =  11.6 mg , 37.6 nmole 
+molarity	0	%(wt/vol)		g	/L	nucleotides RNA	180.16		1	L	ok	0	180.16	 =  0 pg 
+molarity	133.04	mg	/L	nmole	/L	g/mol	1696.6	acgtuACGTU	100	mg	ok	7.84e+04	1696.6	 = 752 mL, 58.9 umole
+molarity	312.90	nmole	/uL	pg	/uL	nucleotides ssDNA	342.3	NNNN	0.5	ng	ok	3.31e+10	342.3	 = 0.0151 pL, 0.00473 pmole
+molarity	10	pg	/L	mole	/mL	g/mol	50	ATGCGTA	5	ug	ok	2e-16	50	 = 5e+05 L, 100 nmole
+molarity	15.89	mg	/L	mole	/mL	g/mol	1000		25.8	umole	ok	1.59e-08	1000	 = 1.62 L, 25.8 mg
+molarity	33.23	pmole	/mL	ng	/L	nucleotides RNA	342.3	AUGCAUGC	1	umole	ok	8.61e+04	8	 = 30.1 L, 2.59 mg
+molarity	0.5	mg		nmole	/L	g/mol	180.16	ATGCGTA	1	ug	ok	2.78e+03	180.16	
+molarity	1	nmole	/uL	mole	/L	nucleotides ssDNA	180.16		0.5	L	ok	0.001	180.16	 =  2 mmole 
+molarity	10	pmole	/L	umole	/uL	base pairs dsDNA	50		43.5	umole	ok	1e-11	50	
+molarity	0.5	pmole		nmole	/L	g/mol	0.5	ATGCGTA	5	mg	ok		0.5	
+molarity	2.5	%(wt/vol)		pmole	/uL	g/mol	1000	acgtuACGTU	5	umole	ok	2.5e+04	1000	 = 200 uL, 5 mg
+molarity	0	g	/L	pmole	/L	g/mol	342.3	AUGCAUGC	0.5	mL	ok	0	342.3	 =  0 pg , 0 pmole 
+molarity	2.5	mole	/L	ng	/uL	nucleotides RNA	342.3		100	g	ok	2.75e+08	342.3	 = 363 uL, 909 umole
+molarity	0	umole	/L	g	/mL	g/mol	0.5	GGGGCCCC	35.9	g	ok		0.5	
+molarity	10	umole	/L	ng	/L	base pairs dsDNA	2056.8	GATTACA	46.9	mmole	ok	4.36e+07	7	 = 4.69e+03 L, 204 g
+molarity	100	g	/uL	pmole	/uL	g/mol	1000	NNNN	5	ng	ok	1e+11	1000	 = 5e-05 pL, 5 pmole
+molarity	10	mmole	/L	pg	/uL	g/mol	50	acgtuACGTU	0.5	mmole	ok	5e+05	50	 = 50 mL, 25 mg
+molarity	100	pg	/uL	mole	/mL	g/mol	2123.3		100	umole	ok	4.71e-11	2123.3	 = 2.12e+03 L, 212 mg
+molarity	1	nmole	/L	mmole	/L	nucleotides RNA	4072.4	ATATATAT	5	umole	ok	1e-06	8	
+molarity	10	mg	/mL	nmole	/uL	nucleotides ssDNA	1155.4	acgtuACGTU	1	L	ok	3.23	10	 =  10 g , 3.23 mmole 
+molarity	1	ng	/L	pmole	/L	g/mol	50		1	ug	ok	20	50	 = 1e+03 L, 20 nmole
+molarity	2.5	mg		ug	/mL	base pairs dsDNA	180.16		5	nmole	ok	2.5e+03	180.16	
+molarity	100	%(wt/vol)		umole	/mL	nucleotides ssDNA	58.44	NNNN	0.5	ng	ok	55.3	58.44	 = 0.5 pL, 0.0277 pmole
+molarity	10	%(wt/vol)		nmole	/L	g/mol	342.3	GGGGCCCC	1	L	ok	2.92e+08	342.3	 =  100 g , 292 mmole 
+molarity	100.85	pg	/uL	nmole	/mL	g/mol	58.44	acgtuACGTU	5	nmole	ok	1.73	58.44	 = 2.9 mL, 292 ng
+molarity	1	mole		mole	/mL	nucleotides RNA	58.44	ATATATAT	100	nmole	ok	1	8	
+molarity	318.47	%(wt/vol)		mmole	/mL	nucleotides RNA	0.5	GATTACA	1	g	ok	1.4	7	 = 314 uL, 441 umole
+molarity	10	mole	/mL	nmole	/uL	g/mol	2453.1		1	g	ok	1e+07	2453.1	
+molarity	2.5	%(wt/vol)		ug	/uL	nucleotides RNA	58.44	GGGGCCCC	24.3	mL	ok	25	8	 =  608 mg 
+molarity	10	%(wt/vol)		g	/L	nucleotides RNA	50	ATATATAT	1	mole	ok	100	8	   
+molarity	100	mg		umole	/uL	g/mol	3745.8	GATTACA	36.8	nmole	ok	26.7	3745.8	
+molarity	10	pmole	/uL	ng	/L	nucleotides ssDNA	0.5	acgtuACGTU	0.5	mg	ok	3.1e+07	10	 = 16.1 mL, 161 nmole
+molarity	0	ug		ng	/uL	nucleotides RNA	58.44		0.5	g	ok	0	58.44	
+molarity	1	pmole		umole	/mL	base pairs dsDNA	342.3	NNNN	0.5	L	ok	1e-06	342.3	
+molarity	0.5	%(wt/vol)		ug	/uL	base pairs dsDNA	180.16		100	L	ok	5	180.16	 =  500 g 
+molarity	459.15	mole		pg	/L	base pairs dsDNA	180.16	ATATATAT	5	mL	ok	2.28e+18	8	
+molarity	2.5	%(wt/vol)		umole	/mL	base pairs dsDNA	2457.6	acgtuACGTU	48.6	ng	ok	4.02	10	 = 1.94 nL, 7.82 pmole
+molarity	0	mole		umole	/L	nucleotides RNA	1000	acgtuACGTU	0.5	umole	ok	0	10	
+molarity	0.5	g	/L	pg	/mL	nucleotides ssDNA	0.5	GATTACA	47.3	uL	ok	5e+08	7	 =  23.6 ug 
+molarity	1	%(wt/vol)		ng	/mL	nucleotides RNA	58.44	GATTACA	1	mL	ok	1e+07	7	 =  10 mg 
+molarity	100	umole	/L	g	/uL	base pairs dsDNA	50		5	mg	ok	3.09e-06	50	 = 1.62 mL, 162 nmole
+molarity	1	pg	/L	ng	/mL	g/mol	0.5	ATGCGTA	1	mg	ok		0.5	
+molarity	1	%(wt/vol)		mmole	/mL	nucleotides ssDNA	58.44		5	g	ok	0.000553	58.44	 = 500 mL, 277 umole
+molarity	2.5	nmole	/L	umole	/mL	base pairs dsDNA	0.5	ATATATAT	29.9	L	ok	2.5e-06	8	 =  83.6 pmole 
+molarity	0	mg		ug	/L	g/mol	813.7	GATTACA	0.5	ug	ok	0	813.7	
+molarity	1	g	/L	ug	/uL	g/mol	1000	GATTACA	1	mmole	ok	1	1000	   
+molarity	1	ng		mmole	/mL	g/mol	342.3	NNNN	1	nmole	ok	2.92e-09	342.3	
+molarity	0	pg		nmole	/mL	base pairs dsDNA	1000		100	ng	ok	0	1000	
+molarity	0.5	pmole	/L	g	/mL	nucleotides ssDNA	58.44	GGGGCCCC	0.5	ug	ok	1.25e-12	8	 = 401 L, 201 pmole
+molarity	0	nmole	/mL	mole	/uL	nucleotides RNA	1000	NNNN	0.5	mole	ok	0	1000	
+molarity	100	g	/mL	ng	/L	g/mol	342.3	acgtuACGTU	5	g	ok	1e+14	342.3	 = 50 uL
+molarity	2.5	nmole	/uL	pmole	/uL	nucleotides RNA	342.3	ATGCGTA	100	uL	ok	2.5e+03	7	 =  25 mole 
+molarity	100	ug	/L	umole	/uL	g/mol	50	acgtuACGTU	0.5	uL	ok	2e-06	50	 =  50 pg , 1 pmole 
+molarity	0.5	pmole	/L	g	/uL	nucleotides RNA	50	GGGGCCCC	30.4	mg	ok	1.31e-15	8	 = 2.32e+07 L, 11.6 umole
+molarity	10	ng	/L	ng	/mL	g/mol	0.5	GATTACA	100	nmole	ok		0.5	
+molarity	10	%(wt/vol)		ng	/uL	nucleotides ssDNA	58.44	ATGCGTA	0.5	ug	ok	1e+05	7	 = 5 nL
+molarity	0.5	pg	/uL	mmole	/uL	base pairs dsDNA	1000	GATTACA	1	umole	ok	1.15e-13	7	 = 8.72e+03 L, 4.36 mg
+molarity	1	umole	/mL	ng	/L	nucleotides ssDNA	1000		100	mL	ok	3.09e+11	1000	 =  30.9 g , 100 umole 
+molarity	0.5	ug	/mL	pmole	/L	g/mol	878.1		24.1	ng	ok	5.69e+05	878.1	 = 48.2 uL, 27.4 pmole
+molarity	10	g	/L	mole	/mL	nucleotides RNA	180.16	ATGCGTA	0.5	mmole	ok	4.38e-06	7	 = 114 mL, 1.14 g
+molarity	10	mg	/L	mg	/mL	g/mol	50	AUGCAUGC	0.5	nmole	ok	0.01	50	   
+molarity	2.5	ng		nmole	/L	g/mol	58.44	ATGCGTA	0.5	mg	ok	0.0428	58.44	
+molarity	0.5	ng	/mL	ug	/mL	g/mol	58.44	ATGCGTA	0.5	mL	ok	0.0005	58.44	 =  250 pg 
+molarity	10	mg		umole	/mL	base pairs dsDNA	180.16	GGGGCCCC	28.9	L	ok	2.01	8	
+molarity	100	pmole	/L	ng	/L	nucleotides RNA	342.3		5	mmole	ok	1.1e+04	342.3	 = 5e+07 L, 550 g
+molarity	0.5	mmole	/L	mole	/L	nucleotides ssDNA	50	GGGGCCCC	1	ng	ok	0.0005	8	
+molarity	0.5	nmole	/L	pmole	/uL	g/mol	180.16	GATTACA	35.7	nmole	ok	0.0005	180.16	
+molarity	10	%(wt/vol)		umole	/L	nucleotides ssDNA	0.5		100	mL	ok		0.5	
+molarity	2.5	nmole		pmole	/uL	g/mol	342.3	AUGCAUGC	100	mL	ok	2.5e+03	342.3	
+molarity	100	pmole	/mL	g	/uL	g/mol	4118.4	GATTACA	4.9	ng	ok	4.12e-10	4118.4	 = 11.9 uL, 1.19 pmole
+molarity	1	%(wt/vol)		g	/L	nucleotides RNA	0.5		1	L	ok		0.5	
+molarity	100	mole		g	/mL	g/mol	342.3	NNNN	1	ug	ok	3.42e+04	342.3	
+molarity	2.5	mole	/L	g	/mL	nucleotides ssDNA	58.44	GGGGCCCC	100	ng	ok	6.23	8	 = 16.1 pL, 40.1 pmole
+molarity	2.5	g	/mL	nmole	/mL	g/mol	3619.6		1	mmole	ok	6.91e+05	3619.6	 = 1.45 mL, 3.62 g
+molarity	1	ng		mmole	/L	base pairs dsDNA	2319.8	GGGGCCCC	5	nmole	ok	2.01e-10	8	
+molarity	2.5	umole	/L	mole	/mL	g/mol	1000	GATTACA	0.5	nmole	ok	2.5e-09	1000	
+molarity	2.5	pmole	/mL	pg	/uL	nucleotides RNA	0.5		100	uL	ok		0.5	
+molarity	1	pmole	/L	nmole	/mL	g/mol	180.16	ATATATAT	25.3	g	ok	1e-06	180.16	
+molarity	0	g		pmole	/mL	g/mol	180.16	acgtuACGTU	0.5	g	ok	0	180.16	
+molarity	248.44	mole	/L	g	/L	g/mol	3940.3	GGGGCCCC	32.6	mmole	ok	9.79e+05	3940.3	 = 131 uL, 128 g
+molarity	2.5	%(wt/vol)		mg	/uL	g/mol	0.5		0.5	mg	ok		0.5	
+molarity	0.5	mole	/uL	pg	/L	base pairs dsDNA	1000		1	ug	ok	3.09e+23	1000	 = 3.24e-06 pL, 1.62 pmole
+molarity	1	g	/L	g	/uL	g/mol	50		0.5	ug	ok	1e-06	50	 = 500 nL
+molarity	224.22	mole	/L	pg	/mL	g/mol	50	AUGCAUGC	1	nmole	ok	1.12e+13	50	 = 4.46 pL, 50 ng
+molarity	1	mg	/L	mmole	/L	nucleotides RNA	1000	ATATATAT	100	uL	ok	0.000391	8	 =  100 ng , 39.1 pmole 
+molarity	441.84	g		ug	/uL	g/mol	342.3	GATTACA	1	g	ok	4.42e+08	342.3	
+molarity	0.5	%(wt/vol)		ng	/mL	nucleotides ssDNA	1000		100	ug	ok	5e+06	1000	 = 20 uL
+molarity	0	mmole		ug	/mL	nucleotides ssDNA	58.44	GGGGCCCC	5.7	uL	ok	0	8	
+molarity	100	pmole		ng	/mL	g/mol	342.3	GATTACA	5	mg	ok	34.2	342.3	
+molarity	390.07	mg	/L	nmole	/mL	base pairs dsDNA	58.44		0.5	g	ok	10.8	58.44	 = 1.28 L, 13.8 umole
+molarity	10	g	/mL	pg	/mL	base pairs dsDNA	342.3	acgtuACGTU	100	nmole	ok	1e+13	10	   
+molarity	0.5	pmole	/uL	g	/L	nucleotides RNA	58.44	GGGGCCCC	100	mole	ok	0.00131	8	 = 2e+08 L, 2.62e+05 g
+molarity	2.5	pg	/uL	nmole	/mL	nucleotides ssDNA	180.16	acgtuACGTU	1	uL	ok	0.000807	10	 =  2.5 pg , 0.000807 pmole 
+molarity	1	nmole	/L	ng	/mL	nucleotides RNA	50		10.0	mole	ok	16.1	50	 = 1e+10 L, 1.61e+05 g
+molarity	10	mmole	/L	mg	/L	g/mol	1695.1	GATTACA	1	ug	ok	1.7e+04	1695.1	 = 59 nL, 590 pmole
+molarity	10	%(wt/vol)		pg	/L	g/mol	0.5	ATATATAT	13.7	uL	ok		0.5	
+molarity	0.5	nmole	/mL	g	/mL	nucleotides ssDNA	1357.0		5	mmole	ok	0.00021	1357.0	 = 1e+04 L, 2.1e+03 g
+molarity	0	umole		pg	/uL	nucleotides RNA	0.5	AUGCAUGC	100	L	ok	0	8	
+molarity	0	g		ng	/L	base pairs dsDNA	50		0.5	ng	ok	0	50	
+molarity	10	umole	/L	pmole	/L	nucleotides RNA	180.16	AUGCAUGC	0.5	mL	ok	1e+07	8	 =  20 mmole 
+molarity	214.37	%(wt/vol)		mmole	/mL	base pairs dsDNA	2461.4	ATGCGTA	5	ng	ok	0.492	7	 = 2.33 pL, 1.15 pmole
+molarity	2.5	g	/L	pg	/L	g/mol	1000	GGGGCCCC	28.6	ng	ok	2.5e+12	1000	 = 11.4 nL
+molarity	395.87	pg	/L	mmole	/L	g/mol	1609.0	ATATATAT	0.5	mL	ok	2.46e-10	1609.0	 =  0.198 pg , 0.000123 pmole 
+molarity	157.64	%(wt/vol)		mole	/mL	nucleotides ssDNA	0.5	NNNN	35.7	ng	ok		0.5	
+molarity	10	nmole	/L	g	/L	g/mol	50	NNNN	1	L	ok	5e-07	50	 =  500 ng , 10 nmole 
+molarity	2.5	ng		pg	/L	g/mol	180.16	ATATATAT	22.5	mL	ok	2.5e+03	180.16	
+molarity	0.5	g	/uL	ng	/L	nucleotides ssDNA	0.5	ATATATAT	100	nmole	ok	5e+14	8	   
+molarity	100	%(wt/vol)		mg	/mL	g/mol	342.3		42.4	ng	ok	1e+03	342.3	 = 42.4 pL
+molarity	100	ng	/uL	mole	/mL	g/mol	342.3	GATTACA	5	umole	ok	2.92e-07	342.3	 = 17.1 mL, 1.71 mg
+molarity	10	g		pg	/uL	g/mol	180.16	NNNN	1	L	ok	1e+13	180.16	
+molarity	0.5	mmole	/uL	pmole	/L	nucleotides ssDNA	58.44		0.5	mole	ok	5e+14	58.44	
+molarity	1	g	/L	mg	/uL	nucleotides ssDNA	3563.5	ATGCGTA	100	umole	ok	0.001	7	   
+molarity	2.5	nmole	/mL	mg	/uL	nucleotides ssDNA	342.3		100	L	ok	0.000264	342.3	 =  26.4 g , 250 umole 
+molarity	0.5	mmole	/L	nmole	/mL	base pairs dsDNA	1000	NNNN	0.5	mmole	ok	500	1000	
+molarity	202.33	umole	/L	umole	/mL	g/mol	342.3	AUGCAUGC	0.5	mL	ok	0.202	342.3	 =  405 mmole 
+molarity	0.5	pmole	/uL	nmole	/L	g/mol	180.16	acgtuACGTU	1	L	ok	500	180.16	 =  500 nmole 
+molarity	0	nmole	/L	umole	/uL	base pairs dsDNA	1000	ATGCGTA	100	L	ok	0	7	 =  0 pmole 
+molarity	2.5	%(wt/vol)		ng	/mL	g/mol	342.3	AUGCAUGC	5.4	ug	ok	2.5e+07	342.3	 = 216 nL
+molarity	0	ug	/L	mg	/L	base pairs dsDNA	180.16	GGGGCCCC	46.9	ug	ok	0	8	 = inf L
+molarity	0.5	g	/L	ug	/L	base pairs dsDNA	50	GGGGCCCC	5	ug	ok	5e+05	8	 = 10 uL
+molarity	10	%(wt/vol)		umole	/L	nucleotides RNA	180.16	GGGGCCCC	46.2	ng	ok	3.82e+04	8	 = 462 pL, 17.6 pmole
+molarity	10	mmole	/mL	pg	/L	g/mol	58.44	acgtuACGTU	0.5	mmole	ok	5.84e+14	58.44	 = 50 uL, 29.2 mg
+molarity	1	g		g	/uL	g/mol	180.16	NNNN	100	L	ok	1	180.16	
+molarity	0	mmole	/mL	g	/L	g/mol	180.16	GGGGCCCC	25.7	mmole	ok	0	180.16	 = inf L, 4.63 g
+molarity	10	pg		umole	/L	nucleotides ssDNA	1259.6	GGGGCCCC	0.5	ug	ok	4.01e-09	8	
+molarity	0.5	nmole	/mL	g	/mL	base pairs dsDNA	2675.5	NNNN	5	mole	ok	0.000827	2675.5	 = 1e+07 L, 8.27e+06 g
+molarity	1	mmole	/L	mole	/L	g/mol	1000	ATGCGTA	1	nmole	ok	0.001	1000	
+molarity	2.5	ug		mmole	/L	nucleotides ssDNA	180.16	ATGCGTA	0.5	mmole	ok	1.14e-06	7	
+molarity	0.5	pmole	/uL	nmole	/L	g/mol	1173.2	ATATATAT	1	nmole	ok	500	1173.2	
+molarity	2.5	mmole		mmole	/mL	nucleotides ssDNA	1262.3		11.2	g	ok	2.5	1262.3	
+molarity	0.5	pmole	/mL	nmole	/L	g/mol	58.44	acgtuACGTU	1	mg	ok	0.5	58.44	
+molarity	0	ug	/L	pg	/uL	g/mol	180.16	NNNN	1	umole	ok	0	180.16	   
+molarity	100	g	/L	pg	/uL	nucleotides ssDNA	1000	NNNN	42.5	ug	ok	1e+08	1000	 = 425 nL
+molarity	233.59	mmole	/mL	mg	/mL	base pairs dsDNA	58.44	ATGCGTA	2.6	mole	ok	1.02e+06	7	 = 11.1 mL, 1.13e+04 g
+molarity	2.5	nmole		nmole	/mL	nucleotides ssDNA	342.3	AUGCAUGC	38.5	mole	ok	2.5	8	
+molarity	0.5	g		ug	/mL	nucleotides ssDNA	50	acgtuACGTU	23.1	mL	ok	5e+05	10	
+molarity	0	nmole		pmole	/mL	base pairs dsDNA	2606.9		1	ug	ok	0	2606.9	
+molarity	10	mole		pmole	/L	g/mol	58.44	NNNN	1	mg	ok	1e+13	58.44	
+molarity	100	nmole	/L	nmole	/uL	g/mol	50		5	mL	ok	0.0001	50	 =  20 umole 
+molarity	282.86	%(wt/vol)		mmole	/L	g/mol	180.16	ATATATAT	0.5	uL	ok	1.57e+04	180.16	 =  1.41 mg , 7.85 umole 
+molarity	1	g	/uL	mmole	/L	g/mol	1000	AUGCAUGC	1	ng	ok	1e+06	1000	 = 0.001 pL, 1 pmole
+molarity	15.47	mole	/mL	umole	/L	nucleotides ssDNA	58.44	GGGGCCCC	1	mole	ok	1.55e+10	8	
+molarity	10	%(wt/vol)		mole	/mL	g/mol	1000	ATGCGTA	3.8	umole	ok	0.0001	1000	 = 38 uL, 3.8 mg
+molarity	10	mmole	/L	g	/mL	base pairs dsDNA	180.16	ATATATAT	5	uL	ok	0.0498	8	 =  249 ug , 50 nmole 
+molarity	1	%(wt/vol)		pmole	/mL	nucleotides ssDNA	50	ATGCGTA	0.5	uL	ok	4.54e+06	7	 =  5 ug , 2.27 nmole 
+molarity	158.83	pmole	/L	ng	/mL	g/mol	342.3		27.1	g	ok	0.0544	342.3	 = 4.98e+08 L, 79.2 mmole
+molarity	267.59	mg	/L	umole	/mL	base pairs dsDNA	0.5	GATTACA	0.5	mL	ok	0.0614	7	 =  134 ug , 30.7 nmole 
+molarity	0	%(wt/vol)		umole	/uL	nucleotides ssDNA	180.16	acgtuACGTU	5	mL	ok	0	10	 =  0 pg , 0 pmole 
+molarity	100	nmole	/L	umole	/uL	nucleotides RNA	0.5	NNNN	15.3	mmole	ok		0.5	
+molarity	10	ug	/L	mmole	/uL	base pairs dsDNA	0.5	ATGCGTA	0.5	ug	ok	2.29e-12	7	 = 50 mL, 115 pmole
+molarity	1	pg	/L	mole	/L	nucleotides ssDNA	1000		100	L	ok	3.24e-18	1000	 =  100 pg , 0.000324 pmole 
+molarity	2.5	pg	/uL	g	/uL	g/mol	1971.3		100	umole	ok	2.5e-12	1971.3	   
+molarity	2.5	%(wt/vol)		ug	/mL	nucleotides RNA	50	NNNN	5	mole	ok	2.5e+04	50	   
+molarity	100	pmole	/L	mole	/uL	nucleotides ssDNA	0.5	AUGCAUGC	100	g	ok	1e-16	8	
+molarity	1	pmole	/L	umole	/L	nucleotides RNA	180.16	ATGCGTA	5	ug	ok	1e-06	7	
+molarity	100	pg	/L	ng	/mL	g/mol	180.16		0.5	mmole	ok	0.0001	180.16	   
+molarity	1	umole	/uL	g	/L	g/mol	0.5	ATATATAT	5	g	ok		0.5	
+molarity	1	mmole	/L	pg	/uL	g/mol	50	NNNN	5	ug	ok	5e+04	50	 = 100 uL, 100 nmole
+molarity	10	mmole	/L	nmole	/mL	g/mol	0.5	GATTACA	5	mg	ok		0.5	
+molarity	2.5	ug	/L	umole	/uL	base pairs dsDNA	58.44	acgtuACGTU	1	ng	ok	4.02e-10	10	 = 400 uL, 0.161 pmole
+molarity	100	%(wt/vol)		pmole	/L	g/mol	50	ATATATAT	100	mole	ok	2e+13	50	 = 5 L, 5e+03 g
+molarity	10	mole	/uL	mole	/L	nucleotides ssDNA	3653.2		7.8	ug	ok	1e+07	3653.2	
+molarity	10	ng	/L	pg	/uL	g/mol	180.16		100	g	ok	0.01	180.16	 = 1e+10 L
+molarity	0	umole		nmole	/L	nucleotides ssDNA	1000	acgtuACGTU	5	umole	ok	0	10	
+molarity	2.5	g	/uL	pg	/mL	g/mol	0.5	NNNN	32.3	uL	ok		0.5	
+molarity	1	g		mmole	/mL	g/mol	342.3	acgtuACGTU	100	mmole	ok	2.92	342.3	
+molarity	1	nmole	/L	mmole	/uL	nucleotides ssDNA	50	ATATATAT	0.5	L	ok	1e-12	8	 =  2 nmole 
+molarity	99.04	ng	/uL	mg	/uL	nucleotides ssDNA	0.5	acgtuACGTU	100	mg	ok	9.9e-05	10	 = 1.01 L
+molarity	0	mg		ng	/mL	g/mol	58.44	GGGGCCCC	100	mole	ok	0	58.44	
+molarity	72.09	pg		ng	/L	base pairs dsDNA	58.44		1	uL	ok	0.0721	58.44	
+molarity	0	umole		pg	/uL	nucleotides RNA	2682.3	NNNN	100	uL	ok	0	2682.3	
+molarity	0	ug		pg	/mL	base pairs dsDNA	1000	AUGCAUGC	20.2	umole	ok	0	8	
+molarity	0	pmole	/L	nmole	/uL	g/mol	342.3	GGGGCCCC	1	mL	ok	0	342.3	 =  0 pmole 
+molarity	0.5	mg		nmole	/mL	base pairs dsDNA	58.44	NNNN	5	g	ok	13.8	58.44	
+molarity	10	mg	/mL	pg	/mL	g/mol	342.3		0.5	g	ok	1e+10	342.3	 = 50 mL
+molarity	100	ug	/uL	ng	/mL	g/mol	50	ATGCGTA	40.0	ng	ok	1e+08	50	 = 400 pL
+molarity	0.5	mg		g	/mL	nucleotides RNA	180.16	NNNN	100	ug	ok	0.0005	180.16	
+molarity	0.5	pmole	/L	mg	/L	g/mol	342.3	acgtuACGTU	100	mg	ok	1.71e-07	342.3	 = 5.84e+08 L, 292 umole
+molarity	0	g		ng	/L	g/mol	342.3	ATGCGTA	100	mole	ok	0	342.3	
+molarity	480.42	nmole	/uL	g	/L	base pairs dsDNA	0.5	GGGGCCCC	0.5	ng	ok	2.39e+03	8	 = 0.209 pL, 0.1 pmole
+molarity	10	%(wt/vol)		g	/mL	nucleotides RNA	58.44	ATGCGTA	5	uL	ok	0.1	7	 =  500 ug 
+molarity	0.5	ng	/L	pg	/uL	nucleotides ssDNA	0.5	ATGCGTA	100	g	ok	0.0005	7	 = 2e+11 L
+molarity	10	pmole	/L	ug	/L	nucleotides RNA	58.44	NNNN	43.7	g	ok	0.188	58.44	 = 2.32e+08 L, 2.32 mmole
+molarity	10	umole	/uL	pg	/L	base pairs dsDNA	342.3	NNNN	1	ng	ok	2.12e+18	342.3	 = 0.000473 pL, 0.00473 pmole
+molarity	2.5	g		pmole	/uL	nucleotides RNA	0.5	AUGCAUGC	100	ug	ok	9.65e+08	8	
+molarity	100	%(wt/vol)		nmole	/mL	g/mol	342.3	GGGGCCCC	0.5	g	ok	2.92e+06	342.3	 = 500 uL, 1.46 mmole
+molarity	310.46	%(wt/vol)		nmole	/mL	g/mol	4942.3	ATATATAT	5	umole	ok	6.28e+05	4942.3	 = 7.96 uL, 24.7 mg
+molarity	2.5	pg	/mL	pg	/L	base pairs dsDNA	4487.5		100	mg	ok	2.5e+03	4487.5	 = 4e+07 L
+molarity	418.69	nmole	/L	g	/uL	base pairs dsDNA	4145.2	GGGGCCCC	100	mole	ok	2.09e-09	8	 = 2.39e+08 L, 4.98e+05 g
+molarity	100	%(wt/vol)		ng	/uL	nucleotides RNA	2535.7		0.5	mole	ok	1e+06	2535.7	   
+molarity	10	%(wt/vol)		g	/mL	base pairs dsDNA	342.3	ATGCGTA	0.5	ug	ok	0.1	7	 = 5 nL
+molarity	2.5	pmole	/L	nmole	/mL	nucleotides RNA	50	GATTACA	100	mole	ok	2.5e-06	7	
+molarity	10	mmole	/L	mg	/L	g/mol	0.5	AUGCAUGC	1	uL	ok		0.5	
+molarity	10	ug	/mL	mole	/L	nucleotides RNA	342.3	acgtuACGTU	1	umole	ok	3.12e-06	10	 = 320 mL, 3.2 mg
+molarity	0	%(wt/vol)		nmole	/uL	g/mol	50	GATTACA	100	umole	ok	0	50	 = inf L, 5 mg
+molarity	0.5	mg		ng	/mL	base pairs dsDNA	0.5	NNNN	1	umole	ok		0.5	
+molarity	100	nmole	/L	pmole	/uL	g/mol	0.5		0.5	umole	ok		0.5	
+molarity	1	pmole	/mL	mg	/L	nucleotides ssDNA	180.16	ATGCGTA	1	nmole	ok	0.0022	7	 = 1 L, 2.2 ug
+molarity	0	ug	/L	g	/uL	g/mol	180.16		5	nmole	ok	0	180.16	   
+molarity	0	%(wt/vol)		mole	/uL	g/mol	180.16	ATATATAT	1	ng	ok	0	180.16	 = inf L, 5.55 pmole
+molarity	0.5	mmole		pmole	/mL	nucleotides ssDNA	50	GATTACA	100	uL	ok	5e+08	7	
+molarity	2.5	%(wt/vol)		pg	/L	nucleotides ssDNA	342.3	GGGGCCCC	100	mL	ok	2.5e+13	8	 =  2.5 g 
+molarity	100	pg	/L	pmole	/L	g/mol	50	AUGCAUGC	5	nmole	ok	2	50	 = 2.5e+03 L, 250 ng
+molarity	0	umole	/mL	ug	/L	nucleotides RNA	50	ATGCGTA	5	uL	ok	0	7	 =  0 pg , 0 pmole 
+molarity	0	pmole	/L	mmole	/mL	g/mol	0.5	GATTACA	5	g	ok		0.5	
+molarity	1	ug	/L	ug	/mL	base pairs dsDNA	1186.2	GGGGCCCC	0.5	g	ok	0.001	8	 = 5e+05 L
+molarity	2.5	pmole	/mL	ng	/L	g/mol	1000	ATATATAT	100	mmole	ok	2.5e+03	1000	 = 4e+07 L, 100 g
+molarity	0.5	g	/uL	g	/mL	nucleotides ssDNA	58.44	ATATATAT	18.1	ug	ok	500	8	 = 36.2 pL
+molarity	1	%(wt/vol)		mole	/L	nucleotides RNA	1000	GATTACA	100	mole	ok	0.00441	7	 = 2.27e+04 L, 2.27e+05 g
+molarity	10	ng		mmole	/uL	g/mol	1000	ATATATAT	100	mL	ok	1e-08	1000	
+molarity	10	mole		mole	/uL	base pairs dsDNA	3171.9		100	mmole	ok	10	3171.9	
+molarity	0	mg		ug	/uL	nucleotides ssDNA	342.3	AUGCAUGC	5	uL	ok	0	8	
+molarity	196.55	g	/L	mmole	/uL	g/mol	1000	ATGCGTA	1	mL	ok	0.000197	1000	 =  197 mg , 197 umole 
+molarity	1	g	/mL	ug	/L	nucleotides ssDNA	342.3	ATATATAT	100	nmole	ok	1e+09	8	   
+molarity	10	mg	/uL	ug	/mL	g/mol	50	acgtuACGTU	5	ug	ok	1e+07	50	 = 500 pL
+molarity	0	ng	/uL	umole	/L	nucleotides RNA	50	GGGGCCCC	100	ug	ok	0	8	 = inf L, 38.2 nmole
+molarity	0.5	%(wt/vol)		mmole	/mL	nucleotides ssDNA	1000	AUGCAUGC	100	g	ok	0.00201	8	 = 20 L, 40.2 mmole
+molarity	145.18	%(wt/vol)		mg	/uL	nucleotides ssDNA	342.3		100	umole	ok	1.45	342.3	   
+molarity	0	pmole	/mL	umole	/uL	nucleotides ssDNA	342.3		100	L	ok	0	342.3	 =  0 pmole 
+molarity	2.5	mmole		ug	/mL	g/mol	58.44	acgtuACGTU	5	umole	ok	1.46e+05	58.44	
+molarity	1	ng	/mL	mg	/uL	nucleotides RNA	50	GATTACA	1	uL	ok	1e-09	7	 =  1 pg 
+molarity	100	pmole	/mL	ng	/mL	nucleotides RNA	1000	ATATATAT	1	umole	ok	256	8	 = 10 L, 2.56 mg
+molarity	10	%(wt/vol)		pg	/mL	nucleotides ssDNA	1000		1	mole	ok	1e+11	1000	   
+molarity	0.5	%(wt/vol)		umole	/mL	nucleotides ssDNA	342.3	ATATATAT	5	L	ok	2.01	8	 =  25 g , 10 mmole 
+molarity	0	nmole	/mL	umole	/L	g/mol	342.3	GATTACA	100	mole	ok	0	342.3	
+molarity	10	pg	/L	nmole	/uL	nucleotides ssDNA	3847.1	ATGCGTA	0.5	mL	ok	4.54e-12	7	 =  0.005 pg , 2.27e-06 pmole 
+molarity	1	nmole		pmole	/L	g/mol	180.16	GGGGCCCC	37.6	mg	ok	1e+03	180.16	
+molarity	100	%(wt/vol)		pmole	/uL	nucleotides ssDNA	180.16	AUGCAUGC	5	uL	ok	4.02e+05	8	 =  5 mg , 2.01 umole 
+molarity	1	ng	/mL	pg	/uL	g/mol	50	NNNN	5	g	ok	1	50	 = 5e+06 L
+molarity	2.5	umole	/mL	pg	/L	g/mol	342.3		100	L	ok	8.56e+11	342.3	 =  85.6 g , 250 mmole 
+molarity	444.54	pg	/mL	mole	/uL	nucleotides ssDNA	0.5	AUGCAUGC	1	mmole	ok	1.79e-16	8	 = 5.6e+06 L, 2.49 g
+molarity	168.08	umole	/mL	ng	/L	nucleotides ssDNA	0.5		0.5	nmole	ok		0.5	
+molarity	10	%(wt/vol)		pmole	/L	g/mol	180.16	NNNN	100	L	ok	5.55e+11	180.16	 =  1e+04 g , 55.5 mole 
+molarity	100	nmole	/L	ng	/L	nucleotides ssDNA	3977.1		27.9	mg	ok	1.23e+08	3977.1	 = 227 mL, 22.7 nmole
+molarity	10	mmole	/mL	g	/uL	nucleotides RNA	180.16	ATATATAT	5	mL	ok	0.0256	8	 =  128 g , 50 mmole 
+molarity	0	pg	/mL	umole	/mL	base pairs dsDNA	58.44		0.5	mole	ok	0	58.44	 = inf L, 1.81e+04 g
+molarity	1	mmole	/L	mg	/L	nucleotides RNA	50		20.1	mg	ok	1.61e+04	50	 = 1.25 mL, 1.25 umole
+molarity	100	pmole	/L	mole	/uL	g/mol	4822.4	ATATATAT	7.9	uL	ok	1e-16	4822.4	 =  12.7 umole 
+molarity	10	%(wt/vol)		g	/L	g/mol	180.16	acgtuACGTU	5	ug	ok	100	180.16	 = 50 nL
+molarity	10	g	/L	pmole	/mL	g/mol	50	NNNN	0.5	uL	ok	2e+08	50	 =  5 ug , 100 nmole 
+molarity	0.5	ug		ng	/mL	nucleotides ssDNA	180.16	acgtuACGTU	8.8	mmole	ok	500	10	
+molarity	0.5	mole	/L	mole	/mL	base pairs dsDNA	1000	GGGGCCCC	5	ug	ok	0.0005	8	
+molarity	10	nmole	/mL	ng	/mL	nucleotides RNA	58.44	GATTACA	5	uL	ok	2.27e+04	7	 =  113 ng , 50 pmole 
+molarity	10	pg	/mL	ug	/uL	g/mol	180.16	ATATATAT	100	uL	ok	1e-08	180.16	 =  1 pg 
+molarity	100	umole	/mL	mg	/L	g/mol	50	ATGCGTA	0.5	mg	ok	5e+03	50	 = 100 uL, 10 umole
+molarity	100	ug		umole	/mL	nucleotides RNA	1000	GGGGCCCC	100	mL	ok	0.0382	8	
+molarity	0.5	pmole	/uL	nmole	/L	g/mol	58.44	GATTACA	1	mg	ok	500	58.44	
+molarity	0.5	mmole	/mL	pmole	/uL	nucleotides RNA	50	AUGCAUGC	5	mole	ok	5e+05	8	
+molarity	10	umole		mmole	/mL	base pairs dsDNA	50	GATTACA	1	umole	ok	0.01	7	
+molarity	10	umole	/mL	mg	/L	nucleotides RNA	1000	ATATATAT	0.5	L	ok	2.56e+04	8	 =  12.8 g , 5 mmole 
+molarity	46.47	mole	/mL	nmole	/mL	g/mol	1000	acgtuACGTU	0.5	mmole	ok	4.65e+10	1000	
+molarity	2.5	g	/L	g	/mL	nucleotides RNA	1000		15.8	mmole	ok	0.0025	1000	   
+molarity	100	g	/L	g	/L	g/mol	1000	GATTACA	1	ug	ok	100	1000	 = 10 nL
+molarity	100	pg	/uL	umole	/mL	g/mol	58.44	GATTACA	0.5	mole	ok	0.00171	58.44	 = 2.92e+05 L, 29.2 g
+molarity	0	pg	/mL	g	/mL	g/mol	50	GGGGCCCC	0.5	uL	ok	0	50	 =  0 pg 
+molarity	10	mmole	/mL	nmole	/L	base pairs dsDNA	342.3	GATTACA	18.5	mL	ok	1e+10	7	 =  541 mole 
+molarity	0.5	%(wt/vol)		pg	/mL	g/mol	58.44	NNNN	1	mL	ok	5e+09	58.44	 =  5 mg 
+molarity	0.5	mole	/L	mmole	/L	g/mol	58.44	ATATATAT	100	ng	ok	500	58.44	
+molarity	1	mg	/L	pg	/L	nucleotides RNA	0.5	AUGCAUGC	36.2	g	ok	1e+09	8	 = 3.62e+04 L
+molarity	0	umole	/mL	umole	/L	g/mol	2994.7	ATGCGTA	1	umole	ok	0	2994.7	
+molarity	10	mg	/uL	mmole	/uL	nucleotides RNA	50		9.7	mole	ok	0.000621	50	 = 15.6 L, 1.56e+05 g
+molarity	0.5	umole	/mL	mg	/mL	g/mol	180.16	AUGCAUGC	0.5	L	ok	0.0901	180.16	 =  45 mg , 250 umole 
+molarity	100	umole	/L	umole	/L	nucleotides RNA	4768.7		0.5	ng	ok	100	4768.7	
+molarity	10	mmole		mg	/L	base pairs dsDNA	4514.5	ATATATAT	5	ng	ok	4.98e+04	8	
+molarity	100	g	/uL	mole	/uL	nucleotides RNA	342.3	ATATATAT	100	g	ok	0.0391	8	 = 1 uL, 39.1 mmole
+molarity	0.5	ng	/L	mg	/mL	g/mol	0.5	AUGCAUGC	100	umole	ok		0.5	
+molarity	0.5	pg	/L	pmole	/mL	nucleotides ssDNA	58.44		5	ug	ok	2.77e-08	58.44	 = 1e+07 L, 277 pmole
+molarity	99.99	ng	/uL	umole	/mL	g/mol	50	acgtuACGTU	0.5	g	ok	2	50	 = 5 L, 10 mmole
+molarity	0.5	mmole	/mL	pg	/L	nucleotides ssDNA	4000.0	GGGGCCCC	1	mmole	ok	1.25e+15	8	 = 2 mL, 2.49 g
+molarity	100	pmole		pmole	/mL	nucleotides RNA	342.3	ATGCGTA	100	g	ok	100	7	
+molarity	1	g	/L	mole	/L	g/mol	50	GATTACA	5	uL	ok	0.02	50	 =  5 ug , 100 nmole 
+molarity	1	pmole		pg	/uL	base pairs dsDNA	0.5	NNNN	1	umole	ok		0.5	
+molarity	10	nmole	/L	umole	/uL	base pairs dsDNA	342.3	GATTACA	5	mL	ok	1e-08	7	 =  2 umole 
+molarity	1	ng	/mL	umole	/uL	g/mol	0.5		5	g	ok		0.5	
+molarity	2.5	mole		pmole	/uL	g/mol	1000	ATATATAT	100	umole	ok	2.5e+12	1000	
+molarity	2.5	g	/L	ug	/uL	base pairs dsDNA	58.44	ATGCGTA	18.3	g	ok	2.5	7	 = 7.32 L
+molarity	100	umole	/L	ng	/mL	base pairs dsDNA	50	GATTACA	100	mg	ok	4.36e+05	7	 = 229 mL, 22.9 umole
+molarity	0.5	%(wt/vol)		ng	/mL	nucleotides ssDNA	1912.5	ATGCGTA	5	mmole	ok	5e+06	7	   
+molarity	0.5	%(wt/vol)		mg	/L	g/mol	1000	NNNN	1	nmole	ok	5e+03	1000	   
+molarity	100	ug		mmole	/mL	nucleotides RNA	180.16	NNNN	5	mmole	ok	1.73e-06	180.16	
+molarity	1	ng	/uL	pg	/mL	g/mol	180.16	ATGCGTA	1	mg	ok	1e+06	180.16	 = 1 L
+molarity	100.41	ug	/L	nmole	/mL	g/mol	180.16	GGGGCCCC	0.5	umole	ok	0.557	180.16	 = 897 mL, 90.1 ug
+molarity	0	pmole		umole	/uL	nucleotides RNA	342.3	GGGGCCCC	1	nmole	ok	0	8	
+molarity	0.5	pmole	/L	mg	/L	nucleotides ssDNA	0.5	GGGGCCCC	5	ng	ok	1.25e-06	8	 = 4.01 L, 2.01 pmole
+molarity	100	%(wt/vol)		mmole	/L	nucleotides ssDNA	180.16	AUGCAUGC	100	ug	ok	402	8	 = 100 nL, 40.2 nmole
+molarity	91.75	pg	/L	g	/uL	g/mol	2287.2	AUGCAUGC	100	ng	ok	9.17e-17	2287.2	 = 1.09e+03 L
+molarity	358.99	mmole	/mL	umole	/L	nucleotides ssDNA	1733.1	acgtuACGTU	2.8	mL	ok	3.59e+08	10	 =  1.28e+05 mole 
+molarity	170.46	ug		mmole	/uL	base pairs dsDNA	1000	ATGCGTA	0.5	ng	ok	3.91e-05	7	
+molarity	0	g	/L	nmole	/uL	g/mol	50	NNNN	5	mL	ok	0	50	 =  0 pg , 0 pmole 
+molarity	1	ng	/L	g	/uL	g/mol	1000		1	mole	ok	1e-15	1000	   
+molarity	0.5	mg	/mL	nmole	/L	base pairs dsDNA	3567.7	NNNN	13.3	mg	ok	227	3567.7	 = 26.6 mL, 6.03 nmole
+molarity	100	g	/L	mole	/mL	nucleotides RNA	50		5	g	ok	6.21e-06	50	 = 50 mL, 311 umole
+molarity	100	ug	/L	pg	/uL	g/mol	342.3		1	umole	ok	100	342.3	   
+molarity	10	nmole	/L	g	/mL	g/mol	180.16	GATTACA	5	mg	ok	1.8e-09	180.16	 = 2.78e+03 L, 27.8 umole

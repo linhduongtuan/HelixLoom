@@ -1,0 +1,34 @@
+/* The page is only a canvas that fills the window; the app draws everything on it. */
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: #f4f5f7;
+  color: #2b2e34;
+  font-family: system-ui, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  html,
+  body {
+    background: #15171b;
+    color: #d8dbe0;
+  }
+}
+
+canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* shown until the app is running; the app takes it away (or says why it could not start) */
+#loading {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}

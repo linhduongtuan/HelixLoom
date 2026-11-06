@@ -1,0 +1,6 @@
+# The web build: `trunk build --release` makes `dist/`, which any static file server can host (docs/WEB.md).
+[build]
+target = "index.html"
+dist = "dist"
+# relative addresses, so that dist/ works from any folder of a server
+public_url = "./"

@@ -1,0 +1,27 @@
+//! Everything that draws: the application shell, the sequence editor, maps and tool windows.
+pub mod app;
+pub mod brand;
+pub mod clipboard;
+pub mod commands;
+pub mod design;
+pub mod dialog;
+pub mod editor;
+pub mod files;
+pub mod headless;
+pub mod icons;
+pub mod incoming;
+pub mod infobar;
+pub mod job;
+pub mod layout;
+pub mod map;
+pub mod menus;
+pub mod palette;
+pub mod panels;
+pub mod platform;
+mod raster;
+pub mod sheet;
+pub mod state;
+pub mod theme;
+pub mod toasts;
+pub mod topbar;
+pub mod windows;

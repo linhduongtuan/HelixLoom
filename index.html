@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <title>HelixLoom</title>
+    <!-- trunk builds the app for the browser (wasm32) without the desktop-only GPU feature, and links the page to it -->
+    <link data-trunk rel="rust" data-bin="helixloom" data-cargo-no-default-features />
+    <link data-trunk rel="css" href="web/style.css" />
+  </head>
+  <body>
+    <canvas id="helixloom_canvas"></canvas>
+    <div id="loading">Loading HelixLoom…</div>
+  </body>
+</html>

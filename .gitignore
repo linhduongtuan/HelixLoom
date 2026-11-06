@@ -1,0 +1,12 @@
+# build output and the build tool's working files
+/target
+/shots
+/checks
+*.log
+.DS_Store
+
+# files of other projects that have no licence to pass them on (docs/MODELS.md): kept on the computer, not in the repository
+/assets/phylocnn/
+
+# the web build's output (trunk build --release)
+/dist

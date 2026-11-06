@@ -1,0 +1,50 @@
+# HelixLoom workstation server, as a systemd service: it starts at boot, restarts if it stops, and runs as its own user.
+# DEPLOY.md explains each step. This file was written without a Linux machine to try it on: if systemd complains about
+# a line, `systemctl status helixloom-server` and `journalctl -u helixloom-server` say which.
+#
+#   sudo useradd --system --create-home --home-dir /var/lib/helixloom --shell /usr/sbin/nologin helixloom
+#   sudo install -d -o helixloom -g helixloom -m 700 /etc/helixloom
+#   sudo -u helixloom sh -c '/opt/helixloom/helixloom token > /etc/helixloom/token' && sudo chmod 600 /etc/helixloom/token
+#   sudo cp helixloom-server.service /etc/systemd/system/
+#   sudo systemctl daemon-reload && sudo systemctl enable --now helixloom-server
+
+[Unit]
+Description=HelixLoom workstation server (jobs sent by the HelixLoom app are computed here)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=helixloom
+Group=helixloom
+# 127.0.0.1 keeps the server to this computer: reach it with an SSH tunnel. To listen on a private network address
+# instead, write that address (never an address that the internet can reach).
+ExecStart=/opt/helixloom/helixloom serve \
+    --listen 127.0.0.1:7878 \
+    --token-file /etc/helixloom/token \
+    --data-dir /var/lib/helixloom/data \
+    --gpus auto
+# a folding program on the GPUs (see DEPLOY.md): add a line like this to ExecStart above
+#     --fold-command "/opt/helixloom/esmfold-env/bin/python /opt/helixloom/esmfold_predict.py"
+Restart=on-failure
+RestartSec=5
+# every job is a process of the server's: stopping the service stops them all
+KillMode=control-group
+TimeoutStopSec=30
+# the model weights of a folding program are kept in the user's folder
+Environment=HF_HOME=/var/lib/helixloom/huggingface
+
+# no more of the machine than this for the server and all its jobs together: a job that asks for far more memory than there
+# is gets stopped, instead of making everything on the workstation crawl. Lower MemoryMax if other people use the machine
+# (a percentage of the memory needs systemd 231 or newer; write a size such as 100G on an older one).
+MemoryMax=90%
+TasksMax=4096
+
+# the server needs no more than its own folder
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+ReadWritePaths=/var/lib/helixloom
+
+[Install]
+WantedBy=multi-user.target

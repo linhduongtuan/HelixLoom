@@ -1,0 +1,42 @@
+[package]
+name = "helixloom"
+version = "0.2.0"
+edition = "2021"
+description = "A bioinformatics platform: plasmid editor, sequencing signals, alignment, phylogeny, trees, structure, pipelines, and a workstation server for the heavy jobs"
+
+[features]
+default = ["gpu"]
+# Run the PhyloCNN networks through candle, on the GPU where there is one (Metal on a Mac).
+gpu = ["dep:candle-core"]
+# The same on an NVIDIA GPU (needs the CUDA toolkit to build; not tried here). Build the workstation server with it:
+# `cargo build --release --features cuda` (see DEPLOY.md).
+cuda = ["gpu", "candle-core/cuda"]
+
+[dependencies]
+eframe = "0.36"
+png = "0.18"
+rfd = "0.17"
+# std::time that also works in a browser, where std's Instant and SystemTime panic (on other targets it is std's own)
+web-time = "1"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+candle-core = { version = "0.9", optional = true, features = ["metal"] }
+
+# candle does not build for the browser: the web build has no GPU engine, whatever the features say (the code that uses
+# candle is `cfg(all(feature = "gpu", not(target_arch = "wasm32")))`)
+[target.'cfg(not(any(target_os = "macos", target_arch = "wasm32")))'.dependencies]
+candle-core = { version = "0.9", optional = true }
+
+# The web build (docs/WEB.md): only for talking to the page, and all of them are in eframe's dependency tree already.
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+js-sys = "0.3"
+log = "0.4"
+wasm-bindgen = "0.2"
+wasm-bindgen-futures = "0.4"
+web-sys = { version = "0.3", features = ["Blob", "BlobPropertyBag", "Document", "Element", "HtmlAnchorElement", "HtmlCanvasElement", "HtmlElement", "Location", "Node", "Url", "Window"] }
+
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 2

@@ -1,0 +1,26 @@
+# Checks on every change: formatting, lints and the tests, on macOS (the system the program has been tried on).
+# Linux and Windows are not here yet: they have not been tried (see docs/ROADMAP.md). The GPU build (candle) is left out
+# because a CI machine has no GPU; the tests that need the PhyloCNN files skip themselves, as the files are not in the repository.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rust toolchain
+        run: rustup update stable --no-self-update && rustc --version
+      - name: Formatting
+        run: cargo fmt --check
+      - name: Lints
+        run: cargo clippy --all-targets --no-default-features -- -D warnings
+      - name: Tests
+        run: cargo test --no-default-features

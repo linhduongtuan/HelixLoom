@@ -1,0 +1,300 @@
+acccgctaggatrgyggcatctgtcattmggcttaaagccgt	1	rgyggcat	0	0	0	2	All	1	next	4		12 20;Found forward match at 13.
+acccgctaggatrgyggcatctgtcattmggcttaaagccgt	1	rgyggcat	0	0	0	2	All	1	prev	0	36	12 20;Found forward match at 13.
+acccgctaggatrgyggcatctgtcattmggcttaaagccgt	1	rgyggcat	0	0	0	2	All	1	highlight	31		foundf:12-20;Found 1 matches.
+acccgctaggatrgyggcatctgtcattmggcttaaagccgt	0	acccgctag	0	1	0	0	All	1	next	26		0 9;Found forward match at 1.
+acccgctaggatrgyggcatctgtcattmggcttaaagccgt	0	acccgctag	0	1	0	0	All	1	prev	0	20	0 9;Found forward match at 0.
+acccgctaggatrgyggcatctgtcattmggcttaaagccgt	0	acccgctag	0	1	0	0	All	1	highlight	0	8	foundf:0-9;Found 1 matches.
+acccgctaggatrgyggcatctgtcattmggcttaaagccgt	1	atrgnggcatctgtc	1	1	1	0	All	1	next	0	40	;Found no match.
+acccgctaggatrgyggcatctgtcattmggcttaaagccgt	1	atrgnggcatctgtc	1	1	1	0	All	1	prev	0	10	;Found no match.
+acccgctaggatrgyggcatctgtcattmggcttaaagccgt	1	atrgnggcatctgtc	1	1	1	0	All	1	highlight	15		;Found no match.
+acccgctaggatrgyggcatctgtcattmggcttaaagccgt	0	ggcatWtgG	1	1	0	1	All	1	next	0	1	;Found no match.
+acccgctaggatrgyggcatctgtcattmggcttaaagccgt	0	ggcatWtgG	1	1	0	1	All	1	prev	0	36	;Found no match.
+acccgctaggatrgyggcatctgtcattmggcttaaagccgt	0	ggcatWtgG	1	1	0	1	All	1	highlight	0	32	;Found no match.
+GATCAGTTCCGAATTAKKGCTACCTCC	0	rnagttc,SAATTAKKG,TTWCGA	0	1	0	2	All	1	next	0	19	20 27;Found reverse match at 21.
+GATCAGTTCCGAATTAKKGCTACCTCC	0	rnagttc,SAATTAKKG,TTWCGA	0	1	0	2	All	1	prev	0	1	20 27;Found reverse match at 21.
+GATCAGTTCCGAATTAKKGCTACCTCC	0	rnagttc,SAATTAKKG,TTWCGA	0	1	0	2	All	1	highlight	24		foundr:0-7,foundf:2-9,foundf:6-12,foundr:7-13,foundr:8-14,foundr:10-17,foundf:10-19,foundr:20-27;Found 8 matches.
+GATCAGTTCCGAATTAKKGCTACCTCC	1	ATCE|GCCGAATTAKYAA	0	0	0	2	10	0	next	0	10	11 14;Found forward match at 12.
+GATCAGTTCCGAATTAKKGCTACCTCC	1	ATCE|GCCGAATTAKYAA	0	0	0	2	10	0	prev	24		23 26;Found forward match at 24.
+GATCAGTTCCGAATTAKKGCTACCTCC	1	ATCE|GCCGAATTAKYAA	0	0	0	2	10	0	highlight	0	2	foundf:1-4,foundf:4-7,foundf:5-8,foundf:6-9,foundf:7-10,foundf:11-14,foundf:12-15,foundf:13-16,foundf:15-18,foundf:17-20,foundf:19-22,foundf:20-23,foundf:21-24,foundf:23-26,foundf:24-27,foundf:0-4,foundf:0-7,foundf:0-8,foundf:0-9,foundf:0-10;Found 20 matches.
+GATCAGTTCCGAATTAKKGCTACCTCC	0	AATTACKGCTACCT	1	1	0	0	All	1	next	16		;Found no match.
+GATCAGTTCCGAATTAKKGCTACCTCC	0	AATTACKGCTACCT	1	1	0	0	All	1	prev	0	20	;Found no match.
+GATCAGTTCCGAATTAKKGCTACCTCC	0	AATTACKGCTACCT	1	1	0	0	All	1	highlight	0	7	;Found no match.
+GATCAGTTCCGAATTAKKGCTACCTCC	1	GYATTAKKGCTSCWTC	1	1	0	0	10	1	next	0	22	;Found no match.
+GATCAGTTCCGAATTAKKGCTACCTCC	1	GYATTAKKGCTSCWTC	1	1	0	0	10	1	prev	0	18	;Found no match.
+GATCAGTTCCGAATTAKKGCTACCTCC	1	GYATTAKKGCTSCWTC	1	1	0	0	10	1	highlight	0	23	;Found no match.
+GTCCNGTACCCCTCCCGATCAAGCCAGCTCTATCAGTTGCGTGACGTYTAATCG	0	GTG ,caagcc,TGCGTGACG	1	0	0	0	All	0	next	25		37 46;Found forward match at 38.
+GTCCNGTACCCCTCCCGATCAAGCCAGCTCTATCAGTTGCGTGACGTYTAATCG	0	GTG ,caagcc,TGCGTGACG	1	0	0	0	All	0	prev	0	48	40 43;Found forward match at 41.
+GTCCNGTACCCCTCCCGATCAAGCCAGCTCTATCAGTTGCGTGACGTYTAATCG	0	GTG ,caagcc,TGCGTGACG	1	0	0	0	All	0	highlight	41		foundf:37-46,foundf:40-43;Found 2 matches.
+GTCCNGTACCCCTCCCGATCAAGCCAGCTCTATCAGTTGCGTGACGTYTAATCG	1	CCNG	0	1	1	0	All	1	next	0	52	2 6;Found forward match at 3.
+GTCCNGTACCCCTCCCGATCAAGCCAGCTCTATCAGTTGCGTGACGTYTAATCG	1	CCNG	0	1	1	0	All	1	prev	0	16	2 6;Found forward match at 3.
+GTCCNGTACCCCTCCCGATCAAGCCAGCTCTATCAGTTGCGTGACGTYTAATCG	1	CCNG	0	1	1	0	All	1	highlight	0	21	foundf:2-6;Found 1 matches.
+GTCCNGTACCCCTCCCGATCAAGCCAGCTCTATCAGTTGCGTGACGTYTAATCG	1	gctccc;TCWGTTGCGTGACG;TGCGTTACATYTAAT	1	1	0	1	All	1	next	30		32 46;Found forward match at 33.
+GTCCNGTACCCCTCCCGATCAAGCCAGCTCTATCAGTTGCGTGACGTYTAATCG	1	gctccc;TCWGTTGCGTGACG;TGCGTTACATYTAAT	1	1	0	1	All	1	prev	0	15	32 46;Found forward match at 33.
+GTCCNGTACCCCTCCCGATCAAGCCAGCTCTATCAGTTGCGTGACGTYTAATCG	1	gctccc;TCWGTTGCGTGACG;TGCGTTACATYTAAT	1	1	0	1	All	1	highlight	34		foundf:32-46;Found 1 matches.
+GTCCNGTACCCCTCCCGATCAAGCCAGCTCTATCAGTTGCGTGACGTYTAATCG	1	cagc	0	1	0	1	All	1	next	1		20 24;Found forward match at 21.
+GTCCNGTACCCCTCCCGATCAAGCCAGCTCTATCAGTTGCGTGACGTYTAATCG	1	cagc	0	1	0	1	All	1	prev	0	28	26 30;Found reverse match at 27.
+GTCCNGTACCCCTCCCGATCAAGCCAGCTCTATCAGTTGCGTGACGTYTAATCG	1	cagc	0	1	0	1	All	1	highlight	0	48	foundf:20-24,foundf:24-28,foundr:26-30,foundf:33-37,foundr:35-39;Found 5 matches.
+AAAGGTCTCGGCCGATGAGGCTACCTCGCTGAGAGTTTAAGTGAACGTCTTCGCTACA	1	cgvccga	0	0	0	0	All	1	next	0	6	8 15;Found forward match at 9.
+AAAGGTCTCGGCCGATGAGGCTACCTCGCTGAGAGTTTAAGTGAACGTCTTCGCTACA	1	cgvccga	0	0	0	0	All	1	prev	16		8 15;Found forward match at 9.
+AAAGGTCTCGGCCGATGAGGCTACCTCGCTGAGAGTTTAAGTGAACGTCTTCGCTACA	1	cgvccga	0	0	0	0	All	1	highlight	6		foundf:8-15;Found 1 matches.
+AAAGGTCTCGGCCGATGAGGCTACCTCGCTGAGAGTTTAAGTGAACGTCTTCGCTACA	0	TGAG|aagttt|VAGVTCTCG	1	0	0	0	All	1	next	12		15 19;Found forward match at 16.
+AAAGGTCTCGGCCGATGAGGCTACCTCGCTGAGAGTTTAAGTGAACGTCTTCGCTACA	0	TGAG|aagttt|VAGVTCTCG	1	0	0	0	All	1	prev	0	54	29 33;Found forward match at 29.
+AAAGGTCTCGGCCGATGAGGCTACCTCGCTGAGAGTTTAAGTGAACGTCTTCGCTACA	0	TGAG|aagttt|VAGVTCTCG	1	0	0	0	All	1	highlight	28		foundf:1-10,foundf:15-19,foundf:29-33;Found 3 matches.
+AAAGGTCTCGGCCGATGAGGCTACCTCGCTGAGAGTTTAAGTGAACGTCTTCGCTACA	1	acctcgmtg|TTAGAGATTAAGx	0	1	0	2	10	0	next	16		22 31;Found forward match at 23.
+AAAGGTCTCGGCCGATGAGGCTACCTCGCTGAGAGTTTAAGTGAACGTCTTCGCTACA	1	acctcgmtg|TTAGAGATTAAGx	0	1	0	2	10	0	prev	0	20	31 41;Found forward match at 32.
+AAAGGTCTCGGCCGATGAGGCTACCTCGCTGAGAGTTTAAGTGAACGTCTTCGCTACA	1	acctcgmtg|TTAGAGATTAAGx	0	1	0	2	10	0	highlight	0	22	foundf:22-31,foundf:31-41;Found 2 matches.
+AAAGGTCTCGGCCGATGAGGCTACCTCGCTGAGAGTTTAAGTGAACGTCTTCGCTACA	1	cggccgatcacgctcccE	1	1	0	1	All	1	next	0	45	;Found no match.
+AAAGGTCTCGGCCGATGAGGCTACCTCGCTGAGAGTTTAAGTGAACGTCTTCGCTACA	1	cggccgatcacgctcccE	1	1	0	1	All	1	prev	0	13	;Found no match.
+AAAGGTCTCGGCCGATGAGGCTACCTCGCTGAGAGTTTAAGTGAACGTCTTCGCTACA	1	cggccgatcacgctcccE	1	1	0	1	All	1	highlight	57		;Found no match.
+CCCAGAGAATTACGAAAAGCTACCCTACTTTCGCCACTAC	1	cacta	0	1	0	0	All	1	next	1		34 39;Found forward match at 35.
+CCCAGAGAATTACGAAAAGCTACCCTACTTTCGCCACTAC	1	cacta	0	1	0	0	All	1	prev	26		34 39;Found forward match at 35.
+CCCAGAGAATTACGAAAAGCTACCCTACTTTCGCCACTAC	1	cacta	0	1	0	0	All	1	highlight	31		foundf:34-39;Found 1 matches.
+CCCAGAGAATTACGAAAAGCTACCCTACTTTCGCCACTAC	1	CTTTCTCCR	1	1	0	1	All	1	next	35		27 36;Found forward match at 28.
+CCCAGAGAATTACGAAAAGCTACCCTACTTTCGCCACTAC	1	CTTTCTCCR	1	1	0	1	All	1	prev	9		27 36;Found forward match at 28.
+CCCAGAGAATTACGAAAAGCTACCCTACTTTCGCCACTAC	1	CTTTCTCCR	1	1	0	1	All	1	highlight	31		foundf:27-36;Found 1 matches.
+CCCAGAGAATTACGAAAAGCTACCCTACTTTCGCCACTAC	1	AGCTACC|AGCTAC|CTAC	1	1	0	1	All	1	next	0	28	33 37;Found forward match at 34.
+CCCAGAGAATTACGAAAAGCTACCCTACTTTCGCCACTAC	1	AGCTACC|AGCTAC|CTAC	1	1	0	1	All	1	prev	0	34	33 37;Found forward match at 34.
+CCCAGAGAATTACGAAAAGCTACCCTACTTTCGCCACTAC	1	AGCTACC|AGCTAC|CTAC	1	1	0	1	All	1	highlight	3		foundf:9-13,foundf:17-24,foundf:17-23,foundf:19-23,foundf:24-28,foundf:33-37,foundf:36-40;Found 7 matches.
+CCCAGAGAATTACGAAAAGCTACCCTACTTTCGCCACTAC	1	AMACG	0	1	0	0	All	1	next	0	31	;Found no match.
+CCCAGAGAATTACGAAAAGCTACCCTACTTTCGCCACTAC	1	AMACG	0	1	0	0	All	1	prev	37		;Found no match.
+CCCAGAGAATTACGAAAAGCTACCCTACTTTCGCCACTAC	1	AMACG	0	1	0	0	All	1	highlight	25		;Found no match.
+aaagtaaactwgctwatcccaatatgtcataaggtGGCCCATTCGCNNCAGGGATGATTTCAAAGGCA	0	gctwatcc,NCAGGBGTGATTTCAAAG	0	0	0	0	All	0	next	65		;Found no match.
+aaagtaaactwgctwatcccaatatgtcataaggtGGCCCATTCGCNNCAGGGATGATTTCAAAGGCA	0	gctwatcc,NCAGGBGTGATTTCAAAG	0	0	0	0	All	0	prev	28		11 19;Found forward match at 12.
+aaagtaaactwgctwatcccaatatgtcataaggtGGCCCATTCGCNNCAGGGATGATTTCAAAGGCA	0	gctwatcc,NCAGGBGTGATTTCAAAG	0	0	0	0	All	0	highlight	12		foundf:11-19;Found 1 matches.
+aaagtaaactwgctwatcccaatatgtcataaggtGGCCCATTCGCNNCAGGGATGATTTCAAAGGCA	1	CDCTCGA	0	1	0	2	All	1	next	56		39 46;Found forward match at 40.
+aaagtaaactwgctwatcccaatatgtcataaggtGGCCCATTCGCNNCAGGGATGATTTCAAAGGCA	1	CDCTCGA	0	1	0	2	All	1	prev	40		39 46;Found forward match at 40.
+aaagtaaactwgctwatcccaatatgtcataaggtGGCCCATTCGCNNCAGGGATGATTTCAAAGGCA	1	CDCTCGA	0	1	0	2	All	1	highlight	0	1	foundf:39-46;Found 1 matches.
+aaagtaaactwgctwatcccaatatgtcataaggtGGCCCATTCGCNNCAGGGATGATTTCAAAGGCA	0	taaggtGG|atatVtcaGBaggtGG|tncgcmncagggmtgat	1	1	1	0	10	1	next	0	9	29 37;Found forward match at 30.
+aaagtaaactwgctwatcccaatatgtcataaggtGGCCCATTCGCNNCAGGGATGATTTCAAAGGCA	0	taaggtGG|atatVtcaGBaggtGG|tncgcmncagggmtgat	1	1	1	0	10	1	prev	0	5	29 37;Found forward match at 30.
+aaagtaaactwgctwatcccaatatgtcataaggtGGCCCATTCGCNNCAGGGATGATTTCAAAGGCA	0	taaggtGG|atatVtcaGBaggtGG|tncgcmncagggmtgat	1	1	1	0	10	1	highlight	0	28	foundf:29-37;Found 1 matches.
+aaagtaaactwgctwatcccaatatgtcataaggtGGCCCATTCGCNNCAGGGATGATTTCAAAGGCA	1	cBwgT	1	0	1	0	All	1	next	39		;Found no match.
+aaagtaaactwgctwatcccaatatgtcataaggtGGCCCATTCGCNNCAGGGATGATTTCAAAGGCA	1	cBwgT	1	0	1	0	All	1	prev	60		;Found no match.
+aaagtaaactwgctwatcccaatatgtcataaggtGGCCCATTCGCNNCAGGGATGATTTCAAAGGCA	1	cBwgT	1	0	1	0	All	1	highlight	0	7	;Found no match.
+STCNTAGGARGGTGCCTGGAGTAATACCCCAAACT	1	ACS,ACCCCAAG,TGr	1	0	0	0	10	1	next	30		25 28;Found forward match at 26.
+STCNTAGGARGGTGCCTGGAGTAATACCCCAAACT	1	ACS,ACCCCAAG,TGr	1	0	0	0	10	1	prev	18		25 28;Found forward match at 26.
+STCNTAGGARGGTGCCTGGAGTAATACCCCAAACT	1	ACS,ACCCCAAG,TGr	1	0	0	0	10	1	highlight	2		foundf:25-28;Found 1 matches.
+STCNTAGGARGGTGCCTGGAGTAATACCCCAAACT	0	TGCC	0	1	0	0	All	0	next	0	14	;Found no match.
+STCNTAGGARGGTGCCTGGAGTAATACCCCAAACT	0	TGCC	0	1	0	0	All	0	prev	0	25	12 16;Found forward match at 13.
+STCNTAGGARGGTGCCTGGAGTAATACCCCAAACT	0	TGCC	0	1	0	0	All	0	highlight	0	30	foundf:12-16;Found 1 matches.
+STCNTAGGARGGTGCCTGGAGTAATACCCCAAACT	0	AYGARG	1	1	0	1	10	1	next	19		5 11;Found forward match at 6.
+STCNTAGGARGGTGCCTGGAGTAATACCCCAAACT	0	AYGARG	1	1	0	1	10	1	prev	0	9	5 11;Found forward match at 5.
+STCNTAGGARGGTGCCTGGAGTAATACCCCAAACT	0	AYGARG	1	1	0	1	10	1	highlight	0	15	foundf:5-11;Found 1 matches.
+STCNTAGGARGGTGCCTGGAGTAATACCCCAAACT	0	ATAACC	0	1	0	0	All	1	next	28		;Found no match.
+STCNTAGGARGGTGCCTGGAGTAATACCCCAAACT	0	ATAACC	0	1	0	0	All	1	prev	21		;Found no match.
+STCNTAGGARGGTGCCTGGAGTAATACCCCAAACT	0	ATAACC	0	1	0	0	All	1	highlight	33		;Found no match.
+CTAARTGAGAGGCCTTATTGTCCCAAGKGGCGCTAAGGTGGTACCGCGGTAA	1	GAGGCCTTATAGT	0	0	0	2	All	0	next	45		8 21;Found forward match at 9.
+CTAARTGAGAGGCCTTATTGTCCCAAGKGGCGCTAAGGTGGTACCGCGGTAA	1	GAGGCCTTATAGT	0	0	0	2	All	0	prev	27		8 21;Found forward match at 9.
+CTAARTGAGAGGCCTTATTGTCCCAAGKGGCGCTAAGGTGGTACCGCGGTAA	1	GAGGCCTTATAGT	0	0	0	2	All	0	highlight	9		foundf:8-21;Found 1 matches.
+CTAARTGAGAGGCCTTATTGTCCCAAGKGGCGCTAAGGTGGTACCGCGGTAA	1	TTA,CGCTAACGTGGTACTGC,GCKT	0	1	0	0	All	1	next	0	1	14 17;Found forward match at 15.
+CTAARTGAGAGGCCTTATTGTCCCAAGKGGCGCTAAGGTGGTACCGCGGTAA	1	TTA,CGCTAACGTGGTACTGC,GCKT	0	1	0	0	All	1	prev	6		1 4;Found reverse match at 2.
+CTAARTGAGAGGCCTTATTGTCCCAAGKGGCGCTAAGGTGGTACCGCGGTAA	1	TTA,CGCTAACGTGGTACTGC,GCKT	0	1	0	0	All	1	highlight	46		foundr:1-4,foundf:14-17,foundr:33-36,foundr:49-52,foundr:0-4,foundf:0-17;Found 6 matches.
+CTAARTGAGAGGCCTTATTGTCCCAAGKGGCGCTAAGGTGGTACCGCGGTAA	0	AGGTGGAA	0	1	0	2	All	1	next	0	46	35 43;Found forward match at 36.
+CTAARTGAGAGGCCTTATTGTCCCAAGKGGCGCTAAGGTGGTACCGCGGTAA	0	AGGTGGAA	0	1	0	2	All	1	prev	51		35 43;Found forward match at 35.
+CTAARTGAGAGGCCTTATTGTCCCAAGKGGCGCTAAGGTGGTACCGCGGTAA	0	AGGTGGAA	0	1	0	2	All	1	highlight	32		foundf:35-43;Found 1 matches.
+CTAARTGAGAGGCCTTATTGTCCCAAGKGGCGCTAAGGTGGTACCGCGGTAA	0	TCCCAnGK	0	1	0	0	All	1	next	0	38	20 28;Found forward match at 21.
+CTAARTGAGAGGCCTTATTGTCCCAAGKGGCGCTAAGGTGGTACCGCGGTAA	0	TCCCAnGK	0	1	0	0	All	1	prev	0	11	20 28;Found forward match at 21.
+CTAARTGAGAGGCCTTATTGTCCCAAGKGGCGCTAAGGTGGTACCGCGGTAA	0	TCCCAnGK	0	1	0	0	All	1	highlight	36		foundf:20-28;Found 1 matches.
+GACTTAATTTAACGCTGTGCGAGGCRAAGTAWCG	0	TAAACG;TVTGCGAGGCRAAGT1	0	0	0	0	All	0	next	0	9	15 30;Found forward match at 16.
+GACTTAATTTAACGCTGTGCGAGGCRAAGTAWCG	0	TAAACG;TVTGCGAGGCRAAGT1	0	0	0	0	All	0	prev	7		;Found no match.
+GACTTAATTTAACGCTGTGCGAGGCRAAGTAWCG	0	TAAACG;TVTGCGAGGCRAAGT1	0	0	0	0	All	0	highlight	0	22	foundf:15-30;Found 1 matches.
+GACTTAATTTAACGCTGTGCGAGGCRAAGTAWCG	0	TAAM|GACRAA	1	1	0	1	10	1	next	0	30	2 6;Found reverse match at 3.
+GACTTAATTTAACGCTGTGCGAGGCRAAGTAWCG	0	TAAM|GACRAA	1	1	0	1	10	1	prev	32		22 28;Found forward match at 22.
+GACTTAATTTAACGCTGTGCGAGGCRAAGTAWCG	0	TAAM|GACRAA	1	1	0	1	10	1	highlight	0	9	foundr:2-6,foundf:3-7,foundr:3-7,foundf:4-8,foundr:7-11,foundf:8-12,foundr:8-12,foundf:9-13,foundf:22-28,foundf:29-33;Found 10 matches.
+GACTTAATTTAACGCTGTGCGAGGCRAAGTAWCG	1	GBGC	0	1	0	0	All	1	next	26		16 20;Found forward match at 17.
+GACTTAATTTAACGCTGTGCGAGGCRAAGTAWCG	1	GBGC	0	1	0	0	All	1	prev	0	18	16 20;Found forward match at 17.
+GACTTAATTTAACGCTGTGCGAGGCRAAGTAWCG	1	GBGC	0	1	0	0	All	1	highlight	0	27	foundf:16-20;Found 1 matches.
+GACTTAATTTAACGCTGTGCGAGGCRAAGTAWCG	1	TRA	0	1	1	1	All	1	next	21		24 27;Found forward match at 25.
+GACTTAATTTAACGCTGTGCGAGGCRAAGTAWCG	1	TRA	0	1	1	1	All	1	prev	0	29	24 27;Found forward match at 25.
+GACTTAATTTAACGCTGTGCGAGGCRAAGTAWCG	1	TRA	0	1	1	1	All	1	highlight	20		foundf:3-6,foundr:3-6,foundf:4-7,foundr:4-7,foundf:8-11,foundr:8-11,foundf:9-12,foundr:9-12,foundf:24-27;Found 9 matches.
+CGTTAGTGGATGAAGAGACTCCTGAGTKA	1	GAAGGGACTCCTGAGT 	0	1	0	2	All	1	next	0	7	11 27;Found forward match at 12.
+CGTTAGTGGATGAAGAGACTCCTGAGTKA	1	GAAGGGACTCCTGAGT 	0	1	0	2	All	1	prev	0	20	11 27;Found forward match at 12.
+CGTTAGTGGATGAAGAGACTCCTGAGTKA	1	GAAGGGACTCCTGAGT 	0	1	0	2	All	1	highlight	23		foundf:11-27;Found 1 matches.
+CGTTAGTGGATGAAGAGACTCCTGAGTKA	1	ctaags	0	1	0	1	All	1	next	0	21	0 6;Found reverse match at 1.
+CGTTAGTGGATGAAGAGACTCCTGAGTKA	1	ctaags	0	1	0	1	All	1	prev	0	2	0 6;Found reverse match at 1.
+CGTTAGTGGATGAAGAGACTCCTGAGTKA	1	ctaags	0	1	0	1	All	1	highlight	13		foundr:0-6,foundr:20-26,foundr:0-6;Found 3 matches.
+CGTTAGTGGATGAAGAGACTCCTGAGTKA	1	YGGATGA	0	0	0	0	All	1	next	12		6 13;Found forward match at 7.
+CGTTAGTGGATGAAGAGACTCCTGAGTKA	1	YGGATGA	0	0	0	0	All	1	prev	1		6 13;Found forward match at 7.
+CGTTAGTGGATGAAGAGACTCCTGAGTKA	1	YGGATGA	0	0	0	0	All	1	highlight	6		foundf:6-13;Found 1 matches.
+CGTTAGTGGATGAAGAGACTCCTGAGTKA	1	GHTGGAG	1	0	1	1	10	0	next	0	22	;Found no match.
+CGTTAGTGGATGAAGAGACTCCTGAGTKA	1	GHTGGAG	1	0	1	1	10	0	prev	7		;Found no match.
+CGTTAGTGGATGAAGAGACTCCTGAGTKA	1	GHTGGAG	1	0	1	1	10	0	highlight	23		;Found no match.
+TCGATGKGATACTTACGTCGGTCCAGCRATACGAGGCGCNTGTTCAK	1	ABACG	0	1	1	1	10	0	next	0	5	28 33;Found forward match at 29.
+TCGATGKGATACTTACGTCGGTCCAGCRATACGAGGCGCNTGTTCAK	1	ABACG	0	1	1	1	10	0	prev	8		28 33;Found forward match at 29.
+TCGATGKGATACTTACGTCGGTCCAGCRATACGAGGCGCNTGTTCAK	1	ABACG	0	1	1	1	10	0	highlight	12		foundf:28-33;Found 1 matches.
+TCGATGKGATACTTACGTCGGTCCAGCRATACGAGGCGCNTGTTCAK	1	ATAC|gtccagara|ccagcra	0	1	0	1	All	0	next	11		12 16;Found forward match at 13.
+TCGATGKGATACTTACGTCGGTCCAGCRATACGAGGCGCNTGTTCAK	1	ATAC|gtccagara|ccagcra	0	1	0	1	All	0	prev	0	12	8 12;Found forward match at 9.
+TCGATGKGATACTTACGTCGGTCCAGCRATACGAGGCGCNTGTTCAK	1	ATAC|gtccagara|ccagcra	0	1	0	1	All	0	highlight	26		foundf:8-12,foundf:12-16,foundf:20-29,foundf:22-29,foundf:28-32;Found 5 matches.
+TCGATGKGATACTTACGTCGGTCCAGCRATACGAGGCGCNTGTTCAK	1	ACT	0	1	0	0	All	1	next	0	20	10 13;Found forward match at 11.
+TCGATGKGATACTTACGTCGGTCCAGCRATACGAGGCGCNTGTTCAK	1	ACT	0	1	0	0	All	1	prev	0	23	10 13;Found forward match at 11.
+TCGATGKGATACTTACGTCGGTCCAGCRATACGAGGCGCNTGTTCAK	1	ACT	0	1	0	0	All	1	highlight	0	19	foundf:10-13;Found 1 matches.
+TCGATGKGATACTTACGTCGGTCCAGCRATACGAGGCGCNTGTTCAK	0	TACWTCGGT	1	1	0	0	All	1	next	28		;Found no match.
+TCGATGKGATACTTACGTCGGTCCAGCRATACGAGGCGCNTGTTCAK	0	TACWTCGGT	1	1	0	0	All	1	prev	3		;Found no match.
+TCGATGKGATACTTACGTCGGTCCAGCRATACGAGGCGCNTGTTCAK	0	TACWTCGGT	1	1	0	0	All	1	highlight	0	18	;Found no match.
+atgtcgrgaatamcgagatntcttggaggtmgtgactggtcaa	0	atHmcAagaCntctt	1	1	0	1	All	1	next	0	37	;Found no match.
+atgtcgrgaatamcgagatntcttggaggtmgtgactggtcaa	0	atHmcAagaCntctt	1	1	0	1	All	1	prev	0	12	;Found no match.
+atgtcgrgaatamcgagatntcttggaggtmgtgactggtcaa	0	atHmcAagaCntctt	1	1	0	1	All	1	highlight	0	32	;Found no match.
+atgtcgrgaatamcgagatntcttggaggtmgtgactggtcaa	0	gagatntct	0	1	0	1	All	1	next	0	19	14 23;Found forward match at 15.
+atgtcgrgaatamcgagatntcttggaggtmgtgactggtcaa	0	gagatntct	0	1	0	1	All	1	prev	0	30	14 23;Found forward match at 14.
+atgtcgrgaatamcgagatntcttggaggtmgtgactggtcaa	0	gagatntct	0	1	0	1	All	1	highlight	7		foundf:14-23;Found 1 matches.
+atgtcgrgaatamcgagatntcttggaggtmgtgactggtcaa	1	ctag;tgGcgrgaaTax	1	1	0	2	10	1	next	0	24	28 32;Found forward match at 29.
+atgtcgrgaatamcgagatntcttggaggtmgtgactggtcaa	1	ctag;tgGcgrgaaTax	1	1	0	2	10	1	prev	0	27	24 28;Found forward match at 25.
+atgtcgrgaatamcgagatntcttggaggtmgtgactggtcaa	1	ctag;tgGcgrgaaTax	1	1	0	2	10	1	highlight	5		foundf:2-6,foundr:2-6,foundf:2-12,foundf:4-8,foundr:4-8,foundf:9-13,foundr:9-13,foundf:13-17,foundr:13-17,foundf:21-25,foundr:21-25,foundf:22-26,foundr:22-26,foundf:24-28,foundr:24-28,foundf:28-32,foundr:28-32,foundf:35-39,foundr:35-39,foundf:40-43,foundf:0-1,foundr:40-43,foundr:0-1,foundf:0-6,foundr:0-6,foundf:0-8,foundr:0-8;Found 25 matches.
+atgtcgrgaatamcgagatntcttggaggtmgtgactggtcaa	0	gtcgrgAa	1	1	0	1	All	0	next	0	29	;Found no match.
+atgtcgrgaatamcgagatntcttggaggtmgtgactggtcaa	0	gtcgrgAa	1	1	0	1	All	0	prev	0	15	2 10;Found forward match at 3.
+atgtcgrgaatamcgagatntcttggaggtmgtgactggtcaa	0	gtcgrgAa	1	1	0	1	All	0	highlight	0	7	foundf:2-10;Found 1 matches.
+CCCMTTCTGTTAGATGACTGCTACGACGGTAAAGYT	0	GCG|CCC|CTTTCTGCTKG	0	1	0	2	All	1	next	19		19 22;Found forward match at 20.
+CCCMTTCTGTTAGATGACTGCTACGACGGTAAAGYT	0	GCG|CCC|CTTTCTGCTKG	0	1	0	2	All	1	prev	0	7	5 8;Found forward match at 5.
+CCCMTTCTGTTAGATGACTGCTACGACGGTAAAGYT	0	GCG|CCC|CTTTCTGCTKG	0	1	0	2	All	1	highlight	0	28	foundf:0-3,foundr:0-3,foundf:0-3,foundf:1-4,foundr:1-4,foundf:1-4,foundr:2-5,foundf:2-5,foundr:4-7,foundf:4-7,foundf:5-8,foundf:5-8,foundf:6-9,foundr:6-9,foundf:6-9,foundr:6-9,foundr:7-10,foundr:7-10,foundf:8-11,foundr:8-11,foundf:10-13,foundr:10-13,foundr:11-14,foundr:11-14,foundf:12-15,foundr:12-15,foundf:13-16,foundr:13-16,foundr:14-17,foundr:14-17,foundf:15-18,foundr:15-18,foundf:15-18,foundr:15-18,foundf:16-19,foundf:16-19,foundf:17-20,foundr:17-20,foundf:17-20,foundr:17-20,foundr:18-21,foundf:18-21,foundr:18-21,foundf:19-22,foundf:19-22,foundr:19-22,foundr:20-23,foundf:20-23,foundr:21-24,foundf:21-24,foundf:22-25,foundf:22-25,foundr:22-25,foundr:23-26,foundf:23-26,foundr:23-26,foundf:24-27,foundr:24-27,foundf:24-27,foundr:24-27,foundf:25-28,foundf:25-28,foundr:25-28,foundf:26-29,foundr:26-29,foundf:26-29,foundr:26-29,foundf:27-30,foundr:27-30,foundr:27-30,foundf:28-31,foundr:28-31,foundf:31-34,foundr:31-34,foundr:32-35,foundr:32-35,foundf:33-36,foundr:33-36;Found 78 matches.
+CCCMTTCTGTTAGATGACTGCTACGACGGTAAAGYT	0	tagawhactgatac,	0	1	1	2	All	0	next	19		19 19;Found forward match at 20.
+CCCMTTCTGTTAGATGACTGCTACGACGGTAAAGYT	0	tagawhactgatac,	0	1	1	2	All	0	prev	1		0 0;Found forward match at 1.
+CCCMTTCTGTTAGATGACTGCTACGACGGTAAAGYT	0	tagawhactgatac,	0	1	1	2	All	0	highlight	35		;Found no match.
+CCCMTTCTGTTAGATGACTGCTACGACGGTAAAGYT	0	tyacw,ACGACGGTACAG	0	1	0	2	All	0	next	0	31	;Found no match.
+CCCMTTCTGTTAGATGACTGCTACGACGGTAAAGYT	0	tyacw,ACGACGGTACAG	0	1	0	2	All	0	prev	15		14 19;Found forward match at 15.
+CCCMTTCTGTTAGATGACTGCTACGACGGTAAAGYT	0	tyacw,ACGACGGTACAG	0	1	0	2	All	0	highlight	0	26	foundf:3-8,foundf:5-10,foundr:5-10,foundr:7-12,foundf:9-14,foundr:9-14,foundr:12-17,foundf:14-19,foundr:16-21,foundf:17-22,foundr:18-23,foundf:20-25,foundr:21-26,foundf:22-34,foundr:27-32,foundf:28-33;Found 16 matches.
+CCCMTTCTGTTAGATGACTGCTACGACGGTAAAGYT	1	GDAAT	1	1	0	2	10	1	next	13		13 18;Found reverse match at 14.
+CCCMTTCTGTTAGATGACTGCTACGACGGTAAAGYT	1	GDAAT	1	1	0	2	10	1	prev	0	2	34 39;Found reverse match at 35.
+CCCMTTCTGTTAGATGACTGCTACGACGGTAAAGYT	1	GDAAT	1	1	0	2	10	1	highlight	22		foundr:2-7,foundr:3-8,foundf:8-13,foundr:8-13,foundf:10-15,foundr:13-18,foundf:14-19,foundr:16-21,foundr:19-24,foundr:22-27,foundf:27-32,foundf:28-33,foundf:29-34,foundr:32-36,foundr:0-1,foundr:33-36,foundr:0-2,foundr:34-36,foundr:0-3;Found 16 matches.
+ATCAAGTATCGTTAACAAAAGCCTGAGTGTACCTAGGGCTGGGGGGGGG	0	GGA	0	1	0	2	All	1	next	0	48	0 3;Found reverse match at 1.
+ATCAAGTATCGTTAACAAAAGCCTGAGTGTACCTAGGGCTGGGGGGGGG	0	GGA	0	1	0	2	All	1	prev	6		4 7;Found forward match at 4.
+ATCAAGTATCGTTAACAAAAGCCTGAGTGTACCTAGGGCTGGGGGGGGG	0	GGA	0	1	0	2	All	1	highlight	0	32	foundr:0-3,foundf:1-4,foundr:1-4,foundf:2-5,foundf:4-7,foundf:5-8,foundr:6-9,foundr:7-10,foundr:8-11,foundf:9-12,foundf:10-13,foundf:11-14,foundr:11-14,foundf:12-15,foundr:12-15,foundr:13-16,foundf:14-17,foundr:14-17,foundf:15-18,foundf:16-19,foundf:17-20,foundf:19-22,foundr:19-22,foundf:20-23,foundr:20-23,foundr:21-24,foundf:23-26,foundr:23-26,foundf:24-27,foundf:25-28,foundf:26-29,foundf:27-30,foundr:27-30,foundf:28-31,foundr:29-32,foundr:30-33,foundr:31-34,foundf:32-35,foundr:33-36,foundf:34-37,foundf:35-38,foundf:36-39,foundr:36-39,foundf:37-40,foundr:37-40,foundf:39-42,foundr:39-42,foundf:40-43,foundf:41-44,foundf:42-45,foundf:43-46,foundf:44-47,foundf:45-48,foundf:46-49,foundf:47-49,foundf:0-1,foundf:48-49,foundf:0-2;Found 56 matches.
+ATCAAGTATCGTTAACAAAAGCCTGAGTGTACCTAGGGCTGGGGGGGGG	1	CCTAGG	1	1	0	0	All	1	next	48		31 37;Found forward match at 32.
+ATCAAGTATCGTTAACAAAAGCCTGAGTGTACCTAGGGCTGGGGGGGGG	1	CCTAGG	1	1	0	0	All	1	prev	22		31 37;Found forward match at 32.
+ATCAAGTATCGTTAACAAAAGCCTGAGTGTACCTAGGGCTGGGGGGGGG	1	CCTAGG	1	1	0	0	All	1	highlight	0	24	foundf:31-37,foundr:31-37;Found 2 matches.
+ATCAAGTATCGTTAACAAAAGCCTGAGTGTACCTAGGGCTGGGGGGGGG	0	GABTGTAC;ATGAAAGCC	1	1	0	1	All	1	next	0	3	24 32;Found forward match at 25.
+ATCAAGTATCGTTAACAAAAGCCTGAGTGTACCTAGGGCTGGGGGGGGG	0	GABTGTAC;ATGAAAGCC	1	1	0	1	All	1	prev	34		24 32;Found forward match at 24.
+ATCAAGTATCGTTAACAAAAGCCTGAGTGTACCTAGGGCTGGGGGGGGG	0	GABTGTAC;ATGAAAGCC	1	1	0	1	All	1	highlight	40		foundf:24-32;Found 1 matches.
+ATCAAGTATCGTTAACAAAAGCCTGAGTGTACCTAGGGCTGGGGGGGGG	1	gabx	1	1	1	1	All	1	next	26		;Found no match.
+ATCAAGTATCGTTAACAAAAGCCTGAGTGTACCTAGGGCTGGGGGGGGG	1	gabx	1	1	1	1	All	1	prev	1		;Found no match.
+ATCAAGTATCGTTAACAAAAGCCTGAGTGTACCTAGGGCTGGGGGGGGG	1	gabx	1	1	1	1	All	1	highlight	2		;Found no match.
+gagctaggyctgaatttgcgactctccggractatcagccagtattatcatat	1	ttgcBactctccgA	0	1	0	1	All	1	next	51		15 29;Found forward match at 16.
+gagctaggyctgaatttgcgactctccggractatcagccagtattatcatat	1	ttgcBactctccgA	0	1	0	1	All	1	prev	25		15 29;Found forward match at 16.
+gagctaggyctgaatttgcgactctccggractatcagccagtattatcatat	1	ttgcBactctccgA	0	1	0	1	All	1	highlight	9		foundf:15-29;Found 1 matches.
+gagctaggyctgaatttgcgactctccggractatcagccagtattatcatat	1	crg|gygAtaggyctgaatKMg|tta	0	0	1	1	All	1	next	51		52 55;Found forward match at 53.
+gagctaggyctgaatttgcgactctccggractatcagccagtattatcatat	1	crg|gygAtaggyctgaatKMg|tta	0	0	1	1	All	1	prev	0	41	39 42;Found forward match at 40.
+gagctaggyctgaatttgcgactctccggractatcagccagtattatcatat	1	crg|gygAtaggyctgaatKMg|tta	0	0	1	1	All	1	highlight	0	29	foundf:3-6,foundf:9-12,foundf:10-13,foundf:14-17,foundf:15-18,foundf:25-28,foundf:26-29,foundf:31-34,foundf:34-37,foundf:35-38,foundf:39-42,foundf:41-44,foundf:44-47,foundf:47-50,foundf:49-52,foundf:52-53,foundf:0-2,foundf:0-6,foundf:0-12,foundf:0-13,foundf:0-17,foundf:0-18;Found 21 matches.
+gagctaggyctgaatttgcgactctccggractatcagccagtattatcatat	1	cgactctcDggract	0	1	0	0	10	0	next	0	50	;Found no match.
+gagctaggyctgaatttgcgactctccggractatcagccagtattatcatat	1	cgactctcDggract	0	1	0	0	10	0	prev	2		;Found no match.
+gagctaggyctgaatttgcgactctccggractatcagccagtattatcatat	1	cgactctcDggract	0	1	0	0	10	0	highlight	0	7	;Found no match.
+gagctaggyctgaatttgcgactctccggractatcagccagtattatcatat	0	tatcaC	1	1	0	1	All	1	next	50		32 38;Found forward match at 33.
+gagctaggyctgaatttgcgactctccggractatcagccagtattatcatat	0	tatcaC	1	1	0	1	All	1	prev	46		32 38;Found forward match at 32.
+gagctaggyctgaatttgcgactctccggractatcagccagtattatcatat	0	tatcaC	1	1	0	1	All	1	highlight	0	35	foundf:32-38,foundf:45-51;Found 2 matches.
+GTGGKCTTGTCTTGTTAATCCCCCCGATTTAACCCAGACAATACGACTGTCTAC	1	ATTTAA	1	0	0	0	All	1	next	0	8	26 32;Found forward match at 27.
+GTGGKCTTGTCTTGTTAATCCCCCCGATTTAACCCAGACAATACGACTGTCTAC	1	ATTTAA	1	0	0	0	All	1	prev	0	35	26 32;Found forward match at 27.
+GTGGKCTTGTCTTGTTAATCCCCCCGATTTAACCCAGACAATACGACTGTCTAC	1	ATTTAA	1	0	0	0	All	1	highlight	0	7	foundf:26-32;Found 1 matches.
+GTGGKCTTGTCTTGTTAATCCCCCCGATTTAACCCAGACAATACGACTGTCTAC	1	AAC	1	1	0	0	All	0	next	0	47	13 16;Found reverse match at 14.
+GTGGKCTTGTCTTGTTAATCCCCCCGATTTAACCCAGACAATACGACTGTCTAC	1	AAC	1	1	0	0	All	0	prev	0	37	30 33;Found forward match at 31.
+GTGGKCTTGTCTTGTTAATCCCCCCGATTTAACCCAGACAATACGACTGTCTAC	1	AAC	1	1	0	0	All	0	highlight	12		foundr:13-16,foundf:30-33;Found 2 matches.
+GTGGKCTTGTCTTGTTAATCCCCCCGATTTAACCCAGACAATACGACTGTCTAC	0	ACCCAGAAynTA	0	0	0	2	All	0	next	42		;Found no match.
+GTGGKCTTGTCTTGTTAATCCCCCCGATTTAACCCAGACAATACGACTGTCTAC	0	ACCCAGAAynTA	0	0	0	2	All	0	prev	8		;Found no match.
+GTGGKCTTGTCTTGTTAATCCCCCCGATTTAACCCAGACAATACGACTGTCTAC	0	ACCCAGAAynTA	0	0	0	2	All	0	highlight	25		foundf:31-43;Found 1 matches.
+GTGGKCTTGTCTTGTTAATCCCCCCGATTTAACCCAGACAATACGACTGTCTAC	1	TCCCCC	0	0	1	0	10	1	next	19		18 24;Found forward match at 19.
+GTGGKCTTGTCTTGTTAATCCCCCCGATTTAACCCAGACAATACGACTGTCTAC	1	TCCCCC	0	0	1	0	10	1	prev	0	53	18 24;Found forward match at 19.
+GTGGKCTTGTCTTGTTAATCCCCCCGATTTAACCCAGACAATACGACTGTCTAC	1	TCCCCC	0	0	1	0	10	1	highlight	51		foundf:18-24;Found 1 matches.
+CGCCCTTGGCCGGGGCGCTTCATCTATTTTTTNNAAGTGCAACCCGGTATTAAGGTG	0	kgccmttgghvgaggcgc	1	1	0	2	All	1	next	39		;Found no match.
+CGCCCTTGGCCGGGGCGCTTCATCTATTTTTTNNAAGTGCAACCCGGTATTAAGGTG	0	kgccmttgghvgaggcgc	1	1	0	2	All	1	prev	1		;Found no match.
+CGCCCTTGGCCGGGGCGCTTCATCTATTTTTTNNAAGTGCAACCCGGTATTAAGGTG	0	kgccmttgghvgaggcgc	1	1	0	2	All	1	highlight	0	0	;Found no match.
+CGCCCTTGGCCGGGGCGCTTCATCTATTTTTTNNAAGTGCAACCCGGTATTAAGGTG	0	CCGGTATCA|GCAACACGGTAT|AGBA	0	0	0	1	All	0	next	0	52	;Found no match.
+CGCCCTTGGCCGGGGCGCTTCATCTATTTTTTNNAAGTGCAACCCGGTATTAAGGTG	0	CCGGTATCA|GCAACACGGTAT|AGBA	0	0	0	1	All	0	prev	0	21	;Found no match.
+CGCCCTTGGCCGGGGCGCTTCATCTATTTTTTNNAAGTGCAACCCGGTATTAAGGTG	0	CCGGTATCA|GCAACACGGTAT|AGBA	0	0	0	1	All	0	highlight	23		foundf:35-39,foundf:37-41,foundf:38-50,foundf:43-52,foundf:45-49,foundf:48-52,foundf:52-56;Found 7 matches.
+CGCCCTTGGCCGGGGCGCTTCATCTATTTTTTNNAAGTGCAACCCGGTATTAAGGTG	1	CTTCM	0	1	0	0	All	0	next	0	0	17 22;Found forward match at 18.
+CGCCCTTGGCCGGGGCGCTTCATCTATTTTTTNNAAGTGCAACCCGGTATTAAGGTG	1	CTTCM	0	1	0	0	All	0	prev	24		17 22;Found forward match at 18.
+CGCCCTTGGCCGGGGCGCTTCATCTATTTTTTNNAAGTGCAACCCGGTATTAAGGTG	1	CTTCM	0	1	0	0	All	0	highlight	0	51	foundf:17-22;Found 1 matches.
+CGCCCTTGGCCGGGGCGCTTCATCTATTTTTTNNAAGTGCAACCCGGTATTAAGGTG	0	aaggt	0	0	0	1	All	0	next	0	54	;Found no match.
+CGCCCTTGGCCGGGGCGCTTCATCTATTTTTTNNAAGTGCAACCCGGTATTAAGGTG	0	aaggt	0	0	0	1	All	0	prev	42		;Found no match.
+CGCCCTTGGCCGGGGCGCTTCATCTATTTTTTNNAAGTGCAACCCGGTATTAAGGTG	0	aaggt	0	0	0	1	All	0	highlight	6		foundf:51-56;Found 1 matches.
+GMTTGACGTCYGYTTTCTTATTACGTMKG	1	gtcygyt	1	0	1	0	All	1	next	2		;Found no match.
+GMTTGACGTCYGYTTTCTTATTACGTMKG	1	gtcygyt	1	0	1	0	All	1	prev	17		;Found no match.
+GMTTGACGTCYGYTTTCTTATTACGTMKG	1	gtcygyt	1	0	1	0	All	1	highlight	0	16	;Found no match.
+GMTTGACGTCYGYTTTCTTATTACGTMKG	0	GYTCT	1	0	0	0	All	1	next	0	23	;Found no match.
+GMTTGACGTCYGYTTTCTTATTACGTMKG	0	GYTCT	1	0	0	0	All	1	prev	9		;Found no match.
+GMTTGACGTCYGYTTTCTTATTACGTMKG	0	GYTCT	1	0	0	0	All	1	highlight	9		;Found no match.
+GMTTGACGTCYGYTTTCTTATTACGTMKG	1	DTCTT	1	1	1	0	All	1	next	0	14	;Found no match.
+GMTTGACGTCYGYTTTCTTATTACGTMKG	1	DTCTT	1	1	1	0	All	1	prev	15		;Found no match.
+GMTTGACGTCYGYTTTCTTATTACGTMKG	1	DTCTT	1	1	1	0	All	1	highlight	10		;Found no match.
+GMTTGACGTCYGYTTTCTTATTACGTMKG	0	TATT;avg;YCYT	1	0	1	0	All	0	next	0	8	18 22;Found forward match at 19.
+GMTTGACGTCYGYTTTCTTATTACGTMKG	0	TATT;avg;YCYT	1	0	1	0	All	0	prev	22		18 22;Found forward match at 19.
+GMTTGACGTCYGYTTTCTTATTACGTMKG	0	TATT;avg;YCYT	1	0	1	0	All	0	highlight	0	22	foundf:18-22;Found 1 matches.
+gaggatgcgctctattaTACGGRAGGGACGCT	1	gaCgatScg	1	1	0	0	All	1	next	0	4	;Found no match.
+gaggatgcgctctattaTACGGRAGGGACGCT	1	gaCgatScg	1	1	0	0	All	1	prev	0	31	;Found no match.
+gaggatgcgctctattaTACGGRAGGGACGCT	1	gaCgatScg	1	1	0	0	All	1	highlight	0	17	;Found no match.
+gaggatgcgctctattaTACGGRAGGGACGCT	0	ttaTA	0	1	1	2	All	1	next	0	9	10 15;Found reverse match at 11.
+gaggatgcgctctattaTACGGRAGGGACGCT	0	ttaTA	0	1	1	2	All	1	prev	29		15 20;Found reverse match at 15.
+gaggatgcgctctattaTACGGRAGGGACGCT	0	ttaTA	0	1	1	2	All	1	highlight	0	29	foundf:9-14,foundr:10-15,foundf:11-16,foundf:12-17,foundr:12-17,foundf:14-19,foundr:15-20;Found 7 matches.
+gaggatgcgctctattaTACGGRAGGGACGCT	1	atgcAA	0	1	0	2	10	1	next	0	3	4 10;Found forward match at 5.
+gaggatgcgctctattaTACGGRAGGGACGCT	1	atgcAA	0	1	0	2	10	1	prev	0	13	4 10;Found forward match at 5.
+gaggatgcgctctattaTACGGRAGGGACGCT	1	atgcAA	0	1	0	2	10	1	highlight	20		foundf:4-10;Found 1 matches.
+gaggatgcgctctattaTACGGRAGGGACGCT	1	nggatg,ctattaTA	1	1	0	0	All	0	next	26		1 7;Found forward match at 2.
+gaggatgcgctctattaTACGGRAGGGACGCT	1	nggatg,ctattaTA	1	1	0	0	All	0	prev	11		1 7;Found forward match at 2.
+gaggatgcgctctattaTACGGRAGGGACGCT	1	nggatg,ctattaTA	1	1	0	0	All	0	highlight	19		foundf:1-7,foundf:11-19,foundf:0-7;Found 3 matches.
+GTATGGCCGGNAGCCCGTAGYTTGTGAGTGA	0	CGGNAG1	1	0	0	1	All	1	next	0	9	14 20;Found forward match at 15.
+GTATGGCCGGNAGCCCGTAGYTTGTGAGTGA	0	CGGNAG1	1	0	0	1	All	1	prev	0	13	7 13;Found forward match at 7.
+GTATGGCCGGNAGCCCGTAGYTTGTGAGTGA	0	CGGNAG1	1	0	0	1	All	1	highlight	6		foundf:7-13,foundf:14-20;Found 2 matches.
+GTATGGCCGGNAGCCCGTAGYTTGTGAGTGA	1	AGCC	1	0	0	1	10	1	next	28		4 8;Found forward match at 5.
+GTATGGCCGGNAGCCCGTAGYTTGTGAGTGA	1	AGCC	1	0	0	1	10	1	prev	0	25	11 15;Found forward match at 12.
+GTATGGCCGGNAGCCCGTAGYTTGTGAGTGA	1	AGCC	1	0	0	1	10	1	highlight	0		foundf:4-8,foundf:11-15;Found 2 matches.
+GTATGGCCGGNAGCCCGTAGYTTGTGAGTGA	1	NTTGTGA	1	0	0	0	10	1	next	11		20 27;Found forward match at 21.
+GTATGGCCGGNAGCCCGTAGYTTGTGAGTGA	1	NTTGTGA	1	0	0	0	10	1	prev	16		20 27;Found forward match at 21.
+GTATGGCCGGNAGCCCGTAGYTTGTGAGTGA	1	NTTGTGA	1	0	0	0	10	1	highlight	16		foundf:20-27;Found 1 matches.
+GTATGGCCGGNAGCCCGTAGYTTGTGAGTGA	1	cdtag	0	1	1	2	All	1	next	12		15 20;Found forward match at 16.
+GTATGGCCGGNAGCCCGTAGYTTGTGAGTGA	1	cdtag	0	1	1	2	All	1	prev	10		0 5;Found reverse match at 1.
+GTATGGCCGGNAGCCCGTAGYTTGTGAGTGA	1	cdtag	0	1	1	2	All	1	highlight	0	30	foundr:0-5,foundf:15-20,foundr:0-5;Found 3 matches.
+CAGATTCATCCGCAAGGCNGAAATAAGAGATCTACTCCAAAGTCGGAGCTCGATCGACCGGSAGG	1	cca	1	1	0	1	All	0	next	0	14	;Found no match.
+CAGATTCATCCGCAAGGCNGAAATAAGAGATCTACTCCAAAGTCGGAGCTCGATCGACCGGSAGG	1	cca	1	1	0	1	All	0	prev	0	45	;Found no match.
+CAGATTCATCCGCAAGGCNGAAATAAGAGATCTACTCCAAAGTCGGAGCTCGATCGACCGGSAGG	1	cca	1	1	0	1	All	0	highlight	8		;Found no match.
+CAGATTCATCCGCAAGGCNGAAATAAGAGATCTACTCCAAAGTCGGAGCTCGATCGACCGGSAGG	1	ATAAG	1	1	0	2	10	0	next	0	58	0 5;Found reverse match at 1.
+CAGATTCATCCGCAAGGCNGAAATAAGAGATCTACTCCAAAGTCGGAGCTCGATCGACCGGSAGG	1	ATAAG	1	1	0	2	10	0	prev	42		37 42;Found forward match at 38.
+CAGATTCATCCGCAAGGCNGAAATAAGAGATCTACTCCAAAGTCGGAGCTCGATCGACCGGSAGG	1	ATAAG	1	1	0	2	10	0	highlight	25		foundr:0-5,foundr:4-9,foundf:7-12,foundf:11-16,foundf:22-27,foundf:24-29,foundr:31-36,foundf:37-42,foundr:0-5;Found 9 matches.
+CAGATTCATCCGCAAGGCNGAAATAAGAGATCTACTCCAAAGTCGGAGCTCGATCGACCGGSAGG	0	CTCCAKAGTCGGACCT	0	0	0	2	All	1	next	0	56	34 50;Found forward match at 35.
+CAGATTCATCCGCAAGGCNGAAATAAGAGATCTACTCCAAAGTCGGAGCTCGATCGACCGGSAGG	0	CTCCAKAGTCGGACCT	0	0	0	2	All	1	prev	0	29	34 50;Found forward match at 35.
+CAGATTCATCCGCAAGGCNGAAATAAGAGATCTACTCCAAAGTCGGAGCTCGATCGACCGGSAGG	0	CTCCAKAGTCGGACCT	0	0	0	2	All	1	highlight	4		foundf:34-50;Found 1 matches.
+CAGATTCATCCGCAAGGCNGAAATAAGAGATCTACTCCAAAGTCGGAGCTCGATCGACCGGSAGG	0	rtcgg	1	1	0	0	All	0	next	50		;Found no match.
+CAGATTCATCCGCAAGGCNGAAATAAGAGATCTACTCCAAAGTCGGAGCTCGATCGACCGGSAGG	0	rtcgg	1	1	0	0	All	0	prev	0	26	;Found no match.
+CAGATTCATCCGCAAGGCNGAAATAAGAGATCTACTCCAAAGTCGGAGCTCGATCGACCGGSAGG	0	rtcgg	1	1	0	0	All	0	highlight	0	26	;Found no match.
+agggtattataaacctggtagccttcg	0	ggg	0	1	0	2	All	1	next	0	1	2 5;Found forward match at 3.
+agggtattataaacctggtagccttcg	0	ggg	0	1	0	2	All	1	prev	0	15	13 16;Found reverse match at 13.
+agggtattataaacctggtagccttcg	0	ggg	0	1	0	2	All	1	highlight	0	15	foundf:0-3,foundf:1-4,foundf:2-5,foundf:3-6,foundr:11-14,foundr:12-15,foundr:13-16,foundf:14-17,foundr:14-17,foundf:15-18,foundf:16-19,foundf:17-20,foundf:18-21,foundf:19-22,foundr:19-22,foundf:20-23,foundr:20-23,foundr:21-24,foundr:22-25,foundr:23-26,foundf:24-27,foundr:24-27,foundf:25-27,foundf:0-1,foundr:25-27,foundr:0-1,foundf:26-27,foundf:0-2;Found 25 matches.
+agggtattataaacctggtagccttcg	0	gggW|gKYg	1	1	1	1	All	0	next	0	10	;Found no match.
+agggtattataaacctggtagccttcg	0	gggW|gKYg	1	1	1	1	All	0	prev	16		1 5;Found forward match at 2.
+agggtattataaacctggtagccttcg	0	gggW|gKYg	1	1	1	1	All	0	highlight	0	13	foundf:1-5;Found 1 matches.
+agggtattataaacctggtagccttcg	0	CaacNtggt	0	1	0	1	All	1	next	0	20	10 19;Found forward match at 11.
+agggtattataaacctggtagccttcg	0	CaacNtggt	0	1	0	1	All	1	prev	8		10 19;Found forward match at 11.
+agggtattataaacctggtagccttcg	0	CaacNtggt	0	1	0	1	All	1	highlight	5		foundf:10-19;Found 1 matches.
+agggtattataaacctggtagccttcg	1	taAncctggragc|tDtaaac	1	1	1	0	10	1	next	14		;Found no match.
+agggtattataaacctggtagccttcg	1	taAncctggragc|tDtaaac	1	1	1	0	10	1	prev	0	0	;Found no match.
+agggtattataaacctggtagccttcg	1	taAncctggragc|tDtaaac	1	1	1	0	10	1	highlight	0	9	;Found no match.
+CTTTCCGTCCTGATCGCTGTACTGGCCCTTAAGGGTAGAG	0	cccttaagggtaga	0	0	0	0	All	1	next	37		25 39;Found forward match at 26.
+CTTTCCGTCCTGATCGCTGTACTGGCCCTTAAGGGTAGAG	0	cccttaagggtaga	0	0	0	0	All	1	prev	16		25 39;Found forward match at 26.
+CTTTCCGTCCTGATCGCTGTACTGGCCCTTAAGGGTAGAG	0	cccttaagggtaga	0	0	0	0	All	1	highlight	0	37	foundf:25-39;Found 1 matches.
+CTTTCCGTCCTGATCGCTGTACTGGCCCTTAAGGGTAGAG	1	CTT	1	0	0	2	10	1	next	38		39 42;Found forward match at 40.
+CTTTCCGTCCTGATCGCTGTACTGGCCCTTAAGGGTAGAG	1	CTT	1	0	0	2	10	1	prev	0	0	39 42;Found forward match at 40.
+CTTTCCGTCCTGATCGCTGTACTGGCCCTTAAGGGTAGAG	1	CTT	1	0	0	2	10	1	highlight	0	8	foundf:0-3,foundf:1-4,foundf:2-5,foundf:4-7,foundf:5-8,foundf:6-9,foundf:8-11,foundf:9-12,foundf:11-14,foundf:12-15,foundf:14-17,foundf:15-18,foundf:16-19,foundf:17-20,foundf:18-21,foundf:20-23,foundf:21-24,foundf:25-28,foundf:26-29,foundf:27-30,foundf:28-31,foundf:33-36,foundf:34-37,foundf:39-40,foundf:0-2,foundf:0-3,foundf:0-4;Found 26 matches.
+CTTTCCGTCCTGATCGCTGTACTGGCCCTTAAGGGTAGAG	1	CCGTCCTGANCGCT	1	1	1	1	10	1	next	0	24	8 18;Found forward match at 9.
+CTTTCCGTCCTGATCGCTGTACTGGCCCTTAAGGGTAGAG	1	CCGTCCTGANCGCT	1	1	1	1	10	1	prev	0	12	8 18;Found forward match at 9.
+CTTTCCGTCCTGATCGCTGTACTGGCCCTTAAGGGTAGAG	1	CCGTCCTGANCGCT	1	1	1	1	10	1	highlight	0	33	foundf:8-18;Found 1 matches.
+CTTTCCGTCCTGATCGCTGTACTGGCCCTTAAGGGTAGAG	0	CGGT	1	0	0	2	All	1	next	0	11	14 18;Found forward match at 15.
+CTTTCCGTCCTGATCGCTGTACTGGCCCTTAAGGGTAGAG	0	CGGT	1	0	0	2	All	1	prev	0	33	31 35;Found forward match at 31.
+CTTTCCGTCCTGATCGCTGTACTGGCCCTTAAGGGTAGAG	0	CGGT	1	0	0	2	All	1	highlight	20		foundf:0-4,foundf:4-8,foundf:5-9,foundf:9-13,foundf:10-14,foundf:14-18,foundf:16-20,foundf:21-25,foundf:22-26,foundf:25-29,foundf:26-30,foundf:31-35,foundf:32-36;Found 13 matches.
+gtacttaggaatagtccaggattgggagagagaAGTGCMATTCGCCCGGGTAGAACCAACGGCG	1	tggcahag	0	0	1	2	All	1	next	0	61	22 30;Found forward match at 23.
+gtacttaggaatagtccaggattgggagagagaAGTGCMATTCGCCCGGGTAGAACCAACGGCG	1	tggcahag	0	0	1	2	All	1	prev	0	23	22 30;Found forward match at 23.
+gtacttaggaatagtccaggattgggagagagaAGTGCMATTCGCCCGGGTAGAACCAACGGCG	1	tggcahag	0	0	1	2	All	1	highlight	0	47	foundf:22-30;Found 1 matches.
+gtacttaggaatagtccaggattgggagagagaAGTGCMATTCGCCCGGGTAGAACCAACGGCG	1	AACA	0	1	1	2	All	0	next	40		47 51;Found reverse match at 48.
+gtacttaggaatagtccaggattgggagagagaAGTGCMATTCGCCCGGGTAGAACCAACGGCG	1	AACA	0	1	1	2	All	0	prev	61		57 61;Found forward match at 58.
+gtacttaggaatagtccaggattgggagagagaAGTGCMATTCGCCCGGGTAGAACCAACGGCG	1	AACA	0	1	1	2	All	0	highlight	48		foundf:1-5,foundr:1-5,foundr:2-6,foundf:6-10,foundf:9-13,foundr:11-15,foundr:12-16,foundf:14-18,foundf:17-21,foundr:18-22,foundr:19-23,foundr:22-26,foundf:25-29,foundf:27-31,foundf:29-33,foundf:30-34,foundf:32-36,foundr:33-37,foundr:35-39,foundr:38-42,foundr:47-51,foundr:48-52,foundf:50-54,foundf:51-55,foundf:53-57,foundf:54-58,foundf:57-61,foundr:62-64,foundr:0-2,foundr:63-64,foundr:0-3,foundf:0-5;Found 30 matches.
+gtacttaggaatagtccaggattgggagagagaAGTGCMATTCGCCCGGGTAGAACCAACGGCG	1	tgggTgVgagaTGWG	1	1	0	0	10	1	next	0	21	;Found no match.
+gtacttaggaatagtccaggattgggagagagaAGTGCMATTCGCCCGGGTAGAACCAACGGCG	1	tgggTgVgagaTGWG	1	1	0	0	10	1	prev	0	55	;Found no match.
+gtacttaggaatagtccaggattgggagagagaAGTGCMATTCGCCCGGGTAGAACCAACGGCG	1	tgggTgVgagaTGWG	1	1	0	0	10	1	highlight	0	48	;Found no match.
+gtacttaggaatagtccaggattgggagagagaAGTGCMATTCGCCCGGGTAGAACCAACGGCG	1	gnattggx	1	1	0	1	All	1	next	36		18 25;Found forward match at 19.
+gtacttaggaatagtccaggattgggagagagaAGTGCMATTCGCCCGGGTAGAACCAACGGCG	1	gnattggx	1	1	0	1	All	1	prev	0	28	18 25;Found forward match at 19.
+gtacttaggaatagtccaggattgggagagagaAGTGCMATTCGCCCGGGTAGAACCAACGGCG	1	gnattggx	1	1	0	1	All	1	highlight	0	34	foundf:18-25;Found 1 matches.
+ataktgcctccgagggtcgcgcCTCTGNCAAATCATAATGCT	0	HCgtcgcgc;gcyTCT;ggg	0	1	0	2	All	1	next	26		26 29;Found forward match at 27.
+ataktgcctccgagggtcgcgcCTCTGNCAAATCATAATGCT	0	HCgtcgcgc;gcyTCT;ggg	0	1	0	2	All	1	prev	4		40 43;Found reverse match at 41.
+ataktgcctccgagggtcgcgcCTCTGNCAAATCATAATGCT	0	HCgtcgcgc;gcyTCT;ggg	0	1	0	2	All	1	highlight	0	33	foundf:3-6,foundf:4-7,foundr:4-7,foundf:5-11,foundf:5-8,foundr:5-8,foundr:6-9,foundr:7-10,foundr:8-11,foundf:9-12,foundr:9-12,foundr:10-16,foundf:10-13,foundr:10-13,foundf:11-14,foundr:12-18,foundf:12-15,foundf:13-22,foundf:13-16,foundf:14-17,foundf:15-18,foundr:15-18,foundf:16-19,foundr:16-19,foundf:17-20,foundr:17-20,foundf:18-24,foundf:18-21,foundr:18-21,foundf:19-22,foundr:19-22,foundf:20-26,foundf:20-23,foundr:20-23,foundr:21-24,foundr:22-25,foundr:23-26,foundf:24-27,foundr:24-27,foundf:25-28,foundf:26-29,foundr:26-29,foundr:27-30,foundr:28-31,foundr:31-34,foundr:32-35,foundr:33-36,foundf:37-40,foundf:38-41,foundr:38-41,foundf:39-42,foundr:39-42,foundr:40-42,foundr:0-1;Found 53 matches.
+ataktgcctccgagggtcgcgcCTCTGNCAAATCATAATGCT	1	NCAAABV;NCAA;ATAAT	1	0	0	2	All	1	next	0	12	23 27;Found forward match at 24.
+ataktgcctccgagggtcgcgcCTCTGNCAAATCATAATGCT	1	NCAAABV;NCAA;ATAAT	1	0	0	2	All	1	prev	0	38	37 42;Found forward match at 38.
+ataktgcctccgagggtcgcgcCTCTGNCAAATCATAATGCT	1	NCAAABV;NCAA;ATAAT	1	0	0	2	All	1	highlight	0	34	foundf:23-27,foundf:26-30,foundf:27-34,foundf:27-31,foundf:28-35,foundf:28-32,foundf:28-33,foundf:29-33,foundf:31-35,foundf:31-36,foundf:32-36,foundf:33-40,foundf:33-37,foundf:34-41,foundf:34-38,foundf:34-39,foundf:35-39,foundf:37-42,foundf:39-42,foundf:0-1;Found 19 matches.
+ataktgcctccgagggtcgcgcCTCTGNCAAATCATAATGCT	0	TCATnTTG	0	1	0	2	All	0	next	0	27	32 40;Found forward match at 33.
+ataktgcctccgagggtcgcgcCTCTGNCAAATCATAATGCT	0	TCATnTTG	0	1	0	2	All	0	prev	0	28	;Found no match.
+ataktgcctccgagggtcgcgcCTCTGNCAAATCATAATGCT	0	TCATnTTG	0	1	0	2	All	0	highlight	0	28	foundf:32-40,foundr:33-41;Found 2 matches.
+ataktgcctccgagggtcgcgcCTCTGNCAAATCATAATGCT	0	CAAGT	0	1	0	0	All	0	next	0	7	;Found no match.
+ataktgcctccgagggtcgcgcCTCTGNCAAATCATAATGCT	0	CAAGT	0	1	0	0	All	0	prev	10		;Found no match.
+ataktgcctccgagggtcgcgcCTCTGNCAAATCATAATGCT	0	CAAGT	0	1	0	0	All	0	highlight	34		;Found no match.

@@ -1,0 +1,150 @@
+stock	stock_conc	1000	pM	50	mM	50	uL	ok	pM	mM	Error	
+stock	final_conc_units		nM	0	X	765.41	mL	ok	nM	X		
+stock	final_volume	10	mM	1	X	100	uL	ok	mM	X	0.0 uL	100.0 uL
+stock	start		X	1	uM	1	mL	ok	X	uM		
+stock	final_vol_units		pM	0	uM	50	uL	ok	pM	uM		
+stock	stock_conc	1	M	63.15	nM	10	L	ok	M	nM	0.63 uL	10.0 L
+stock	final_conc	10	nM	50	pM	1	uL	ok	nM	pM	0.01 uL	1.0 uL
+stock	start	390.09	pM	1	M	0.5	uL	ok	pM	M	Error	
+stock	stock_conc	10	mM	0.1	X	50	uL	ok	mM	X	0.0 uL	50.0 uL
+stock	final_volume	10	M	0	nM	10	mL	ok	M	nM	0.0 uL	10.0 mL
+stock	final_conc_units	5	uM	51.21	pM	100	mL	ok	uM	pM	1.02 uL	100.0 mL
+stock	final_volume	10	pM	52.81	mM	845.36	mL	ok	pM	mM	Error	
+stock	final_volume	5	M	50	M	0.5	L	ok	M	M	Error	
+stock	start	0.5	nM	2	mM	1	L	ok	nM	mM	Error	
+stock	final_volume	0	X	50.49	pM	100	L	ok	X	pM		
+stock	start	1000	X	50	pM	100	L	ok	X	pM	Error	
+stock	final_volume	0.5	M	2	X	10	uL	ok	M	X	0.0 uL	10.0 uL
+stock	final_volume	263.17	M	50	mM	1	L	ok	M	mM	189.99 uL	999.81 mL
+stock	final_vol_units	1	uM	78.22	M	50	mL	ok	uM	M	Error	
+stock	stock_units	10	pM	0	M	524.04	L	ok	pM	M	0.0 uL	524.04 L
+stock	final_vol_units	0.5	M	0	nM	50	uL	ok	M	nM	0.0 uL	50.0 uL
+stock	stock_units		X	10.50	mM	100	L	ok	X	mM		
+stock	final_conc	1	uM	0.1	pM	10	mL	ok	uM	pM	0.0 uL	10.0 mL
+stock	stock_units	5	pM	1	pM	100	uL	ok	pM	pM	20.0 uL	80.0 uL
+stock	stock_conc		uM	1	uM	100	L	ok	uM	uM		
+stock	final_conc_units	10	mM	0	nM	50	uL	ok	mM	nM	0.0 uL	50.0 uL
+stock	final_vol_units	5	mM	0.1	mM	0.5	uL	ok	mM	mM	0.01 uL	0.49 uL
+stock	final_conc	0	pM	1	X	991.12	L	ok	pM	X		
+stock	final_volume	1	uM	0	mM	50	uL	ok	uM	mM	0.0 uL	50.0 uL
+stock	stock_units	5	M	1	nM	100	mL	ok	M	nM	0.0 uL	100.0 mL
+stock	stock_conc	259.40	mM	0.1	nM	0.5	L	ok	mM	nM	0.0 uL	500.0 mL
+stock	final_volume	1000	nM	2	nM	10	L	ok	nM	nM	20.0 mL	9.98 L
+stock	final_conc	0.5	pM	50	mM	1	uL	ok	pM	mM	Error	
+stock	final_vol_units	5	X	22.96	X	1	L	ok	X	X	Error	
+stock	start	5	uM	0.1	X	0.5	mL	ok	uM	X	0.0 uL	500.0 uL
+stock	stock_units	1	X	0.1	X	534.03	mL	ok	X	X	53.4 mL	480.63 mL
+stock	start	1000	pM	2	mM	926.63	mL	ok	pM	mM	Error	
+stock	final_vol_units	214.66	pM	19.03	pM	893.73	uL	ok	pM	pM	79.23 uL	814.5 uL
+stock	start	1	mM	50	uM	100	L	ok	mM	uM	5.0 L	95.0 L
+stock	stock_units	0	pM	50	mM	10	L	ok	pM	mM		
+stock	start	100	uM	50	pM	1	uL	ok	uM	pM	0.0 uL	1.0 uL
+stock	final_conc	10	pM	0.1	nM	0.5	mL	ok	pM	nM	Error	
+stock	final_conc	0.5	X	2	X	50	uL	ok	X	X	Error	
+stock	final_conc	0.5	mM	1	nM	100	L	ok	mM	nM	200.0 uL	100.0 L
+stock	stock_units	53.30	pM	0.1	M	50	L	ok	pM	M	Error	
+stock	final_vol_units	1000	X	47.57	M	50	L	ok	X	M	Error	
+stock	final_volume	100	X	2	M	664.45	L	ok	X	M	Error	
+stock	final_vol_units	72.31	nM	50	pM	497.15	uL	ok	nM	pM	0.34 uL	496.81 uL
+stock	final_vol_units	0	mM	30.64	mM	100	mL	ok	mM	mM		
+stock	stock_conc	1000	X	63.21	nM	100	uL	ok	X	nM	Error	
+stock	start	0	uM	0.1	nM	0.5	uL	ok	uM	nM		
+stock	start	289.58	nM	1	uM	100	uL	ok	nM	uM	Error	
+stock	start	5	uM	0	M	10	mL	ok	uM	M	0.0 uL	10.0 mL
+stock	final_volume	1000	X	50	nM	1	uL	ok	X	nM	Error	
+stock	stock_units	100	pM	0	nM	10	uL	ok	pM	nM	0.0 uL	10.0 uL
+stock	final_conc	1000	pM	50	nM	100	uL	ok	pM	nM	Error	
+stock	final_vol_units	10	mM	0	X	50	mL	ok	mM	X	0.0 uL	50.0 mL
+stock	final_conc	1000	uM	50	M	0.5	uL	ok	uM	M	Error	
+stock	final_vol_units		mM	94.54	M	50	mL	ok	mM	M		
+stock	start	10	X	0.1	X	50	mL	ok	X	X	500.0 uL	49.5 mL
+stock	stock_units	450.68	uM	1	X	100	uL	ok	uM	uM	0.22 uL	99.78 uL
+stock	final_vol_units	100	mM	0	X	1	uL	ok	mM	X	0.0 uL	1.0 uL
+stock	final_vol_units	139.65	M	6.70	mM	0.5	mL	ok	M	mM	0.02 uL	499.98 uL
+stock	final_volume	10	nM	0.1	nM	10	uL	ok	nM	nM	0.1 uL	9.9 uL
+stock	start	0.5	uM	0.1	uM	50	uL	ok	uM	uM	10.0 uL	40.0 uL
+stock	final_vol_units	10	pM	0.1	X	10	uL	ok	pM	X	0.0 uL	10.0 uL
+stock	start	49.94	pM	1	mM	50	L	ok	pM	mM	Error	
+stock	final_conc	10	M	2	uM	100	L	ok	M	uM	20.0 uL	100.0 L
+stock	stock_units	1	X	0	M	500.18	mL	ok	X	X	0.0 uL	500.18 mL
+stock	final_conc_units	1	mM	54.56	X	50	L	ok	X	X	Error	
+stock	final_conc_units		uM	1	nM	100	uL	ok	uM	nM		
+stock	final_vol_units	1000	uM	39.76	mM	839.35	uL	ok	uM	mM	Error	
+stock	stock_units		uM	1	M	100	L	ok	uM	M		
+stock	stock_units	10	mM	1	mM	10	L	ok	mM	mM	1.0 L	9.0 L
+stock	final_conc	352.55	nM	96.13	X	808.42	L	ok	nM	X	220.43 uL	808.42 L
+stock	final_conc_units	100	pM	0.1	nM	246.81	L	ok	pM	nM	246.81 L	0.0 uL
+stock	final_volume	0	M	50	nM	785.10	L	ok	M	nM		
+stock	final_volume		mM	66.31	uM	424.86	uL	ok	mM	uM		
+stock	final_vol_units	100	mM	2	mM	118.77	uL	ok	mM	mM	2.38 uL	116.39 uL
+stock	stock_units	1000	nM	0	mM	50	L	ok	nM	mM	0.0 uL	50.0 L
+stock	final_vol_units	10	mM	2	uM	50	uL	ok	mM	uM	0.01 uL	49.99 uL
+stock	final_conc_units	10	X	0	X	50	mL	ok	X	X	0.0 uL	50.0 mL
+stock	final_vol_units	1000	M	2	X	1	L	ok	M	X	0.0 uL	1.0 L
+stock	stock_conc	10	M	0	M	10	uL	ok	M	M	0.0 uL	10.0 uL
+stock	final_vol_units	10	uM	0	pM	1	mL	ok	uM	pM	0.0 uL	1.0 mL
+stock	stock_conc	100	nM	50	mM	263.40	L	ok	nM	mM	Error	
+stock	final_volume	1000	uM	23.47	pM	10	uL	ok	uM	pM	0.0 uL	10.0 uL
+stock	stock_conc	5	X	0.1	X	10	mL	ok	X	X	200.0 uL	9.8 mL
+stock	stock_units	5	uM	72.27	uM	10	L	ok	uM	uM	Error	
+stock	stock_conc	100	X	0.1	X	861.90	uL	ok	X	X	0.86 uL	861.04 uL
+stock	start	274.15	mM	50	uM	100	uL	ok	mM	uM	0.02 uL	99.98 uL
+stock	stock_conc	100	mM	1	M	955.96	mL	ok	mM	M	Error	
+stock	final_conc_units	10	M	2	uM	548.02	uL	ok	M	uM	0.0 uL	548.02 uL
+stock	final_conc_units	0.5	nM	45.80	pM	50	L	ok	nM	pM	4.58 L	45.42 L
+stock	final_vol_units	5	nM	0	pM	50	mL	ok	nM	pM	0.0 uL	50.0 mL
+stock	start		pM	50	pM	100	L	ok	pM	pM		
+stock	final_conc	1	mM	0	nM	50	L	ok	mM	nM	0.0 uL	50.0 L
+stock	stock_units	0	X	2	uM	140.07	uL	ok	X	uM		
+stock	start	1000	pM	82.34	pM	1	uL	ok	pM	pM	0.08 uL	0.92 uL
+stock	stock_conc	5	pM	50	X	10	mL	ok	pM	X	100.0 uL	9.9 mL
+stock	final_conc	100	nM	0.1	mM	100	uL	ok	nM	mM	Error	
+stock	start	1	nM	0	uM	1	mL	ok	nM	uM	0.0 uL	1.0 mL
+stock	final_conc_units	5	pM	2	X	100	uL	ok	X	X	40.0 uL	60.0 uL
+stock	stock_units	10	X	0.1	nM	723.40	L	ok	X	X	7.23 L	716.17 L
+stock	final_conc	0.5	X	0.1	mM	50	uL	ok	X	mM	Error	
+stock	stock_conc	100	mM	2	M	561.11	L	ok	mM	M	Error	
+stock	final_vol_units	1	nM	91.85	mM	0.5	mL	ok	nM	mM	Error	
+stock	final_volume	10	pM	25.66	mM	1	L	ok	pM	mM	Error	
+stock	final_conc		nM	1	mM	1	mL	ok	nM	mM		
+stock	stock_units	0.5	X	0	mM	0.5	uL	ok	X	X	0.0 uL	0.5 uL
+stock	start	100	X	4.36	pM	100	L	ok	X	pM	Error	
+stock	stock_conc	0	pM	78.77	mM	0.5	uL	ok	pM	mM		
+stock	final_conc_units	257.29	pM	0	X	0.5	L	ok	X	X	0.0 uL	500.0 mL
+stock	start	100	uM	49.41	uM	265.13	mL	ok	uM	uM	131.0 mL	134.13 mL
+stock	final_conc_units	1	pM	0	pM	1	L	ok	pM	pM	0.0 uL	1.0 L
+stock	stock_units	1000	pM	1	mM	125.50	mL	ok	pM	mM	Error	
+stock	final_conc_units	5	nM	44.85	nM	0.5	L	ok	nM	nM	Error	
+stock	final_conc_units	0.5	X	0.1	uM	100	L	ok	uM	uM	20.0 L	80.0 L
+stock	final_volume	1000	pM	1	X	10	uL	ok	pM	X	0.0 uL	10.0 uL
+stock	final_conc_units	1000	pM	92.25	M	0.5	mL	ok	pM	M	Error	
+stock	final_conc	1	mM	2	uM	1	uL	ok	mM	uM	0.0 uL	1.0 uL
+stock	start	10	mM	50	M	50	mL	ok	mM	M	Error	
+stock	start	5	M	50	mM	0.5	mL	ok	M	mM	5.0 uL	495.0 uL
+stock	final_volume		pM	0.1	pM	1	mL	ok	pM	pM		
+stock	final_conc	0	uM	1	uM	10	L	ok	uM	uM		
+stock	final_conc_units	0.5	mM	0.1	mM	1	L	ok	mM	mM	200.0 mL	800.0 mL
+stock	stock_conc	0	M	2	nM	50	L	ok	M	nM		
+stock	final_conc_units	1000	nM	50	uM	50	mL	ok	nM	uM	Error	
+stock	stock_units	1000	M	50	nM	1	mL	ok	M	nM	0.0 uL	1000.0 uL
+stock	stock_units		X	1	M	0.5	uL	ok	X	M		
+stock	final_vol_units	10	mM	1	mM	1	uL	ok	mM	mM	0.1 uL	0.9 uL
+stock	stock_units	1	X	0	mM	1	uL	ok	X	X	0.0 uL	1.0 uL
+stock	final_conc		nM	0.1	X	10	mL	ok	nM	X		
+stock	final_conc_units	10	uM	0.1	mM	10	mL	ok	uM	mM	Error	
+stock	start	1	M	0	pM	50	uL	ok	M	pM	0.0 uL	50.0 uL
+stock	start	1	nM	0.1	M	1	uL	ok	nM	M	Error	
+stock	final_volume	1	pM	43.66	pM	0.5	L	ok	pM	pM	Error	
+stock	final_conc_units	100	uM	50	X	783.61	uL	ok	X	X	391.81 uL	391.81 uL
+stock	stock_conc	1000	nM	50	M	100	mL	ok	nM	M	Error	
+stock	start	1	nM	0.1	M	1	mL	ok	nM	M	Error	
+stock	final_volume	0.5	pM	0	X	0.5	L	ok	pM	X	0.0 uL	500.0 mL
+stock	stock_units	5	M	2	pM	3.77	mL	ok	M	pM	0.0 uL	3.77 mL
+stock	final_vol_units	0.5	nM	31.53	nM	50	uL	ok	nM	nM	Error	
+stock	final_volume	1	mM	1	mM	0.5	uL	ok	mM	mM	0.5 uL	0.0 uL
+stock	stock_conc	1	M	0.1	X	1	uL	ok	M	X	0.0 uL	1.0 uL
+stock	stock_units	5	X	50	mM	10	mL	ok	X	X	Error	
+stock	final_vol_units	5	X	0.1	uM	0.5	mL	ok	X	uM	Error	
+stock	final_volume	100	pM	0.1	mM	0.5	L	ok	pM	mM	Error	
+stock	start		M	2	pM	100	mL	ok	M	pM		
+stock	start		mM	0.1	X	1	uL	ok	mM	X		
