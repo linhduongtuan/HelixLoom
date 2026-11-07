@@ -7,6 +7,7 @@ use crate::remote::gpus::Gpu;
 use crate::remote::jobs::Config;
 use crate::remote::run::{execute, Env};
 use crate::remote::server::{start, Server};
+use crate::remote::species::{self, SpeciesJob};
 use crate::remote::tasks::{Folded, Kind, Request};
 use crate::remote::weight::{
     HEAVY_GENERATIONS, HEAVY_LETTERS, HEAVY_REPLICATES, HEAVY_SEQUENCES, HEAVY_TREES,
@@ -18,6 +19,7 @@ use crate::seq::primer3::Settings;
 use crate::seq::tree::DistanceModel;
 use crate::ui::app::Startup;
 use crate::ui::headless::frame_input;
+use crate::ui::platform::route::Source;
 use crate::ui::platform::Platform;
 
 const TOKEN: &str = "a-token-of-at-least-sixteen-chars";
@@ -529,6 +531,20 @@ fn a_fetched_result_opens_in_the_page_it_belongs_to() {
         "{}",
         app.platform.structure.message
     );
+
+    let found = species::run(&SpeciesJob::search(crate::sample::SPECIES_GENE_TREES))
+        .expect("a species tree");
+    app.open_remote_result(
+        &job("j1-7", Kind::Species, Status::Done),
+        Response::Species(found),
+    );
+    assert!(app.species_win.open);
+    assert_eq!(app.species_win.result.as_ref().map(|r| r.genes), Some(40));
+    assert!(
+        app.species_win.message.contains("on the workstation"),
+        "{}",
+        app.species_win.message
+    );
 }
 
 // ---------------------------------------------------------------------------------------------------------------
@@ -805,6 +821,66 @@ fn with_the_choice_on_automatic_ticking_the_gpu_sends_even_one_tree_to_the_works
     let (queued, request) = answer(&server);
     assert_eq!(queued.kind, Kind::PhyloCnn);
     assert!(matches!(request, Request::PhyloCnn { gpu: true, .. }));
+}
+
+#[test]
+fn a_species_tree_is_computed_there_when_the_choice_says_so_and_shown_when_it_comes_back() {
+    let server = serving("workstation-species");
+    let (mut app, ctx) = window_for(&server);
+    app.species_win.open = true;
+    app.load_species_example();
+    app.run_species();
+    draw_until(&mut app, &ctx, |_| !server.shared.list().is_empty());
+    assert!(app.species_win.is_running() && app.running_analyses() == 1);
+
+    let (queued, request) = answer(&server);
+    assert_eq!(queued.kind, Kind::Species);
+    assert_eq!(queued.label, "Species tree from 40 gene trees");
+    assert!(matches!(
+        request,
+        Request::Species(ref job) if job.genes.matches(';').count() == 40
+            && job.score_tree.is_empty() && job.extra == 1 && !job.exact
+    ));
+    draw_until(&mut app, &ctx, |a| a.species_win.result.is_some());
+    let said = &app.species_win.message;
+    assert!(said.contains("on the workstation"), "{said}");
+    assert_eq!(
+        app.species_win.result.as_ref().map(|r| r.branches.len()),
+        Some(5)
+    );
+    assert!(!app.species_win.is_running());
+}
+
+#[test]
+fn with_the_choice_on_automatic_a_small_species_search_stays_here_and_a_big_one_goes_there() {
+    let server = serving("workstation-species-automatic");
+    let (mut app, ctx) = window_for(&server);
+    app.platform.workstation.set_compute(Compute::Automatic);
+    app.species_win.open = true;
+    app.load_species_example();
+    app.run_species();
+    draw_until(&mut app, &ctx, |a| a.species_win.result.is_some());
+    assert!(server.shared.list().is_empty(), "a small job was sent");
+    assert!(app.species_win.message.contains("on this computer"));
+
+    // 170 copies of the example have just over the leaves at which a search is big
+    let text = crate::sample::SPECIES_GENE_TREES.repeat(170);
+    assert!(Weight::of_species(&text).is_heavy());
+    app.load_species_file(Source::Bytes {
+        name: "many.tre",
+        bytes: text.as_bytes(),
+    });
+    app.run_species();
+    draw_until(&mut app, &ctx, |_| !server.shared.list().is_empty());
+    let (queued, _) = answer(&server);
+    assert_eq!(queued.kind, Kind::Species);
+    draw_until(&mut app, &ctx, |a| {
+        a.species_win
+            .result
+            .as_ref()
+            .is_some_and(|r| r.genes == 6_800)
+    });
+    assert!(app.species_win.message.contains("on the workstation"));
 }
 
 #[test]

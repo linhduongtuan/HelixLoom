@@ -14,6 +14,7 @@ pub mod jobs;
 pub mod run;
 pub mod server;
 pub mod settings;
+pub mod species;
 pub mod tasks;
 pub mod weight;
 pub mod wire;

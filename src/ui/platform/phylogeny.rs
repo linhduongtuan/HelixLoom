@@ -43,6 +43,7 @@ struct Clicks {
     to_alignment: bool,
     to_trees: bool,
     phylocnn: bool,
+    species: bool,
     tree_tools: bool,
 }
 
@@ -225,6 +226,9 @@ impl App {
         if c.phylocnn {
             self.phylocnn_win.open = true;
         }
+        if c.species {
+            self.species_win.open = true;
+        }
         if c.tree_tools {
             self.treetools_win.open = true;
         }
@@ -323,6 +327,10 @@ fn options_panel(
     c.phylocnn = ui
         .button("PhyloCNN epidemic estimates…")
         .on_hover_text("Neural networks that read epidemic parameters from a tree")
+        .clicked();
+    c.species = ui
+        .button("Species tree from gene trees…")
+        .on_hover_text("The species tree that agrees with most gene trees (the ASTRAL method)")
         .clicked();
     c.tree_tools = ui
         .button("Tree tools…")

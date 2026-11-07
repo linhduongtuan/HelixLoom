@@ -226,7 +226,7 @@ impl App {
 }
 
 /// Ask where to save `text` and write it; what to tell the person (nothing when they cancelled).
-fn save_text(title: &str, name: &str, text: &str) -> String {
+pub(in crate::ui) fn save_text(title: &str, name: &str, text: &str) -> String {
     let ask = dialog::FileDialog::new().set_title(title);
     dialog::save_bytes(ask, name, text.as_bytes()).map_or_else(String::new, |saved| saved.message)
 }

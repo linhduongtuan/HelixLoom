@@ -399,6 +399,20 @@
   {"name": "Silent Sites: most variants made of one place (not in the original)", "group": "enzymes", "value": 1024, "unit": "variants", "estimated": true},
   {"name": "Silent and Diagnostic Sites: most rows a window draws, Copy as text has them all (not in the original)", "group": "enzymes", "value": 1000, "unit": "rows", "estimated": true},
   {"name": "Duplicate: name of the new document", "group": "files", "value": "New_DNA", "source": "AppMain.tcl:7816 proc duplicate_window @0x5c69b"},
-  {"name": "Duplicate Selection: the new document is circular", "group": "files", "value": false, "source": "AppMain.tcl:7763 proc duplicate_window @0x5c69b"}
+  {"name": "Duplicate Selection: the new document is circular", "group": "files", "value": false, "source": "AppMain.tcl:7763 proc duplicate_window @0x5c69b"},
+  {"name": "Species tree: Yule prior of the branch lengths, lambda (not in the original; ASTRAL's option -c, default in its tutorial)", "group": "species", "value": 0.5, "source": "ASTRAL tutorial, option -c"},
+  {"name": "Species tree: lowest probability that a gene has a branch's own topology, the lower end of the uniform prior (not in the original; Sayyari and Mirarab 2016)", "group": "species", "value": 0.3333333333333333, "source": "Sayyari and Mirarab 2016, local posterior probability"},
+  {"name": "Species tree: highest probability that a gene has a branch's own topology, the upper end of the uniform prior (not in the original; Sayyari and Mirarab 2016)", "group": "species", "value": 1, "source": "Sayyari and Mirarab 2016, local posterior probability"},
+  {"name": "Species tree: factor in the branch length, -ln(1.5 (1 - f1 / (EN + 2 lambda))) (not in the original; ASTRAL's coalescent units)", "group": "species", "value": 1.5, "source": "ASTRAL tutorial and checked against ASTRAL 5.7.8"},
+  {"name": "Species tree: fewest leaves a gene tree needs to be used, a quartet takes four (not in the original)", "group": "species", "value": 4, "unit": "leaves", "source": "definition of a quartet"},
+  {"name": "Species tree: most species the exact search takes (not in the original)", "group": "species", "value": 12, "unit": "species", "estimated": true},
+  {"name": "Species tree: most branches of a polytomy whose pairs are joined to make clusters (not in the original)", "group": "species", "value": 8, "unit": "branches", "estimated": true},
+  {"name": "Species tree: most species for which the guide tree is made, above it the search runs without one (not in the original)", "group": "species", "value": 1500, "unit": "species", "estimated": true},
+  {"name": "Species tree: most sweeps of the polish that swaps neighbouring groups (not in the original)", "group": "species", "value": 30, "unit": "sweeps", "estimated": true},
+  {"name": "Species tree: leaves in all the gene trees above which Automatic sends the search to the workstation (not in the original)", "group": "species", "value": 50000, "unit": "leaves", "estimated": true},
+  {"name": "Species tree: most memory the sets of species of the gene trees may take, about three per tree node (not in the original)", "group": "species", "value": 8, "unit": "GB", "estimated": true},
+  {"name": "Species tree: most leaves in all the gene trees of a workstation request (not in the original)", "group": "species", "value": 20000000, "unit": "leaves", "estimated": true},
+  {"name": "Species tree window: most branches the table lists, the tree has them all (not in the original)", "group": "species", "value": 300, "unit": "rows", "estimated": true},
+  {"name": "Species tree window: most species named for a branch in the table (not in the original)", "group": "species", "value": 4, "unit": "species", "estimated": true}
  ]
 }

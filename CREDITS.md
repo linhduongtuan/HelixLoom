@@ -40,6 +40,17 @@ none of them are used here. Every rule, default and number that came from ApE is
   (Robinson & Foulds 1981) were written from their definitions. Their answers were checked against ETE Toolkit 3
   (etetoolkit.org) and DendroPy 5 (dendropy.org) run on random trees; no code from either is included.
 
+* **Species Tree from Gene Trees** (Tools menu, `helixloom astral`, the `species` job of the workstation): the ASTRAL
+  method of Mirarab, Reaz, Bayzid, Zimmermann, Swenson and Warnow (2014), *Bioinformatics* 30:i541, with the larger sets of
+  clusters of Mirarab and Warnow (2015), *Bioinformatics* 31:i44, the faster counting and the polytomy handling of Zhang,
+  Rabiee, Sayyari and Mirarab (2018), *BMC Bioinformatics* 19:153, and the branch lengths and local posterior probabilities of
+  Sayyari and Mirarab (2016), *Molecular Biology and Evolution* 33:1654; the ASTER family it belongs to is described by Zhang,
+  Nielsen and Mirarab (2025). It was written from those papers and from the programs' published tutorials, **not from their
+  code**: ASTRAL (github.com/smirarab/ASTRAL, Apache-2.0, © Siavash Mirarab and contributors) was only *run*, as a black box,
+  to compare answers, and ASTER (github.com/chaoszhang/ASTER, **AGPL-3.0**, © Chao Zhang and contributors) was not read at all,
+  so that its licence does not reach this program; its other programs (wASTRAL, ASTRAL-Pro3, CASTER, WASTER) are not built.
+  The example gene trees (`assets/species/`) were simulated by a small program written for this project.
+
 * **GPU**: the PhyloCNN networks can run through candle (github.com/huggingface/candle, Apache-2.0 or MIT) on the
   Apple GPU (Metal) or the CPU. candle is a library the program links; nothing of it is copied.
 * **Pipelines** (Tools menu and the Pipelines workspace): MAFFT (Katoh & Standley), IQ-TREE (Minh et al.), primer3,

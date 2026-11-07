@@ -21,6 +21,7 @@ use super::windows::phylocnn::PhyloCnnWin;
 use super::windows::primer3::Primer3Win;
 use super::windows::reads::ReadsWin;
 use super::windows::sitetools::SiteToolsWin;
+use super::windows::species::SpeciesWin;
 use super::windows::tools::{AlignWin, CalcWin, PcrWin};
 use super::windows::tree::TreeWin;
 use super::windows::treetools::TreeToolsWin;
@@ -129,6 +130,7 @@ pub enum Action {
     MolecularCalculator,
     Tree,
     PhyloCnn,
+    SpeciesTree,
     TreeTools,
     Workflow,
     Primer3,
@@ -167,6 +169,7 @@ pub struct App {
     pub molcalc_win: MolCalcWin,
     pub tree_win: TreeWin,
     pub phylocnn_win: PhyloCnnWin,
+    pub species_win: SpeciesWin,
     pub treetools_win: TreeToolsWin,
     /// The workspace showing beside the rail, and what the platform keeps for them.
     pub workspace: Workspace,
@@ -221,6 +224,7 @@ impl App {
             molcalc_win: MolCalcWin::default(),
             tree_win: TreeWin::default(),
             phylocnn_win: PhyloCnnWin::default(),
+            species_win: SpeciesWin::default(),
             treetools_win: TreeToolsWin::default(),
             workspace: if start.view.is_empty() && start.files.is_empty() {
                 Workspace::Home
@@ -360,6 +364,7 @@ impl App {
             Action::MolecularCalculator => self.molcalc_win.open = true,
             Action::Tree => self.tree_win.open = true,
             Action::PhyloCnn => self.phylocnn_win.open = true,
+            Action::SpeciesTree => self.species_win.open = true,
             Action::TreeTools => self.treetools_win.open = true,
             Action::Workflow => self.workspace = Workspace::Pipelines,
             Action::Primer3 => self.p3_win.open = true,
@@ -670,6 +675,7 @@ impl App {
         self.molcalc_window(&ctx);
         self.tree_window(&ctx);
         self.phylocnn_window(&ctx);
+        self.species_window(&ctx);
         self.treetools_window(&ctx);
         self.primer3_window(&ctx);
         self.reads_window(&ctx);

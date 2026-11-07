@@ -485,6 +485,13 @@ const COMMANDS: &[Command] = &[
     ),
     c(
         "Tools",
+        "Species tree from gene trees…",
+        "",
+        "astral aster coalescent quartet multispecies",
+        Action::SpeciesTree,
+    ),
+    c(
+        "Tools",
         "Tree tools (Newick)…",
         "",
         "root midpoint distance",
@@ -592,6 +599,7 @@ pub fn acts_on_the_sequence(action: &Action) -> bool {
             | Action::MolecularCalculator
             | Action::Tree
             | Action::PhyloCnn
+            | Action::SpeciesTree
             | Action::TreeTools
             | Action::Workflow
             | Action::Reads
@@ -755,6 +763,7 @@ mod tests {
             Action::Theme(ThemeMode::Dark),
             Action::Calculator,
             Action::PhyloCnn,
+            Action::SpeciesTree,
         ] {
             assert!(!acts_on_the_sequence(&action), "{action:?}");
         }

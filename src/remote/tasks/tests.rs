@@ -1,5 +1,6 @@
 use super::*;
 use crate::remote::run::{execute, Env};
+use crate::remote::species::{self, SpeciesJob};
 
 fn isolates() -> Vec<Named> {
     crate::sample::tree_demo()
@@ -74,6 +75,16 @@ fn requests() -> Vec<Request> {
             sequence: b"MQIFVKTLTGKTITLEVEPSDTIENVKAKIQ".to_vec(),
             local: true,
         },
+        Request::Species(SpeciesJob {
+            genes: "((A,B),(C,D));\n((A,C),(B,D));".into(),
+            score_tree: "((A,B),(C,D));".into(),
+            exact: true,
+            extra: 0,
+            polish: false,
+            lambda: 0.25,
+            root: "B".into(),
+            min_leaves: 4,
+        }),
     ]
 }
 
@@ -88,7 +99,7 @@ fn every_kind_of_request_comes_back_as_it_went() {
     }
     assert_eq!(
         Kind::ALL.map(Kind::name),
-        ["align", "tree", "pipeline", "phylocnn", "fold"]
+        ["align", "tree", "pipeline", "phylocnn", "fold", "species"]
     );
     for k in Kind::ALL {
         assert_eq!(Kind::parse(k.name()), Some(k));
@@ -99,8 +110,12 @@ fn every_kind_of_request_comes_back_as_it_went() {
 #[test]
 fn only_a_gpu_job_says_it_needs_a_gpu() {
     let needs: Vec<bool> = requests().iter().map(Request::needs_gpu).collect();
-    // the PhyloCNN request has two trees, and a build without the GPU code has no use for one
-    assert_eq!(needs, [false, false, false, cfg!(feature = "gpu"), true]);
+    // the PhyloCNN request has two trees, and a build without the GPU code has no use for one; a species tree uses the
+    // processor cores only
+    assert_eq!(
+        needs,
+        [false, false, false, cfg!(feature = "gpu"), true, false]
+    );
     let cnn = |newick: &str, gpu: bool| Request::PhyloCnn {
         newick: newick.into(),
         sampling: 0.5,
@@ -277,6 +292,7 @@ fn through_bytes(response: &Response) -> Response {
         Response::Pipeline(_) => Kind::Pipeline,
         Response::PhyloCnn(_) => Kind::PhyloCnn,
         Response::Fold(_) => Kind::Fold,
+        Response::Species(_) => Kind::Species,
     };
     let bytes = response.encode().encode();
     let back = Response::decode(kind, &Container::decode(&bytes).expect("a container"))
@@ -287,6 +303,33 @@ fn through_bytes(response: &Response) -> Response {
         "{kind:?} encodes the same after a round trip"
     );
     back
+}
+
+#[test]
+fn a_species_tree_is_made_by_the_same_function_whoever_asks_and_comes_back_whole() {
+    let job = SpeciesJob::search(crate::sample::SPECIES_GENE_TREES);
+    let here = species::run(&job).expect("a species tree");
+    let Response::Species(there) =
+        execute(Request::Species(job), &Env::default()).expect("a species tree")
+    else {
+        panic!("a species tree was asked for");
+    };
+    // everything but the time it took
+    assert_eq!(
+        (&there.newick, there.score, &there.branches),
+        (&here.newick, here.score, &here.branches)
+    );
+    let Response::Species(back) = through_bytes(&Response::Species(there.clone())) else {
+        panic!("a species tree");
+    };
+    assert_eq!(back, there);
+    let fold = Folded {
+        pdb: String::new(),
+        engine: String::new(),
+        seconds: 0.0,
+    };
+    assert!(Response::Fold(fold).into_species().is_err());
+    assert_eq!(Response::Species(there.clone()).into_species(), Ok(there));
 }
 
 #[test]

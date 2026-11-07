@@ -21,11 +21,11 @@ interface is no longer modelled on ApE's. See [CREDITS.md](CREDITS.md).*
 | **Sequences** | Read and edit DNA, see circular and linear maps, restriction sites and digests (with silent and diagnostic sites), ORFs, features, primers and PCR; assemble reads into contigs; Gibson and other assemblies; calculators (Tm and GC, molar-ratio reactions, master mixes, molarity) |
 | **Signals** | Open Sanger traces (.ab1, .scf), see the quality of every base, trim the weak ends, reverse-complement, export; summarise and clean sequencing reads (FASTQ) |
 | **Alignment** | Multiple sequence alignment with the built-in aligner or MAFFT; a viewer with conservation, consensus and identity |
-| **Phylogeny** | Distance, maximum-likelihood (with model choice) and Bayesian trees with bootstrap support, or IQ-TREE; PhyloCNN epidemic estimates |
+| **Phylogeny** | Distance, maximum-likelihood (with model choice) and Bayesian trees with bootstrap support, or IQ-TREE; the species tree from many gene trees, with a posterior probability on every branch (the ASTRAL method, also as `helixloom astral`); PhyloCNN epidemic estimates |
 | **Trees** | Draw phylograms, cladograms and circular trees; Newick tools; SVG export |
 | **Structure** | Predict a structure with ESMFold, or open a PDB file; a 3D viewer coloured by confidence, secondary structure or chain |
 | **Pipelines** | Align, build a tree and pick primers in one run; export the same steps as Snakemake and Nextflow files |
-| **Workstation** | Send alignments, trees, pipelines and structure predictions to a server with GPUs and get the results back |
+| **Workstation** | Send alignments, trees, species trees, pipelines and structure predictions to a server with GPUs and get the results back. Every heavy job has the same choice: this computer, the workstation, or automatic |
 
 Press **Cmd+K** (Ctrl+K on Windows and Linux) to search every command and tool, or drop a file on the window and it opens in the
 right place. The theme follows your system, or choose light or dark.
@@ -75,6 +75,7 @@ PhyloCNN networks). The program looks for them in a models folder and says so wh
 ## Documents
 
 * [docs/ROADMAP.md](docs/ROADMAP.md): what to add for a better experience and better pipelines
+* [docs/SPECIES.md](docs/SPECIES.md): species trees from gene trees (the ASTRAL method): how to use it, what it was checked against
 * [docs/DESIGN.md](docs/DESIGN.md): the design system of the new interface
 * [docs/WEB.md](docs/WEB.md): the web version
 * [docs/MODELS.md](docs/MODELS.md): model files

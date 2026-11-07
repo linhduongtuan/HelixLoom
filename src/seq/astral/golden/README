@@ -1,0 +1,29 @@
+The comparison data of the species-tree engine (`../golden_tests.rs`): ten data sets, a1 to a6 and b1 to b4, each a text file.
+
+What is in a file, in order:
+  GENES               the gene trees, one per line, topologies only
+  SPECIES label       a binary species tree that ASTRAL was asked to score (-q), the tree the genes were simulated from
+                      ("true") and random ones ("sp1" ...)
+  ASTRAL label        the annotated tree ASTRAL 5.7.8 wrote for it (-t 2: q1..q3, f1..f3, pp1..pp3, QC, EN and the lengths)
+  SCORE label S N     the quartet score and the normalized score ASTRAL printed
+  BEST kind S N       the best score ASTRAL's own searches found: default, p0 (-p 0) and x (-x, exact; only where the
+                      data are small enough for it); TREE kind is the tree it found
+
+How they were made (the scripts are in `make/`):
+  gen.py      a species tree with random branch lengths in coalescent units, then gene trees under the multispecies
+              coalescent, with polytomies (collapsed short branches) and missing species when asked: written for this
+              project, it is a plain simulator and uses nothing from ASTRAL or ASTER
+  randsp.py   random binary species trees to score as well as the true one
+  run_astral.sh   runs the real ASTRAL 5.7.8 jar as a black box (ASTRAL_JAR is the path; download it from the ASTRAL
+              project and keep it in a folder of its own: it is a program from the internet, and it is never read or
+              copied, only run)
+  assemble.py puts the above into the files here
+
+To make new ones: `python3 -I gen.py OUT SEED NTAX NGENES POLYTOMIES MISSING`, `python3 -I randsp.py OUT/NAME/random.tre SEED NTAX 3`
+(after moving genes.tre and true.tre into OUT/NAME), `ASTRAL_JAR=... bash run_astral.sh OUT REF NAME:1`,
+`python3 -I assemble.py OUT REF . NAME`, then add the name to `FILES` in `golden_tests.rs`.
+
+What the tests check, to what precision: the quartet score and the number of quartets of every branch exactly; f1, EN, q1
+and the lengths to 1e-9 relative and pp1 to 1e-8 (ASTRAL prints them as shortest decimals of a double); f2 and f3 to six
+decimals, as a pair (which of the two other topologies is "2" depends on how a node's children are ordered, which is no
+rule of the method). The best scores of the searches must be at least ASTRAL's.

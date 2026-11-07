@@ -192,9 +192,11 @@ impl Platform {
 }
 
 impl App {
-    /// How many analyses are running now: those of the pages and the PhyloCNN window.
+    /// How many analyses are running now: those of the pages and the PhyloCNN and species-tree windows.
     pub fn running_analyses(&self) -> usize {
-        self.platform.busy_count() + usize::from(self.phylocnn_win.is_running())
+        self.platform.busy_count()
+            + usize::from(self.phylocnn_win.is_running())
+            + usize::from(self.species_win.is_running())
     }
 
     /// Look for the programs the platform can call, once, without making the window wait.

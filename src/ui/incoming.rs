@@ -65,6 +65,7 @@ impl App {
             Wanted::FeatureLibrary => self.load_feature_library(file),
             Wanted::TreeToolsTree => self.load_treetools_tree(file),
             Wanted::PhyloCnnTree => self.load_phylocnn_tree(file),
+            Wanted::SpeciesTrees => self.load_species_file(file),
             // a batch, taken by `take_arrived`
             Wanted::AssemblyReads => self.add_read_sources(&[file]),
         }

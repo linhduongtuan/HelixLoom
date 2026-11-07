@@ -256,8 +256,8 @@ on a GPU of the workstation.
 
 ## 7. What the server does and does not allow
 
-- A request is one of five kinds of job (alignment, tree, pipeline, PhyloCNN, structure) with its data. It is checked when
-  it arrives. Nothing in it is used as a file name, a command or a program.
+- A request is one of six kinds of job (alignment, tree, pipeline, PhyloCNN, structure, species tree) with its data. It is
+  checked when it arrives. Nothing in it is used as a file name, a command or a program.
 - The token is checked from the header before any body is read, so a stranger without the token cannot make the server
   take in a large upload.
 - Requests, headers and uploads have size limits; at most 64 connections are served at once, and at most 8 from one
@@ -279,7 +279,7 @@ on a GPU of the workstation.
 ## 8. What has been tried, and what has not
 
 Tried, on a Mac, with the server and the app on the same computer: the whole path (the app sends an alignment, a tree, a
-pipeline, PhyloCNN estimates or a structure; the server queues it and runs it in a process of its own; the result comes
+pipeline, PhyloCNN estimates, a species tree or a structure; the server queues it and runs it in a process of its own; the result comes
 back and opens in its page), the token and the limits, results kept across a restart, stopping a running job and ending its
 process, and the sharing of two (pretend) GPUs, with a stand-in folding program that reports which GPU it was shown. These
 are automatic tests (`cargo test`, including `tests/remote.rs`, which starts the real program).
@@ -325,6 +325,10 @@ that shows a fetched result in the page it belongs to (the compiler asks for it)
    worker thread, `Place::There(remote)` calls `remote.run(&request, label)`. Drawing `compute_picker` beside the button
    gives the page the same choice as the others, and `platform.programs_at(&place)` gives the programs of the computer it
    goes to. `Alignment` is the shortest page to copy.
+
+The species-tree job (`src/remote/species.rs`, the `species` kind, `src/ui/windows/species.rs`) is the newest worked example
+of exactly these four pieces: its `Weight` is the leaves of its gene trees, its function is `species::run`, and the same
+function is `helixloom astral` on the command line.
 
 The analyses you have in mind fit this directly: conserved motifs and domains are a function of an alignment or a set of
 sequences (a few sections in, a table or annotations out); an epitope and paratope interaction is a function of two

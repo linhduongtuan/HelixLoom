@@ -10,6 +10,10 @@ pub const HEAVY_LETTERS: usize = 1_000_000;
 pub const HEAVY_REPLICATES: usize = 200;
 pub const HEAVY_GENERATIONS: usize = 100_000;
 pub const HEAVY_TREES: usize = 100;
+/// Leaves in all the gene trees of a species-tree search, which is about the species times the genes. On simulated data
+/// (a busy machine) the search took 0.2 s at 5,000 of them (25 species), 1.8 s at 16,000 (40), 7.9 s at 36,000 (60), and
+/// about 2 s at 15,000 (150 species) and at 40,000 (20 species).
+pub const HEAVY_LEAVES: usize = 50_000;
 
 /// How big a job is: the things that make it slow, counted from what a page has set up (before there is a request to
 /// count). A new kind of analysis adds the counts that make it slow.
@@ -23,6 +27,8 @@ pub struct Weight {
     /// Bayesian generations.
     pub generations: usize,
     pub trees: usize,
+    /// Leaves in all the gene trees of a species-tree search.
+    pub leaves: usize,
     /// The job would run on a GPU of the workstation, whatever its size.
     pub gpu: bool,
 }
@@ -75,6 +81,15 @@ impl Weight {
         }
     }
 
+    /// A species-tree search over the gene trees in `newick`: a tree has one leaf more than it has commas, and ends with
+    /// a semicolon, so the leaves of all of them are the commas and the semicolons.
+    pub fn of_species(newick: &str) -> Weight {
+        Weight {
+            leaves: newick.matches([',', ';']).count(),
+            ..Weight::default()
+        }
+    }
+
     /// A job that would run on a GPU of the workstation, whatever its size (a structure the workstation folds itself).
     pub fn on_gpu() -> Weight {
         Weight {
@@ -91,6 +106,7 @@ impl Weight {
             || self.replicates > HEAVY_REPLICATES
             || self.generations > HEAVY_GENERATIONS
             || self.trees > HEAVY_TREES
+            || self.leaves > HEAVY_LEAVES
     }
 }
 
@@ -137,5 +153,20 @@ mod tests {
         assert!(!Weight::of_trees(&";".repeat(HEAVY_TREES), false).is_heavy());
         assert!(Weight::of_trees(&";".repeat(HEAVY_TREES + 1), false).is_heavy());
         assert!(Weight::of_trees("(A,B);", true).is_heavy() && Weight::on_gpu().is_heavy());
+    }
+
+    #[test]
+    fn a_species_search_counts_the_leaves_of_its_gene_trees() {
+        assert_eq!(
+            Weight::of_species("((A,B),(C,D));\n((A,C),(B,D));").leaves,
+            8
+        );
+        // a polytomy and a missing taxon: one leaf more than the commas, whatever the shape
+        assert_eq!(Weight::of_species("(A,B,C,D);(A,(B,C));").leaves, 7);
+        assert!(!Weight::of_species("").is_heavy());
+        // the limit is where "more than" starts: n trees of k leaves have n*(k-1) commas and n semicolons
+        let genes = |leaves: usize| format!("{};", ",".repeat(leaves.saturating_sub(1)));
+        assert!(!Weight::of_species(&genes(HEAVY_LEAVES)).is_heavy());
+        assert!(Weight::of_species(&genes(HEAVY_LEAVES + 1)).is_heavy());
     }
 }

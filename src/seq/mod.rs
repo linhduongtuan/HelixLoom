@@ -3,6 +3,7 @@ pub mod abif;
 pub mod align;
 pub mod alnstats;
 pub mod assemble;
+pub mod astral;
 pub mod copyspecial;
 pub mod diagnostic;
 pub mod dna;

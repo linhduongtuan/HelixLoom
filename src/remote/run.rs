@@ -2,6 +2,7 @@
 //! process for each job (`helixloom run-job`), which reads the request from the job's folder, runs it here and writes the
 //! response beside it.
 
+use super::species;
 use super::tasks::{CnnResult, Folded, Request, Response};
 use crate::pipeline::steps::{Aligned, Named};
 use crate::pipeline::tools::{self, Installed};
@@ -201,6 +202,7 @@ pub fn execute(request: Request, env: &Env) -> Result<Response, String> {
             gpu,
         } => run_phylocnn(&newick, sampling, task, priors, gpu).map(Response::PhyloCnn),
         Request::Fold { sequence, local } => fold(&sequence, local, env).map(Response::Fold),
+        Request::Species(job) => species::run(&job).map(Response::Species),
     }
 }
 

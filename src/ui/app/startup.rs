@@ -114,6 +114,11 @@ impl App {
                 self.phylocnn_win.newick = crate::sample::tree_sample(24);
                 self.run_phylocnn();
             }
+            "species" => {
+                self.species_win.open = true;
+                self.load_species_example();
+                self.run_species();
+            }
             "treetools" => {
                 self.treetools_win.open = true;
                 self.load_treetools_demo();

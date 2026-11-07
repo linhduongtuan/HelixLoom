@@ -359,6 +359,13 @@ impl App {
                     true,
                     Action::PhyloCnn,
                 );
+                item(
+                    ui,
+                    "Species Tree from Gene Trees…",
+                    "",
+                    true,
+                    Action::SpeciesTree,
+                );
                 item(ui, "Tree Tools (Newick)…", "", true, Action::TreeTools);
                 item(
                     ui,

@@ -900,7 +900,7 @@ clean-room re-implementation is acceptable under each project's licence).
   are written in the form that reads back as exactly the same number, so a result is the same on both ends. **Security:**
   a token of at least 32 characters (the one `helixloom token` makes comes from `/dev/urandom`), compared in constant time
   and read from the header before any body is accepted, never taken from the command line and never handed to a program
-  the server runs; a job is one of five kinds, checked when it arrives, and nothing in a request is used as a path, a
+  the server runs; a job is one of six kinds, checked when it arrives, and nothing in a request is used as a path, a
   command or a program (the folding program comes only from the server's own `--fold-command`); limits on what a request
   may hold (5,000 sequences, 64 million letters, 20,000 trees, so that one job's memory stays within a few gigabytes), on
   the header (all of it within 5 seconds, however slowly it is sent), the upload (512 MB, and no more bytes of uploads in
@@ -934,6 +934,72 @@ clean-room re-implementation is acceptable under each project's licence).
   (`docs/WEB.md`). What to add next, for the experience and for the pipelines, is in `docs/ROADMAP.md`. The code lives in the
   GitHub repository linhduongtuan/HelixLoom.
 
+* **ASTRAL / ASTER → Tools → Species Tree from Gene Trees** (`src/seq/astral.rs` and `src/seq/astral/`, the job in
+  `src/remote/species.rs`, the window `src/ui/windows/species.rs`, `helixloom astral`; November 2026, asked for by the person
+  with "reimplement and rebuild ASTER and ASTRAL"; none of it is in ApE). Written from the papers and the programs' tutorials
+  (Mirarab et al. 2014; Mirarab and Warnow 2015; Zhang et al. 2018; Sayyari and Mirarab 2016) and **not from the programs'
+  code**: ASTRAL is Apache-2.0, ASTER is AGPL-3.0 and its source was not read. How it works (`docs/SPECIES.md` is the
+  plain-words version):
+  **Objective.** The species tree T (unrooted, binary) that maximizes S(T), the sum over the gene trees g of the number of
+  four-species sets that g and T resolve the same way; a gene tree may lack species and may have polytomies, and a quartet it
+  does not resolve counts for nothing. The normalized score is S(T) divided by the number of quartets the gene trees resolve.
+  **Counting without listing quartets.** A resolved quartet ab|cd has two nodes that join a pair (the node where a and b
+  meet with c and d together on one other branch, and the one where c and d meet); counting at those nodes counts each
+  quartet twice. For a node of T with clusters A and B below it and the rest C above, `W(A,B)` is the sum over the nodes of
+  the gene trees, for each branch k of the node, of (pairs of two species of one cluster on two other branches) times (the
+  species of the other two clusters on k), over the three choices of the cluster that holds the pair; S(T) is half the sum of
+  W over the inner nodes of T (`weight.rs`).
+  **Search.** A dynamic programme over a set X of clusters (a cluster is a side of a split that does not hold a fixed root
+  species, so a tree is read hanging from that leaf): best(V) is the highest best(A) + best(B) + W(A,B) over the ways to split V
+  in two clusters A and B of X. X holds the single species and the whole; the splits of the gene trees, with the species a
+  gene lacks put back (on the branch above the smallest group that holds their nearest relatives in a guide tree, which is
+  neighbour joining on the mean number of branches between two species; its own splits are in X too); with `extra` 1 (the
+  default, as ASTRAL's `-p 1`) every union of two of the branches of a polytomy of at most 8 branches (the children and the
+  rest of the tree, since the tree is unrooted), also for the polytomies of the greedy consensus of the completed trees (the
+  most frequent splits first, each kept when it fits those kept); with `exact`, all 2^(n−1) − 1 groups, for at most 12
+  species. A polish then swaps neighbouring groups (nearest-neighbour interchanges) while S(T) rises, at most 30 sweeps
+  (`search.rs`, `complete.rs`). The sets, their order and every tie are decided without hash order, so the same gene
+  trees give the same tree, branch order and numbers every time (a test runs it 24 times; it found a hash-set order that had
+  made two runs list two branches the other way round).
+  **What a branch carries** (`species.rs`, `special.rs`; the branch has L and R on one end, S and O on the other, O including
+  the root species). For each gene tree the shares of its quartets around the branch that it resolves as LR|SO, RS|LO and
+  RO|LS (each divided by the number it resolves, so a gene adds 1 to the three, or 0 when it resolves none): their sums over
+  the genes are f1, f2, f3; EN = f1 + f2 + f3 (the effective number of genes); QC = |L||R||S||O| quartets; the quartet
+  supports are q_i = f_i / EN. The local posterior probability of topology i (Sayyari and Mirarab 2016) is proportional to
+  `3/2 · 2^−(EN − f_i) · B(f_i + 1, EN − f_i + 1) · (1 − I_{1/3}(f_i + 1, EN − f_i + 1))`, the three scaled to add up to 1
+  (a uniform prior on the probability p ∈ [1/3, 1] that a gene has the branch's topology, B the beta function, I the
+  regularized incomplete beta function, by a continued fraction in log space). The length in coalescent units is
+  `−ln(1.5 · (1 − f1 / (EN + 2λ)))`, 0 when that is not positive, infinite when f1 = EN + 2λ, with **λ = 0.5** as ASTRAL's
+  default (`-c`; λ = 0 is the maximum likelihood length). The Newick text follows ASTRAL's `-t` 0, 1, 2, 3 (default), 4 and 8
+  and writes numbers as ASTRAL does (two decimals, or Java's shortest form for the full annotation); the root branch of a
+  tree hung from a species is annotated once.
+  **Reading.** Trees are unrooted; a tree with fewer than max(4, `-m`) leaves is left out and counted; a species twice in a tree
+  is refused (gene families need ASTRAL-Pro, not built); at least four species must occur; a binary tree to score may be
+  rooted or not and must have exactly the species of the gene trees; the Newick reader refuses trees nested more than 2,000
+  levels deep, and the search, the counting and the Newick writer do not recurse, so a species tree as deep as it is wide
+  (100,000 species in a ladder is tested) cannot run a thread out of stack.
+  **Checked against ASTRAL 5.7.8**, run as a black box and never read: on 10 data sets of 6 to 12 species and 30 to 150 genes
+  simulated under the multispecies coalescent (a simulator written for this project; some with polytomies and missing species),
+  for 4 species trees each, the quartet score, the normalized score and, on every inner branch, f1, f2 and f3, EN, QC, q1, pp1
+  and the length equal ASTRAL's (`golden/`); the best score of the default search is ASTRAL's or higher on all 10, and the
+  exact search finds the optimum of ASTRAL's `-x` on the 6 sets small enough; on three larger sets (25, 40 and 60 species with
+  200, 400 and 600 genes) the scores equal ASTRAL's to the last digit. **Checked against brute force**: the score equals counting
+  every quartet, f1–f3 equal counting every quartet around the branch, and the exact search equals trying all rooted binary
+  trees, for up to 7 species. Speed on those larger sets: 0.2, 1.8 and 7.9 s here, ASTRAL 1, 12 and 42 s.
+  **Estimated, not read from anywhere** (`mechanics.json`): the polytomy limit 8 and the 1,500-species limit of the guide tree
+  (above it the search runs without one), the 30 polish sweeps, the 12-species limit of the exact search, the 50,000 leaves above
+  which Automatic sends a search to the workstation, the rows the table of the window lists (300), the 8 GB of sets of species
+  that the search may keep (about three per tree node, a bit for every species; above it the trees are refused with what to
+  do) and the 20,000,000 leaves a request may hold. The quartet counts are 64-bit, and trees on so many species and genes that
+  they could overflow (more than about 18,000 species in 2,000 genes) are refused, not counted wrongly.
+  **On the workstation:** a job kind `species`, run by the same function; a request holds at most 20,000 gene trees and
+  20,000,000 leaves in all (counted by commas before any tree is read) and a result is read up to 8 MB; the compute choice
+  (this computer, the workstation, automatic) decides where, as for every kind.
+  **Not built:** weighted ASTRAL (gene trees with lengths or supports as weights), ASTRAL-Pro3 (several copies per species),
+  ASTRAL-IV's placement heuristic and CASTLES-II lengths in substitution units, CASTER-site and CASTER-pair (from alignments),
+  WASTER (from reads), SISTER and the D* test, `-a` (several individuals to one species), bootstrapping over gene trees and
+  the polytomy test (`-t 10`), the csv outputs.
+
 ### Not built
 
 BEAST2's dated/coalescent analyses, MEGA's model selection for distances and its alignment editor, IQ-TREE's site-rate
@@ -945,8 +1011,10 @@ ribbon, backbone and bonds, fastp as an external step, and a workflow editor (Pi
 workstation is not used for the contig assembler, read cleaning, the primer3 window, chromatograms or tree drawing.
 
 **Licences:** primer3, IQ-TREE and MrBayes are GPL, BEAST2 is LGPL. No code from them was copied or ported; primer3's
-numbers, formulas and rules were read from its source and re-written, and its behaviour was checked by running it. Any
-engine added later is re-implemented the same way and credited in `CREDITS.md`.
+numbers, formulas and rules were read from its source and re-written, and its behaviour was checked by running it. ASTRAL
+(Apache-2.0) was only run, to compare answers; ASTER (AGPL-3.0, which would reach anything copied from it) was not read, and
+its programs other than the ASTRAL core are listed above as not built. Any engine added later is re-implemented the same way
+and credited in `CREDITS.md`.
 
 ## Appendix: settings and inner lines cited in `mechanics.json` (line = byte address)
 

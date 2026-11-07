@@ -25,7 +25,7 @@ const SMALL_RESULT: usize = 8 << 20;
 fn reply_for(kind: Kind) -> Allowed {
     match kind {
         Kind::Align | Kind::Pipeline => RESULT_REPLY,
-        Kind::Tree | Kind::PhyloCnn | Kind::Fold => Allowed {
+        Kind::Tree | Kind::PhyloCnn | Kind::Fold | Kind::Species => Allowed {
             bytes: SMALL_RESULT,
             time: Duration::from_secs(600),
         },

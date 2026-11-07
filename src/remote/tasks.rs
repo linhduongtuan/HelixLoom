@@ -3,6 +3,7 @@
 //! Newick, settings and numbers as `key=value` lines, tables as tab-separated lines. Numbers are written the way Rust
 //! prints them, which reads back as exactly the same number.
 
+use super::species::{SpeciesJob, SpeciesResult};
 use super::wire::{meta, Container};
 use super::{clean_line, one_line};
 use crate::pipeline::steps::{fasta_text, read_fasta, Aligned, Named, PrimerPair, Primers, Tree};
@@ -33,15 +34,17 @@ pub enum Kind {
     Pipeline,
     PhyloCnn,
     Fold,
+    Species,
 }
 
 impl Kind {
-    pub const ALL: [Kind; 5] = [
+    pub const ALL: [Kind; 6] = [
         Kind::Align,
         Kind::Tree,
         Kind::Pipeline,
         Kind::PhyloCnn,
         Kind::Fold,
+        Kind::Species,
     ];
 
     /// The name used in messages and in the list of jobs.
@@ -52,6 +55,7 @@ impl Kind {
             Kind::Pipeline => "pipeline",
             Kind::PhyloCnn => "phylocnn",
             Kind::Fold => "fold",
+            Kind::Species => "species",
         }
     }
 
@@ -67,6 +71,7 @@ impl Kind {
             Kind::Pipeline => "Pipeline",
             Kind::PhyloCnn => "PhyloCNN estimates",
             Kind::Fold => "Structure prediction",
+            Kind::Species => "Species tree",
         }
     }
 }
@@ -103,6 +108,7 @@ pub enum Request {
         /// Fold with the workstation's own program on a GPU, instead of asking the ESM Atlas service.
         local: bool,
     },
+    Species(SpeciesJob),
 }
 
 fn model_name(m: DistanceModel) -> &'static str {
@@ -180,18 +186,18 @@ settings_codec!(
     num_return,
 );
 
-fn lines(items: &[(&str, String)]) -> String {
+pub(super) fn lines(items: &[(&str, String)]) -> String {
     items.iter().map(|(k, v)| format!("{k}={v}\n")).collect()
 }
 
 /// A number from the message's `key=value` lines.
-fn number<T: FromStr>(m: &HashMap<&str, &str>, key: &str) -> Result<T, String> {
+pub(super) fn number<T: FromStr>(m: &HashMap<&str, &str>, key: &str) -> Result<T, String> {
     m.get(key)
         .and_then(|v| v.parse().ok())
         .ok_or_else(|| format!("The message's \"{key}\" is missing or is not a number."))
 }
 
-fn flag(m: &HashMap<&str, &str>, key: &str) -> bool {
+pub(super) fn flag(m: &HashMap<&str, &str>, key: &str) -> bool {
     m.get(key) == Some(&"1")
 }
 
@@ -237,7 +243,7 @@ fn bounded(what: &str, value: usize, most: usize) -> Result<usize, String> {
     Ok(value)
 }
 
-fn bit(b: bool) -> String {
+pub(super) fn bit(b: bool) -> String {
     u8::from(b).to_string()
 }
 
@@ -373,6 +379,7 @@ impl Request {
             Request::Pipeline { .. } => Kind::Pipeline,
             Request::PhyloCnn { .. } => Kind::PhyloCnn,
             Request::Fold { .. } => Kind::Fold,
+            Request::Species(_) => Kind::Species,
         }
     }
 
@@ -430,6 +437,7 @@ impl Request {
             Request::Fold { sequence, local } => Container::new()
                 .with("meta", lines(&[("local", bit(*local))]))
                 .with("sequence", sequence.clone()),
+            Request::Species(job) => job.encode(),
         }
     }
 
@@ -448,6 +456,7 @@ impl Request {
                 sequence: crate::pipeline::predict::clean_sequence(c.require("sequence")?)?,
                 local: flag(&m, "local"),
             }),
+            Kind::Species => SpeciesJob::decode(c, &m).map(Request::Species),
         }
     }
 }
@@ -479,6 +488,7 @@ pub enum Response {
     Pipeline(Outcome),
     PhyloCnn(CnnResult),
     Fold(Folded),
+    Species(SpeciesResult),
 }
 
 fn primer_rows(p: &Primers) -> String {
@@ -702,6 +712,7 @@ impl Response {
         into_pipeline, Pipeline, Outcome, "a pipeline result";
         into_phylocnn, PhyloCnn, CnnResult, "PhyloCNN estimates";
         into_fold, Fold, Folded, "a structure";
+        into_species, Species, SpeciesResult, "a species tree";
     }
 
     pub fn encode(&self) -> Container {
@@ -718,6 +729,7 @@ impl Response {
             Response::Fold(f) => Container::new()
                 .with("meta", timing(&f.engine, f.seconds))
                 .with("pdb", f.pdb.clone()),
+            Response::Species(r) => r.encode(),
         }
     }
 
@@ -745,6 +757,7 @@ impl Response {
                     seconds: number(&m, "seconds")?,
                 }))
             }
+            Kind::Species => SpeciesResult::decode(c).map(Response::Species),
         }
     }
 }

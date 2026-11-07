@@ -23,6 +23,7 @@ HelixLoom workstation server
   helixloom token                  print a new random token
   helixloom status --server HOST:PORT --token-file FILE
                                   ask a server how it is
+  helixloom astral -i GENE_TREES   the species tree of a set of gene trees, with no server (`astral --help`)
 
 Options of `serve`:
   --listen ADDR         where to listen (default 127.0.0.1:7878; use 0.0.0.0:7878 for other computers)
@@ -485,6 +486,7 @@ pub fn dispatch(args: &[String]) -> Option<i32> {
             0
         }
         "status" => status(rest),
+        "astral" | "species-tree" => crate::seq::astral::cli::run(rest),
         "run-job" => {
             #[cfg(unix)]
             end_with_the_server(server_pid(rest));

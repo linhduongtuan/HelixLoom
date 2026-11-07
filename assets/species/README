@@ -1,0 +1,9 @@
+The example of the species-tree window (Tools -> Species Tree from Gene Trees).
+
+genes.tre   40 gene trees on 8 species, A to H, one per line, topologies only. 11 of the genes lack one species.
+truth.tre   the species tree they were simulated from.
+
+Made for this project, not taken from any program or data set: a small simulator written for it draws a random species
+tree with branch lengths in coalescent units, then a gene tree for each gene under the multispecies coalescent (so that
+incomplete lineage sorting makes some genes disagree with the species tree), then drops a random species from some of the
+genes. Seed 1 of the simulator's seeds was the first for which the search recovers truth.tre and a branch is not certain.

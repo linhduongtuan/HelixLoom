@@ -348,6 +348,7 @@ impl App {
                 self.workspace = Workspace::Pipelines;
             }
             Response::PhyloCnn(result) => self.show_phylocnn_result(result),
+            Response::Species(result) => self.show_species_result(result),
             Response::Fold(folded) => {
                 let page = &mut self.platform.structure;
                 match page.show_pdb("ESMFold prediction", &folded.pdb) {

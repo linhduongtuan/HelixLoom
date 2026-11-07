@@ -42,6 +42,8 @@ pub enum Wanted {
     TreeToolsTree,
     /// A Newick tree for the PhyloCNN window.
     PhyloCnnTree,
+    /// A file of gene trees for the species-tree window.
+    SpeciesTrees,
 }
 
 /// Files a browser brought: each one's name and bytes, or why it could not be read.

@@ -416,6 +416,12 @@ pub fn tree_sample(count: usize) -> String {
         .join("\n")
 }
 
+/// 40 gene trees on 8 species (A to H), one per line, for the species-tree window: simulated under the multispecies
+/// coalescent from `SPECIES_TRUTH`, with one species missing from 11 of the genes (`assets/species/README`).
+pub const SPECIES_GENE_TREES: &str = include_str!("../assets/species/genes.tre");
+/// The species tree that `SPECIES_GENE_TREES` were simulated from.
+pub const SPECIES_TRUTH: &str = include_str!("../assets/species/truth.tre");
+
 #[cfg(test)]
 mod tests {
     use super::*;
