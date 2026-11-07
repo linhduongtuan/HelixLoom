@@ -1,9 +1,11 @@
 //! The counting is checked against counting every quartet one by one, on random trees with polytomies and missing taxa.
 
 use super::bits::Bits;
-use super::genes::{read, Genes};
+use super::complete;
+use super::genes::{read, GTree, Genes};
+use super::search;
 use super::species::Sp;
-use super::{infer, Options};
+use super::{infer, score_tree, Options};
 use crate::seq::tree::Rng;
 
 #[derive(Clone)]
@@ -413,4 +415,195 @@ fn the_same_gene_trees_give_the_same_tree_every_time_down_to_the_order_of_the_br
             assert_eq!(again.clusters, first.clusters, "run {run}");
         }
     }
+}
+
+#[test]
+fn a_tree_that_is_scored_is_hung_from_the_taxon_asked_for_and_a_taxon_that_is_not_there_is_refused()
+{
+    let genes = "((A,B),(C,(D,E)));\n((A,C),(B,(D,E)));\n(((A,B),C),(D,E));";
+    let species = "((A,B),(C,(D,E)));";
+    let first = score_tree(genes, species, &Options::default()).expect("scored");
+    assert!(first.newick.starts_with("(A,"), "{}", first.newick);
+    let hung = score_tree(
+        genes,
+        species,
+        &Options {
+            root: Some("D".into()),
+            ..Options::default()
+        },
+    )
+    .expect("scored");
+    assert!(hung.newick.starts_with("(D,"), "{}", hung.newick);
+    // the same tree and the same numbers, written from another leaf
+    assert_eq!(
+        (hung.score, hung.branches.len()),
+        (first.score, first.branches.len())
+    );
+    let why = score_tree(
+        genes,
+        species,
+        &Options {
+            root: Some("Z".into()),
+            ..Options::default()
+        },
+    )
+    .expect_err("no such taxon");
+    assert!(why.contains("root taxon Z"), "{why}");
+}
+
+/// The completion as it was first written, working the taxa below every node out again for every taxon put back: slow, but
+/// plain, so that the quick version can be checked against it.
+fn completed_the_plain_way(genes: &Genes, guide: &[Bits], root: usize) -> Vec<GTree> {
+    let n = genes.taxa.len();
+    let mut by_size: Vec<&Bits> = guide.iter().collect();
+    by_size.sort_by_key(|c| c.count());
+    genes
+        .trees
+        .iter()
+        .map(|t| {
+            let mut tree = t.clone();
+            loop {
+                let clusters = tree.clusters(n);
+                let present = clusters[tree.root].clone();
+                let Some(missing) = (0..n).find(|&x| !present.contains(x)) else {
+                    break;
+                };
+                let wanted = by_size
+                    .iter()
+                    .filter(|c| c.contains(missing))
+                    .map(|c| c.minus(&c.minus(&present)))
+                    .find(|near| !near.is_empty());
+                let near = wanted.unwrap_or_else(|| {
+                    if present.contains(root) && present.count() == 1 {
+                        present.clone()
+                    } else {
+                        present.minus(&Bits::of(n, [root]))
+                    }
+                });
+                let near = if near.is_empty() { present } else { near };
+                let at = (0..tree.nodes.len())
+                    .filter(|&i| near.is_subset_of(&clusters[i]))
+                    .min_by_key(|&i| clusters[i].count())
+                    .unwrap_or(tree.root);
+                tree.insert_above(at, missing);
+            }
+            tree
+        })
+        .collect()
+}
+
+#[test]
+fn putting_taxa_back_with_the_sets_kept_up_to_date_gives_the_trees_that_working_them_out_each_time_gives(
+) {
+    let mut rng = Rng::new(77);
+    let shape = |t: &GTree| {
+        t.nodes
+            .iter()
+            .map(|x| (x.parent, x.children.clone(), x.taxon))
+            .collect::<Vec<_>>()
+    };
+    for (n, count, collapse, missing) in [
+        (9, 12, 0.0, 0.4),
+        (14, 20, 0.2, 0.5),
+        (20, 10, 0.1, 0.7),
+        (6, 15, 0.3, 0.3),
+    ] {
+        let genes = read(&random_genes(&mut rng, n, count, collapse, missing), 0).expect("genes");
+        for root in [0, genes.taxa.len() - 1] {
+            // with the guide tree that is built, and with none (when there are too many taxa for one)
+            for guide in [complete::guide_clusters(&genes, root), Vec::new()] {
+                let quick = complete::completed_trees(&genes, &guide, root);
+                let plain = completed_the_plain_way(&genes, &guide, root);
+                assert_eq!(quick.len(), plain.len());
+                for (a, b) in quick.iter().zip(&plain) {
+                    assert_eq!(a.root, b.root, "n {n}, root {root}");
+                    assert_eq!(shape(a), shape(b), "n {n}, root {root}");
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn more_groups_to_choose_from_than_the_search_can_look_through_are_refused_when_they_are_known() {
+    let genes = read(crate::sample::SPECIES_GENE_TREES, 0).expect("genes");
+    let (space, completed) =
+        complete::build(&genes, 0, 1, 8).expect("the example's groups are few");
+    assert!(completed, "eight species have a guide tree");
+    // every group of the example counted: a limit one below it refuses, the limit itself does not
+    let all = space.sets.len();
+    assert!(complete::build_within(&genes, 0, 1, 8, all).is_ok());
+    let why = complete::build_within(&genes, 0, 1, 8, all - 1).expect_err("one group too many");
+    assert!(
+        why.contains("groups of species") && why.contains("share few species"),
+        "{why}"
+    );
+}
+
+#[test]
+fn more_species_than_a_guide_tree_is_made_for_are_searched_without_completing_the_genes_and_say_so()
+{
+    // 1,700 species, a hundred genes of about 68 of them each: nearly all of the species occur, and no gene has most
+    let mut rng = Rng::new(9);
+    let genes = random_genes(&mut rng, 1_700, 100, 0.0, 0.96);
+    let found = infer(&genes, &Options::default()).expect("a tree without a guide tree");
+    assert!(
+        found.taxa.len() > complete::GUIDE_LIMIT,
+        "{} species",
+        found.taxa.len()
+    );
+    assert!(
+        found.log.iter().any(|l| l.contains("no guide tree")),
+        "{:?}",
+        found.log
+    );
+    assert!(found.score > 0 && found.clusters.is_some());
+    // every species is in the tree, and scoring the tree that was written gives the score that was found
+    assert_eq!(found.newick.matches('t').count(), found.taxa.len());
+    let again = score_tree(&genes, &found.newick, &Options::default()).expect("its own tree");
+    assert_eq!(again.score, found.score);
+    // with a guide tree there is no such note
+    let small = infer(crate::sample::SPECIES_GENE_TREES, &Options::default()).expect("a tree");
+    assert!(!small.log.iter().any(|l| l.contains("no guide tree")));
+}
+
+/// Every inner node's group of taxa is its children's put together, and the children know their parent.
+fn is_whole(sp: &Sp) -> bool {
+    sp.nodes
+        .iter()
+        .enumerate()
+        .all(|(i, node)| match node.kids {
+            Some((a, b)) => {
+                node.set == sp.nodes[a].set.union(&sp.nodes[b].set)
+                    && sp.nodes[a].parent == Some(i)
+                    && sp.nodes[b].parent == Some(i)
+            }
+            None => node.taxon.is_some(),
+        })
+}
+
+#[test]
+fn polishing_swaps_in_the_tree_itself_and_leaves_it_whole_and_never_worse() {
+    let mut rng = Rng::new(61);
+    let mut swapped = 0;
+    for (n, count, collapse, missing) in
+        [(10, 30, 0.1, 0.1), (16, 40, 0.2, 0.3), (24, 50, 0.0, 0.2)]
+    {
+        let genes = read(&random_genes(&mut rng, n, count, collapse, missing), 0).expect("genes");
+        // from random trees, which have a great deal to gain
+        for _ in 0..4 {
+            let start = Sp::from_newick(&random_species(&mut rng, genes.taxa.len()), &genes.taxa)
+                .expect("a tree");
+            let before = start.score(&genes);
+            let polished = search::polish(start, &genes);
+            assert!(is_whole(&polished), "a polished tree is whole");
+            let after = polished.score(&genes);
+            assert!(after >= before, "{after} against {before}");
+            swapped += usize::from(after > before);
+        }
+    }
+    assert!(
+        swapped > 0,
+        "some random tree was improved, so that swaps were made"
+    );
 }

@@ -64,6 +64,8 @@ pub struct SpeciesWin {
     pub root: String,
     run_requested: bool,
     job: Option<Job<Result<SpeciesResult, String>>>,
+    /// The run that is going was for trees that are gone: it cannot be stopped, so its answer is let go when it comes.
+    discard: bool,
     /// Where the running job goes, for the message that says where it ran.
     ran_on: &'static str,
     pub result: Option<Arc<SpeciesResult>>,
@@ -85,6 +87,7 @@ impl Default for SpeciesWin {
             root: String::new(),
             run_requested: false,
             job: None,
+            discard: false,
             ran_on: "this computer",
             result: None,
             message: String::new(),
@@ -126,15 +129,16 @@ impl SpeciesWin {
         }
     }
 
-    /// Start again with nothing: a run that was going was for trees that are gone, so its answer is not wanted (a job on the
-    /// workstation goes on there and can be fetched from the Workstation page).
+    /// Start again with nothing. A run that was going was for trees that are gone, so its answer is not wanted; but a search
+    /// cannot be stopped, so it counts as running (and keeps a new run waiting) until it ends, and then its answer is let go.
+    /// (A job on the workstation goes on there and can be fetched from the Workstation page.)
     fn clear(&mut self) {
         self.genes.clear();
         self.loaded = None;
         self.result = None;
         self.message.clear();
-        self.job = None;
         self.run_requested = false;
+        self.discard = self.job.is_some();
     }
 
     fn take(&mut self, result: SpeciesResult, ran_on: &str) {
@@ -307,14 +311,19 @@ impl App {
             Poll::Running => ctx.request_repaint_after(WORKING_REDRAW),
             Poll::Done(outcome) => {
                 w.job = None;
+                let discarded = std::mem::take(&mut w.discard);
                 match outcome {
+                    // the trees it was for are gone: nothing of it is kept
+                    _ if discarded => {}
                     Ok(result) => w.take(result, w.ran_on),
                     Err(why) => w.message = why,
                 }
             }
             Poll::Died => {
                 w.job = None;
-                w.message = "The run stopped without an answer.".into();
+                if !std::mem::take(&mut w.discard) {
+                    w.message = "The run stopped without an answer.".into();
+                }
             }
         }
     }
@@ -324,7 +333,10 @@ impl App {
         let Some(result) = self.species_win.result.clone() else {
             return;
         };
-        match NwTree::parse_all(&result.newick) {
+        // a prior of 0 makes some lengths infinite or not a number, which ASTRAL writes out and the reader here does not take:
+        // such a branch is drawn without a length
+        let drawable = result.newick.replace(":Infinity", "").replace(":NaN", "");
+        match NwTree::parse_all(&drawable) {
             Ok(mut trees) if !trees.is_empty() => {
                 let note = format!(
                     "The species tree from {} gene trees; branches carry the local posterior probability.",
@@ -513,7 +525,7 @@ fn results(ui: &mut Ui, r: &SpeciesResult, c: &mut Clicks) {
         .id_salt("species_branches_scroll")
         .max_height(BRANCHES_MAX_HEIGHT)
         .show(ui, |ui| branch_table(ui, r));
-    if let Some(note) = cut_note(r.branches.len()) {
+    if let Some(note) = cut_note(r.branch_count) {
         ui.label(note);
     }
     ui.label(

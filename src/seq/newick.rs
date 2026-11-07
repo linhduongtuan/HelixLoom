@@ -45,7 +45,8 @@ impl Reader<'_> {
                     while self.text.get(self.pos).is_some_and(|&c| c != b']') {
                         self.pos += 1;
                     }
-                    self.pos += 1;
+                    // a comment that is never closed runs to the end of the text
+                    self.pos = (self.pos + 1).min(self.text.len());
                 }
                 _ => break,
             }
@@ -74,7 +75,8 @@ impl Reader<'_> {
                     break;
                 }
             }
-            self.pos += 1;
+            // past the closing quote, or to the end of the text when it is never closed
+            self.pos = (self.pos + 1).min(self.text.len());
             return String::from_utf8_lossy(&name).into_owned();
         }
         let start = self.pos;
@@ -306,6 +308,27 @@ mod tests {
         // the depth counter is given back, so a long run of shallow trees is fine
         let many = "((A,B),(C,D));".repeat(5_000);
         assert_eq!(NwTree::parse_all(&many).expect("many trees").len(), 5_000);
+    }
+
+    #[test]
+    fn text_that_stops_inside_a_comment_or_a_quote_is_refused_or_read_but_never_panics() {
+        // the end of the text came before the closing bracket or quote
+        for text in [
+            "((A,B),(C,D))[",
+            "(A,[",
+            "((A,B),(C,D));\n((A,B),(C,D))[unterminated",
+            "'",
+            "(A,'b",
+            "(A,B)'",
+            "(A,B)[x",
+            "[",
+        ] {
+            // either answer is fine; what matters is that the reader returns
+            let _ = NwTree::parse_all(text);
+        }
+        // a comment after the last tree that is cut off leaves the tree before it as it was
+        let trees = NwTree::parse_all("((A,B),(C,D));[cut").expect("a tree");
+        assert_eq!((trees.len(), trees[0].leaf_count()), (1, 4));
     }
 
     #[test]

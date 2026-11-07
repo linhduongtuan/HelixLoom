@@ -412,6 +412,8 @@
   {"name": "Species tree: leaves in all the gene trees above which Automatic sends the search to the workstation (not in the original)", "group": "species", "value": 50000, "unit": "leaves", "estimated": true},
   {"name": "Species tree: most memory the sets of species of the gene trees may take, about three per tree node (not in the original)", "group": "species", "value": 8, "unit": "GB", "estimated": true},
   {"name": "Species tree: most leaves in all the gene trees of a workstation request (not in the original)", "group": "species", "value": 20000000, "unit": "leaves", "estimated": true},
+  {"name": "Species tree: most groups of species the search may choose from, more is refused (not in the original)", "group": "species", "value": 1000000, "unit": "groups", "estimated": true},
+  {"name": "Species tree: most entries (a species named on one side of a branch) in a branch table that a reply may carry (not in the original)", "group": "species", "value": 1000000, "unit": "entries", "estimated": true},
   {"name": "Species tree window: most branches the table lists, the tree has them all (not in the original)", "group": "species", "value": 300, "unit": "rows", "estimated": true},
   {"name": "Species tree window: most species named for a branch in the table (not in the original)", "group": "species", "value": 4, "unit": "species", "estimated": true}
  ]

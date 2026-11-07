@@ -9,14 +9,16 @@
 
 use super::bits::Bits;
 use super::genes::{GTree, Genes};
+use crate::seq::par::par_map;
 use crate::seq::tree::{neighbor_joining, splits};
 use std::collections::HashMap;
 
 /// Most children of a polytomy of which the pairs are joined.
 pub const POLYLIMIT: usize = 8;
 /// More taxa than this and the guide tree is left out (neighbour joining takes cubic time).
-const GUIDE_LIMIT: usize = 1_500;
+pub const GUIDE_LIMIT: usize = 1_500;
 
+#[derive(Debug)]
 pub struct Space {
     pub sets: Vec<Bits>,
     index: HashMap<Bits, usize>,
@@ -54,9 +56,32 @@ fn side(set: Bits, root: usize, n: usize) -> Bits {
     }
 }
 
-/// The clusters for a search rooted at taxon `root`. With `extra` 0 only the (completed) gene trees' splits, the guide
-/// tree's, the single taxa and the whole are in; with 1 the polytomy resolutions are added.
-pub fn build(genes: &Genes, root: usize, extra: u8, polylimit: usize) -> Space {
+/// The most clusters the search may choose from. It looks at pairs of them, so a million is hours of work and memory; more
+/// happens when the gene trees share so few species that what each lacks is put back in a way of its own (above all with more
+/// species than `GUIDE_LIMIT`, when there is no guide tree to put them back by).
+pub const MAX_CLUSTERS: usize = 1_000_000;
+
+/// The clusters for a search rooted at taxon `root`, and whether the gene trees were completed (they are not without a guide
+/// tree, which more than `GUIDE_LIMIT` species leave out: what each gene lacks would then be put back in a way of its own, and
+/// the groups to choose from would be as many as the genes times the species). With `extra` 0 only the (completed) gene
+/// trees' splits, the guide tree's, the single taxa and the whole are in; with 1 the polytomy resolutions are added. More than
+/// `MAX_CLUSTERS` of them is refused, as soon as it is known.
+pub fn build(
+    genes: &Genes,
+    root: usize,
+    extra: u8,
+    polylimit: usize,
+) -> Result<(Space, bool), String> {
+    build_within(genes, root, extra, polylimit, MAX_CLUSTERS)
+}
+
+pub(super) fn build_within(
+    genes: &Genes,
+    root: usize,
+    extra: u8,
+    polylimit: usize,
+    most: usize,
+) -> Result<(Space, bool), String> {
     let n = genes.taxa.len();
     let mut space = Space::new();
     for t in (0..n).filter(|&t| t != root) {
@@ -67,20 +92,42 @@ pub fn build(genes: &Genes, root: usize, extra: u8, polylimit: usize) -> Space {
     for c in &guide {
         space.add(c.clone());
     }
-    let trees = completed_trees(genes, &guide, root);
+    let completed = !guide.is_empty();
+    let trees = if completed {
+        completed_trees(genes, &guide, root)
+    } else {
+        // so that some tree can always be built from the groups, however few the gene trees give: the taxa added one by one
+        let mut so_far = Bits::new(n);
+        for t in (0..n).filter(|&t| t != root) {
+            so_far.insert(t);
+            space.add(so_far.clone());
+        }
+        genes.trees.clone()
+    };
     let limit = if extra >= 1 { polylimit } else { 0 };
     for t in &trees {
         add_tree(&mut space, t, n, root, limit);
+        too_many(&space, most)?;
     }
     if extra >= 1 {
         consensus_resolutions(&mut space, &trees, n, root, polylimit);
+        too_many(&space, most)?;
     }
-    space
+    Ok((space, completed))
+}
+
+fn too_many(space: &Space, most: usize) -> Result<(), String> {
+    if space.sets.len() > most {
+        return Err(format!(
+            "The gene trees give more than {most} groups of species to choose a species tree from, which is more than the search can look through. This happens when the gene trees share few species with each other: use genes that have more species in common, or fewer species."
+        ));
+    }
+    Ok(())
 }
 
 /// The clusters of the guide tree: neighbour joining on the average number of branches between two taxa over the gene
 /// trees that have both (a pair no tree has both of gets the overall average).
-fn guide_clusters(genes: &Genes, root: usize) -> Vec<Bits> {
+pub(super) fn guide_clusters(genes: &Genes, root: usize) -> Vec<Bits> {
     let n = genes.taxa.len();
     if n > GUIDE_LIMIT {
         return Vec::new();
@@ -161,37 +208,51 @@ fn path_length(tree: &GTree, depth: &[u32], mut a: usize, mut b: usize) -> u32 {
 
 /// Every gene tree with the taxa it lacks put back, each on the branch above the smallest group of the gene tree that holds
 /// its nearest relatives in the guide tree.
-fn completed_trees(genes: &Genes, guide: &[Bits], root: usize) -> Vec<GTree> {
+pub(super) fn completed_trees(genes: &Genes, guide: &[Bits], root: usize) -> Vec<GTree> {
     let n = genes.taxa.len();
     let mut by_size: Vec<&Bits> = guide.iter().collect();
     by_size.sort_by_key(|c| c.count());
-    genes
-        .trees
-        .iter()
-        .map(|t| {
-            let mut tree = t.clone();
-            while let Some((missing, near)) = next_missing(&tree, &by_size, root, n) {
-                let clusters = tree.clusters(n);
-                let at = (0..tree.nodes.len())
-                    .filter(|&i| near.is_subset_of(&clusters[i]))
-                    .min_by_key(|&i| clusters[i].count())
-                    .unwrap_or(tree.root);
-                tree.insert_above(at, missing);
-            }
-            tree
-        })
-        .collect()
+    // every tree is completed on its own, so they are shared out among the cores, and come back in their order
+    par_map(&genes.trees, |t| complete_one(t, &by_size, root, n))
 }
 
-/// A taxon the tree lacks, with the taxa of the tree that are its nearest relatives in the guide tree.
-fn next_missing(tree: &GTree, guide: &[&Bits], root: usize, n: usize) -> Option<(usize, Bits)> {
-    let present = tree.clusters(n)[tree.root].clone();
+/// One gene tree with the taxa it lacks put back, the guide tree's clusters being given smallest first.
+fn complete_one(gene: &GTree, by_size: &[&Bits], root: usize, n: usize) -> GTree {
+    let mut tree = gene.clone();
+    // the taxa below each node, kept up to date as taxa are put back instead of worked out again each time (which made the
+    // completion cost the cube of the species for genes that share few of them)
+    let mut clusters = tree.clusters(n);
+    let mut present = clusters[tree.root].clone();
+    while let Some((missing, near)) = next_missing(&present, by_size, root, n) {
+        let at = (0..tree.nodes.len())
+            .filter(|&i| near.is_subset_of(&clusters[i]))
+            .min_by_key(|&i| clusters[i].count())
+            .unwrap_or(tree.root);
+        tree.insert_above(at, missing);
+        // the new leaf and the join above `at` (which `insert_above` numbers in this order), and every node above them has
+        // the taxon too
+        let mut join = clusters[at].clone();
+        join.insert(missing);
+        clusters.push(Bits::of(n, [missing]));
+        clusters.push(join);
+        let mut above = tree.nodes[clusters.len() - 1].parent;
+        while let Some(p) = above {
+            clusters[p].insert(missing);
+            above = tree.nodes[p].parent;
+        }
+        present.insert(missing);
+    }
+    tree
+}
+
+/// A taxon the tree lacks (`present` has the taxa it has), with the taxa of the tree that are its nearest relatives in the
+/// guide tree.
+fn next_missing(present: &Bits, guide: &[&Bits], root: usize, n: usize) -> Option<(usize, Bits)> {
     let missing = (0..n).find(|&t| !present.contains(t))?;
     let wanted = guide
         .iter()
-        .filter(|c| c.contains(missing))
-        .map(|c| c.minus(&c.minus(&present)))
-        .find(|near| !near.is_empty());
+        .find(|c| c.contains(missing) && c.and_count(present) > 0)
+        .map(|c| c.minus(&c.minus(present)));
     // with no guide tree, or when the nearest relative is the root taxon itself
     let near = wanted.unwrap_or_else(|| {
         if present.contains(root) && present.count() == 1 {
@@ -200,7 +261,14 @@ fn next_missing(tree: &GTree, guide: &[&Bits], root: usize, n: usize) -> Option<
             present.minus(&Bits::of(n, [root]))
         }
     });
-    Some((missing, if near.is_empty() { present } else { near }))
+    Some((
+        missing,
+        if near.is_empty() {
+            present.clone()
+        } else {
+            near
+        },
+    ))
 }
 
 /// Add the splits of a tree, and, with a `limit` above 0, every way to join two branches of a node that has more than

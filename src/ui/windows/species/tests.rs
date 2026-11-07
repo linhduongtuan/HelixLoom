@@ -249,40 +249,48 @@ fn a_file_of_gene_trees_stays_out_of_the_box_and_is_the_text_that_runs() {
     assert!(w.loaded.is_none() && w.genes.is_empty() && w.result.is_none() && w.message.is_empty());
 }
 
-#[test]
-fn clearing_or_loading_other_trees_drops_a_run_that_was_going_so_its_answer_does_not_appear() {
-    let (mut app, ctx) = open_window();
-    app.load_species_example();
-    app.run_species();
-    frame(&mut app, &ctx, vec![]); // the run is started on this frame
-    assert!(app.species_win.is_running());
-    app.species_win.clear();
-    assert!(!app.species_win.is_running() && !app.species_win.run_requested);
-    for _ in 0..30 {
-        frame(&mut app, &ctx, vec![]);
-        std::thread::sleep(Duration::from_millis(5));
-    }
-    assert!(app.species_win.result.is_none() && app.species_win.message.is_empty());
-    assert_eq!(app.running_analyses(), 0);
+/// A search that takes a little while, as one over many genes does, for two gene trees (so that its answer is told from the
+/// example's forty).
+fn slow_search(ctx: &Context) -> Job<Result<SpeciesResult, String>> {
+    Job::spawn(ctx, || {
+        std::thread::sleep(Duration::from_millis(200));
+        species::run(&SpeciesJob::search(
+            "((A,B),(C,(D,E)));\n((A,C),(B,(D,E)));",
+        ))
+    })
+}
 
-    // the same when other trees are loaded while a run is going
+#[test]
+fn clearing_or_loading_other_trees_lets_a_run_that_was_going_end_but_never_shows_its_answer() {
+    let (mut app, ctx) = open_window();
+    app.species_win.job = Some(slow_search(&ctx));
+    app.species_win.genes = "to be cleared".into();
+    app.species_win.clear();
+    // a search cannot be stopped: it still counts as running (it is using the cores) and a new run waits for it
+    assert!(app.species_win.is_running() && app.running_analyses() == 1);
     app.load_species_example();
     app.run_species();
     frame(&mut app, &ctx, vec![]);
+    assert!(app.species_win.result.is_none(), "the new run waits");
+    // when the old search ends its answer is let go, and the new run gives its own
+    draw_until(&mut app, &ctx, |a| a.species_win.result.is_some());
+    let r = app.species_win.result.clone().expect("a result");
+    assert_eq!(r.genes, 40, "the example's answer, not the old search's");
+    let said = &app.species_win.message;
+    assert!(said.contains("40 gene trees on 8 species"), "{said}");
+    assert!(!app.species_win.discard && app.running_analyses() == 0);
+
+    // loading a file while a search is going does the same, and leaves the file's message
+    app.species_win.job = Some(slow_search(&ctx));
     app.load_species_file(Source::Bytes {
         name: "other.tre",
         bytes: SPECIES_GENE_TREES.as_bytes(),
     });
-    for _ in 0..30 {
-        frame(&mut app, &ctx, vec![]);
-        std::thread::sleep(Duration::from_millis(5));
-    }
+    assert!(app.species_win.discard);
+    draw_until(&mut app, &ctx, |a| !a.species_win.is_running());
     assert!(app.species_win.result.is_none());
-    assert!(
-        app.species_win.message.contains("other.tre"),
-        "{}",
-        app.species_win.message
-    );
+    let said = &app.species_win.message;
+    assert!(said.contains("other.tre"), "{said}");
 }
 
 #[test]
@@ -370,6 +378,7 @@ fn a_result_with_many_branches_is_summed_up_and_drawn_whatever_its_size() {
         skipped: 2,
         clusters: Some(9),
         branches: (0..MAX_LISTED + 50).map(|i| branch(2 + i % 6)).collect(),
+        branch_count: MAX_LISTED + 50,
         seconds: 0.5,
     };
     let said = summary(&result, "the workstation");
@@ -387,5 +396,28 @@ fn a_result_with_many_branches_is_summed_up_and_drawn_whatever_its_size() {
     assert!(app.species_win.open);
     assert_eq!(app.species_win.message, said);
     frame(&mut app, &ctx, vec![]);
+    frame(&mut app, &ctx, vec![]);
+}
+
+#[test]
+fn a_tree_with_infinite_lengths_is_drawn_without_them_and_one_that_cannot_be_read_says_so() {
+    // a prior of 0 gives an infinite length where every gene agrees and none where no gene covers a branch
+    let (mut app, ctx) = open_window();
+    let mut result = species::run(&SpeciesJob::search(SPECIES_GENE_TREES)).expect("a species tree");
+    result.newick = "(A,((C,E)0.95:Infinity,(G,((B,F)1:NaN,(D,H)1:2.5)0.86:0.2)1:0.5):0.1);".into();
+    app.show_species_result(result);
+    app.show_species_in_trees();
+    assert_eq!(app.workspace, Workspace::Trees);
+    assert_eq!(app.tree_win.tree.as_ref().map(|t| t.leaf_count()), Some(8));
+
+    // text that is no tree is said, and nothing is drawn over the tree that was there
+    let mut broken = species::run(&SpeciesJob::search(SPECIES_GENE_TREES)).expect("a species tree");
+    broken.newick = "((a,b".into();
+    app.workspace = Workspace::Sequences;
+    app.show_species_result(broken);
+    app.show_species_in_trees();
+    assert_eq!(app.workspace, Workspace::Sequences);
+    let said = &app.species_win.message;
+    assert!(said.contains("cannot be drawn"), "{said}");
     frame(&mut app, &ctx, vec![]);
 }

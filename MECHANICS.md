@@ -957,10 +957,14 @@ clean-room re-implementation is acceptable under each project's licence).
   default, as ASTRAL's `-p 1`) every union of two of the branches of a polytomy of at most 8 branches (the children and the
   rest of the tree, since the tree is unrooted), also for the polytomies of the greedy consensus of the completed trees (the
   most frequent splits first, each kept when it fits those kept); with `exact`, all 2^(n−1) − 1 groups, for at most 12
-  species. A polish then swaps neighbouring groups (nearest-neighbour interchanges) while S(T) rises, at most 30 sweeps
-  (`search.rs`, `complete.rs`). The sets, their order and every tie are decided without hash order, so the same gene
+  species. A polish then swaps neighbouring groups (nearest-neighbour interchanges, made in the tree itself) while S(T)
+  rises, at most 30 sweeps and no more work than 2·10^10 word operations in all (a sweep costs nodes × 6 weights × the gene
+  nodes × the words of a set), so fewer sweeps or none on very large inputs (`search.rs`, `complete.rs`). The sets, their order and every tie are decided without hash order, so the same gene
   trees give the same tree, branch order and numbers every time (a test runs it 24 times; it found a hash-set order that had
-  made two runs list two branches the other way round).
+  made two runs list two branches the other way round). Putting the missing species back keeps the sets of species below
+  every node up to date instead of working them out again for each species put back, and shares the genes among the cores (a
+  test checks that the trees are the ones the plain way gives); a search with more than 1,000,000 groups to choose from is
+  refused as soon as that is known, because the search looks at pairs of them.
   **What a branch carries** (`species.rs`, `special.rs`; the branch has L and R on one end, S and O on the other, O including
   the root species). For each gene tree the shares of its quartets around the branch that it resolves as LR|SO, RS|LO and
   RO|LS (each divided by the number it resolves, so a gene adds 1 to the three, or 0 when it resolves none): their sums over
@@ -978,12 +982,15 @@ clean-room re-implementation is acceptable under each project's licence).
   rooted or not and must have exactly the species of the gene trees; the Newick reader refuses trees nested more than 2,000
   levels deep, and the search, the counting and the Newick writer do not recurse, so a species tree as deep as it is wide
   (100,000 species in a ladder is tested) cannot run a thread out of stack.
-  **Checked against ASTRAL 5.7.8**, run as a black box and never read: on 10 data sets of 6 to 12 species and 30 to 150 genes
+  **Checked against ASTRAL 5.7.8**, run as a black box and never read: on 12 data sets of 6 to 80 species and 30 to 200 genes
   simulated under the multispecies coalescent (a simulator written for this project; some with polytomies and missing species),
   for 4 species trees each, the quartet score, the normalized score and, on every inner branch, f1, f2 and f3, EN, QC, q1, pp1
-  and the length equal ASTRAL's (`golden/`); the best score of the default search is ASTRAL's or higher on all 10, and the
-  exact search finds the optimum of ASTRAL's `-x` on the 6 sets small enough; on three larger sets (25, 40 and 60 species with
-  200, 400 and 600 genes) the scores equal ASTRAL's to the last digit. **Checked against brute force**: the score equals counting
+  and the length equal ASTRAL's (`golden/`; pp1 to 1e-6, because ASTRAL's own value of a posterior as small as 1.4e-5 is 8e-8 off
+  the formula worked out to 40 digits, which this program matches to 1e-12); the best score of the default search is ASTRAL's
+  or higher on all 12, and the exact search finds the optimum of ASTRAL's `-x` on the 6 sets small enough; on eight more
+  generated sets (25, 40 and 60 species with 200, 400 and 600 genes, and 30, 50, 80, 15 and 24 species with 300, 200, 150, 500
+  and 120 genes, the last five with missing species and, in four of them, polytomies) the best scores equal ASTRAL's to the last
+  digit. **Checked against brute force**: the score equals counting
   every quartet, f1–f3 equal counting every quartet around the branch, and the exact search equals trying all rooted binary
   trees, for up to 7 species. Speed on those larger sets: 0.2, 1.8 and 7.9 s here, ASTRAL 1, 12 and 42 s.
   **Estimated, not read from anywhere** (`mechanics.json`): the polytomy limit 8 and the 1,500-species limit of the guide tree
@@ -994,7 +1001,14 @@ clean-room re-implementation is acceptable under each project's licence).
   they could overflow (more than about 18,000 species in 2,000 genes) are refused, not counted wrongly.
   **On the workstation:** a job kind `species`, run by the same function; a request holds at most 20,000 gene trees and
   20,000,000 leaves in all (counted by commas before any tree is read) and a result is read up to 8 MB; the compute choice
-  (this computer, the workstation, automatic) decides where, as for every kind.
+  (this computer, the workstation, automatic) decides where, as for every kind. The app does not trust a reply: a species name
+  may be at most 800 bytes, the branch table at most as many rows as species, each row's species in order and once, and the
+  table at most 1,000,000 entries and 64 MB of copied names; a table that is larger than that (every branch of a ladder-shaped
+  tree lists the species below it) is cut by the server to the rows that fit, with the real number of branches kept in the
+  result, and a reply that breaks the bounds is refused. Species names are written in the Newick in single quotes when they
+  hold a space, a bracket, a comma, a colon, a semicolon or a quote, so that the text reads back as the same names; a branch
+  length that is infinite or not a number (a prior of 0 makes them) is written as ASTRAL writes it and is left off when the
+  tree is drawn on the Trees page.
   **Not built:** weighted ASTRAL (gene trees with lengths or supports as weights), ASTRAL-Pro3 (several copies per species),
   ASTRAL-IV's placement heuristic and CASTLES-II lengths in substitution units, CASTER-site and CASTER-pair (from alignments),
   WASTER (from reads), SISTER and the D* test, `-a` (several individuals to one species), bootstrapping over gene trees and

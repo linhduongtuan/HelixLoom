@@ -64,10 +64,24 @@ pub fn newick(sp: &Sp, taxa: &[String], branches: &[Branch], level: u8) -> Strin
     for b in branches {
         by_node[b.node] = Some(b);
     }
-    let mut out = format!("({},", taxa[sp.root_taxon]);
+    let mut out = format!("({},", name(&taxa[sp.root_taxon]));
     write(sp, taxa, &by_node, level, &mut out);
     out.push_str(");");
     out
+}
+
+/// A species name as Newick writes it: as it is, or in single quotes (a quote inside is written twice) when it holds a space,
+/// a bracket, a comma, a colon, a semicolon or a quote, which would otherwise end or break the name.
+fn name(species: &str) -> String {
+    let plain = !species.is_empty()
+        && !species
+            .chars()
+            .any(|c| c.is_whitespace() || "(),:;[]'".contains(c));
+    if plain {
+        species.to_string()
+    } else {
+        format!("'{}'", species.replace('\'', "''"))
+    }
 }
 
 /// What is still to be written, in the order it is taken from the stack.
@@ -98,7 +112,7 @@ fn write(sp: &Sp, taxa: &[String], by_node: &[Option<&Branch>], level: u8, out: 
                     // taken in the reverse order: the first child, a comma, the second child, the closing bracket
                     stack.extend([Step::Close(i), Step::Node(b), Step::Comma, Step::Node(a)]);
                 }
-                (None, Some(t)) => out.push_str(&taxa[t]),
+                (None, Some(t)) => out.push_str(&name(&taxa[t])),
                 (None, None) => {}
             },
         }
@@ -144,6 +158,35 @@ mod tests {
         );
         assert_eq!(text.matches('(').count(), leaves);
         assert_eq!(text.matches(')').count(), leaves);
+    }
+
+    #[test]
+    fn names_that_would_break_the_text_are_quoted_and_read_back_as_they_were() {
+        assert_eq!(name("Homo_sapiens"), "Homo_sapiens");
+        assert_eq!(name("Homo sapiens"), "'Homo sapiens'");
+        assert_eq!(name("Nomascus (gibbon)"), "'Nomascus (gibbon)'");
+        assert_eq!(name("a,b:c;d[e]"), "'a,b:c;d[e]'");
+        assert_eq!(name("it's"), "'it''s'");
+        assert_eq!(name(""), "''");
+        // a whole tree of such names is read by the same reader that reads the gene trees, to the same names
+        let kids = [None, None, Some((0, 1)), None, Some((2, 3))];
+        let taxon = [Some(0), Some(1), None, Some(2), None];
+        let sp = Sp::from_shape(4, 3, &kids, &taxon, 4);
+        let names: Vec<String> = ["Homo sapiens", "Nomascus (gibbon)", "it's, odd:", "Pan"]
+            .map(String::from)
+            .to_vec();
+        let text = newick(&sp, &names, &[], 3);
+        let back = &crate::seq::newick::NwTree::parse_all(&text).expect("the text reads back")[0];
+        let mut read: Vec<&str> = back
+            .nodes
+            .iter()
+            .filter(|n| n.children.is_empty())
+            .map(|n| n.name.as_str())
+            .collect();
+        read.sort_unstable();
+        let mut wrote: Vec<&str> = names.iter().map(String::as_str).collect();
+        wrote.sort_unstable();
+        assert_eq!(read, wrote, "{text}");
     }
 
     #[test]

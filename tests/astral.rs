@@ -177,3 +177,53 @@ fn help_lists_the_options_and_succeeds_and_the_other_name_of_the_command_works()
         .expect("the program starts");
     assert!(out.status.success() && String::from_utf8_lossy(&out.stderr).contains(SCORE));
 }
+
+#[test]
+fn names_with_spaces_and_brackets_are_written_in_quotes_and_the_tree_reads_back() {
+    let dir = Folder::new("quotes");
+    let genes = dir.file(
+        "genes.tre",
+        "(('Homo sapiens','Pan troglodytes'),('Nomascus (gibbon)','Pongo pygmaeus'));\n\
+         (('Homo sapiens','Nomascus (gibbon)'),('Pan troglodytes','Pongo pygmaeus'));\n\
+         (('Homo sapiens','Pan troglodytes'),('Nomascus (gibbon)','Pongo pygmaeus'));\n",
+    );
+    let out = astral(&["-i", path(&genes)]);
+    assert!(out.status.success(), "{}", stderr(&out));
+    let tree = stdout(&out);
+    for name in [
+        "'Homo sapiens'",
+        "'Nomascus (gibbon)'",
+        "'Pan troglodytes'",
+        "'Pongo pygmaeus'",
+    ] {
+        assert!(tree.contains(name), "{name} in {tree}");
+    }
+    // the text that was written is a tree that can be given back: scored against the same genes it is the same tree
+    let species = dir.file("species.tre", &tree);
+    let again = astral(&["-i", path(&genes), "-q", path(&species)]);
+    assert!(again.status.success(), "{}", stderr(&again));
+    let score = |out: &Output| {
+        stderr(out)
+            .lines()
+            .find(|l| l.starts_with("Final quartet score"))
+            .map(str::to_string)
+    };
+    assert!(score(&out).is_some() && score(&out) == score(&again));
+}
+
+#[test]
+fn a_given_tree_is_hung_from_the_species_asked_for_and_one_that_is_not_there_is_refused() {
+    let dir = Folder::new("root");
+    let genes = dir.file("genes.tre", GENES);
+    let truth = dir.file("truth.tre", TRUTH);
+    let out = astral(&["-i", path(&genes), "-q", path(&truth), "--root", "H"]);
+    assert!(out.status.success(), "{}", stderr(&out));
+    assert!(stdout(&out).starts_with("(H,"), "{}", stdout(&out));
+    let nobody = astral(&["-i", path(&genes), "-q", path(&truth), "--root", "NOPE"]);
+    assert_eq!(nobody.status.code(), Some(1));
+    assert!(
+        stderr(&nobody).contains("root taxon NOPE"),
+        "{}",
+        stderr(&nobody)
+    );
+}

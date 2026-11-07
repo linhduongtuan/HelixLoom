@@ -93,8 +93,14 @@ impl Sp {
         }
     }
 
-    /// Read a binary species tree (rooted or not) over exactly the gene trees' taxa and hang it from the first leaf.
+    /// Read a binary species tree (rooted or not) over exactly the gene trees' taxa and hang it from the first taxon.
+    #[cfg(test)]
     pub fn from_newick(text: &str, taxa: &[String]) -> Result<Sp, String> {
+        Sp::read_hung(text, taxa, 0)
+    }
+
+    /// Read a binary species tree (rooted or not) over exactly the gene trees' taxa and hang it from the taxon `root`.
+    pub fn read_hung(text: &str, taxa: &[String], root: usize) -> Result<Sp, String> {
         let tree = NwTree::parse_all(text)?
             .into_iter()
             .next()
@@ -125,7 +131,11 @@ impl Sp {
                 taxa[missing]
             ));
         }
-        let first = *leaves.first().ok_or("The species tree has no leaves.")?;
+        let first = leaves
+            .iter()
+            .copied()
+            .find(|&l| taxon_of[l] == Some(root))
+            .ok_or("The species tree has no leaf to hang it from.")?;
         Ok(hang_from(&adj, &taxon_of, first, taxa.len()))
     }
 

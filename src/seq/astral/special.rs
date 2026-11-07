@@ -178,6 +178,36 @@ mod tests {
     }
 
     #[test]
+    fn posteriors_equal_the_formula_computed_to_forty_digits() {
+        // `(frequencies, posteriors)` by the formula of Sayyari and Mirarab (2016) in 40-digit arithmetic (Python's mpmath).
+        // The first is a branch where ASTRAL 5.7.8 printed 1.4133151e-5 for the smallest: that is 8e-8 off the formula,
+        // and this program's value is within 1e-12 of it
+        let cases = [
+            "7.991285392367723 40.53577938678393 54.84315297685183 | 1.4133150169044268e-5 0.000404849969773153 0.9995810168800578",
+            "14 10 11 | 0.599160687031838 0.17660613431833608 0.22423317864982595",
+            "35.5 0.75 0.75 | 0.9999999999999986 7.436317710504098e-16 7.436317710504098e-16",
+            "22.291666666666664 4.916666666666666 7.791666666666666 | 0.9995449622870919 0.00018201560140197192 0.0002730221115061245",
+            "0 3 1 | 0.057971014492753624 0.8405797101449275 0.10144927536231885",
+            "1 0 0 | 0.6666666666666666 0.16666666666666666 0.16666666666666666",
+            "150.5 149.5 150 | 0.34679277579798906 0.3201509271537959 0.33305629704821504",
+            "2 90 3 | 6.2078652967241805e-37 1 6.416540114343792e-37",
+        ];
+        let numbers = |text: &str| -> Vec<f64> {
+            text.split_whitespace()
+                .map(|x| x.parse().expect("a number"))
+                .collect()
+        };
+        for case in cases {
+            let (f, exact) = case.split_once(" | ").expect("two halves");
+            let (f, exact) = (numbers(f), numbers(exact));
+            let mine = posteriors([f[0], f[1], f[2]]);
+            for (m, e) in mine.iter().zip(&exact) {
+                assert!(close(*m, *e, 1e-10), "{f:?}: {mine:?} against {exact:?}");
+            }
+        }
+    }
+
+    #[test]
     fn lengths_follow_the_yule_prior_and_stop_at_zero() {
         // numbers ASTRAL printed for the branches of the primates tree (lambda 0.5)
         assert!(close(

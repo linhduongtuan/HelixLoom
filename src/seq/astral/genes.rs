@@ -176,7 +176,8 @@ impl Gene {
     }
 }
 
-fn leaf_names(t: &NwTree) -> Result<Vec<&str>, String> {
+/// The leaf names of gene tree number `k` (counted from 1): each must be there and be there once.
+fn leaf_names(t: &NwTree, k: usize) -> Result<Vec<&str>, String> {
     let names: Vec<&str> = t
         .nodes
         .iter()
@@ -184,7 +185,13 @@ fn leaf_names(t: &NwTree) -> Result<Vec<&str>, String> {
         .map(|n| n.name.as_str())
         .collect();
     if names.iter().any(|n| n.is_empty()) {
-        return Err("A leaf of a gene tree has no name.".into());
+        return Err(format!("A leaf of gene tree {k} has no name."));
+    }
+    let mut seen = BTreeSet::new();
+    if let Some(twice) = names.iter().find(|n| !seen.insert(**n)) {
+        return Err(format!(
+            "Gene tree {k} has the leaf {twice} more than once. Genes with several copies per species need ASTRAL-Pro, which is not built yet; give each leaf its species name only once per tree."
+        ));
     }
     Ok(names)
 }
@@ -212,6 +219,26 @@ pub fn read(text: &str, min_leaves: usize) -> Result<Genes, String> {
     read_within(text, min_leaves, MAX_SET_BYTES)
 }
 
+/// Whether `trees` gene trees of `nodes` nodes in all, on `taxa` taxa, can be searched: their sets of taxa must take at most
+/// `max_bytes` and their quartets be countable.
+fn check_size(trees: usize, nodes: u128, taxa: usize, max_bytes: u128) -> Result<(), String> {
+    let bytes = set_bytes(nodes, taxa);
+    if bytes > max_bytes {
+        let gigabytes = |b: u128| b.div_ceil(1 << 30);
+        return Err(format!(
+            "These {trees} gene trees on {taxa} species are too big for the search: it would keep about {} GB of sets of species, and takes at most {} GB. Use fewer gene trees or fewer species.",
+            gigabytes(bytes),
+            gigabytes(max_bytes)
+        ));
+    }
+    if !counts_fit(taxa, trees) {
+        return Err(format!(
+            "There are too many species ({taxa}) and gene trees ({trees}) for the search to count their quartets. Use fewer of them."
+        ));
+    }
+    Ok(())
+}
+
 /// `read`, refusing trees whose sets of taxa would take more than `max_bytes`, or whose quartets could not be counted.
 fn read_within(text: &str, min_leaves: usize, max_bytes: u128) -> Result<Genes, String> {
     let parsed = NwTree::parse_all(text)?;
@@ -220,14 +247,7 @@ fn read_within(text: &str, min_leaves: usize, max_bytes: u128) -> Result<Genes, 
     let mut names = BTreeSet::new();
     let mut skipped = 0;
     for (k, tree) in parsed.iter().enumerate() {
-        let leaves = leaf_names(tree)?;
-        let distinct: BTreeSet<&str> = leaves.iter().copied().collect();
-        if distinct.len() != leaves.len() {
-            return Err(format!(
-                "Gene tree {} has the same leaf name more than once. Genes with several copies per species need ASTRAL-Pro, which is not built yet; give each leaf its species name only once per tree.",
-                k + 1
-            ));
-        }
+        let leaves = leaf_names(tree, k + 1)?;
         if leaves.len() < least {
             skipped += 1;
             continue;
@@ -240,24 +260,7 @@ fn read_within(text: &str, min_leaves: usize, max_bytes: u128) -> Result<Genes, 
     }
     let taxa: Vec<String> = names.into_iter().collect();
     let nodes: u128 = kept.iter().map(|t| t.nodes.len() as u128).sum();
-    let bytes = set_bytes(nodes, taxa.len());
-    if bytes > max_bytes {
-        let gigabytes = |b: u128| b.div_ceil(1 << 30);
-        return Err(format!(
-            "These {} gene trees on {} species are too big for the search: it would keep about {} GB of sets of species, and takes at most {} GB. Use fewer gene trees or fewer species.",
-            kept.len(),
-            taxa.len(),
-            gigabytes(bytes),
-            gigabytes(max_bytes)
-        ));
-    }
-    if !counts_fit(taxa.len(), kept.len()) {
-        return Err(format!(
-            "There are too many species ({}) and gene trees ({}) for the search to count their quartets. Use fewer of them.",
-            taxa.len(),
-            kept.len()
-        ));
-    }
+    check_size(kept.len(), nodes, taxa.len(), max_bytes)?;
     let index: HashMap<&str, usize> = taxa
         .iter()
         .enumerate()
@@ -306,6 +309,10 @@ mod tests {
         );
         let err = read("((A,A),(C,D));", 0).expect_err("repeated name");
         assert!(err.contains("more than once"), "{err}");
+        // it says which tree and which leaf, and the same for a leaf with no name
+        assert!(err.contains("Gene tree 1 has the leaf A"), "{err}");
+        let err = read("((A,B),(C,D));\n((A,B),(C,));", 0).expect_err("a leaf with no name");
+        assert!(err.contains("gene tree 2 has no name"), "{err}");
     }
 
     #[test]

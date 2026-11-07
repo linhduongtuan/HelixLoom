@@ -89,17 +89,22 @@ pub struct Output {
     pub log: Vec<String>,
 }
 
-/// Find the species tree for gene trees given as Newick text, one tree after the other.
-pub fn infer(gene_trees: &str, o: &Options) -> Result<Output, String> {
-    let genes = genes::read(gene_trees, o.min_leaves)?;
-    let root = match &o.root {
+/// The taxon the tree is hung from when it is written: the one named, which the gene trees must have, else the first.
+fn root_taxon(genes: &genes::Genes, o: &Options) -> Result<usize, String> {
+    match &o.root {
         Some(name) => genes
             .taxa
             .iter()
             .position(|t| t == name)
-            .ok_or_else(|| format!("The root taxon {name} is not in the gene trees."))?,
-        None => 0,
-    };
+            .ok_or_else(|| format!("The root taxon {name} is not in the gene trees.")),
+        None => Ok(0),
+    }
+}
+
+/// Find the species tree for gene trees given as Newick text, one tree after the other.
+pub fn infer(gene_trees: &str, o: &Options) -> Result<Output, String> {
+    let genes = genes::read(gene_trees, o.min_leaves)?;
+    let root = root_taxon(&genes, o)?;
     let found = search::search(
         &genes,
         &search::Options {
@@ -110,19 +115,20 @@ pub fn infer(gene_trees: &str, o: &Options) -> Result<Output, String> {
             root,
         },
     )?;
-    Ok(finish(
-        &genes,
-        &found.sp,
-        found.score,
-        Some(found.clusters),
-        o,
-    ))
+    let mut out = finish(&genes, &found.sp, found.score, Some(found.clusters), o);
+    if !found.completed {
+        out.log.push(format!(
+            "More than {} species, so no guide tree: the gene trees that lack species were not completed, and the search chose from the groups the gene trees give.",
+            complete::GUIDE_LIMIT
+        ));
+    }
+    Ok(out)
 }
 
 /// Score a given binary species tree against gene trees and annotate its branches (ASTRAL's `-q`).
 pub fn score_tree(gene_trees: &str, species_tree: &str, o: &Options) -> Result<Output, String> {
     let genes = genes::read(gene_trees, o.min_leaves)?;
-    let sp = Sp::from_newick(species_tree, &genes.taxa)?;
+    let sp = Sp::read_hung(species_tree, &genes.taxa, root_taxon(&genes, o)?)?;
     let score = sp.score(&genes);
     Ok(finish(&genes, &sp, score, None, o))
 }

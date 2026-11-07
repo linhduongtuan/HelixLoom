@@ -12,8 +12,9 @@ use crate::seq::par::par_map;
 
 /// The most taxa the exact search takes: it looks at every group of taxa, which doubles with each taxon.
 pub const EXACT_LIMIT: usize = 12;
-/// Most sweeps of the polish.
+/// Most sweeps of the polish, and the most work in all, in word operations (about ten seconds).
 const POLISH_SWEEPS: usize = 30;
+const POLISH_BUDGET: u64 = 20_000_000_000;
 
 pub struct Options {
     /// Look at every group of taxa, not only the ones in the enriched set of the gene trees' splits.
@@ -32,6 +33,9 @@ pub struct Found {
     pub score: u64,
     /// How many clusters the programme could choose from.
     pub clusters: usize,
+    /// Whether the gene trees that lack taxa were completed (not without a guide tree, nor in the exact search, which looks at
+    /// every group anyway).
+    pub completed: bool,
 }
 
 /// Every non-empty group of the taxa other than the root one.
@@ -56,10 +60,10 @@ fn exact_space(n: usize, root: usize) -> Result<Space, String> {
 
 pub fn search(genes: &Genes, o: &Options) -> Result<Found, String> {
     let n = genes.taxa.len();
-    let space = if o.exact {
-        exact_space(n, o.root)?
+    let (space, completed) = if o.exact {
+        (exact_space(n, o.root)?, true)
     } else {
-        complete::build(genes, o.root, o.extra, o.polylimit)
+        complete::build(genes, o.root, o.extra, o.polylimit)?
     };
     let sp = best_tree(genes, &space, o.root)?;
     let sp = if o.polish { polish(sp, genes) } else { sp };
@@ -68,6 +72,7 @@ pub fn search(genes: &Genes, o: &Options) -> Result<Found, String> {
         sp,
         score,
         clusters: space.sets.len(),
+        completed,
     })
 }
 
@@ -157,11 +162,11 @@ fn rebuild(
 /// change only the weights of the two nodes at its ends.
 pub fn polish(mut sp: Sp, genes: &Genes) -> Sp {
     let weight = |a: &Bits, b: &Bits| tripartition(&genes.genes, a, b);
-    for _ in 0..POLISH_SWEEPS {
+    for _ in 0..sweeps_within_budget(&sp, genes) {
         let mut changed = false;
         for v in 0..sp.nodes.len() {
-            if let Some(better) = better_swap(&sp, v, &weight) {
-                sp = better;
+            if let Some(swap) = better_swap(&sp, v, &weight) {
+                apply(&mut sp, &swap);
                 changed = true;
             }
         }
@@ -172,8 +177,34 @@ pub fn polish(mut sp: Sp, genes: &Genes) -> Sp {
     sp
 }
 
-/// The tree after the swap at the branch above `v` that raises the score most, if any does.
-fn better_swap(sp: &Sp, v: usize, weight: &impl Fn(&Bits, &Bits) -> u64) -> Option<Sp> {
+/// How many sweeps of the polish its budget allows: every node is looked at with six weights, and each weight goes over every
+/// node of every gene tree, so a sweep over thousands of species and many genes takes minutes for what is a small gain (the
+/// programme alone reaches ASTRAL's scores). Small inputs get all `POLISH_SWEEPS`; very large ones get fewer, or none.
+fn sweeps_within_budget(sp: &Sp, genes: &Genes) -> usize {
+    let gene_nodes: u64 = genes.genes.iter().map(|g| g.nodes.len() as u64).sum();
+    sweeps_for(sp.nodes.len() as u64, gene_nodes, sp.n.div_ceil(64) as u64)
+}
+
+/// The sweeps the budget allows for a tree of `nodes` nodes, genes with `gene_nodes` nodes that join three branches or more
+/// in all, and sets of `words` words.
+fn sweeps_for(nodes: u64, gene_nodes: u64, words: u64) -> usize {
+    // six weights for each node; each looks at the three branches of every gene node with two sets of `words` words
+    let per_sweep = nodes * 6 * gene_nodes * 6 * words;
+    (POLISH_BUDGET / per_sweep.max(1)).min(POLISH_SWEEPS as u64) as usize
+}
+
+/// A swap at the branch above `v`, whose parent is `u` and whose sibling is `s`: afterwards `v` has the children `stay` and
+/// `s`, and `u` has the children `v` and `out`.
+struct Swap {
+    v: usize,
+    u: usize,
+    s: usize,
+    stay: usize,
+    out: usize,
+}
+
+/// The swap at the branch above `v` that raises the score most, if any does.
+fn better_swap(sp: &Sp, v: usize, weight: &impl Fn(&Bits, &Bits) -> u64) -> Option<Swap> {
     let (l, r) = sp.nodes[v].kids?;
     let u = sp.nodes[v].parent?;
     let (x, y) = sp.nodes[u].kids?;
@@ -188,12 +219,35 @@ fn better_swap(sp: &Sp, v: usize, weight: &impl Fn(&Bits, &Bits) -> u64) -> Opti
     let (gain, out, stay) = [try_swap(l, r), try_swap(r, l)]
         .into_iter()
         .max_by_key(|t| t.0)?;
-    if gain <= now {
-        return None;
+    (gain > now).then_some(Swap { v, u, s, stay, out })
+}
+
+/// Make the swap in the tree itself: only `v` has another group of taxa below it (`u` and everything above it have the
+/// same ones), so nothing needs building again.
+fn apply(sp: &mut Sp, w: &Swap) {
+    sp.nodes[w.v].kids = Some((w.stay, w.s));
+    sp.nodes[w.u].kids = Some((w.v, w.out));
+    sp.nodes[w.s].parent = Some(w.v);
+    sp.nodes[w.out].parent = Some(w.u);
+    sp.nodes[w.v].set = sp.nodes[w.stay].set.union(&sp.nodes[w.s].set);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn small_inputs_get_every_sweep_and_very_large_ones_fewer_or_none() {
+        // the twelve data sets compared with ASTRAL are at most 80 species in 200 genes
+        assert_eq!(sweeps_for(158, 15_000, 2), POLISH_SWEEPS);
+        // 1,560 species in 80 genes: one sweep is already ten seconds of work
+        assert_eq!(sweeps_for(3_118, 6_240, 25), 1);
+        // 8,000 species in 2,000 genes: not even one
+        assert_eq!(sweeps_for(15_998, 4_000, 125), 0);
+        assert_eq!(
+            sweeps_for(0, 0, 0),
+            POLISH_SWEEPS,
+            "nothing to do is no work"
+        );
     }
-    let mut kids: Vec<Option<(usize, usize)>> = sp.nodes.iter().map(|n| n.kids).collect();
-    kids[v] = Some((stay, s));
-    kids[u] = Some((v, out));
-    let taxon: Vec<Option<usize>> = sp.nodes.iter().map(|n| n.taxon).collect();
-    Some(Sp::from_shape(sp.n, sp.root_taxon, &kids, &taxon, sp.root))
 }

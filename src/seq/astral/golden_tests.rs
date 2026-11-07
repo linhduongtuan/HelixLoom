@@ -1,12 +1,12 @@
-//! The engine against ASTRAL 5.7.8, run as a black box on ten generated data sets (`golden/*.txt`): the gene trees, the species
-//! trees ASTRAL was asked to score (`-q`, with the full annotation `-t 2`), what it printed, and the best scores its
-//! searches found (default, `-p 0`, and `-x` where the data are small). The data are simulated under the multispecies
-//! coalescent, with polytomies and missing taxa; `golden/README` says how they were made.
+//! The engine against ASTRAL 5.7.8, run as a black box on twelve generated data sets (`golden/*.txt`, of 6 to 80 species): the
+//! gene trees, the species trees ASTRAL was asked to score (`-q`, with the full annotation `-t 2`), what it printed, and the
+//! best scores its searches found (default, `-p 0`, and `-x` where the data are small). The data are simulated under the
+//! multispecies coalescent, with polytomies and missing taxa; `golden/README` says how they were made.
 
 use super::{infer, score_tree, Options};
 use std::collections::{BTreeSet, HashMap};
 
-const FILES: [(&str, &str); 10] = [
+const FILES: [(&str, &str); 12] = [
     ("a1", include_str!("golden/a1.txt")),
     ("a2", include_str!("golden/a2.txt")),
     ("a3", include_str!("golden/a3.txt")),
@@ -17,6 +17,8 @@ const FILES: [(&str, &str); 10] = [
     ("b2", include_str!("golden/b2.txt")),
     ("b3", include_str!("golden/b3.txt")),
     ("b4", include_str!("golden/b4.txt")),
+    ("e2", include_str!("golden/e2.txt")),
+    ("e3", include_str!("golden/e3.txt")),
 ];
 
 #[derive(Default)]
@@ -243,8 +245,10 @@ fn scores_and_annotations_equal_astrals_on_every_species_tree_it_scored() {
                 );
                 assert!(close(b.en, get("EN"), 1e-9), "{where_}: EN");
                 assert_eq!(b.quartets as f64, get("QC"), "{where_}: QC");
+                // ASTRAL's own value of a very small posterior is only good to about 1e-7 (one of 1.4e-5 is 8e-8 off the
+                // formula in 40-digit arithmetic, see `special.rs`), so 1e-6 is as close as the two can be asked to agree
                 assert!(
-                    close(b.pp[0], get("pp1"), 1e-8),
+                    close(b.pp[0], get("pp1"), 1e-6),
                     "{where_}: pp1 {} against {}",
                     b.pp[0],
                     get("pp1")
