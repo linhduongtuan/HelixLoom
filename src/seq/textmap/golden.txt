@@ -1,0 +1,4161 @@
+CASE textmap 1
+circular 1
+seq AATTAG
+title a
+region 1 6
+rowwidth 42
+selection 1 6
+methylated 1
+enz XcmI NcoI XmaI ScaI XhoI KpnI MfeI
+settings width=100 space=5 show_space=0 numbers=Both copy=0 second=0 show_trans=1 trans=1_1 show_enz=0 genes=1 show_index=1 char1=: char2=| sp1=11 sp2=6 nums=1 show_features=0 hidden=0 crop=1
+order genes features translation dna sec_strand space enzymes index
+sites MluCI 1
+out
+|DATE
+|a
+|       I
+|       I
+|     2 ATTAG 6
+|           |
+|       
+|
+|
+tags
+tag dnatag - 5.7 5.12
+tag ls2_1 - 5.7 5.12
+END
+CASE textmap 2
+circular 1
+seq CGAGTCAGTAGAGTCCCGAGCTCTGTAATATCCTTCAGGTGCCTAGACGGTTGCGATCGCGGCCCTGCAGGTACGATATCCTTGAATAAGCTTAACTGGTCCCATGCTATGGGAGGAGAATAGCGTACCGGTGGGGAATCATAGAGAAAGGTCTTAATATTCATACTCGGGCCGGCCTTGGCCTAGATGAGAGCCCATAAGGGAAAGTGTGA
+title a long name for a sequence document that is much longer than one line of the text map
+region 128 154
+rowwidth 36
+selection 128 154
+methylated 1
+enz AatII AbsI Acc65I AciI AclI AfeI AflII AgeI AluI ApaI ApaLI ApoI AscI AseI AvaI AvrII BamHI BbsI BclI BfaI BglII BmgBI BsaAI BsaBI BsaI BsaWI BsiWI BsmBI BspEI BspHI BsrBI BsrGI BssHII BssSI BstBI BstUI BstYI BstZ17I Cac8I ClaI DpnI DraI EagI EcoRI EcoRV FseI FspI HaeII HaeIII HhaI HincII HindIII HpaI HpaII Hpy8I HpyCH4IV HpyCH4V KasI KpnI MauBI MboI MfeI MluCI MluI MreI MscI MseI NaeI NarI NcoI NdeI NgoMIV NheI NlaIII NotI NruI NsiI NspI PacI PaqCI PciI PmeI PmlI PshAI PsiI PstI PvuI PvuII RsaI SacI SacII SalI SapI SbfI ScaI SfiI SfoI SgfI SgrAI SgrDI SmaI SnaBI SpeI SphI SrfI SspI StuI SwaI TaqI TatI XbaI XcmI XhoI XmaI XmnI ZraI
+settings width=60 space=6 show_space=0 numbers=Both copy=1 second=0 show_trans=0 trans=6_1 show_enz=1 genes=1 show_index=1 char1=^ char2=. sp1=5 sp2=7 nums=1 show_features=1 hidden=1 crop=1
+order translation features genes enzymes index dna space sec_strand
+sites AciI 59
+sites AgeI 127
+sites AluI 19 89
+sites AvaI 15 166
+sites BfaI 43 183
+sites BsaWI 127
+sites BstUI 58
+sites Cac8I 171
+sites DpnI 55
+sites EcoRV 75
+sites FseI 170
+sites HaeIII 61 170 174 180
+sites HindIII 88
+sites HpaII 128 172
+sites HpyCH4V 66
+sites MseI 92 154
+sites NaeI 171
+sites NgoMIV 171
+sites NlaIII 103
+sites PstI 65
+sites PvuI 54
+sites RsaI 71 125
+sites SacI 18
+sites SbfI 64
+sites SgfI 53
+sites SspI 156
+out
+|DATE
+|a long name for a sequence document that is much longer than one lin
+|e of the text map
+|       R  W  G  I  I  E  K  G
+|                                154 MseI
+|                                |
+|       130  135  140  145  150
+|        ^  . ^    ^    ^ .  ^   .
+|   129 CGGTGGGGAATCATAGAGAAAGGTCT 154
+|
+|
+tags
+tag dnatag - 9.7 9.33
+tag ls129_1 - 9.7 9.33
+END
+CASE textmap 3
+circular 0
+seq tatcGTGTGCAACAGCCTGCGGATAAa
+title a
+region 3 5
+rowwidth 38
+selection 3 5
+methylated 0
+enz AatII AbsI Acc65I AciI AclI AfeI AflII AgeI AluI ApaI ApaLI ApoI AscI AseI AvaI AvrII BamHI BbsI BclI BfaI BglII BmgBI BsaAI BsaBI BsaI BsaWI BsiWI BsmBI BspEI BspHI BsrBI BsrGI BssHII BssSI BstBI BstUI BstYI BstZ17I Cac8I ClaI DpnI DraI EagI EcoRI EcoRV FseI FspI HaeII HaeIII HhaI HincII HindIII HpaI HpaII Hpy8I HpyCH4IV HpyCH4V KasI KpnI MauBI MboI MfeI MluCI MluI MreI MscI MseI NaeI NarI NcoI NdeI NgoMIV NheI NlaIII NotI NruI NsiI NspI PacI PaqCI PciI PmeI PmlI PshAI PsiI PstI PvuI PvuII RsaI SacI SacII SalI SapI SbfI ScaI SfiI SfoI SgfI SgrAI SgrDI SmaI SnaBI SpeI SphI SrfI SspI StuI SwaI TaqI TatI XbaI XcmI XhoI XmaI XmnI ZraI
+settings width=60 space=1 show_space=0 numbers=None copy=0 second=1 show_trans=0 trans=3_1 show_enz=1 genes=0 show_index=1 char1=| char2=: sp1=8 sp2=8 nums=1 show_features=0 hidden=0 crop=1
+order translation space dna sec_strand genes features enzymes index
+sites AciI 19
+sites Cac8I 15
+sites HpyCH4V 8
+out
+|DATE
+|a
+|       cG 
+|       gC
+|         
+|       
+|
+|
+tags
+tag dnatag - 3.7 3.9
+tag ls4_1 - 3.7 3.9
+END
+CASE textmap 4
+circular 0
+seq DCHg
+title a long name for a sequence document that is much longer than one line of the text map
+region all
+rowwidth 68
+selection 3 4
+methylated 1
+enz AatII AbsI Acc65I AciI AclI AfeI AflII AgeI AluI ApaI ApaLI ApoI AscI AseI AvaI AvrII BamHI BbsI BclI BfaI BglII BmgBI BsaAI BsaBI BsaI BsaWI BsiWI BsmBI BspEI BspHI BsrBI BsrGI BssHII BssSI BstBI BstUI BstYI BstZ17I Cac8I ClaI DpnI DraI EagI EcoRI EcoRV FseI FspI HaeII HaeIII HhaI HincII HindIII HpaI HpaII Hpy8I HpyCH4IV HpyCH4V KasI KpnI MauBI MboI MfeI MluCI MluI MreI MscI MseI NaeI NarI NcoI NdeI NgoMIV NheI NlaIII NotI NruI NsiI NspI PacI PaqCI PciI PmeI PmlI PshAI PsiI PstI PvuI PvuII RsaI SacI SacII SalI SapI SbfI ScaI SfiI SfoI SgfI SgrAI SgrDI SmaI SnaBI SpeI SphI SrfI SspI StuI SwaI TaqI TatI XbaI XcmI XhoI XmaI XmnI ZraI
+settings width=150 space=2 show_space=1 numbers=Right copy=1 second=0 show_trans=1 trans=3_3 show_enz=0 genes=0 show_index=0 char1=: char2=* sp1=2 sp2=6 nums=1 show_features=1 hidden=0 crop=1
+order enzymes space translation dna index sec_strand features genes
+feature 0 0 0 #866551 #e8488f cds | 1 3 |  | my gene
+feature 1 1 0 #54f276 #e220d7 CDS | 0 3 |  | b c d
+feature 2 1 1 #8239a2 #a45d35 cds | 1 3 |  | x-y
+out
+|DATE
+|a long name for a sequence document that is much longer than one line of the text map
+|
+|
+|       Xxx
+|        Xxx
+|         
+|       DCHg 4
+|       X  
+|       1
+|       <<<
+|       b c d
+|          
+|        1
+|        >>
+|        my gene
+|
+|
+tags
+tag dnatag - 8.7 8.11
+tag f0# #866551 8.8 8.10 15.8 15.10
+tag f1# #e220d7 8.7 8.10 11.7 11.10
+tag f2# - 8.8 8.10
+tag ls1_1 - 8.7 8.11
+END
+CASE textmap 5
+circular 1
+seq ATA
+title pUC19.gb
+region 1 3
+rowwidth 74
+selection 1 3
+methylated 1
+enz XhoI MluCI BsaI SmaI EcoRV
+settings width=100 space=1 show_space=1 numbers=Right copy=0 second=1 show_trans=0 trans=3_1 show_enz=0 genes=1 show_index=1 char1=* char2=- sp1=2 sp2=4 nums=1 show_features=1 hidden=1 crop=1
+order genes translation features space index enzymes dna sec_strand
+feature 0 0 0 #1ba14d #026cde terminator | 0 2 |  | ori
+feature 1 1 0 #deae6e #9d6b6e misc_feature | 0 1 |  | b c d
+feature 2 1 1 #548e40 #c6a215 promoter | 2 3 |  | amp
+feature 3 1 1 #6af46a #6d6574 primer_bind | 0 1 |  | a
+feature 4 1 1 #69b0c3 #4f24ad CDS | 0 1 |  | lacZ
+out
+|DATE
+|pUC19.gb
+|       
+|       >
+|       ori
+|        <
+|        amp
+|
+|       4
+|       * 
+|       TA 3
+|       AT
+|
+|
+tags
+tag dnatag - 11.7 11.9
+tag f0# #1ba14d 4.7 4.8
+tag f2# #c6a215 6.8 6.9
+tag ls2_1 - 11.7 11.9
+END
+CASE textmap 6
+circular 1
+seq C
+title pUC19.gb
+region 0 1
+rowwidth 22
+selection 0 1
+methylated 0
+enz XhoI ApaI BspEI AscI EcoRV
+settings width=33 space=4 show_space=1 numbers=Left copy=0 second=0 show_trans=0 trans=6_1 show_enz=0 genes=0 show_index=1 char1=| char2=- sp1=16 sp2=9 nums=1 show_features=1 hidden=0 crop=1
+order enzymes index genes translation dna sec_strand space features
+feature 0 0 0 #c26817 #0aa920 cds |  |  | my gene
+feature 1 1 0 #ec1cc1 #9b0a3c terminator |  |  | a
+feature 2 1 0 #3d8839 #d4ead5 CDS |  |  | ori
+out
+|DATE
+|pUC19.gb
+|       
+|        
+|     1 C 
+|
+|
+|
+|
+|
+|
+tags
+tag dnatag - 5.7 5.8
+tag ls1_1 - 5.7 5.8
+END
+CASE textmap 7
+circular 0
+seq TTATGTACCGGTACGTTATCATCCACCACAGATGTCCGTAACACAGATGAGCGGCCGCGAAGATTGTCTTTGTTGGGTCATCCTCTACCACGTGTACCTCGATGCATTTGCTCAGCCCGGGCTTACTGAAGATCCTCTATAAGACCCTGCGGGTTGGTATTTTCCCTACCTGCATAACAACGTTTGATGGCAGGCCAATCCGGATAATACTTAGGGATCACATTCCTTGGCCGGTAAG
+title a
+region 190 227
+rowwidth 10
+selection 190 227
+methylated 1
+enz AatII AbsI Acc65I AciI AclI AfeI AflII AgeI AluI ApaI ApaLI ApoI AscI AseI AvaI AvrII BamHI BbsI BclI BfaI BglII BmgBI BsaAI BsaBI BsaI BsaWI BsiWI BsmBI BspEI BspHI BsrBI BsrGI BssHII BssSI BstBI BstUI BstYI BstZ17I Cac8I ClaI DpnI DraI EagI EcoRI EcoRV FseI FspI HaeII HaeIII HhaI HincII HindIII HpaI HpaII Hpy8I HpyCH4IV HpyCH4V KasI KpnI MauBI MboI MfeI MluCI MluI MreI MscI MseI NaeI NarI NcoI NdeI NgoMIV NheI NlaIII NotI NruI NsiI NspI PacI PaqCI PciI PmeI PmlI PshAI PsiI PstI PvuI PvuII RsaI SacI SacII SalI SapI SbfI ScaI SfiI SfoI SgfI SgrAI SgrDI SmaI SnaBI SpeI SphI SrfI SspI StuI SwaI TaqI TatI XbaI XcmI XhoI XmaI XmnI ZraI
+settings width=10 space=1 show_space=1 numbers=Both copy=0 second=1 show_trans=1 trans=1_3 show_enz=0 genes=0 show_index=1 char1=^ char2=: sp1=12 sp2=6 nums=1 show_features=1 hidden=1 crop=0
+order translation dna space features genes sec_strand index enzymes
+feature 0 1 0 #b4b806 #5b28c0 rep_origin | 82 141 |  | my gene
+sites AciI 51 55 149
+sites AclI 179
+sites AgeI 7
+sites AvaI 116
+sites BsaAI 89
+sites BsaWI 7 199
+sites BspEI 199
+sites BsrBI 49
+sites BstUI 56
+sites BstYI 130
+sites Cac8I 190
+sites DpnI 131 216
+sites EagI 52
+sites HaeIII 53 193 229
+sites HpaII 8 117 200 231
+sites Hpy8I 92
+sites HpyCH4IV 13 90 180
+sites HpyCH4V 103 171
+sites NotI 51
+sites NsiI 102
+sites PmlI 89
+sites RsaI 5 11 94
+sites SmaI 116
+sites SrfI 115
+sites TaqI 99
+sites XmaI 116
+out
+|DATE
+|a
+|       GlnAlaAsnP
+|   191 CAGGCCAATC 200
+|
+|       GTCCGGTTAG
+|        ^     :
+|       192
+|
+|       roAspAsnTh
+|   201 CGGATAATAC 210
+|
+|       GCCTATTATG
+|          ^     :
+|         204
+|
+|       rEndGlySer
+|   211 TTAGGGATCA 220
+|
+|       AATCCCTAGT
+|            ^    
+|           216
+|
+|       HisSer
+|   221 CATTCCT 227
+|
+|       GTAAGGA
+|        :     
+|       
+|
+|
+tags
+tag dnatag - 4.7 4.17 11.7 11.17 18.7 18.17 25.7 25.14
+tag ls191_1 - 4.7 4.17
+tag ls201_1 - 11.7 11.17
+tag ls211_1 - 18.7 18.17
+tag ls221_1 - 25.7 25.14
+END
+CASE textmap 8
+circular 1
+seq ACCGGTACTCCGCATGCCGGCCTACCGAACGCATAAAATGCCCCCCTTGCATCGCACCCGCTAGCTTGCATAGGATGCCCATCCTAAGTGTGGTGGGACTTACGTACCAGACCAGATCCTTTCGCCAAGGGACTTCCGCCGGCGCTCCTGCTCATGCCTT
+title pUC19.gb
+region all
+rowwidth 35
+selection -
+methylated 1
+enz AatII AbsI Acc65I AciI AclI AfeI AflII AgeI AluI ApaI ApaLI ApoI AscI AseI AvaI AvrII BamHI BbsI BclI BfaI BglII BmgBI BsaAI BsaBI BsaI BsaWI BsiWI BsmBI BspEI BspHI BsrBI BsrGI BssHII BssSI BstBI BstUI BstYI BstZ17I Cac8I ClaI DpnI DraI EagI EcoRI EcoRV FseI FspI HaeII HaeIII HhaI HincII HindIII HpaI HpaII Hpy8I HpyCH4IV HpyCH4V KasI KpnI MauBI MboI MfeI MluCI MluI MreI MscI MseI NaeI NarI NcoI NdeI NgoMIV NheI NlaIII NotI NruI NsiI NspI PacI PaqCI PciI PmeI PmlI PshAI PsiI PstI PvuI PvuII RsaI SacI SacII SalI SapI SbfI ScaI SfiI SfoI SgfI SgrAI SgrDI SmaI SnaBI SpeI SphI SrfI SspI StuI SwaI TaqI TatI XbaI XcmI XhoI XmaI XmnI ZraI
+settings width=100 space=3 show_space=0 numbers=Both copy=1 second=0 show_trans=1 trans=6_1 show_enz=1 genes=1 show_index=0 char1=. char2=: sp1=11 sp2=11 nums=0 show_features=1 hidden=1 crop=0
+order translation genes dna sec_strand index features enzymes space
+feature 0 0 0 #1b6540 #46ebf7 promoter | 33 147 |  | amp
+feature 1 0 0 #66a803 #7d4aec CDS | 116 142 |  | long feature name that goes on and on and on
+feature 2 0 0 #4997b2 #95cfdb cds | 42 105 |  | lacZ
+feature 3 1 0 #3e20f9 #60954c CDS | 76 100 132 158 | 76 158 | long feature name that goes on and on and on
+sites AciI 10 58 136
+sites AgeI 1
+sites AluI 63
+sites BfaI 61
+sites BsaAI 101
+sites BsaBI 74
+sites BsaWI 1
+sites BstYI 114
+sites Cac8I 12 16 60 64 138
+sites DpnI 115
+sites HaeII 141
+sites HaeIII 19
+sites HhaI 142
+sites HpaII 2 17 139
+sites HpyCH4IV 102
+sites HpyCH4V 48 67
+sites MreI 137
+sites NaeI 16 138
+sites NgoMIV 16 138
+sites NheI 60
+sites NlaIII 13 153
+sites NspI 12
+sites RsaI 5 104
+sites SgrAI 137
+sites SnaBI 101
+sites SphI 12
+sites XcmI 79
+out
+|DATE
+|pUC19.gb
+|       T  G  T  P  H  A  G  L  P  N  A  *  N  A  P  L  A  S  H  P  L  A  C  I  G  C  P  S  *  V  W  W  D  L
+|        P  V  L  R  M  P  A  Y  R  T  H  K  M  P  P  L  H  R  T  R  *  L  A  *  D  A  H  P  K  C  G  G  T  
+|         R  Y  S  A  C  R  P  T  E  R  I  K  C  P  P  C  I  A  P  A  S  L  H  R  M  P  I  L  S  V  V  G  L 
+|       G  T  S  R  M  G  A  *  R  V  C  L  I  G  G  K  C  R  V  R  *  S  A  Y  S  A  W  G  L  H  P  P  V  *
+|        R  Y  E  A  H  R  G  V  S  R  M  F  H  G  G  Q  M  A  G  A  L  K  C  L  I  G  M  R  L  T  T  P  S  
+|         P  V  G  C  A  P  R  G  F  A  Y  F  A  G  R  A  D  C  G  S  A  Q  M  P  H  G  D  *  T  H  H  S  K 
+|       T  G  T  P  H  A  G  L  P  N  A  *  N  A  P  L  A  S  H  P  L  A  C  I  G  C  P  S  *  V  W  W  D  L
+|     1 ACCGGTACTCCGCATGCCGGCCTACCGAACGCATAAAATGCCCCCCTTGCATCGCACCCGCTAGCTTGCATAGGATGCCCATCCTAAGTGTGGTGGGACT 100
+|                                        >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+|                                        amp
+|                                                 P  L  A  S  H  P  L  A  C  I  G  C  P  S  *  V  W  W  D  L
+|                                                 1
+|                                                 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+|                                                 lacZ
+|                                                                                   G  M  R  L  T  T  P  S  
+|                                                                                   16
+|                                                                                   <<<<<<<<<<<<<<<<<<<<<<<<
+|                                                                                   long feature name that goes on and on and on
+|       ||  |    | ||  || |                            |         | || ||  |      |    |                     
+|       1 AgeI   10 AciI  19 HaeIII                    48 HpyCH4V  60 Cac8I      74 BsaBI
+|       1 BsaWI    12 Cac8I                                      58 AciI  67 HpyCH4V  79 XcmI
+|        2 HpaII   12 NspI                                         60 NheI
+|           5 RsaI 12 SphI                                          61 BfaI
+|                   13 NlaIII                                         63 AluI
+|                      16 Cac8I                                        64 Cac8I
+|                      16 NaeI
+|                      16 NgoMIV
+|                       17 HpaII
+|
+|         R  T  R  P  D  P  F  A  K  G  L  P  P  A  L  L  L  M  P
+|       Y  V  P  D  Q  I  L  S  P  R  D  F  R  R  R  S  C  S  C  L
+|        T  Y  Q  T  R  S  F  R  Q  G  T  S  A  G  A  P  A  H  A
+|         T  G  S  W  I  R  E  G  L  S  K  R  R  R  E  Q  E  H  R
+|       V  Y  W  V  L  D  K  R  W  P  V  E  A  P  A  G  A  *  A  K
+|        R  V  L  G  S  G  K  A  L  P  S  G  G  A  S  R  S  M  G
+|         R  T  R  P  D  P  F  A  K  G  L  P  P  A  L  L  L  M  P
+|   101 TACGTACCAGACCAGATCCTTTCGCCAAGGGACTTCCGCCGGCGCTCCTGCTCATGCCTT 160
+|       >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+|       amp
+|         R             S  F  R  Q  G  T  S  A  
+|       21              1
+|       >>>>>           >>>>>>>>>>>>>>>>>>>>>>>>>>
+|       lacZ            long feature name that goes on and on and on
+|                                       K  R  R  R  E  Q  E  H  
+|                                     8
+|       ................................<<<<<<<<<<<<<<<<<<<<<<<<<<
+|       long feature name that goes on and on and on
+|       || |         ||                    |||| ||          |       
+|       101 BsaAI    114 BstYI             136 AciI         153 NlaIII
+|       101 SnaBI     115 DpnI              137 MreI
+|        102 HpyCH4IV                       137 SgrAI
+|          104 RsaI                          138 Cac8I
+|                                            138 NaeI
+|                                            138 NgoMIV
+|                                             139 HpaII
+|                                               141 HaeII
+|                                                142 HhaI
+|
+|
+tags
+tag dnatag - 10.7 10.107 39.7 39.67
+tag f0# #1b6540 10.40 10.107 11.40 11.107 39.7 39.54 40.7 40.54
+tag f1# #66a803 39.23 39.49 44.23 44.49
+tag f2# #4997b2 10.49 10.107 15.49 15.107 39.7 39.12 44.7 44.12
+tag f3# #60954c 10.83 10.107 19.83 19.107 39.39 39.65 48.39 48.65
+tag ls101_1 - 39.7 39.67
+tag ls1_1 - 10.7 10.107
+END
+CASE textmap 9
+circular 0
+seq TTC
+title a
+region all
+rowwidth 10
+selection 2 3
+methylated 1
+enz AatII AbsI Acc65I AciI AclI AfeI AflII AgeI AluI ApaI ApaLI ApoI AscI AseI AvaI AvrII BamHI BbsI BclI BfaI BglII BmgBI BsaAI BsaBI BsaI BsaWI BsiWI BsmBI BspEI BspHI BsrBI BsrGI BssHII BssSI BstBI BstUI BstYI BstZ17I Cac8I ClaI DpnI DraI EagI EcoRI EcoRV FseI FspI HaeII HaeIII HhaI HincII HindIII HpaI HpaII Hpy8I HpyCH4IV HpyCH4V KasI KpnI MauBI MboI MfeI MluCI MluI MreI MscI MseI NaeI NarI NcoI NdeI NgoMIV NheI NlaIII NotI NruI NsiI NspI PacI PaqCI PciI PmeI PmlI PshAI PsiI PstI PvuI PvuII RsaI SacI SacII SalI SapI SbfI ScaI SfiI SfoI SgfI SgrAI SgrDI SmaI SnaBI SpeI SphI SrfI SspI StuI SwaI TaqI TatI XbaI XcmI XhoI XmaI XmnI ZraI
+settings width=60 space=5 show_space=0 numbers=Left copy=1 second=1 show_trans=1 trans=6_3 show_enz=0 genes=1 show_index=0 char1=+ char2=. sp1=11 sp2=4 nums=1 show_features=1 hidden=1 crop=0
+order dna translation index sec_strand genes space enzymes features
+out
+|DATE
+|a
+|     1 TTC 
+|       Phe
+|       
+|       
+|       Glu
+|       
+|       
+|       AAG
+|       F
+|
+|
+tags
+tag dnatag - 3.7 3.10
+tag ls1_1 - 3.7 3.10
+END
+CASE textmap 10
+circular 1
+seq taccaAAGGGCAGCAGGCTGTTTGTATTCACGCTCCTAAccttgtttgc
+title a
+region 15 16
+rowwidth 12
+selection 15 16
+methylated 1
+enz MseI BstZ17I RsaI Hpy8I XmaI AfeI EcoRI MluI AbsI SphI
+settings width=100 space=2 show_space=0 numbers=Both copy=0 second=0 show_trans=0 trans=6_1 show_enz=1 genes=1 show_index=1 char1=: char2=: sp1=16 sp2=6 nums=1 show_features=0 hidden=0 crop=1
+order dna enzymes index translation sec_strand space features genes
+feature 0 0 1 #92dd5b #73bcb5 cds | 16 43 |  | x-y
+feature 1 0 1 #88535e #006fe1 terminator | 27 49 0 23 |  | b c d
+feature 2 0 0 #e1d9bf #74f464 CDS | 39 45 |  | (odd) name
+feature 3 0 0 #ee3304 #f0bcc0 CDS | 4 17 19 48 | 4 48 | b c d
+sites Cac8I 13
+out
+|DATE
+|a
+|    16 G 16
+|       :
+|      32
+|       
+|
+|
+tags
+tag dnatag - 3.7 3.8
+tag ls16_1 - 3.7 3.8
+END
+CASE textmap 11
+circular 1
+seq aatcccaaTGAACCTGACGGCACACTGCAGCCGgtggtcgactatccatagTAGGGCATGGCCACCCACAGCAAGGACGGAACATAAGTACCGATGAcgggtc
+title a
+region 33 94
+rowwidth 52
+selection 33 94
+methylated 1
+enz HaeII ApoI
+settings width=60 space=4 show_space=0 numbers=None copy=1 second=0 show_trans=1 trans=3_1 show_enz=1 genes=0 show_index=1 char1=| char2=: sp1=4 sp2=1 nums=1 show_features=0 hidden=0 crop=0
+order dna enzymes space features genes sec_strand index translation
+sites HaeIII 60
+sites HincII 37
+sites HpaII 31
+sites Hpy8I 37
+sites HpyCH4V 26
+sites MscI 59
+sites NlaIII 57
+sites PstI 25
+sites RsaI 88
+sites SalI 37
+sites TaqI 38
+out
+|DATE
+|a
+|       gtggtcgactatccatagTAGGGCATGGCCACCCACAGCAAGGACGGAACATAAGTACCG 
+|       ::|:::|:::|:::|:::|:::|:::|:::|:::|:::|:::|:::|:::|:::|:::|:
+|        36  40  44  48  52  56  60  64  68  72  76  80  84  88  92
+|       V  V  D  Y  P  *  *  G  M  A  T  H  S  K  D  G  T  *  V  P
+|        W  S  T  I  H  S  R  A  W  P  P  T  A  R  T  E  H  K  Y  R
+|         G  R  L  S  I  V  G  H  G  H  P  Q  Q  G  R  N  I  S  T
+|
+|       A 
+|       :
+|       
+|       
+|       
+|       
+|
+|
+tags
+tag dnatag - 3.7 3.67 10.7 10.8
+tag ls34_1 - 3.7 3.67
+tag ls94_1 - 10.7 10.8
+END
+CASE textmap 12
+circular 0
+seq gctcagacgaCCCAACAGTAACATCTGGGAGTTTCATAAgttgcgggaggtcagAGATCTAGCCCCTTTTTACCTCGGCTTGAGATAGAGACACATCgtgccagtgagCTCATACTGAACGTGAGCGGCATTTGATAATTAAatca
+title pUC19.gb
+region 59 125
+rowwidth 13
+selection 59 125
+methylated 0
+enz AatII AbsI Acc65I AciI AclI AfeI AflII AgeI AluI ApaI ApaLI ApoI AscI AseI AvaI AvrII BamHI BbsI BclI BfaI BglII BmgBI BsaAI BsaBI BsaI BsaWI BsiWI BsmBI BspEI BspHI BsrBI BsrGI BssHII BssSI BstBI BstUI BstYI BstZ17I Cac8I ClaI DpnI DraI EagI EcoRI EcoRV FseI FspI HaeII HaeIII HhaI HincII HindIII HpaI HpaII Hpy8I HpyCH4IV HpyCH4V KasI KpnI MauBI MboI MfeI MluCI MluI MreI MscI MseI NaeI NarI NcoI NdeI NgoMIV NheI NlaIII NotI NruI NsiI NspI PacI PaqCI PciI PmeI PmlI PshAI PsiI PstI PvuI PvuII RsaI SacI SacII SalI SapI SbfI ScaI SfiI SfoI SgfI SgrAI SgrDI SmaI SnaBI SpeI SphI SrfI SspI StuI SwaI TaqI TatI XbaI XcmI XhoI XmaI XmnI ZraI
+settings width=12 space=3 show_space=0 numbers=None copy=0 second=1 show_trans=1 trans=6_3 show_enz=1 genes=0 show_index=1 char1=: char2=: sp1=23 sp2=6 nums=1 show_features=1 hidden=1 crop=0
+order space dna translation enzymes genes index features sec_strand
+sites AciI 43 125
+sites AluI 107
+sites BfaI 59
+sites BglII 55
+sites BsrBI 123
+sites BstYI 55
+sites HpyCH4IV 119
+sites MboI 56
+sites MluCI 137
+sites MseI 139
+sites SacI 106
+out
+|DATE
+|pUC19.gb
+|       TAGCCCCTTTTT 
+|       EndProLeuPhe
+|       SerProPheLeu
+|       AlaProPheTyr
+|       LeuGlyLysLys
+|       LeuGlyLysLys
+|       LeuGlyLysLys
+|       :     :  :  
+|               69
+|       ATCGGGGAAAAA
+|
+|       ACCTCGGCTTGA 
+|       ThrSerAlaEnd
+|       ProArgLeuGlu
+|       LeuGlyLeuArg
+|       GlyArgSerSer
+|       GlyArgSerSer
+|       GlyArgSerSer
+|       :     :     
+|       
+|       TGGAGCCGAACT
+|
+|       GATAGAGACACA 
+|       AspArgAspThr
+|       IleGluThrHis
+|       EndArgHisIle
+|       IleSerValCys
+|       IleSerValCys
+|       IleSerValCys
+|       :     : :   
+|              92
+|       CTATCTCTGTGT
+|
+|       TCgtgccagtga 
+|       SerCysGlnEnd
+|       ArgAlaSerGlu
+|       ValProValSer
+|       ArgAlaLeuSer
+|       ArgAlaLeuSer
+|       ArgAlaLeuSer
+|                 ||
+|                 106 SacI
+|                  107 AluI
+|       :     :     
+|       
+|       AGcacggtcact
+|
+|       gCTCATACTGAA 
+|       AlaHisThrGlu
+|       LeuIleLeuAsn
+|       SerTyrEndThr
+|       SerMetSerPhe
+|       SerMetSerPhe
+|       SerMetSerPhe
+|                  |
+|                  119 HpyCH4IV
+|       :     ::    
+|             115
+|       cGAGTATGACTT
+|
+|       CGTGAG 
+|       ArgGlu
+|       Val
+|       End
+|       ThrLeu
+|       Thr
+|       Thr
+|          | |
+|          123 BsrBI
+|            125 AciI
+|       :     
+|       
+|       GCACTC
+|
+|
+tags
+tag dnatag - 3.7 3.19 14.7 14.19 25.7 25.19 36.7 36.19 50.7 50.19 63.7 63.13
+tag ls108_1 - 50.7 50.19
+tag ls120_1 - 63.7 63.13
+tag ls60_1 - 3.7 3.19
+tag ls72_1 - 14.7 14.19
+tag ls84_1 - 25.7 25.19
+tag ls96_1 - 36.7 36.19
+END
+CASE textmap 13
+circular 0
+seq GACCTTTCGAAGCCTGCCAAACCGCGCTGACGGCCGTTTAAACCAGCCTCTTAAGGGAGCTTACCT
+title a
+region 12 36
+rowwidth 25
+selection 12 36
+methylated 0
+enz AatII AbsI Acc65I AciI AclI AfeI AflII AgeI AluI ApaI ApaLI ApoI AscI AseI AvaI AvrII BamHI BbsI BclI BfaI BglII BmgBI BsaAI BsaBI BsaI BsaWI BsiWI BsmBI BspEI BspHI BsrBI BsrGI BssHII BssSI BstBI BstUI BstYI BstZ17I Cac8I ClaI DpnI DraI EagI EcoRI EcoRV FseI FspI HaeII HaeIII HhaI HincII HindIII HpaI HpaII Hpy8I HpyCH4IV HpyCH4V KasI KpnI MauBI MboI MfeI MluCI MluI MreI MscI MseI NaeI NarI NcoI NdeI NgoMIV NheI NlaIII NotI NruI NsiI NspI PacI PaqCI PciI PmeI PmlI PshAI PsiI PstI PvuI PvuII RsaI SacI SacII SalI SapI SbfI ScaI SfiI SfoI SgfI SgrAI SgrDI SmaI SnaBI SpeI SphI SrfI SspI StuI SwaI TaqI TatI XbaI XcmI XhoI XmaI XmnI ZraI
+settings width=60 space=2 show_space=1 numbers=Left copy=1 second=0 show_trans=0 trans=1_3 show_enz=1 genes=0 show_index=0 char1=- char2=- sp1=19 sp2=8 nums=1 show_features=0 hidden=0 crop=1
+order genes enzymes space index features dna translation sec_strand
+feature 0 0 0 #1e2fe2 #0b17b1 primer_bind | 30 58 |  | T7 promoter
+feature 1 1 0 #bdef40 #2b7677 promoter | 29 64 |  | amp
+feature 2 1 1 #d514b7 #0f7fb7 CDS | 19 46 |  | x-y
+feature 3 1 0 #c45c69 #af91df promoter | 44 64 |  | a
+feature 4 0 0 #235906 #1925a2 CDS | 10 33 |  | (odd) name
+feature 5 0 0 #8b1bd4 #32bbe7 CDS | 5 57 |  | x-y
+sites AciI 22
+sites AflII 50
+sites AluI 58
+sites BstBI 6
+sites BstUI 23
+sites Cac8I 12
+sites DraI 37
+sites EagI 31
+sites HaeIII 32
+sites HhaI 24
+sites MseI 38 51
+sites PmeI 36
+sites TaqI 7
+out
+|DATE
+|a
+|                  24 HhaI     36 PmeI
+|                 23 BstUI 32 HaeIII
+|                22 AciI  31 EagI
+|                |||      ||   |
+|
+|
+|    13 CCTGCCAAACCGCGCTGACGGCCG 
+|
+|
+tags
+tag dnatag - 9.7 9.31
+tag f0# #1e2fe2 9.25 9.31
+tag f1# #2b7677 9.24 9.31
+tag f2# - 9.14 9.31
+tag f4# #235906 9.7 9.28
+tag f5# #8b1bd4 9.7 9.31
+tag ls13_1 - 9.7 9.31
+END
+CASE textmap 14
+circular 0
+seq CGCAATGCATCGGACGTCCCCGTCGGTCTTAATTAAAAAATCTCCGTCTCCCAGGAGAGCAAATATTGATCCAGCTGGGTTTCAACT
+title pUC19.gb
+region all
+rowwidth 24
+selection -
+methylated 1
+enz AatII AbsI Acc65I AciI AclI AfeI AflII AgeI AluI ApaI ApaLI ApoI AscI AseI AvaI AvrII BamHI BbsI BclI BfaI BglII BmgBI BsaAI BsaBI BsaI BsaWI BsiWI BsmBI BspEI BspHI BsrBI BsrGI BssHII BssSI BstBI BstUI BstYI BstZ17I Cac8I ClaI DpnI DraI EagI EcoRI EcoRV FseI FspI HaeII HaeIII HhaI HincII HindIII HpaI HpaII Hpy8I HpyCH4IV HpyCH4V KasI KpnI MauBI MboI MfeI MluCI MluI MreI MscI MseI NaeI NarI NcoI NdeI NgoMIV NheI NlaIII NotI NruI NsiI NspI PacI PaqCI PciI PmeI PmlI PshAI PsiI PstI PvuI PvuII RsaI SacI SacII SalI SapI SbfI ScaI SfiI SfoI SgfI SgrAI SgrDI SmaI SnaBI SpeI SphI SrfI SspI StuI SwaI TaqI TatI XbaI XcmI XhoI XmaI XmnI ZraI
+settings width=60 space=3 show_space=0 numbers=Left copy=0 second=1 show_trans=0 trans=3_3 show_enz=1 genes=1 show_index=1 char1=. char2=+ sp1=13 sp2=10 nums=0 show_features=0 hidden=0 crop=0
+order features enzymes dna genes sec_strand index translation space
+feature 0 1 1 #00553b #ef81bf CDS | 9 67 |  | b c d
+feature 1 1 0 #0a2d8a #a382ed rep_origin | 21 50 |  | my gene
+feature 2 1 0 #962c9d #08c279 primer_bind | 2 58 |  | amp
+feature 3 1 0 #d65b13 #756622 CDS | 9 28 31 60 | 9 60 | b c d
+feature 4 0 1 #149850 #de37cb misc_feature | 1 3 18 21 57 87 | 1 87 | (odd) name
+feature 5 0 0 #12b8a5 #b655bb terminator | 0 70 |  | CDS 1
+sites AatII 13
+sites AluI 73
+sites BsmBI 45
+sites DpnI 68
+sites HpyCH4IV 14
+sites HpyCH4V 6
+sites MluCI 31
+sites MseI 29 33
+sites NsiI 5
+sites PacI 29
+sites PvuII 72
+sites SspI 62
+sites ZraI 13
+out
+|DATE
+|pUC19.gb
+|                    14 HpyCH4IV        33 MseI
+|                   13 ZraI           31 MluCI
+|            6 HpyCH4V              29 PacI
+|           5 NsiI  13 AatII        29 MseI         45 BsmBI
+|           ||      ||              | | |           |               
+|     1 CGCAATGCATCGGACGTCCCCGTCGGTCTTAATTAAAAAATCTCCGTCTCCCAGGAGAGC 
+|       R  N  A  S  D  V  P  V  G  L  N  *  K  I  S  V  S  Q  E  S  
+|       GCGTTACGTAGCCTGCAGGGGCAGCCAGAATTAATTTTTTAGAGGCAGAGGGTCCTCTCG
+|                +  .      +     .   +        .+         + .       +
+|
+|                   73 AluI
+|              68 DpnI
+|        62 SspI   72 PvuII
+|        |     |   ||              
+|    61 AAATATTGATCCAGCTGGGTTTCAACT 
+|       K  Y  *  S  S  W  V  S  T
+|       TTTATAACTAGGTCGACCCAAAGTTGA
+|           .    +       . +       
+|
+|
+tags
+tag dnatag - 8.7 8.67 17.7 17.34
+tag ls1_1 - 8.7 8.67
+tag ls61_1 - 17.7 17.34
+END
+CASE textmap 15
+circular 1
+seq CGCTAGAGGGTACCGGCCTGGCCAGCTGGGAATTCGTGGGCCCTCCCTCTATTGACGTCTTAGTCCGCTTTTGACTCTAGGAATTCGGTGTGGTGATTTAGTACGGTTCACCCGGGGCGCGCGAAGCTCTCTAGGCAATGCGAACTTTACTGTATAAGCAGAAGTCGGGCTA
+title pUC19.gb
+region all
+rowwidth 74
+selection -
+methylated 1
+enz AatII AbsI Acc65I AciI AclI AfeI AflII AgeI AluI ApaI ApaLI ApoI AscI AseI AvaI AvrII BamHI BbsI BclI BfaI BglII BmgBI BsaAI BsaBI BsaI BsaWI BsiWI BsmBI BspEI BspHI BsrBI BsrGI BssHII BssSI BstBI BstUI BstYI BstZ17I Cac8I ClaI DpnI DraI EagI EcoRI EcoRV FseI FspI HaeII HaeIII HhaI HincII HindIII HpaI HpaII Hpy8I HpyCH4IV HpyCH4V KasI KpnI MauBI MboI MfeI MluCI MluI MreI MscI MseI NaeI NarI NcoI NdeI NgoMIV NheI NlaIII NotI NruI NsiI NspI PacI PaqCI PciI PmeI PmlI PshAI PsiI PstI PvuI PvuII RsaI SacI SacII SalI SapI SbfI ScaI SfiI SfoI SgfI SgrAI SgrDI SmaI SnaBI SpeI SphI SrfI SspI StuI SwaI TaqI TatI XbaI XcmI XhoI XmaI XmnI ZraI
+settings width=33 space=6 show_space=1 numbers=Left copy=0 second=0 show_trans=1 trans=1_3 show_enz=1 genes=0 show_index=1 char1=. char2=+ sp1=22 sp2=11 nums=0 show_features=0 hidden=1 crop=1
+order dna genes translation features sec_strand enzymes space index
+feature 0 0 0 #5df543 #4d35f5 rep_origin | 117 123 135 163 10 77 | 117 172 0 77 | my gene
+feature 1 0 0 #557cd6 #228811 misc_feature | 139 156 10 24 | 139 172 0 24 | CDS 1
+feature 2 0 0 #430b1f #0d3821 gene | 93 157 |  | lacZ
+feature 3 0 0 #6fd37b #da62b0 CDS | 101 139 |  | a
+feature 4 0 1 #df8ecf #d8e3a7 terminator | 148 171 |  | lacZ
+feature 5 1 0 #965501 #9ab73e primer_bind | 63 97 113 135 145 172 | 63 172 | a
+sites AatII 54
+sites Acc65I 9
+sites AciI 65
+sites AluI 24 125
+sites ApaI 38
+sites ApoI 30 81
+sites AvaI 111
+sites BfaI 3 77 131
+sites BssHII 117
+sites BstUI 118 120
+sites Cac8I 21 117
+sites EcoRI 30 81
+sites HaeIII 15 20 39
+sites HhaI 117 119
+sites HpaII 13 112
+sites Hpy8I 106
+sites HpyCH4IV 55
+sites KpnI 9
+sites MluCI 31 82
+sites PvuII 23
+sites RsaI 10 101
+sites SmaI 111
+sites XmaI 111
+sites ZraI 54
+out
+|DATE
+|pUC19.gb
+|     1 CGCTAGAGGGTACCGGCCTGGCCAGCTGGGAAT 
+|       ArgEndArgValProAlaTrpProAlaGlyAsn
+|         |     ||  | |    || ||     ||  
+|         3 BfaI 10 RsaI   20 HaeIII 30 ApoI
+|               9 Acc65I    21 Cac8I 30 EcoRI
+|               9 KpnI        23 PvuII
+|                   13 HpaII   24 AluI
+|                     15 HaeIII       31 MluCI
+|
+|
+|
+|
+|
+|
+|                 +          .          +
+|
+|    34 TCGTGGGCCCTCCCTCTATTGACGTCTTAGTCC 
+|       SerTrpAlaLeuProLeuLeuThrSerEndSer
+|           ||              ||         | 
+|           38 ApaI         54 AatII   65 AciI
+|            39 HaeIII      54 ZraI
+|                            55 HpyCH4IV
+|
+|
+|
+|
+|
+|
+|                 .          +          .
+|
+|    67 GCTTTTGACTCTAGGAATTCGGTGTGGTGATTT 
+|       AlaPheAspSerArgAsnSerValTrpEndPhe
+|                 |   ||                 
+|                 77 BfaI
+|                     81 ApoI
+|                     81 EcoRI
+|                      82 MluCI
+|
+|
+|
+|
+|
+|
+|                 +          .          +
+|
+|   100 AGTACGGTTCACCCGGGGCGCGCGAAGCTCTCT 
+|       SerThrValHisProGlyArgAlaLysLeuSer
+|        |    |    ||    ||||    |     | 
+|        101 RsaI  111 AvaI 120 BstUI  131 BfaI
+|             106 Hpy8I  117 BssHII
+|                  111 SmaI      125 AluI
+|                  111 XmaI
+|                   112 HpaII
+|                        117 Cac8I
+|                        117 HhaI
+|                         118 BstUI
+|                          119 HhaI
+|
+|
+|
+|
+|
+|
+|                 .          +          .
+|
+|   133 AGGCAATGCGAACTTTACTGTATAAGCAGAAGT 
+|       ArgGlnCysGluLeuTyrCysIleSerArgSer
+|
+|
+|
+|
+|
+|
+|                 +          .          +
+|
+|   166 CGGGCTA 
+|       ArgAla
+|
+|
+|
+|
+|
+|
+|              
+|
+|
+tags
+tag dnatag - 3.7 3.40 19.7 19.40 33.7 33.40 48.7 48.40 68.7 68.40 78.7 78.14
+tag ls100_1 - 48.7 48.40
+tag ls133_1 - 68.7 68.40
+tag ls166_1 - 78.7 78.14
+tag ls1_1 - 3.7 3.40
+tag ls34_1 - 19.7 19.40
+tag ls67_1 - 33.7 33.40
+END
+CASE textmap 16
+circular 1
+seq GATTGACGTCGAAGATTCTCGGGTACCTAAACCTTCAACGGACCGCTTGGCGCCAAGCCGCATTAGGGCGCGCCACGCAGTGCTAGGCCATCTTGGCCGGGGTTTTGGCTAGCGAGGGAACACGCCGGGACAGCCTTGTTTGCATAAAATTCAAGCGGATCAGTGTTGGATAGCATCCCGCCAACGGCAAATTCCCTGTTGAAGGATTCACATCGCCGGG
+title a long name for a sequence document that is much longer than one line of the text map
+region all
+rowwidth 69
+selection -
+methylated 1
+enz AatII AbsI Acc65I AciI AclI AfeI AflII AgeI AluI ApaI ApaLI ApoI AscI AseI AvaI AvrII BamHI BbsI BclI BfaI BglII BmgBI BsaAI BsaBI BsaI BsaWI BsiWI BsmBI BspEI BspHI BsrBI BsrGI BssHII BssSI BstBI BstUI BstYI BstZ17I Cac8I ClaI DpnI DraI EagI EcoRI EcoRV FseI FspI HaeII HaeIII HhaI HincII HindIII HpaI HpaII Hpy8I HpyCH4IV HpyCH4V KasI KpnI MauBI MboI MfeI MluCI MluI MreI MscI MseI NaeI NarI NcoI NdeI NgoMIV NheI NlaIII NotI NruI NsiI NspI PacI PaqCI PciI PmeI PmlI PshAI PsiI PstI PvuI PvuII RsaI SacI SacII SalI SapI SbfI ScaI SfiI SfoI SgfI SgrAI SgrDI SmaI SnaBI SpeI SphI SrfI SspI StuI SwaI TaqI TatI XbaI XcmI XhoI XmaI XmnI ZraI
+settings width=50 space=4 show_space=0 numbers=Both copy=0 second=1 show_trans=0 trans=3_1 show_enz=0 genes=0 show_index=0 char1=^ char2=* sp1=2 sp2=10 nums=1 show_features=1 hidden=0 crop=1
+order genes dna index translation sec_strand space features enzymes
+feature 0 0 0 #d30bb0 #908708 CDS | 115 194 9 17 | 115 220 0 17 | CDS 1
+sites AatII 5
+sites Acc65I 22
+sites AciI 43 58 155 178
+sites ApoI 147 189
+sites AscI 67
+sites AvaI 18
+sites BfaI 83 109
+sites BsaBI 205
+sites BssHII 68
+sites BstUI 69
+sites Cac8I 68 108
+sites DpnI 158
+sites HaeII 49
+sites HaeIII 86 95
+sites HhaI 50 68 70
+sites HpaII 97 125 216
+sites HpyCH4IV 6
+sites HpyCH4V 141
+sites KasI 49
+sites KpnI 22
+sites MluCI 148 190
+sites NarI 49
+sites NheI 108
+sites RsaI 23
+sites SfiI 86
+sites SfoI 49
+sites TaqI 9
+sites ZraI 5
+out
+|DATE
+|a long name for a sequence document that is much longer th
+|an one line of the text map
+|     1 GATTGACGTCGAAGATTCTCGGGTACCTAAACCTTCAACGGACCGCTTGG 50
+|       CTAACTGCAGCTTCTAAGAGCCCATGGATTTGGAAGTTGCCTGGCGAACC
+|                  K  I  
+|              28
+|       .........>>>>>>>>
+|       CDS 1
+|
+|    51 CGCCAAGCCGCATTAGGGCGCGCCACGCAGTGCTAGGCCATCTTGGCCGG 100
+|       GCGGTTCGGCGTAATCCCGCGCGGTGCGTCACGATCCGGTAGAACCGGCC
+|
+|   101 GGTTTTGGCTAGCGAGGGAACACGCCGGGACAGCCTTGTTTGCATAAAAT 150
+|       CCAAAACCGATCGCTCCCTTGTGCGGCCCTGTCGGAACAAACGTATTTTA
+|                      G  N  T  P  G  Q  P  C  L  H  K  I 
+|                      1
+|                      >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+|                      CDS 1
+|
+|   151 TCAAGCGGATCAGTGTTGGATAGCATCCCGCCAACGGCAAATTCCCTGTT 200
+|       AGTTCGCCTAGTCACAACCTATCGTAGGGCGGTTGCCGTTTAAGGGACAA
+|        Q  A  D  Q  C  W  I  A  S  R  Q  R  Q  I  P      
+|       13
+|       >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>......
+|       CDS 1
+|
+|   201 GAAGGATTCACATCGCCGGG 220
+|       CTTCCTAAGTGTAGCGGCCC
+|       ....................
+|       CDS 1
+|
+|
+tags
+tag dnatag - 4.7 4.57 11.7 11.57 14.7 14.57 21.7 21.57 28.7 28.27
+tag f0# #d30bb0 8.16 8.24 18.22 18.57 25.7 25.51
+tag ls101_1 - 14.7 14.57
+tag ls151_1 - 21.7 21.57
+tag ls1_1 - 4.7 4.57
+tag ls201_1 - 28.7 28.27
+tag ls51_1 - 11.7 11.57
+END
+CASE textmap 17
+circular 1
+seq AGACGCTGGTCG
+title a long name for a sequence document that is much longer than one line of the text map
+region all
+rowwidth 63
+selection -
+methylated 0
+enz ApaI NsiI FspI NotI
+settings width=100 space=5 show_space=0 numbers=Right copy=1 second=0 show_trans=0 trans=1_3 show_enz=1 genes=0 show_index=0 char1=| char2=^ sp1=11 sp2=8 nums=1 show_features=1 hidden=0 crop=1
+order enzymes space dna index translation features genes sec_strand
+feature 0 1 0 #32044f #5b3fad promoter | 10 11 |  | x-y
+feature 1 1 1 #83546c #5bc85e CDS | 9 11 |  | long feature name that goes on and on and on
+feature 2 0 1 #580100 #fe73e3 terminator | 3 5 |  | (odd) name
+sites BsmBI 12
+sites PshAI 2
+sites TaqI 10
+out
+|DATE
+|a long name for a sequence document that is much longer than one line of the text map
+|       AGACGCTGGTCG 12
+|                 <
+|                 x-y
+|
+|
+tags
+tag dnatag - 3.7 3.19
+tag f0# #5b3fad 3.17 3.18 4.17 4.18
+tag f1# - 3.16 3.18
+tag f2# - 3.10 3.12
+tag ls1_1 - 3.7 3.19
+END
+CASE textmap 18
+circular 0
+seq cgcagctAGTTGCTTGTGgtgccttttcgtaagGTGGGAGGGTGAactcgcgtaga
+title pUC19.gb
+region all
+rowwidth 41
+selection -
+methylated 0
+enz AatII AbsI Acc65I AciI AclI AfeI AflII AgeI AluI ApaI ApaLI ApoI AscI AseI AvaI AvrII BamHI BbsI BclI BfaI BglII BmgBI BsaAI BsaBI BsaI BsaWI BsiWI BsmBI BspEI BspHI BsrBI BsrGI BssHII BssSI BstBI BstUI BstYI BstZ17I Cac8I ClaI DpnI DraI EagI EcoRI EcoRV FseI FspI HaeII HaeIII HhaI HincII HindIII HpaI HpaII Hpy8I HpyCH4IV HpyCH4V KasI KpnI MauBI MboI MfeI MluCI MluI MreI MscI MseI NaeI NarI NcoI NdeI NgoMIV NheI NlaIII NotI NruI NsiI NspI PacI PaqCI PciI PmeI PmlI PshAI PsiI PstI PvuI PvuII RsaI SacI SacII SalI SapI SbfI ScaI SfiI SfoI SgfI SgrAI SgrDI SmaI SnaBI SpeI SphI SrfI SspI StuI SwaI TaqI TatI XbaI XcmI XhoI XmaI XmnI ZraI
+settings width=60 space=7 show_space=0 numbers=None copy=1 second=1 show_trans=1 trans=3_3 show_enz=1 genes=0 show_index=1 char1=^ char2=- sp1=9 sp2=8 nums=1 show_features=1 hidden=0 crop=1
+order genes space features enzymes dna sec_strand index translation
+sites AluI 4
+sites BfaI 6
+sites BstUI 49
+sites Hpy8I 42
+out
+|DATE
+|pUC19.gb
+|            6 BfaI                                     49 BstUI
+|          4 AluI                                42 Hpy8I
+|          | |                                   |      |       
+|       cgcagctAGTTGCTTGTGgtgccttttcgtaagGTGGGAGGGTGAactcgcgtaga 
+|       gcgtcgaTCAACGAACACcacggaaaagcattcCACCCTCCCACTtgagcgcatct
+|              -^      - ^     -  ^    -   ^   -    ^  -     ^ -
+|               9       18       27       36       45       54
+|       ArgSerEndLeuLeuValValProPheArgLysValGlyGlyEndThrArgVal
+|        AlaAlaSerCysLeuTrpCysLeuPheValArgTrpGluGlyGluLeuAlaEnd
+|         GlnLeuValAlaCysGlyAlaPheSerEndGlyGlyArgValAsnSerArgArg
+|
+|
+tags
+tag dnatag - 6.7 6.63
+tag ls1_1 - 6.7 6.63
+END
+CASE textmap 19
+circular 1
+seq CATCGCTCATGTACACGGGTAACAGGACT
+title pUC19.gb
+region 8 24
+rowwidth 14
+selection 8 24
+methylated 1
+enz AatII AbsI Acc65I AciI AclI AfeI AflII AgeI AluI ApaI ApaLI ApoI AscI AseI AvaI AvrII BamHI BbsI BclI BfaI BglII BmgBI BsaAI BsaBI BsaI BsaWI BsiWI BsmBI BspEI BspHI BsrBI BsrGI BssHII BssSI BstBI BstUI BstYI BstZ17I Cac8I ClaI DpnI DraI EagI EcoRI EcoRV FseI FspI HaeII HaeIII HhaI HincII HindIII HpaI HpaII Hpy8I HpyCH4IV HpyCH4V KasI KpnI MauBI MboI MfeI MluCI MluI MreI MscI MseI NaeI NarI NcoI NdeI NgoMIV NheI NlaIII NotI NruI NsiI NspI PacI PaqCI PciI PmeI PmlI PshAI PsiI PstI PvuI PvuII RsaI SacI SacII SalI SapI SbfI ScaI SfiI SfoI SgfI SgrAI SgrDI SmaI SnaBI SpeI SphI SrfI SspI StuI SwaI TaqI TatI XbaI XcmI XhoI XmaI XmnI ZraI
+settings width=50 space=7 show_space=0 numbers=Left copy=0 second=1 show_trans=0 trans=1_1 show_enz=1 genes=1 show_index=1 char1=^ char2=. sp1=7 sp2=12 nums=0 show_features=1 hidden=0 crop=1
+order genes index dna features sec_strand space enzymes translation
+feature 0 1 0 #e0a2bb #d63523 cds | 14 15 |  | T7 promoter
+feature 1 1 0 #287ed8 #891dc2 CDS | 7 13 |  | x-y
+feature 2 1 0 #e60ee9 #1b84e9 CDS | 11 17 |  | amp
+feature 3 1 0 #540984 #73fa1d gene | 11 15 |  | amp
+sites BsrGI 10
+sites Hpy8I 11
+sites NlaIII 8
+sites RsaI 11
+sites TatI 10
+out
+|DATE
+|pUC19.gb
+|       M  Y  T  G  N
+|          . ^      ^  .
+|     9 ATGTACACGGGTAACA 
+|         Y    
+|       1     0
+|       <<<<< <
+|       x-y   T7 promoter
+|          V  R  
+|          2
+|          <<<<<<
+|          amp
+|          <<<<
+|          amp
+|       TACATGTGCCCATTGT
+|        ||             
+|        10 BsrGI
+|        10 TatI
+|         11 Hpy8I
+|         11 RsaI
+|
+|
+tags
+tag dnatag - 5.7 5.23
+tag f0# #d63523 8.13 8.14
+tag f1# #891dc2 8.7 8.12
+tag f2# #1b84e9 12.10 12.16
+tag f3# #73fa1d 14.10 14.14
+tag ls9_1 - 5.7 5.23
+END
+CASE textmap 20
+circular 1
+seq gatgtgGGCTTACTTTCAGCTGCGGGTCCTATTTTGCGTGGTTgtgcataagTATTTTCCCTCCACAACCAGTCCCAGGGGCGGACGTAGTCGTGCAgttcagagatggaagCTTATTCAGCTGTAAATGGCAAAATGGTAGTACCTTAAcgccc
+title a
+region all
+rowwidth 47
+selection -
+methylated 0
+enz NspI SbfI PvuII
+settings width=100 space=5 show_space=1 numbers=Both copy=1 second=1 show_trans=1 trans=1_3 show_enz=1 genes=1 show_index=1 char1=_ char2=| sp1=15 sp2=11 nums=1 show_features=0 hidden=0 crop=0
+order genes enzymes dna translation space index sec_strand features
+feature 0 0 0 #310697 #7045ad rep_origin | 56 72 85 104 124 141 | 56 141 | T7 promoter
+feature 1 1 0 #6e2dd1 #414941 gene | 20 102 |  | (odd) name
+sites AciI 22 81
+sites AluI 18 111 120
+sites HindIII 110
+sites HpyCH4IV 85
+sites HpyCH4V 45 94
+sites MseI 147
+sites PvuII 17 119
+sites RsaI 142
+out
+|DATE
+|a
+|             G  L  L  S  A  A  G  P  I  L  R  G  L           F  S  L  H  N  Q  S  Q  G  R  T  *  S  C  T   
+|                       17 PvuII
+|                       |                                                                                   
+|     1 gatgtgGGCTTACTTTCAGCTGCGGGTCCTATTTTGCGTGGTTgtgcataagTATTTTCCCTCCACAACCAGTCCCAGGGGCGGACGTAGTCGTGCAgtt 100
+|       AspValGlyLeuLeuSerAlaAlaGlyProIleLeuArgGlyCysAlaEndValPheSerLeuHisAsnGlnSerGlnGlyArgThrEndSerCysSerS
+|
+|
+|
+|
+|
+|                 |          |          |          |          |          |          |          |          | 
+|                    15             30             45             60             75             90
+|       ctacacCCGAATGAAAGTCGACGCCCAGGATAAAACGCACCAAcacgtattcATAAAAGGGAGGTGTTGGTCAGGGTCCCCGCCTGCATCAGCACGTcaa
+|
+|                     Y  S  A  V  N  G  K  M  V  V  P  *     
+|                         119 PvuII
+|                         |                                    
+|   101 cagagatggaagCTTATTCAGCTGTAAATGGCAAAATGGTAGTACCTTAAcgccc 155
+|       erGluMetGluAlaTyrSerAlaValAsnGlyLysMetValValProEndArg
+|
+|
+|
+|
+|
+|                |          |          |          |          | 
+|          105            120            135            150
+|       gtctctaccttcGAATAAGTCGACATTTACCGTTTTACCATCATGGAATTgcggg
+|
+|
+tags
+tag dnatag - 6.7 6.107 20.7 20.62
+tag f0# #310697 6.63 6.79 6.92 6.107 20.7 20.11 20.31 20.48
+tag f1# #414941 6.27 6.107 20.7 20.9
+tag ls101_1 - 20.7 20.62
+tag ls1_1 - 6.7 6.107
+END
+CASE textmap 21
+circular 1
+seq CAAGCTGCCGTAAGTCCCGCGCACAATCTCAATTCgtcgatttaatagCCCAGGCATGGTATCGCGAAGCAGTGAGgtgagaactatcaagTGCGCCGGCTAACAGGTGCGTGCTATAActgtgta
+title a long name for a sequence document that is much longer than one line of the text map
+region 77 122
+rowwidth 72
+selection 77 122
+methylated 0
+enz AatII AbsI Acc65I AciI AclI AfeI AflII AgeI AluI ApaI ApaLI ApoI AscI AseI AvaI AvrII BamHI BbsI BclI BfaI BglII BmgBI BsaAI BsaBI BsaI BsaWI BsiWI BsmBI BspEI BspHI BsrBI BsrGI BssHII BssSI BstBI BstUI BstYI BstZ17I Cac8I ClaI DpnI DraI EagI EcoRI EcoRV FseI FspI HaeII HaeIII HhaI HincII HindIII HpaI HpaII Hpy8I HpyCH4IV HpyCH4V KasI KpnI MauBI MboI MfeI MluCI MluI MreI MscI MseI NaeI NarI NcoI NdeI NgoMIV NheI NlaIII NotI NruI NsiI NspI PacI PaqCI PciI PmeI PmlI PshAI PsiI PstI PvuI PvuII RsaI SacI SacII SalI SapI SbfI ScaI SfiI SfoI SgfI SgrAI SgrDI SmaI SnaBI SpeI SphI SrfI SspI StuI SwaI TaqI TatI XbaI XcmI XhoI XmaI XmnI ZraI
+settings width=100 space=1 show_space=1 numbers=Right copy=0 second=0 show_trans=0 trans=1_1 show_enz=1 genes=1 show_index=1 char1=+ char2=^ sp1=20 sp2=4 nums=0 show_features=1 hidden=0 crop=0
+order dna sec_strand enzymes space features genes translation index
+sites AciI 17
+sites AluI 3
+sites BsrGI 123
+sites BstUI 18 63
+sites Cac8I 95 109
+sites HhaI 19 93
+sites HpaII 96
+sites Hpy8I 122
+sites MluCI 31
+sites MseI 42
+sites NaeI 95
+sites NgoMIV 95
+sites NlaIII 55
+sites NruI 62
+sites RsaI 124
+sites TaqI 37
+sites TatI 123
+out
+|DATE
+|a long name for a sequence document that is much longer than one line of the text map
+|       tgagaactatcaagTGCGCCGGCTAACAGGTGCGTGCTATAActg 122
+|                      | ||            |            |
+|                      93 HhaI         109 Cac8I    122 Hpy8I
+|                        95 Cac8I
+|                        95 NaeI
+|                        95 NgoMIV
+|                         96 HpaII
+|
+|                     C  A  G  *  Q  V  R  A  I   
+|         +   ^   ^   ^   ^   +   ^   ^   ^   ^   +  
+|
+|
+tags
+tag dnatag - 3.7 3.52
+tag ls78_1 - 3.7 3.52
+END
+CASE textmap 22
+circular 0
+seq gtgattgaaGCCACATAAGTGCgtaattctcattgacaagTAGAAAGGCAATACCTAAa
+title a
+region 54 58
+rowwidth 35
+selection 54 58
+methylated 0
+enz AatII AbsI Acc65I AciI AclI AfeI AflII AgeI AluI ApaI ApaLI ApoI AscI AseI AvaI AvrII BamHI BbsI BclI BfaI BglII BmgBI BsaAI BsaBI BsaI BsaWI BsiWI BsmBI BspEI BspHI BsrBI BsrGI BssHII BssSI BstBI BstUI BstYI BstZ17I Cac8I ClaI DpnI DraI EagI EcoRI EcoRV FseI FspI HaeII HaeIII HhaI HincII HindIII HpaI HpaII Hpy8I HpyCH4IV HpyCH4V KasI KpnI MauBI MboI MfeI MluCI MluI MreI MscI MseI NaeI NarI NcoI NdeI NgoMIV NheI NlaIII NotI NruI NsiI NspI PacI PaqCI PciI PmeI PmlI PshAI PsiI PstI PvuI PvuII RsaI SacI SacII SalI SapI SbfI ScaI SfiI SfoI SgfI SgrAI SgrDI SmaI SnaBI SpeI SphI SrfI SspI StuI SwaI TaqI TatI XbaI XcmI XhoI XmaI XmnI ZraI
+settings width=10 space=7 show_space=1 numbers=None copy=1 second=1 show_trans=1 trans=3_1 show_enz=1 genes=0 show_index=0 char1=* char2=* sp1=25 sp2=1 nums=0 show_features=1 hidden=1 crop=1
+order features translation enzymes genes space index dna sec_strand
+feature 0 0 0 #3cb6e2 #d6c8d5 promoter | 14 52 |  | T7 promoter
+feature 1 1 0 #27d8e0 #1a328a rep_origin | 13 18 |  | my gene
+feature 2 0 1 #51120d #975f3b CDS | 30 37 39 43 46 53 | 30 53 | CDS 1
+feature 3 1 0 #61a58c #709cd6 gene | 21 38 |  | amp
+sites MluCI 25
+out
+|DATE
+|a
+|       L
+|        *
+|         
+|
+|
+|
+|
+|
+|
+|
+|       CTAA 
+|       GATT
+|
+|
+tags
+tag dnatag - 13.7 13.11
+tag ls55_1 - 13.7 13.11
+END
+CASE textmap 23
+circular 1
+seq TCGAAGTTGTGTCTCAACCTCGTGCAAACTTAGCCGGCGCCTGCAGGCGGGTTTGGTTAAAAATCGGCTCACTAAAGCACCGAATAGAGTATCTTCTCGACGTCACCACGAGAGCCGCGCGCGCGCGCGCCAGTCTACCGGCTTCGGTCGTATTCCACTACCGAATTAGCTGCATTCAGGAACTTAGCCCA
+title pUC19.gb
+region all
+rowwidth 60
+selection -
+methylated 1
+enz AatII AbsI Acc65I AciI AclI AfeI AflII AgeI AluI ApaI ApaLI ApoI AscI AseI AvaI AvrII BamHI BbsI BclI BfaI BglII BmgBI BsaAI BsaBI BsaI BsaWI BsiWI BsmBI BspEI BspHI BsrBI BsrGI BssHII BssSI BstBI BstUI BstYI BstZ17I Cac8I ClaI DpnI DraI EagI EcoRI EcoRV FseI FspI HaeII HaeIII HhaI HincII HindIII HpaI HpaII Hpy8I HpyCH4IV HpyCH4V KasI KpnI MauBI MboI MfeI MluCI MluI MreI MscI MseI NaeI NarI NcoI NdeI NgoMIV NheI NlaIII NotI NruI NsiI NspI PacI PaqCI PciI PmeI PmlI PshAI PsiI PstI PvuI PvuII RsaI SacI SacII SalI SapI SbfI ScaI SfiI SfoI SgfI SgrAI SgrDI SmaI SnaBI SpeI SphI SrfI SspI StuI SwaI TaqI TatI XbaI XcmI XhoI XmaI XmnI ZraI
+settings width=20 space=2 show_space=1 numbers=Right copy=0 second=0 show_trans=0 trans=3_1 show_enz=1 genes=0 show_index=1 char1=. char2=^ sp1=21 sp2=1 nums=1 show_features=1 hidden=1 crop=1
+order dna enzymes index sec_strand features space translation genes
+feature 0 1 1 #3f28b4 #432c78 CDS | 26 56 |  | CDS 1
+feature 1 0 0 #193053 #bed9c7 promoter | 97 166 |  | amp
+feature 2 0 0 #ac318d #f60e33 CDS | 2 82 92 95 | 2 95 | a
+sites AatII 99
+sites AciI 47 115
+sites AluI 168
+sites BssHII 117 119 121 123 125
+sites BssSI 19 107
+sites BstUI 116 118 120 122 124 126
+sites Cac8I 33 39 43 117 119 121 123 125
+sites HaeII 36
+sites HhaI 37 117 119 121 123 125 127
+sites HpaII 34 138
+sites Hpy8I 133
+sites HpyCH4IV 100
+sites HpyCH4V 23 42 171
+sites KasI 36
+sites MauBI 116
+sites MluCI 164
+sites MseI 57
+sites NaeI 33
+sites NarI 36
+sites NgoMIV 33
+sites PstI 41
+sites SbfI 40
+sites SfoI 36
+sites TaqI 1 97
+sites ZraI 99
+out
+|DATE
+|pUC19.gb
+|       TCGAAGTTGTGTCTCAACCT 20
+|       |                 | 
+|       1 TaqI            19 BssSI
+|       ^^^^^^^^^^^^^^^^^^^^
+|       
+|
+|
+|
+|       CGTGCAAACTTAGCCGGCGC 40
+|         |         || || ||
+|         23 HpyCH4V 34 HpaII
+|                   33 Cac8I
+|                   33 NaeI
+|                   33 NgoMIV
+|                      36 HaeII
+|                      36 KasI
+|                      36 NarI
+|                      36 SfoI
+|                       37 HhaI
+|                         39 Cac8I
+|                          40 SbfI
+|       .^^^^^^^^^^^^^^^^^^^
+|      42
+|       E  V  V  S  Q  P  R 
+|       1
+|       >>>>>>>>>>>>>>>>>>>>
+|       a
+|             V  *  G  A  G 
+|             10
+|             <<<<<<<<<<<<<<
+|             CDS 1
+|
+|
+|
+|       CTGCAGGCGGGTTTGGTTAA 60
+|       |||   |         |   
+|       41 PstI         57 MseI
+|        42 HpyCH4V
+|         43 Cac8I
+|             47 AciI
+|       ^.^^^^^^^^^^^^^^^^^^
+|       42
+|        A  P  P  N  P  
+|       5
+|       <<<<<<<<<<<<<<<<
+|       CDS 1
+|        A  N  L  A  G  A  C
+|       8
+|       >>>>>>>>>>>>>>>>>>>>
+|       a
+|
+|
+|
+|       AAATCGGCTCACTAAAGCAC 80
+|       ^^.^^^^^^^^^^^^^^^^^
+|        63
+|         R  R  V  W  L  K  
+|       15
+|       >>>>>>>>>>>>>>>>>>>>
+|       a
+|
+|
+|
+|       CGAATAGAGTATCTTCTCGA 100
+|                       | ||
+|                       97 TaqI
+|                         99 AatII
+|                         99 ZraI
+|                          100 HpyCH4IV
+|       ^^^.^^^^^^^^^^^^^^^^
+|         84
+|       I            G 
+|       21
+|       >>..........>>>  >>>
+|       a                amp
+|
+|
+|
+|       CGTCACCACGAGAGCCGCGC 120
+|             |       ||||||
+|             107 BssSI 117 BssHII
+|                     115 AciI
+|                      116 BstUI
+|                      116 MauBI
+|                       117 Cac8I
+|                       117 HhaI
+|                        118 BstUI
+|                         119 BssHII
+|                         119 Cac8I
+|                         119 HhaI
+|                          120 BstUI
+|       ^^^^.^^^^^^^^^^^^^^^
+|          105
+|       >>>>>>>>>>>>>>>>>>>>
+|       amp
+|
+|
+|
+|       GCGCGCGCGCCAGTCTACCG 140
+|       |||||||     |    |  
+|       121 BssHII  133 Hpy8I
+|       121 Cac8I        138 HpaII
+|       121 HhaI
+|        122 BstUI
+|         123 BssHII
+|         123 Cac8I
+|         123 HhaI
+|          124 BstUI
+|           125 BssHII
+|           125 Cac8I
+|           125 HhaI
+|            126 BstUI
+|             127 HhaI
+|       ^^^^^.^^^^^^^^^^^^^^
+|           126
+|       >>>>>>>>>>>>>>>>>>>>
+|       amp
+|
+|
+|
+|       GCTTCGGTCGTATTCCACTA 160
+|       ^^^^^^.^^^^^^^^^^^^^
+|            147
+|       >>>>>>>>>>>>>>>>>>>>
+|       amp
+|
+|
+|
+|       CCGAATTAGCTGCATTCAGG 180
+|          |   |  |         
+|          164 MluCI
+|              168 AluI
+|                 171 HpyCH4V
+|       ^^^^^^^.^^^^^^^^^^^^
+|             168
+|       >>>>>>
+|       amp
+|
+|
+|
+|       AACTTAGCCCA 191
+|       ^^^^^^^^.^^
+|              189
+|
+|
+|
+|
+tags
+tag dnatag - 3.7 3.27 11.7 11.27 37.7 37.27 56.7 56.27 66.7 66.27 81.7 81.27 101.7 101.27 123.7 123.27 131.7 131.27 143.7 143.18
+tag f0# #432c78 32.13 32.27 47.7 47.23
+tag f1# #193053 76.24 76.27 96.7 96.27 118.7 118.27 126.7 126.27 138.7 138.13
+tag f2# #ac318d 28.7 28.27 51.7 51.27 61.7 61.27 76.7 76.9 76.19 76.22
+tag ls101_1 - 81.7 81.27
+tag ls121_1 - 101.7 101.27
+tag ls141_1 - 123.7 123.27
+tag ls161_1 - 131.7 131.27
+tag ls181_1 - 143.7 143.18
+tag ls1_1 - 3.7 3.27
+tag ls21_1 - 11.7 11.27
+tag ls41_1 - 37.7 37.27
+tag ls61_1 - 56.7 56.27
+tag ls81_1 - 66.7 66.27
+END
+CASE textmap 24
+circular 1
+seq ATTCAGTCGATCGTTTAAGATGCACTCTTGGAACTTATCTCGGTATGTTAGCTTAACCGAAGAAAGTCCGGGAATGTACGTAAAATTCTGTATCGATGCCAAAGACCAAAGGCCGATCTAGCCCCCCCTAGGCACGAAACATCTTTTGCGGGACGCGGCCGCGGAAGCGGGACAGGATCCTGATGTGGCGCCAGACGAAAGATTGGTATTATCTTATACTTGG
+title a long name for a sequence document that is much longer than one line of the text map
+region all
+rowwidth 10
+selection -
+methylated 1
+enz BamHI BsmBI SgrAI AflII Cac8I BsaWI SbfI PmeI SnaBI MreI SapI HpyCH4V
+settings width=50 space=3 show_space=0 numbers=None copy=0 second=0 show_trans=0 trans=6_3 show_enz=1 genes=0 show_index=0 char1=| char2=+ sp1=13 sp2=8 nums=0 show_features=1 hidden=0 crop=0
+order space dna genes sec_strand index features enzymes translation
+feature 0 0 0 #750f5a #5b12bc rep_origin | 153 221 |  | T7 promoter
+feature 1 1 1 #cc30cb #2f7380 terminator | 170 223 0 88 |  | a
+feature 2 0 0 #77ea43 #8b99fc misc_feature | 22 157 |  | lacZ
+sites AciI 148 155 159 161 167
+sites AluI 50
+sites ApoI 83
+sites AvrII 127
+sites BamHI 175
+sites BfaI 118 128
+sites BsaAI 77
+sites BstUI 154 160
+sites BstYI 175
+sites ClaI 92
+sites DpnI 9 115 176
+sites EagI 156
+sites HaeII 187
+sites HaeIII 111 157
+sites HhaI 188
+sites HpaII 68
+sites HpyCH4IV 78
+sites HpyCH4V 21
+sites KasI 187
+sites MluCI 84
+sites MseI 15 53
+sites NarI 187
+sites NotI 155
+sites PvuI 8
+sites RsaI 76
+sites SacII 159
+sites SfoI 187
+sites SnaBI 77
+sites TaqI 93
+out
+|DATE
+|a long name for a sequence document that is much longer th
+|an one line of the text map
+|       ATTCAGTCGATCGTTTAAGATGCACTCTTGGAACTTATCTCGGTATGTTA 
+|                             >>>>>>>>>>>>>>>>>>>>>>>>>>>>
+|                             lacZ
+|                           |                             
+|                           21 HpyCH4V
+|
+|       GCTTAACCGAAGAAAGTCCGGGAATGTACGTAAAATTCTGTATCGATGCC 
+|       >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+|       lacZ
+|                                 |                       
+|                                 77 SnaBI
+|
+|       AAAGACCAAAGGCCGATCTAGCCCCCCCTAGGCACGAAACATCTTTTGCG 
+|       >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+|       lacZ
+|
+|       GGACGCGGCCGCGGAAGCGGGACAGGATCCTGATGTGGCGCCAGACGAAA 
+|       >>>>>>>
+|       lacZ
+|          >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+|          T7 promoter
+|                               |                         
+|                               175 BamHI
+|
+|       GATTGGTATTATCTTATACTTGG 
+|       >>>>>>>>>>>>>>>>>>>>>
+|       T7 promoter
+|
+|
+tags
+tag dnatag - 4.7 4.57 10.7 10.57 16.7 16.57 20.7 20.57 28.7 28.30
+tag f0# #750f5a 23.10 23.57 29.7 29.28
+tag f2# #77ea43 5.29 5.57 11.7 11.57 17.7 17.57 21.7 21.14
+tag ls101_1 - 16.7 16.57
+tag ls151_1 - 20.7 20.57
+tag ls1_1 - 4.7 4.57
+tag ls201_1 - 28.7 28.30
+tag ls51_1 - 10.7 10.57
+END
+CASE textmap 25
+circular 0
+seq GGAACTATGCCAGCCTACTTGGCGGGCCCTAGCATCGTTAACTGTGGACGCGTTTATCTACCACACCCAATACGGGGGTCTTACCGACGGCTACGTGACTGTCACTGATTCCAAACTTCCGACAACGAAGAACCCCATTAAACCTCTACAGCTCCTATTCCACTTTGACCGAGCTCTAGCTTATAGTTAACCGGCTGGGCCGT
+title pUC19.gb
+region 65 167
+rowwidth 16
+selection 65 167
+methylated 0
+enz AatII AbsI Acc65I AciI AclI AfeI AflII AgeI AluI ApaI ApaLI ApoI AscI AseI AvaI AvrII BamHI BbsI BclI BfaI BglII BmgBI BsaAI BsaBI BsaI BsaWI BsiWI BsmBI BspEI BspHI BsrBI BsrGI BssHII BssSI BstBI BstUI BstYI BstZ17I Cac8I ClaI DpnI DraI EagI EcoRI EcoRV FseI FspI HaeII HaeIII HhaI HincII HindIII HpaI HpaII Hpy8I HpyCH4IV HpyCH4V KasI KpnI MauBI MboI MfeI MluCI MluI MreI MscI MseI NaeI NarI NcoI NdeI NgoMIV NheI NlaIII NotI NruI NsiI NspI PacI PaqCI PciI PmeI PmlI PshAI PsiI PstI PvuI PvuII RsaI SacI SacII SalI SapI SbfI ScaI SfiI SfoI SgfI SgrAI SgrDI SmaI SnaBI SpeI SphI SrfI SspI StuI SwaI TaqI TatI XbaI XcmI XhoI XmaI XmnI ZraI
+settings width=12 space=1 show_space=0 numbers=Both copy=0 second=0 show_trans=1 trans=3_1 show_enz=1 genes=0 show_index=1 char1=| char2=- sp1=10 sp2=10 nums=1 show_features=1 hidden=0 crop=0
+order translation index dna space genes enzymes sec_strand features
+feature 0 1 0 #475964 #c0a56f cds | 47 64 98 202 | 47 202 | x-y
+feature 1 1 0 #2088a6 #b6b2fe rep_origin | 8 59 |  | my gene
+feature 2 0 0 #24c933 #9bbe1b CDS | 128 145 |  | CDS 1
+feature 3 1 1 #f02fa3 #15c00a promoter | 162 177 |  | T7 promoter
+feature 4 1 0 #dfe021 #346d60 CDS | 16 44 45 53 110 177 | 16 177 | long feature name that goes on and on and on
+feature 5 0 0 #e122f6 #fb679a rep_origin | 37 182 |  | b c d
+feature 6 0 0 #e7d9ee #f161ed rep_origin | 92 98 |  | (odd) name
+sites AciI 22
+sites AluI 150 172 178
+sites ApaI 24
+sites BfaI 29 176
+sites BsaAI 92
+sites BstUI 49
+sites Cac8I 9 22
+sites HaeIII 25 198
+sites HincII 37 186
+sites HpaI 37 186
+sites HpaII 191
+sites Hpy8I 37 44 186
+sites HpyCH4IV 93
+sites MluI 48
+sites MseI 38 138 187
+sites SacI 171
+out
+|DATE
+|pUC19.gb
+|       P  N  T  G  
+|        P  I  R  G 
+|         Q  Y  G  G
+|          70
+|           |       
+|    66 CCCAATACGGGG 77
+|       >>>>>>>>>>>>
+|       b c d
+|       ............
+|       x-y
+|       ............
+|       long feature name that goes on and on and on
+|
+|       V  L  P  T  
+|        S  Y  R  R 
+|         L  T  D  G
+|        80
+|         |         
+|    78 GTCTTACCGACG 89
+|       >>>>>>>>>>>>
+|       b c d
+|       ............
+|       x-y
+|       ............
+|       long feature name that goes on and on and on
+|
+|       A  T  *  L  
+|        L  R  D  C 
+|         Y  V  T  V
+|      100       110
+|       |         |
+|    90 GCTACGTGACTG 101
+|         ||        
+|         92 BsaAI
+|          93 HpyCH4IV
+|       >>>>>>>>>>>>
+|       b c d
+|       ............
+|       long feature name that goes on and on and on
+|          >>>>>>
+|          (odd) name
+|                 T 
+|              34
+|       .........<<<
+|       x-y
+|
+|       S  L  I  P  
+|        H  *  F  Q 
+|         T  D  S  K
+|              110
+|               |   
+|   102 TCACTGATTCCA 113
+|        V  S  E  L 
+|       33
+|       <<<<<<<<<<<<
+|       x-y
+|       >>>>>>>>>>>>
+|       b c d
+|                W  
+|              22
+|       .........<<<
+|       long feature name that goes on and on and on
+|
+|       N  F  R  Q  
+|        T  S  D  N 
+|         L  P  T  T
+|            120
+|             |     
+|   114 AACTTCCGACAA 125
+|        S  G  V  V 
+|       29
+|       <<<<<<<<<<<<
+|       x-y
+|       V  E  S  L  
+|       21
+|       <<<<<<<<<<<<
+|       long feature name that goes on and on and on
+|       >>>>>>>>>>>>
+|       b c d
+|
+|       R  R  T  P  
+|        E  E  P  H 
+|         K  N  P  I
+|          130
+|           |       
+|   126 CGAAGAACCCCA 137
+|        F  F  G  M 
+|       25
+|       <<<<<<<<<<<<
+|       x-y
+|       S  S  G  W  
+|       17
+|       <<<<<<<<<<<<
+|       long feature name that goes on and on and on
+|       >>>>>>>>>>>>
+|       b c d
+|          R  T  P  
+|          1
+|          >>>>>>>>>
+|          CDS 1
+|
+|       L  N  L  Y  
+|        *  T  S  T 
+|         K  P  L  Q
+|        140
+|         |         
+|   138 TTAAACCTCTAC 149
+|       |           
+|       138 MseI
+|        L  G  R  C 
+|       21
+|       <<<<<<<<<<<<
+|       x-y
+|       L  N  
+|       4
+|       >>>>>>>>
+|       CDS 1
+|       *  V  E  V  
+|       13
+|       <<<<<<<<<<<<
+|       long feature name that goes on and on and on
+|       >>>>>>>>>>>>
+|       b c d
+|
+|       S  S  Y  S  
+|        A  P  I  P 
+|         L  L  F  H
+|      160       170
+|       |         |
+|   150 AGCTCCTATTCC 161
+|       |           
+|       150 AluI
+|        S  R  N  W 
+|       17
+|       <<<<<<<<<<<<
+|       x-y
+|       A  G  I  G  
+|       9
+|       <<<<<<<<<<<<
+|       long feature name that goes on and on and on
+|       >>>>>>>>>>>>
+|       b c d
+|
+|       T  L
+|        L
+|         F
+|       
+|             
+|   162 ACTTTG 167
+|        K  S 
+|       13
+|       <<<<<<
+|       x-y
+|       S  Q  
+|       5
+|       <<<<<<
+|       long feature name that goes on and on and on
+|       >>>>>>
+|       b c d
+|
+|
+tags
+tag dnatag - 8.7 8.19 21.7 21.19 34.7 34.19 54.7 54.19 71.7 71.19 88.7 88.19 109.7 109.19 132.7 132.19 151.7 151.13
+tag f0# #c0a56f 46.16 46.19 57.7 57.19 74.7 74.19 91.7 91.19 114.7 114.19 137.7 137.19 154.7 154.13
+tag f2# #24c933 101.10 101.19 118.7 118.15
+tag f4# #346d60 63.16 63.19 78.7 78.19 95.7 95.19 122.7 122.19 141.7 141.19 158.7 158.13
+tag f5# #e122f6 9.7 9.19 22.7 22.19 38.7 38.19 59.7 59.19 80.7 80.19 97.7 97.19 124.7 124.19 143.7 143.19 160.7 160.13
+tag f6# #e7d9ee 42.10 42.16
+tag ls102_1 - 54.7 54.19
+tag ls114_1 - 71.7 71.19
+tag ls126_1 - 88.7 88.19
+tag ls138_1 - 109.7 109.19
+tag ls150_1 - 132.7 132.19
+tag ls162_1 - 151.7 151.13
+tag ls66_1 - 8.7 8.19
+tag ls78_1 - 21.7 21.19
+tag ls90_1 - 34.7 34.19
+END
+CASE textmap 26
+circular 0
+seq gcCTCGTGgtttacataatcaagACTGCATTCTAAaaacagaaatt
+title a
+region 16 20
+rowwidth 9
+selection 16 20
+methylated 0
+enz NcoI NarI AatII
+settings width=10 space=7 show_space=0 numbers=None copy=1 second=1 show_trans=0 trans=3_1 show_enz=0 genes=0 show_index=0 char1=| char2=| sp1=3 sp2=10 nums=1 show_features=1 hidden=0 crop=0
+order enzymes space genes dna features sec_strand index translation
+sites BssSI 3
+sites Hpy8I 9
+sites HpyCH4V 26
+sites MluCI 43
+out
+|DATE
+|a
+|       aatc 
+|       ttag
+|
+|
+tags
+tag dnatag - 3.7 3.11
+tag ls17_1 - 3.7 3.11
+END
+CASE textmap 27
+circular 1
+seq CGATAAATAGGAGTGGCGCCCCACGTGAGCCGGCTATCCTGTGCTGGGACTCCATCCTCCGATCTTACGCGTGTATGACAGTTGACTGAATGGAATTTTGTTGAACATCGACCCACCACCTAATTATGGGTAGCACTCTGGACTGGTCCAGCTGCACAT
+title a long name for a sequence document that is much longer than one line of the text map
+region 82 156
+rowwidth 21
+selection 82 156
+methylated 1
+enz AatII AbsI Acc65I AciI AclI AfeI AflII AgeI AluI ApaI ApaLI ApoI AscI AseI AvaI AvrII BamHI BbsI BclI BfaI BglII BmgBI BsaAI BsaBI BsaI BsaWI BsiWI BsmBI BspEI BspHI BsrBI BsrGI BssHII BssSI BstBI BstUI BstYI BstZ17I Cac8I ClaI DpnI DraI EagI EcoRI EcoRV FseI FspI HaeII HaeIII HhaI HincII HindIII HpaI HpaII Hpy8I HpyCH4IV HpyCH4V KasI KpnI MauBI MboI MfeI MluCI MluI MreI MscI MseI NaeI NarI NcoI NdeI NgoMIV NheI NlaIII NotI NruI NsiI NspI PacI PaqCI PciI PmeI PmlI PshAI PsiI PstI PvuI PvuII RsaI SacI SacII SalI SapI SbfI ScaI SfiI SfoI SgfI SgrAI SgrDI SmaI SnaBI SpeI SphI SrfI SspI StuI SwaI TaqI TatI XbaI XcmI XhoI XmaI XmnI ZraI
+settings width=50 space=2 show_space=1 numbers=None copy=0 second=1 show_trans=0 trans=3_3 show_enz=0 genes=1 show_index=0 char1=. char2=_ sp1=22 sp2=4 nums=1 show_features=0 hidden=1 crop=1
+order translation dna features space sec_strand genes index enzymes
+feature 0 0 0 #d8be0c #4f9181 CDS | 2 86 107 154 | 2 154 | lacZ
+feature 1 0 0 #8a803d #d61d19 CDS | 4 96 |  | CDS 1
+feature 2 0 1 #e7ee89 #38c6b6 gene | 68 118 |  | T7 promoter
+feature 3 1 0 #5d0509 #086508 terminator | 6 38 |  | amp
+feature 4 0 0 #4e1e33 #4f79ec terminator | 28 97 136 150 | 28 150 | long feature name that goes on and on and on
+sites AluI 150
+sites ApoI 93
+sites BsaAI 22
+sites BstUI 68
+sites Cac8I 29
+sites ClaI 158
+sites DpnI 61
+sites HaeII 15
+sites HhaI 16
+sites HincII 81
+sites HpaII 30
+sites Hpy8I 81
+sites HpyCH4IV 23
+sites HpyCH4V 153
+sites KasI 15
+sites MluCI 94 122
+sites MluI 67
+sites NaeI 29
+sites NarI 15
+sites NgoMIV 29
+sites PmlI 22
+sites PvuII 149
+sites SfoI 15
+sites TaqI 108 159
+out
+|DATE
+|a long name for a sequence document that is much longer th
+|an one line of the text map
+|       TGACTGAATGGAATTTTGTTGAACATCGACCCACCACCTAATTATGGGTA 
+|
+|
+|       ACTGACTTACCTTAAAACAACTTGTAGCTGGGTGGTGGATTAATACCCAT
+|       *  L  N  G  I  L  L  N  I  D  P  P  P  N  Y  G  * 
+|
+|       GCACTCTGGACTGGTCCAGCTGCA 
+|
+|
+|       CGTGAGACCTGACCAGGTCGACGT
+|        H  S  G  L  V  Q  L
+|
+|
+tags
+tag dnatag - 4.7 4.57 10.7 10.31
+tag ls133_1 - 10.7 10.31
+tag ls83_1 - 4.7 4.57
+END
+CASE textmap 28
+circular 1
+seq TGTGTGTCACCAGGGCAGTGCAGCAAGCCCTGCTCAGTGAGTAACGCACACTTGGCGGGCCCGCATGCTCGTACGCCTCCTCCTCGTGGCCAAGCGCGCTGGACCCTAGTATGACGGATCTTCTATTCCGTGAAATGGACGTATAACGGTTATC
+title a long name for a sequence document that is much longer than one line of the text map
+region all
+rowwidth 55
+selection -
+methylated 0
+enz NaeI SrfI XmaI NdeI MscI PvuII NgoMIV FspI TatI
+settings width=100 space=4 show_space=1 numbers=Right copy=1 second=1 show_trans=1 trans=1_1 show_enz=1 genes=0 show_index=0 char1=^ char2=+ sp1=8 sp2=1 nums=0 show_features=1 hidden=1 crop=1
+order translation genes space enzymes dna index sec_strand features
+feature 0 0 1 #842c27 #c67f38 rep_origin | 40 151 |  | x-y
+sites AciI 55 61
+sites ApaI 57
+sites BfaI 106
+sites BsiWI 70
+sites BssHII 94
+sites BssSI 83
+sites BstUI 95
+sites BstYI 116
+sites Cac8I 23 55 59 63 94
+sites HaeIII 58 88
+sites HhaI 94 96
+sites HpyCH4IV 139
+sites HpyCH4V 19
+sites MboI 117
+sites MscI 87
+sites NlaIII 64
+sites NspI 63
+sites RsaI 71
+sites SphI 63
+out
+|DATE
+|a long name for a sequence document that is much longer than one line of the text map
+|       C  V  S  P  G  Q  C  S  K  P  C  S  V  S  N  A  H  L  A  G  P  H  A  R  T  P  P  P  R  G  Q  A  R  W
+|
+|
+|
+|
+|                                                                                             87 MscI
+|                                                                                             |             
+|       TGTGTGTCACCAGGGCAGTGCAGCAAGCCCTGCTCAGTGAGTAACGCACACTTGGCGGGCCCGCATGCTCGTACGCCTCCTCCTCGTGGCCAAGCGCGCT 100
+|       ACACACAGTGGTCCCGTCACGTCGTTCGGGACGAGTCACTCATTGCGTGTGAACCGCCCGGGCGTACGAGCATGCGGAGGAGGAGCACCGGTTCGCGCGA
+|                                               >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+|                                               x-y
+|
+|         T  L  V  *  R  I  F  Y  S  V  K  W  T  Y  N  G  Y
+|
+|
+|
+|
+|       GGACCCTAGTATGACGGATCTTCTATTCCGTGAAATGGACGTATAACGGTTATC 154
+|       CCTGGGATCATACTGCCTAGAAGATAAGGCACTTTACCTGCATATTGCCAATAG
+|       >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+|       x-y
+|
+|
+tags
+tag dnatag - 10.7 10.107 20.7 20.61
+tag f0# - 10.47 10.107 12.47 12.107 20.7 20.58 22.7 22.58
+tag ls101_1 - 20.7 20.61
+tag ls1_1 - 10.7 10.107
+END
+CASE textmap 29
+circular 0
+seq CGGGCGCCC
+title a long name for a sequence document that is much longer than one line of the text map
+region 5 8
+rowwidth 41
+selection 5 8
+methylated 1
+enz SfiI SrfI
+settings width=100 space=5 show_space=1 numbers=Both copy=0 second=1 show_trans=1 trans=6_3 show_enz=0 genes=1 show_index=1 char1=| char2=- sp1=4 sp2=8 nums=0 show_features=1 hidden=1 crop=0
+order features enzymes translation genes dna index space sec_strand
+sites HaeII 3
+sites HhaI 4
+sites KasI 3
+sites NarI 3
+sites SfoI 3
+out
+|DATE
+|a long name for a sequence document that is much longer than one line of the text map
+|       Ala
+|       
+|       
+|       Gly
+|       
+|       
+|       A
+|     6 GCC 8
+|         |
+|
+|
+|
+|
+|
+|       CGG
+|
+|
+tags
+tag dnatag - 10.7 10.10
+tag ls6_1 - 10.7 10.10
+END
+CASE textmap 30
+circular 0
+seq ttaGTTTGTAGAAGCCGTGGAAAAATGGGCCgtgcttaagTGCTTGGTTCGGCAGAAATgttctataaaatccagTGATCCAGCCGAACGCGGACAAAATGAc
+title pUC19.gb
+region 22 81
+rowwidth 71
+selection 22 81
+methylated 1
+enz AatII AbsI Acc65I AciI AclI AfeI AflII AgeI AluI ApaI ApaLI ApoI AscI AseI AvaI AvrII BamHI BbsI BclI BfaI BglII BmgBI BsaAI BsaBI BsaI BsaWI BsiWI BsmBI BspEI BspHI BsrBI BsrGI BssHII BssSI BstBI BstUI BstYI BstZ17I Cac8I ClaI DpnI DraI EagI EcoRI EcoRV FseI FspI HaeII HaeIII HhaI HincII HindIII HpaI HpaII Hpy8I HpyCH4IV HpyCH4V KasI KpnI MauBI MboI MfeI MluCI MluI MreI MscI MseI NaeI NarI NcoI NdeI NgoMIV NheI NlaIII NotI NruI NsiI NspI PacI PaqCI PciI PmeI PmlI PshAI PsiI PstI PvuI PvuII RsaI SacI SacII SalI SapI SbfI ScaI SfiI SfoI SgfI SgrAI SgrDI SmaI SnaBI SpeI SphI SrfI SspI StuI SwaI TaqI TatI XbaI XcmI XhoI XmaI XmnI ZraI
+settings width=20 space=5 show_space=1 numbers=Left copy=1 second=1 show_trans=0 trans=1_3 show_enz=1 genes=0 show_index=0 char1=+ char2=^ sp1=11 sp2=11 nums=0 show_features=1 hidden=1 crop=0
+order index space features translation genes enzymes dna sec_strand
+sites AciI 90
+sites AflII 35
+sites BstUI 89
+sites DpnI 77
+sites HaeIII 28
+sites MseI 36
+out
+|DATE
+|pUC19.gb
+|
+|
+|
+|
+|
+|                    36 MseI
+|                   35 AflII
+|            28 HaeIII
+|            |      ||      
+|    23 AAATGGGCCgtgcttaagTG 
+|       TTTACCCGGcacgaattcAC
+|
+|
+|
+|
+|
+|
+|    43 CTTGGTTCGGCAGAAATgtt 
+|       GAACCAAGCCGTCTTTAcaa
+|
+|
+|
+|
+|
+|
+|                     77 DpnI
+|                     |    
+|    63 ctataaaatccagTGATCC 
+|       gatattttaggtcACTAGG
+|
+|
+tags
+tag dnatag - 12.7 12.27 20.7 20.27 30.7 30.26
+tag ls23_1 - 12.7 12.27
+tag ls43_1 - 20.7 20.27
+tag ls63_1 - 30.7 30.26
+END
+CASE textmap 31
+circular 0
+seq CCTCGAGTCATCTGCGCTAAGTATGTTTTAAAGTGTTCGTTGATCAGTTATGCGCGGGATCCGCGAGGGGACCCTCGGGTCTCCACGCCGGCGGAAGACAAATGTCAGGGGCAAAGGCCCTGTCTGACTATTCCCGATGGGCCCACGCGGCCCTAA
+title a long name for a sequence document that is much longer than one line of the text map
+region 81 107
+rowwidth 13
+selection 81 107
+methylated 1
+enz AatII AbsI Acc65I AciI AclI AfeI AflII AgeI AluI ApaI ApaLI ApoI AscI AseI AvaI AvrII BamHI BbsI BclI BfaI BglII BmgBI BsaAI BsaBI BsaI BsaWI BsiWI BsmBI BspEI BspHI BsrBI BsrGI BssHII BssSI BstBI BstUI BstYI BstZ17I Cac8I ClaI DpnI DraI EagI EcoRI EcoRV FseI FspI HaeII HaeIII HhaI HincII HindIII HpaI HpaII Hpy8I HpyCH4IV HpyCH4V KasI KpnI MauBI MboI MfeI MluCI MluI MreI MscI MseI NaeI NarI NcoI NdeI NgoMIV NheI NlaIII NotI NruI NsiI NspI PacI PaqCI PciI PmeI PmlI PshAI PsiI PstI PvuI PvuII RsaI SacI SacII SalI SapI SbfI ScaI SfiI SfoI SgfI SgrAI SgrDI SmaI SnaBI SpeI SphI SrfI SspI StuI SwaI TaqI TatI XbaI XcmI XhoI XmaI XmnI ZraI
+settings width=100 space=2 show_space=0 numbers=Right copy=1 second=0 show_trans=0 trans=6_3 show_enz=1 genes=1 show_index=1 char1=_ char2=* sp1=24 sp2=10 nums=0 show_features=1 hidden=1 crop=0
+order enzymes features dna sec_strand translation genes index space
+feature 0 1 0 #eded5c #e69b3c primer_bind | 84 115 |  | amp
+feature 1 0 0 #498b01 #38614e CDS | 124 131 |  | amp
+feature 2 1 1 #074e13 #a6a823 cds | 61 137 |  | amp
+feature 3 0 1 #91d82a #2a2252 rep_origin | 18 52 |  | CDS 1
+feature 4 1 0 #4bc3b1 #eabb24 cds | 6 109 |  | lacZ
+sites AciI 54 61 91 147
+sites ApaI 139
+sites AvaI 2 74
+sites BamHI 57
+sites BbsI 94
+sites BsaI 78
+sites BstUI 53 62 146
+sites BstYI 57
+sites Cac8I 87
+sites DpnI 42 58
+sites DraI 27
+sites HaeIII 116 140 149
+sites HhaI 14 52
+sites HpaII 88
+sites MreI 86
+sites MseI 28
+sites NaeI 87
+sites NgoMIV 87
+sites PshAI 97
+sites SfiI 140
+sites SgrAI 86
+sites TaqI 3
+sites XhoI 2
+out
+|DATE
+|a long name for a sequence document that is much longer than one line of the text map
+|                91 AciI
+|             88 HpaII
+|            87 NgoMIV
+|            87 NaeI
+|            87 Cac8I
+|           86 SgrAI   97 PshAI
+|           86 MreI 94 BbsI
+|           |||  |  |  |          
+|        W  A  P  P  L  C  I  D  P
+|       18
+|       <<<<<<<<<<<<<<<<<<<<<<<<<<
+|       amp
+|       G  R  R  R  F  V  F  T  L 
+|       9
+|       <<<<<<<<<<<<<<<<<<<<<<<<<<
+|       lacZ
+|          <<<<<<<<<<<<<<<<<<<<<<<
+|          amp
+|       TCCACGCCGGCGGAAGACAAATGTCA 107
+|       S  T  P  A  E  D  K  C
+|               *         *       
+|
+|
+tags
+tag dnatag - 21.7 21.33
+tag f0# #e69b3c 19.10 19.33 21.10 21.33
+tag f2# - 13.7 13.33 21.7 21.33
+tag f4# #eabb24 17.7 17.33 21.7 21.33
+tag ls82_1 - 21.7 21.33
+END
+CASE textmap 32
+circular 1
+seq cggttgggCGACGCGGGTCGGAATGGAAAAATAATAAcagatactct
+title a long name for a sequence document that is much longer than one line of the text map
+region 7 12
+rowwidth 36
+selection 7 12
+methylated 1
+enz Cac8I AgeI Acc65I SwaI PacI PsiI BmgBI RsaI
+settings width=12 space=5 show_space=0 numbers=None copy=0 second=0 show_trans=1 trans=1_3 show_enz=1 genes=0 show_index=1 char1=: char2=* sp1=21 sp2=2 nums=1 show_features=1 hidden=1 crop=1
+order dna index genes sec_strand translation space enzymes features
+sites AciI 13
+sites BstUI 12
+sites PshAI 10
+out
+|DATE
+|a long name for a se
+|quence document that
+| is much longer than
+| one line of the tex
+|t map
+|       gCGAC 
+|       * * *
+|       
+|       Ala
+|
+|
+tags
+tag dnatag - 7.7 7.12
+tag ls8_1 - 7.7 7.12
+END
+CASE textmap 33
+circular 0
+seq CGAGTAGGGCGAAACTAACGCTAGCAACTAGCGCCGGCCCCCGGGGCAGGTGGGCTTTGACAGTTACGCGCGGGCCTGCCATACGTTGCTAGCGGGTCCAACAGTTATAATGCCAA
+title pUC19.gb
+region all
+rowwidth 62
+selection -
+methylated 0
+enz AatII AbsI Acc65I AciI AclI AfeI AflII AgeI AluI ApaI ApaLI ApoI AscI AseI AvaI AvrII BamHI BbsI BclI BfaI BglII BmgBI BsaAI BsaBI BsaI BsaWI BsiWI BsmBI BspEI BspHI BsrBI BsrGI BssHII BssSI BstBI BstUI BstYI BstZ17I Cac8I ClaI DpnI DraI EagI EcoRI EcoRV FseI FspI HaeII HaeIII HhaI HincII HindIII HpaI HpaII Hpy8I HpyCH4IV HpyCH4V KasI KpnI MauBI MboI MfeI MluCI MluI MreI MscI MseI NaeI NarI NcoI NdeI NgoMIV NheI NlaIII NotI NruI NsiI NspI PacI PaqCI PciI PmeI PmlI PshAI PsiI PstI PvuI PvuII RsaI SacI SacII SalI SapI SbfI ScaI SfiI SfoI SgfI SgrAI SgrDI SmaI SnaBI SpeI SphI SrfI SspI StuI SwaI TaqI TatI XbaI XcmI XhoI XmaI XmnI ZraI
+settings width=60 space=2 show_space=1 numbers=None copy=0 second=0 show_trans=1 trans=6_1 show_enz=0 genes=1 show_index=0 char1=- char2=. sp1=25 sp2=7 nums=1 show_features=1 hidden=1 crop=1
+order features index enzymes dna genes sec_strand space translation
+feature 0 1 0 #3f7275 #8436b8 primer_bind | 45 89 |  | x-y
+feature 1 1 0 #6be047 #a61a08 gene | 2 111 |  | (odd) name
+feature 2 1 0 #4e0219 #eb4d75 rep_origin | 24 30 |  | a
+sites AciI 70 92
+sites AvaI 40
+sites BfaI 21 28 89
+sites BstUI 67 69
+sites Cac8I 20 33 70 74 88
+sites HaeII 30
+sites HaeIII 36 73
+sites HhaI 31 68
+sites HpaII 34 41
+sites HpyCH4IV 83
+sites NaeI 33
+sites NgoMIV 33
+sites NheI 20 88
+sites PaqCI 46
+sites PsiI 105
+sites SmaI 40
+sites XmaI 40
+out
+|DATE
+|pUC19.gb
+|         <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+|         (odd) name
+|                               <<<<<<               <<<<<<<<<<<<<<<
+|                               a                    x-y
+|       CGAGTAGGGCGAAACTAACGCTAGCAACTAGCGCCGGCCCCCGGGGCAGGTGGGCTTTGA 
+|       R  V  G  R  N  *  R  *  Q  L  A  P  A  P  G  A  G  G  L  *  
+|
+|
+|       R  V  G  R  N  *  R  *  Q  L  A  P  A  P  G  A  G  G  L  *  
+|        E  *  G  E  T  N  A  S  N  *  R  R  P  P  G  Q  V  G  F  D 
+|         S  R  A  K  L  T  L  A  T  S  A  G  P  R  G  R  W  A  L  T
+|       S  Y  P  S  V  L  A  L  L  *  R  R  G  G  P  C  T  P  K  S  
+|        L  L  A  F  S  V  S  A  V  L  A  P  G  R  P  L  H  A  K  V 
+|         T  P  R  F  *  R  *  C  S  A  G  A  G  P  A  P  P  S  Q  C
+|
+|       <<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+|       x-y
+|       <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+|       (odd) name
+|       CAGTTACGCGCGGGCCTGCCATACGTTGCTAGCGGGTCCAACAGTTATAATGCCAA 
+|       Q  L  R  A  G  L  P  Y  V  A  S  G  S  N  S  Y  N  A
+|
+|
+|       Q  L  R  A  G  L  P  Y  V  A  S  G  S  N  S  Y  N  A
+|        S  Y  A  R  A  C  H  T  L  L  A  G  P  T  V  I  M  P
+|         V  T  R  G  P  A  I  R  C  *  R  V  Q  Q  L  *  C  Q
+|       L  *  A  R  A  Q  W  V  N  S  A  P  G  V  T  I  I  G
+|        T  V  R  P  G  A  M  R  Q  *  R  T  W  C  N  Y  H  W
+|         N  R  A  P  R  G  Y  T  A  L  P  D  L  L  *  L  A  L
+|
+|
+tags
+tag dnatag - 7.7 7.67 22.7 22.63
+tag f0# #8436b8 5.52 5.67 18.7 18.36
+tag f1# #a61a08 3.9 3.67 20.7 20.58
+tag f2# #eb4d75 5.31 5.37
+tag ls1_1 - 7.7 7.67
+tag ls61_1 - 22.7 22.63
+END
+CASE textmap 34
+circular 0
+seq TGCAA
+title a
+region all
+rowwidth 7
+selection 2 5
+methylated 1
+enz AatII AbsI Acc65I AciI AclI AfeI AflII AgeI AluI ApaI ApaLI ApoI AscI AseI AvaI AvrII BamHI BbsI BclI BfaI BglII BmgBI BsaAI BsaBI BsaI BsaWI BsiWI BsmBI BspEI BspHI BsrBI BsrGI BssHII BssSI BstBI BstUI BstYI BstZ17I Cac8I ClaI DpnI DraI EagI EcoRI EcoRV FseI FspI HaeII HaeIII HhaI HincII HindIII HpaI HpaII Hpy8I HpyCH4IV HpyCH4V KasI KpnI MauBI MboI MfeI MluCI MluI MreI MscI MseI NaeI NarI NcoI NdeI NgoMIV NheI NlaIII NotI NruI NsiI NspI PacI PaqCI PciI PmeI PmlI PshAI PsiI PstI PvuI PvuII RsaI SacI SacII SalI SapI SbfI ScaI SfiI SfoI SgfI SgrAI SgrDI SmaI SnaBI SpeI SphI SrfI SspI StuI SwaI TaqI TatI XbaI XcmI XhoI XmaI XmnI ZraI
+settings width=50 space=2 show_space=0 numbers=Left copy=1 second=0 show_trans=0 trans=3_1 show_enz=0 genes=1 show_index=0 char1=_ char2=: sp1=21 sp2=7 nums=0 show_features=1 hidden=0 crop=0
+order dna sec_strand genes space enzymes index translation features
+feature 0 0 0 #515dcf #39f8cd rep_origin | 4 5 |  | amp
+feature 1 0 1 #25e850 #955d85 CDS | 0 4 |  | amp
+feature 2 0 0 #928004 #3dff6b CDS | 4 5 |  | long feature name that goes on and on and on
+feature 3 0 0 #b5ee30 #ed3197 misc_feature | 0 1 2 4 | 0 4 | lacZ
+feature 4 1 0 #9a6cdf #594f06 cds | 0 5 |  | (odd) name
+feature 5 0 0 #50f340 #87f595 CDS | 0 5 |  | a
+feature 6 1 0 #ec6a75 #3293a2 CDS | 0 4 |  | amp
+sites HpyCH4V 1
+out
+|DATE
+|a
+|     1 TGCAA 
+|       C
+|       >.>>>
+|       lacZamp
+|       A  
+|       1
+|       <<<<<
+|       (odd) name
+|       C  
+|       1
+|       >>>>>
+|       a
+|       A    
+|       1   1
+|       <<<<>
+|       amp long feature name that goes on and on and on
+|
+|
+tags
+tag dnatag - 3.7 3.12
+tag f0# #515dcf 5.11 5.12
+tag f1# - 3.7 3.11
+tag f2# #928004 17.11 17.12
+tag f3# #b5ee30 3.7 3.8 3.9 3.11 5.7 5.8 5.9 5.11
+tag f4# #594f06 3.7 3.11 9.7 9.12
+tag f5# #50f340 3.7 3.11 13.7 13.12
+tag f6# #3293a2 3.7 3.11 17.7 17.11
+tag ls1_1 - 3.7 3.12
+END
+CASE textmap 35
+circular 1
+seq TAcgrw
+title a long name for a sequence document that is much longer than one line of the text map
+region all
+rowwidth 45
+selection 3 6
+methylated 0
+enz AatII AbsI Acc65I AciI AclI AfeI AflII AgeI AluI ApaI ApaLI ApoI AscI AseI AvaI AvrII BamHI BbsI BclI BfaI BglII BmgBI BsaAI BsaBI BsaI BsaWI BsiWI BsmBI BspEI BspHI BsrBI BsrGI BssHII BssSI BstBI BstUI BstYI BstZ17I Cac8I ClaI DpnI DraI EagI EcoRI EcoRV FseI FspI HaeII HaeIII HhaI HincII HindIII HpaI HpaII Hpy8I HpyCH4IV HpyCH4V KasI KpnI MauBI MboI MfeI MluCI MluI MreI MscI MseI NaeI NarI NcoI NdeI NgoMIV NheI NlaIII NotI NruI NsiI NspI PacI PaqCI PciI PmeI PmlI PshAI PsiI PstI PvuI PvuII RsaI SacI SacII SalI SapI SbfI ScaI SfiI SfoI SgfI SgrAI SgrDI SmaI SnaBI SpeI SphI SrfI SspI StuI SwaI TaqI TatI XbaI XcmI XhoI XmaI XmnI ZraI
+settings width=150 space=1 show_space=1 numbers=Right copy=0 second=0 show_trans=0 trans=1_1 show_enz=0 genes=1 show_index=1 char1=_ char2=| sp1=6 sp2=11 nums=1 show_features=1 hidden=0 crop=1
+order space dna translation features index enzymes genes sec_strand
+feature 0 0 0 #1bcfc3 #ed89d2 CDS | 5 6 |  | amp
+feature 1 0 0 #58e4be #e210e9 primer_bind | 0 4 |  | T7 promoter
+feature 2 1 0 #e71855 #d8202b rep_origin | 1 5 5 6 | 1 6 | amp
+feature 3 0 1 #200762 #30585c promoter | 0 5 |  | ori
+feature 4 0 0 #13a231 #cf97e9 promoter | 4 6 |  | my gene
+out
+|DATE
+|a long name for a sequence document that is much longer than one line of the text map
+|
+|       TAcgrw 6
+|       >>>>
+|       T7 promoter
+|        <<<<<
+|        amp
+|           >>
+|           my gene
+|             
+|            1
+|            >
+|            amp
+|             
+|            6
+|       Y  X
+|
+|
+tags
+tag dnatag - 4.7 4.13
+tag f0# #1bcfc3 13.12 13.13
+tag f1# #58e4be 5.7 5.11
+tag f2# #d8202b 7.8 7.13
+tag f4# #13a231 9.11 9.13
+tag ls1_1 - 4.7 4.13
+END
+CASE textmap 36
+circular 1
+seq CCTACGAACGACGTAAAGTTCTCGTGGTCGGTTGCATTTCCGTACGTGGGCCCGTCTATTCGCGCCTGCGGACATAGATGCTGAAGCATACGGCGATACCCGCATACCACCTCGCGACACCAAATACGGTTTACAGCGTCGTACAGGAAAGACATTCGCCGAATACTAGAGCTCAA
+title a long name for a sequence document that is much longer than one line of the text map
+region all
+rowwidth 9
+selection -
+methylated 1
+enz NsiI SrfI BssSI FspI BstUI MauBI PmeI BsaAI NlaIII MboI SfoI BspHI
+settings width=60 space=4 show_space=1 numbers=Left copy=0 second=1 show_trans=0 trans=1_3 show_enz=1 genes=0 show_index=0 char1=+ char2=+ sp1=14 sp2=3 nums=1 show_features=1 hidden=1 crop=0
+order translation dna features enzymes genes sec_strand index space
+feature 0 1 0 #fda4f7 #5eaa1e cds | 71 127 |  | CDS 1
+feature 1 0 0 #1f50dc #4cf2b0 CDS | 66 137 |  | x-y
+feature 2 1 0 #6b545f #9935ec primer_bind | 53 93 |  | my gene
+feature 3 0 0 #c4c45d #2dec23 CDS | 62 121 |  | b c d
+feature 4 1 0 #05555a #7f33d2 CDS | 104 117 |  | a
+feature 5 0 0 #7ddb30 #8926a5 CDS | 117 176 0 40 |  | ori
+sites AciI 68 100
+sites AluI 170
+sites ApaI 48
+sites BfaI 166
+sites BsaAI 43
+sites BsiWI 41
+sites BssSI 21
+sites BstUI 61 113
+sites Cac8I 64
+sites HaeIII 49
+sites HhaI 62
+sites Hpy8I 129
+sites HpyCH4IV 11 44
+sites HpyCH4V 33
+sites NruI 112
+sites RsaI 42 141
+sites SacI 169
+out
+|DATE
+|a long name for a sequence document that is much longer than one lin
+|e of the text map
+|     1 CCTACGAACGACGTAAAGTTCTCGTGGTCGGTTGCATTTCCGTACGTGGGCCCGTCTATT 
+|        L  R  T  T  *  S  S  R  G  R  L  H  F  
+|       21
+|       >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>             <<<<<<<
+|       ori                                                  my gene
+|                           |                     |                 
+|                           21 BssSI              43 BsaAI
+|       GGATGCTTGCTGCATTTCAAGAGCACCAGCCAACGTAAAGGCATGCACCCGGGCAGATAA
+|
+|
+|
+|
+|
+|    61 CGCGCCTGCGGACATAGATGCTGAAGCATACGGCGATACCCGCATACCACCTCGCGACAC 
+|                                                   V  V  E  R   H  
+|                                                   4            1
+|       <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<           <<<<<<<<<<<<<>>>
+|       my gene                                     a            ori
+|         R  L  R  T  *  M  L  K  H  T  A  I  P  A  Y  H  L  A  T  
+|         1
+|         >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+|         b c d
+|             C  G  H  R  C  *  S  I  R  R  Y  P  H  T  T  S  R  H  
+|             1
+|             >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+|             x-y
+|                  C  L  H  Q  L  M  R  R  Y  G  C  V  V  E  R  C  W
+|                  18
+|                  <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+|                  CDS 1
+|       |                                                   |       
+|       61 BstUI                                            113 BstUI
+|       GCGCGGACGCCTGTATCTACGACTTCGTATGCCGCTATGGGCGTATGGTGGAGCGCTGTG
+|
+|
+|
+|
+|
+|   121 CAAATACGGTTTACAGCGTCGTACAGGAAAGACATTCGCCGAATACTAGAGCTCAA 
+|         I  
+|       1
+|       <<<<<<<
+|       CDS 1
+|       Q  I  R  F  T  
+|       19
+|       >>>>>>>>>>>>>>>>>
+|       x-y
+|       >
+|       b c d
+|       Q  I  R  F  T  A  S  Y  R  K  D  I  R  R  I  L  E  L  N 
+|       2
+|       >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+|       ori
+|       GTTTATGCCAAATGTCGCAGCATGTCCTTTCTGTAAGCGGCTTATGATCTCGAGTT
+|
+|
+|
+|
+|
+|
+tags
+tag dnatag - 4.7 4.67 17.7 17.67 42.7 42.63
+tag f0# #5eaa1e 32.18 32.67 45.7 45.14
+tag f1# #1f50dc 28.13 28.67 49.7 49.24
+tag f2# #9935ec 7.60 7.67 20.7 20.40
+tag f3# #c4c45d 24.9 24.67 51.7 51.8
+tag f4# #7f33d2 20.51 20.64
+tag f5# #7ddb30 7.7 7.47 20.64 20.67 55.7 55.63
+tag ls121_1 - 42.7 42.63
+tag ls1_1 - 4.7 4.67
+tag ls61_1 - 17.7 17.67
+END
+CASE textmap 37
+circular 1
+seq GGCGCTCC
+title a
+region 4 7
+rowwidth 58
+selection 4 7
+methylated 1
+enz AatII AbsI Acc65I AciI AclI AfeI AflII AgeI AluI ApaI ApaLI ApoI AscI AseI AvaI AvrII BamHI BbsI BclI BfaI BglII BmgBI BsaAI BsaBI BsaI BsaWI BsiWI BsmBI BspEI BspHI BsrBI BsrGI BssHII BssSI BstBI BstUI BstYI BstZ17I Cac8I ClaI DpnI DraI EagI EcoRI EcoRV FseI FspI HaeII HaeIII HhaI HincII HindIII HpaI HpaII Hpy8I HpyCH4IV HpyCH4V KasI KpnI MauBI MboI MfeI MluCI MluI MreI MscI MseI NaeI NarI NcoI NdeI NgoMIV NheI NlaIII NotI NruI NsiI NspI PacI PaqCI PciI PmeI PmlI PshAI PsiI PstI PvuI PvuII RsaI SacI SacII SalI SapI SbfI ScaI SfiI SfoI SgfI SgrAI SgrDI SmaI SnaBI SpeI SphI SrfI SspI StuI SwaI TaqI TatI XbaI XcmI XhoI XmaI XmnI ZraI
+settings width=100 space=4 show_space=1 numbers=Right copy=0 second=1 show_trans=1 trans=1_3 show_enz=0 genes=1 show_index=1 char1=^ char2=* sp1=12 sp2=2 nums=1 show_features=1 hidden=1 crop=0
+order dna index sec_strand enzymes translation features genes space
+feature 0 1 0 #c722e8 #ee3100 CDS | 0 3 |  | amp
+sites HaeII 1
+sites HhaI 2
+sites HpaII 7
+out
+|DATE
+|a
+|       CTC 7
+|        * 
+|       
+|       GAG
+|       Leu
+|       L
+|
+|
+|
+|
+|
+|
+tags
+tag dnatag - 3.7 3.10
+tag ls5_1 - 3.7 3.10
+END
+CASE textmap 38
+circular 0
+seq GCGCGCTGT
+title a long name for a sequence document that is much longer than one line of the text map
+region 3 7
+rowwidth 71
+selection 3 7
+methylated 1
+enz BssSI NaeI SgfI BsmBI HincII BstUI ApaLI SpeI HpaI
+settings width=10 space=4 show_space=0 numbers=Right copy=0 second=0 show_trans=1 trans=3_1 show_enz=0 genes=0 show_index=1 char1=* char2=| sp1=24 sp2=6 nums=0 show_features=1 hidden=1 crop=0
+order dna enzymes translation genes space sec_strand index features
+sites BssHII 1
+sites BstUI 2
+sites Cac8I 1
+sites HhaI 1 3
+out
+|DATE
+|a long name for a 
+|sequence document 
+|that is much longe
+|r than one line of
+| the text map
+|       CGCT 7
+|       R
+|        A
+|         
+|         |
+|
+|
+tags
+tag dnatag - 7.7 7.11
+tag ls4_1 - 7.7 7.11
+END
+CASE textmap 39
+circular 1
+seq GAGCGAAACCTGCTGATCGCGGGGAATATGTCCTGAGCGTAGACTAGaagtta
+title a
+region 9 50
+rowwidth 5
+selection 9 50
+methylated 0
+enz AatII AbsI Acc65I AciI AclI AfeI AflII AgeI AluI ApaI ApaLI ApoI AscI AseI AvaI AvrII BamHI BbsI BclI BfaI BglII BmgBI BsaAI BsaBI BsaI BsaWI BsiWI BsmBI BspEI BspHI BsrBI BsrGI BssHII BssSI BstBI BstUI BstYI BstZ17I Cac8I ClaI DpnI DraI EagI EcoRI EcoRV FseI FspI HaeII HaeIII HhaI HincII HindIII HpaI HpaII Hpy8I HpyCH4IV HpyCH4V KasI KpnI MauBI MboI MfeI MluCI MluI MreI MscI MseI NaeI NarI NcoI NdeI NgoMIV NheI NlaIII NotI NruI NsiI NspI PacI PaqCI PciI PmeI PmlI PshAI PsiI PstI PvuI PvuII RsaI SacI SacII SalI SapI SbfI ScaI SfiI SfoI SgfI SgrAI SgrDI SmaI SnaBI SpeI SphI SrfI SspI StuI SwaI TaqI TatI XbaI XcmI XhoI XmaI XmnI ZraI
+settings width=100 space=3 show_space=1 numbers=None copy=0 second=1 show_trans=0 trans=3_3 show_enz=1 genes=0 show_index=0 char1=^ char2=+ sp1=10 sp2=7 nums=1 show_features=1 hidden=1 crop=0
+order dna enzymes translation features space sec_strand genes index
+feature 0 0 0 #777ccd #bd0f89 primer_bind | 37 53 0 20 |  | T7 promoter
+feature 1 0 0 #a914fd #76fd46 CDS | 30 38 39 40 14 17 | 30 53 0 17 | long feature name that goes on and on and on
+feature 2 0 0 #cc8242 #355d67 cds | 37 38 |  | CDS 1
+feature 3 0 0 #312bfa #c57f6c gene | 12 18 33 42 | 12 42 | lacZ
+feature 4 1 0 #c5cd2f #700b92 gene | 3 17 |  | (odd) name
+feature 5 0 0 #dca480 #dcbce2 promoter | 2 5 |  | (odd) name
+sites AciI 19
+sites BfaI 44
+sites BstUI 18
+sites Hpy8I 39
+sites MboI 15
+out
+|DATE
+|a
+|       CTGCTGATCGCGGGGAATATGTCCTGAGCGTAGACTAGaag 
+|            |  ||                   |    |      
+|            15 MboI                 39 Hpy8I
+|               18 BstUI                  44 BfaI
+|                19 AciI
+|                                    
+|                                   1
+|       >>>>>>>>>>>                 >
+|       T7 promoter                 CDS 1
+|       <<<<<<<<
+|       (odd) name
+|          >>>>>>...............>>>>>>>>>
+|          lacZ
+|            D  
+|          4
+|       .....>>>
+|       long feature name that goes on and on and on
+|
+|
+|
+|       GACGACTAGCGCCCCTTATACAGGACTCGCATCTGATCttc
+|
+|
+tags
+tag dnatag - 3.7 3.48
+tag f0# #777ccd 10.7 10.18
+tag f1# #a914fd 18.12 18.15
+tag f2# #cc8242 10.35 10.36
+tag f3# #312bfa 14.10 14.16 14.31 14.40
+tag f4# #700b92 12.7 12.15
+tag ls10_1 - 3.7 3.48
+END
+CASE textmap 40
+circular 1
+seq TCGCAAGTGTCTACGCGGGTAGTCGAGATCGAGTGTGCCAACGAGCAAATTAATACGCGTTTTCAGGTTTAGGCAGGCTGTCCACTAGTCATGTTATCTGTGTGGCCATTCCCTGGAAATCGCCTCTATTTTGACGTGTGAGGGGCGAGAATCATGGTAGCCGTCGACGACTTATTCTGGCATTTTCGAATTCCCAGTGCTATTGAGCGGTGTGTCTAGTGCCAGTGAATGGGCACCAACATGATCTAACTCA
+title pUC19.gb
+region 203 228
+rowwidth 5
+selection 203 228
+methylated 0
+enz SacI NarI AciI BsmBI NotI BstZ17I MluI HindIII
+settings width=100 space=1 show_space=1 numbers=Right copy=1 second=1 show_trans=0 trans=3_1 show_enz=1 genes=1 show_index=1 char1=+ char2=- sp1=23 sp2=2 nums=1 show_features=1 hidden=0 crop=0
+order dna features sec_strand index genes space enzymes translation
+feature 0 1 0 #1454fd #ba2a95 misc_feature | 5 217 |  | x-y
+feature 1 0 0 #dc18d4 #51d6a8 promoter | 169 243 244 251 22 73 75 109 | 169 253 0 109 | b c d
+feature 2 1 0 #736488 #837278 gene | 138 160 |  | T7 promoter
+sites AciI 15 207
+sites ApoI 188
+sites AseI 49
+sites BfaI 85 216
+sites BmgBI 133
+sites BsrBI 205
+sites BstBI 185
+sites BstUI 14 56
+sites Cac8I 73
+sites EcoRI 188
+sites HaeIII 104
+sites HincII 163
+sites Hpy8I 9 80 163
+sites HpyCH4IV 134
+sites MboI 27 243
+sites MluCI 48 189
+sites MluI 55
+sites MscI 103
+sites MseI 50
+sites NlaIII 90 153 240
+sites SalI 163
+sites SgrDI 162
+sites SpeI 84
+sites TaqI 23 29 164 186
+out
+|DATE
+|pUC19.gb
+|       TGAGCGGTGTGTCTAGTGCCAGTGA 228
+|       <<<<<<<<<<<<<<
+|       x-y
+|       >>>>>>>>>>>>>>>>>>>>>>>>>
+|       b c d
+|       ACTCGCCACACAGATCACGGTCACT
+|       - -+- - - - - - - - - - -
+|         207
+|       *  A  V  C  L  V  P  V
+|
+|          |                     
+|          207 AciI
+|
+|
+tags
+tag dnatag - 3.7 3.32
+tag f0# #ba2a95 3.7 3.21 4.7 4.21
+tag f1# #dc18d4 3.7 3.32 6.7 6.32
+tag ls204_1 - 3.7 3.32
+END
+CASE textmap 41
+circular 0
+seq CAGT
+title a
+region 0 3
+rowwidth 52
+selection 0 3
+methylated 1
+enz SphI MfeI BclI
+settings width=20 space=3 show_space=1 numbers=Left copy=1 second=0 show_trans=1 trans=3_1 show_enz=0 genes=1 show_index=1 char1=+ char2=- sp1=5 sp2=11 nums=0 show_features=1 hidden=1 crop=0
+order features index space genes translation dna sec_strand enzymes
+out
+|DATE
+|a
+|          
+|
+|
+|
+|       Q
+|       Q
+|        
+|         
+|     1 CAG 
+|
+|
+tags
+tag dnatag - 11.7 11.10
+tag ls1_1 - 11.7 11.10
+END
+CASE textmap 42
+circular 0
+seq TTTGCGTTACGTGTTTGTCTACCTGACAAGAGACCGAGACGACTAGTGCTCGACCGTGGAGCGGACCACTATGCGTATAACTAGGCTCTTTGAAGGTATCTTGAGAACCTCGGGTTATTTATGGTTAACGCACACAGAGCTCAAACGTGGGTAGAAGAGCGTCCCTCCACCAGCGAAATAA
+title a long name for a sequence document that is much longer than one line of the text map
+region all
+rowwidth 70
+selection -
+methylated 0
+enz HhaI BstYI AbsI MscI PacI HpyCH4V SrfI BspHI PmeI
+settings width=33 space=7 show_space=1 numbers=Right copy=1 second=1 show_trans=0 trans=6_3 show_enz=1 genes=0 show_index=1 char1=- char2=. sp1=14 sp2=4 nums=1 show_features=1 hidden=0 crop=1
+order genes dna translation space enzymes sec_strand features index
+feature 0 0 0 #f2d2d0 #f3f031 rep_origin | 9 98 |  | ori
+feature 1 1 0 #10371a #059eca cds | 32 34 49 63 67 95 | 32 95 | T7 promoter
+feature 2 0 0 #69c99d #2d1ea7 misc_feature | 9 79 89 98 143 169 | 9 169 | lacZ
+feature 3 1 1 #e96ccc #e7d045 CDS | 147 161 |  | ori
+feature 4 1 0 #d7903c #d6ee5c CDS | 138 176 |  | amp
+feature 5 1 0 #32fb51 #b514ac promoter | 65 136 |  | long feature name that goes on and on and on
+feature 6 1 0 #d8b2d4 #02b228 promoter | 93 133 |  | b c d
+sites AciI 61
+sites AluI 138
+sites AvaI 109
+sites BfaI 43 81
+sites BsaAI 8
+sites BsaI 30
+sites BsmBI 36
+sites BsrBI 59
+sites HincII 124
+sites HpaI 124
+sites Hpy8I 17 124
+sites HpyCH4IV 9 145
+sites MseI 125
+sites SacI 137
+sites SapI 154
+sites SpeI 42
+sites TaqI 50
+out
+|DATE
+|a long name for a sequence document that 
+|is much longer than one line of the text 
+|map
+|       TTTGCGTTACGTGTTTGTCTACCTGACAAGAGA 33
+|
+|
+|
+|
+|
+|
+|
+|       AAACGCAATGCACAAACAGATGGACTGTTCTCT
+|                >>>>>>>>>>>>>>>>>>>>>>>>
+|                ori
+|                >>>>>>>>>>>>>>>>>>>>>>>>
+|                lacZ
+|                                       S
+|                                       14
+|                                       <
+|                                       T
+|          .   .   . - .   .   .   -   . 
+|                   14            28
+|
+|       CCGAGACGACTAGTGCTCGACCGTGGAGCGGAC 66
+|
+|
+|
+|
+|
+|
+|
+|       GGCTCTGCTGATCACGAGCTGGCACCTCGCCTG
+|       >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+|       ori
+|                        S  R  P  A  V   
+|       13
+|       <...............<<<<<<<<<<<<<<...
+|       T7 promoter
+|       >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+|       lacZ
+|                                       <
+|                                       l
+|         .   . - .   .   .   -   .   .  
+|              42            56
+|
+|       CACTATGCGTATAACTAGGCTCTTTGAAGGTAT 99
+|
+|
+|
+|
+|
+|
+|
+|       GTGATACGCATATTGATCCGAGAAACTTCCATA
+|       >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+|       ori
+|       >>>>>>>>>>>>>..........>>>>>>>>>.
+|       lacZ
+|       <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+|       long feature name that goes on an
+|          I  R  I  V  L  S  K  S  
+|       8
+|       .<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+|       T7 promoter
+|                                  <<<<<<
+|                                  b c d
+|        . - .   .   .   -   .   .   . - 
+|         70            84            98
+|
+|       CTTGAGAACCTCGGGTTATTTATGGTTAACGCA 132
+|
+|
+|
+|
+|
+|
+|
+|       GAACTCTTGGAGCCCAATAAATACCAATTGCGT
+|       <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+|       long feature name that goes on an
+|       <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+|       b c d
+|       .................................
+|       lacZ
+|       .   .   .   -   .   .   . - .   .
+|                  112           126
+|
+|       CACAGAGCTCAAACGTGGGTAGAAGAGCGTCCC 165
+|
+|
+|
+|
+|
+|
+|
+|       GTGTCTCGAGTTTGCACCCATCTTCTCGCAGGG
+|       <<<<
+|       long feature name that goes on an
+|             S  L  R  P  Y  F  L  T  G  
+|             12
+|       <     <<<<<<<<<<<<<<<<<<<<<<<<<<<
+|       b c d amp
+|       ...........>>>>>>>>>>>>>>>>>>>>>>
+|       lacZ
+|          .   -   .   .   . - .   .   . 
+|             140           154
+|
+|       TCCACCAGCGAAATAA 181
+|
+|
+|
+|
+|
+|
+|
+|       AGGTGGTCGCTTTATT
+|       >>>>
+|       lacZ
+|       G  G  A  
+|       3
+|       <<<<<<<<<<<
+|       amp
+|         -   .   .   . 
+|        168
+|
+|
+tags
+tag dnatag - 5.7 5.40 25.7 25.40 47.7 47.40 71.7 71.40 89.7 89.40 109.7 109.23
+tag f0# #f2d2d0 5.16 5.40 14.16 14.40 25.7 25.40 34.7 34.40 47.7 47.39 56.7 56.39
+tag f1# #059eca 5.39 5.40 20.39 20.40 25.7 25.8 25.23 25.37 38.7 38.8 38.23 38.37 47.8 47.36 64.8 64.36
+tag f2# #69c99d 5.16 5.40 16.16 16.40 25.7 25.40 40.7 40.40 47.7 47.20 47.30 47.39 58.7 58.20 58.30 58.39 89.18 89.40 104.18 104.40 109.7 109.11 118.7 118.11
+tag f3# - 89.22 89.36
+tag f4# #d6ee5c 89.13 89.40 102.13 102.40 109.7 109.18 122.7 122.18
+tag f5# #b514ac 25.39 25.40 42.39 42.40 47.7 47.40 60.7 60.40 71.7 71.40 80.7 80.40 89.7 89.11 98.7 98.11
+tag f6# #02b228 47.34 47.40 66.34 66.40 71.7 71.40 82.7 82.40 89.7 89.8 102.7 102.8
+tag ls100_1 - 71.7 71.40
+tag ls133_1 - 89.7 89.40
+tag ls166_1 - 109.7 109.23
+tag ls1_1 - 5.7 5.40
+tag ls34_1 - 25.7 25.40
+tag ls67_1 - 47.7 47.40
+END
+CASE textmap 43
+circular 1
+seq TAAT
+title pUC19.gb
+region all
+rowwidth 67
+selection -
+methylated 0
+enz XbaI HpyCH4V
+settings width=100 space=2 show_space=0 numbers=None copy=0 second=0 show_trans=0 trans=3_1 show_enz=0 genes=1 show_index=1 char1=+ char2=| sp1=25 sp2=8 nums=1 show_features=1 hidden=0 crop=1
+order dna sec_strand genes enzymes index space features translation
+feature 0 0 0 #a6a995 #6cf780 cds | 1 4 |  | T7 promoter
+feature 1 0 0 #9a2b12 #b1e8d0 CDS | 0 4 |  | ori
+feature 2 1 0 #728f52 #50fe77 CDS | 3 4 |  | long feature name that goes on and on and on
+feature 3 0 1 #67752d #0bf1b6 misc_feature | 1 2 |  | a
+feature 4 1 0 #7dbf46 #479cd9 primer_bind | 0 4 |  | a
+sites AseI 3
+sites MluCI 2
+out
+|DATE
+|pUC19.gb
+|       TAAT 
+|       *
+|           
+|       
+|       *  
+|       1
+|       >>>>
+|       ori
+|       <<<<
+|       a
+|        N  
+|        1
+|        >>>
+|        T7 promoter
+|           
+|          0
+|          <
+|          long feature name that goes on and on and on
+|
+|
+tags
+tag dnatag - 3.7 3.11
+tag f0# #a6a995 15.8 15.11
+tag f1# #9a2b12 9.7 9.11
+tag f2# #50fe77 19.10 19.11
+tag f4# #479cd9 11.7 11.11
+tag ls1_1 - 3.7 3.11
+END
+CASE textmap 44
+circular 1
+seq attacGGTGGTATAAGCAAAAGTGACGGACCAGGGAAGTGGCgtctgagCTTTTCTTGTTGGCGGCGAAAGAAGTGTCCCATgtcatagCTGGCGCATTGTGTAACTACATCTGCGCTTCTAATTACTGTTAA
+title pUC19.gb
+region 68 133
+rowwidth 60
+selection 68 133
+methylated 0
+enz AfeI HpyCH4V FspI MboI BspHI NgoMIV MfeI MluI Hpy8I SfiI
+settings width=100 space=2 show_space=0 numbers=Left copy=1 second=1 show_trans=0 trans=3_3 show_enz=1 genes=0 show_index=0 char1=_ char2=+ sp1=1 sp2=6 nums=0 show_features=1 hidden=0 crop=0
+order features enzymes space dna index genes translation sec_strand
+feature 0 0 0 #9fc0e0 #71144f terminator | 36 59 |  | my gene
+feature 1 1 0 #da4cea #68f0e6 promoter | 9 58 |  | amp
+feature 2 0 0 #8ce558 #e1714d terminator | 83 86 91 97 16 49 | 83 133 0 49 | a
+feature 3 0 0 #9cf71e #cc40d8 CDS | 95 121 |  | T7 promoter
+feature 4 1 0 #e8940a #ca7f82 primer_bind | 2 29 |  | long feature name that goes on and on and on
+sites AciI 62
+sites AluI 48 88
+sites Cac8I 89
+sites HhaI 93 114
+sites MluCI 122 133
+sites MseI 130
+sites NlaIII 80
+sites XcmI 79
+out
+|DATE
+|pUC19.gb
+|                      >>>.....>>>>>>....................................
+|                      a
+|                                  H  C  V  T  T  S  A  L  
+|                                  1
+|                                  >>>>>>>>>>>>>>>>>>>>>>>>>>
+|                                  T7 promoter
+|    69 AAGAAGTGTCCCATgtcatagCTGGCGCATTGTGTAACTACATCTGCGCTTCTAATTACTGTTAA 
+|       TTCTTCACAGGGTAcagtatcGACCGCGTAACACATTGATGTAGACGCGAAGATTAATGACAATT
+|
+|
+tags
+tag dnatag - 9.7 9.72
+tag f2# #8ce558 3.22 3.25 3.30 3.36 9.22 9.25 9.30 9.36
+tag f3# #9cf71e 7.34 7.60 9.34 9.60
+tag ls69_1 - 9.7 9.72
+END
+CASE textmap 45
+circular 0
+seq gctagctaCACCGCCACCCCCCTGGAACCCCCAATgtacataagGTTGGGCCAGTCCCgttctttaaagCACTAACAAAGAATCAATTGCGACAAGATAGagtacttgttg
+title pUC19.gb
+region 18 91
+rowwidth 16
+selection 18 91
+methylated 0
+enz KasI HpaI
+settings width=150 space=1 show_space=0 numbers=None copy=1 second=0 show_trans=0 trans=1_3 show_enz=1 genes=0 show_index=0 char1=^ char2=. sp1=13 sp2=10 nums=0 show_features=1 hidden=1 crop=0
+order space dna enzymes genes translation features index sec_strand
+sites AciI 11
+sites AluI 4
+sites BfaI 2
+sites BsrGI 35
+sites Cac8I 1
+sites DraI 63
+sites HaeIII 49
+sites MfeI 84
+sites MluCI 85
+sites MseI 64
+sites NheI 1
+sites RsaI 36 102
+sites ScaI 101
+sites TatI 35 101
+out
+|DATE
+|pUC19.gb
+|       CCCCTGGAACCCCCAATgtacataagGTTGGGCCAGTCCCgttctttaaagCACTAACAAAGAATCAATTGCG 
+|
+|
+tags
+tag dnatag - 3.7 3.80
+tag ls19_1 - 3.7 3.80
+END
+CASE textmap 46
+circular 0
+seq CTATTAGTCCATCGGTGCCTACACAGGGACGGCTGGGATTATGGCCCGAGGATGGATGGCCCTAGGACGCACGTGTGCCCGAGCTGCCGGCGTGCCACAGAGGACATTAGTACATAAGCGATCGCACTTGTGCACCAT
+title pUC19.gb
+region 46 136
+rowwidth 18
+selection 46 136
+methylated 1
+enz AatII AbsI Acc65I AciI AclI AfeI AflII AgeI AluI ApaI ApaLI ApoI AscI AseI AvaI AvrII BamHI BbsI BclI BfaI BglII BmgBI BsaAI BsaBI BsaI BsaWI BsiWI BsmBI BspEI BspHI BsrBI BsrGI BssHII BssSI BstBI BstUI BstYI BstZ17I Cac8I ClaI DpnI DraI EagI EcoRI EcoRV FseI FspI HaeII HaeIII HhaI HincII HindIII HpaI HpaII Hpy8I HpyCH4IV HpyCH4V KasI KpnI MauBI MboI MfeI MluCI MluI MreI MscI MseI NaeI NarI NcoI NdeI NgoMIV NheI NlaIII NotI NruI NsiI NspI PacI PaqCI PciI PmeI PmlI PshAI PsiI PstI PvuI PvuII RsaI SacI SacII SalI SapI SbfI ScaI SfiI SfoI SgfI SgrAI SgrDI SmaI SnaBI SpeI SphI SrfI SspI StuI SwaI TaqI TatI XbaI XcmI XhoI XmaI XmnI ZraI
+settings width=150 space=2 show_space=0 numbers=Both copy=0 second=1 show_trans=0 trans=3_1 show_enz=0 genes=1 show_index=1 char1=+ char2=_ sp1=7 sp2=12 nums=1 show_features=1 hidden=0 crop=0
+order dna translation index features space enzymes sec_strand genes
+sites AluI 82
+sites ApaLI 130
+sites AvaI 45 78
+sites AvrII 61
+sites BfaI 62
+sites BsaAI 70
+sites Cac8I 86 90
+sites DpnI 120
+sites HaeIII 43 58
+sites HpaII 87
+sites Hpy8I 130
+sites HpyCH4IV 71
+sites HpyCH4V 131
+sites NaeI 86
+sites NgoMIV 86
+sites PmlI 70
+sites PvuI 119
+sites RsaI 110
+sites SgfI 118
+sites TatI 109
+out
+|DATE
+|pUC19.gb
+|    47 CGAGGATGGATGGCCCTAGGACGCACGTGTGCCCGAGCTGCCGGCGTGCCACAGAGGACATTAGTACATAAGCGATCGCACTTGTGCACC 136
+|         +      +      +      +      +      +      +      +      +      +      +      +      
+|        49     56     63     70     77     84     91     98     105    112    119    126    133
+|       GCTCCTACCTACCGGGATCCTGCGTGCACACGGGCTCGACGGCCGCACGGTGTCTCCTGTAATCATGTATTCGCTAGCGTGAACACGTGG
+|       R  G  W  M  A  L  G  R  T  C  A  R  A  A  G  V  P  Q  R  T  L  V  H  K  R  S  H  L  C  T
+|
+|
+tags
+tag dnatag - 3.7 3.97
+tag ls47_1 - 3.7 3.97
+END
+CASE textmap 47
+circular 0
+seq GTATCCGTCGTTTTTGCGCTGCATTGTTTGCCTAGAGATTTGGCGTCTGTTTAGACTTAATAGTACTGGACGACGTCCAGCTCTCCGCGCGGGCGCCGACGTAAATATGGTTTGTTCGGCCGAACAAAGAAAACCGTTAATGACGTCAGTACAACAAAAAGACTTCGCTAGCCCTGGATGTATGGAGCCTCTGTCACGATGCTTCGCG
+title a
+region all
+rowwidth 9
+selection -
+methylated 1
+enz AatII AbsI Acc65I AciI AclI AfeI AflII AgeI AluI ApaI ApaLI ApoI AscI AseI AvaI AvrII BamHI BbsI BclI BfaI BglII BmgBI BsaAI BsaBI BsaI BsaWI BsiWI BsmBI BspEI BspHI BsrBI BsrGI BssHII BssSI BstBI BstUI BstYI BstZ17I Cac8I ClaI DpnI DraI EagI EcoRI EcoRV FseI FspI HaeII HaeIII HhaI HincII HindIII HpaI HpaII Hpy8I HpyCH4IV HpyCH4V KasI KpnI MauBI MboI MfeI MluCI MluI MreI MscI MseI NaeI NarI NcoI NdeI NgoMIV NheI NlaIII NotI NruI NsiI NspI PacI PaqCI PciI PmeI PmlI PshAI PsiI PstI PvuI PvuII RsaI SacI SacII SalI SapI SbfI ScaI SfiI SfoI SgfI SgrAI SgrDI SmaI SnaBI SpeI SphI SrfI SspI StuI SwaI TaqI TatI XbaI XcmI XhoI XmaI XmnI ZraI
+settings width=33 space=3 show_space=1 numbers=Left copy=0 second=1 show_trans=0 trans=6_3 show_enz=0 genes=0 show_index=1 char1=: char2=^ sp1=20 sp2=10 nums=1 show_features=0 hidden=1 crop=1
+order index enzymes translation genes space features dna sec_strand
+feature 0 1 0 #db2f86 #33a23d misc_feature | 2 191 |  | long feature name that goes on and on and on
+feature 1 0 1 #5a193c #88583d CDS | 36 112 |  | a
+feature 2 0 0 #06c520 #80251b rep_origin | 88 136 200 202 | 88 202 | my gene
+feature 3 1 1 #13f3ae #59dfd2 gene | 116 155 |  | a
+feature 4 1 0 #692e62 #117c5d rep_origin | 23 161 |  | my gene
+sites AatII 72 142
+sites AciI 85 89
+sites AluI 79
+sites BfaI 32 168
+sites BstUI 86 88 205
+sites Cac8I 89 167
+sites EagI 117
+sites HaeII 92
+sites HaeIII 118
+sites HhaI 16 87 93
+sites HpyCH4IV 73 99 143
+sites HpyCH4V 20
+sites KasI 92
+sites MseI 57 137
+sites NarI 92
+sites NheI 167
+sites RsaI 63 149
+sites ScaI 62
+sites SfoI 92
+sites TatI 62 148
+sites ZraI 72 142
+out
+|DATE
+|a
+|                         20
+|                ^         :         ^   
+|
+|
+|
+|     1 GTATCCGTCGTTTTTGCGCTGCATTGTTTGCCT 
+|       CATAGGCAGCAAAAACGCGACGTAACAAACGGA
+|
+|            40                  60
+|             :         ^         :      
+|
+|
+|
+|    34 AGAGATTTGGCGTCTGTTTAGACTTAATAGTAC 
+|       TCTCTAAACCGCAGACAAATCTGAATTATCATG
+|
+|                   80
+|          ^         :         ^         
+|
+|
+|
+|    67 TGGACGACGTCCAGCTCTCCGCGCGGGCGCCGA 
+|       ACCTGCTGCAGGTCGAGAGGCGCGCCCGCGGCT
+|
+|      120                 140
+|       :         ^         :         ^
+|
+|
+|
+|   100 CGTAAATATGGTTTGTTCGGCCGAACAAAGAAA 
+|       GCATTTATACCAAACAAGCCGGCTTGTTTCTTT
+|
+|             140                 160
+|              :         ^         :     
+|
+|
+|
+|   133 ACCGTTAATGACGTCAGTACAACAAAAAGACTT 
+|       TGGCAATTACTGCAGTCATGTTGTTTTTCTGAA
+|
+|                    180
+|           ^         :         ^        
+|
+|
+|
+|   166 CGCTAGCCCTGGATGTATGGAGCCTCTGTCACG 
+|       GCGATCGGGACCTACATACCTCGGAGACAGTGC
+|
+|       200
+|        :        
+|
+|
+|
+|   199 ATGCTTCGCG 
+|       TACGAAGCGC
+|
+|
+tags
+tag dnatag - 8.7 8.40 16.7 16.40 24.7 24.40 32.7 32.40 40.7 40.40 48.7 48.40 56.7 56.17
+tag ls100_1 - 32.7 32.40
+tag ls133_1 - 40.7 40.40
+tag ls166_1 - 48.7 48.40
+tag ls199_1 - 56.7 56.17
+tag ls1_1 - 8.7 8.40
+tag ls34_1 - 16.7 16.40
+tag ls67_1 - 24.7 24.40
+END
+CASE textmap 48
+circular 1
+seq aATCGTCGACGTTCGGCTTTCGTAAttaacg
+title a
+region 6 23
+rowwidth 8
+selection 6 23
+methylated 0
+enz KasI KpnI TatI FspI AciI FseI SgrDI BclI BstUI BssHII
+settings width=100 space=4 show_space=0 numbers=None copy=1 second=0 show_trans=1 trans=1_1 show_enz=1 genes=0 show_index=0 char1=| char2=: sp1=10 sp2=3 nums=0 show_features=1 hidden=1 crop=0
+order features genes space dna enzymes translation index sec_strand
+sites HincII 5
+sites Hpy8I 5
+sites HpyCH4IV 9
+sites MluCI 24
+sites MseI 26
+sites SalI 5
+sites SgrDI 4
+sites TaqI 6
+out
+|DATE
+|a
+|       CGACGTTCGGCTTTCGT 
+|       R  R  S  A  F
+|
+|
+tags
+tag dnatag - 3.7 3.24
+tag ls7_1 - 3.7 3.24
+END
+CASE textmap 49
+circular 1
+seq CACTTTGACTGGAAAGCTTTTGTGGCatgcgctggataggtcgGCTAATGCAGTCATTTAGGTTCAGGCCTGAGWGGCCCGTGGCATATTACAGAGTGCCAAAGGCTCTGCGGTCTAGGTTTAAWCWAGTATCTGCTGCAGGCGAAT
+title a
+region 66 113
+rowwidth 59
+selection 66 113
+methylated 0
+enz BamHI BsmBI FseI
+settings width=10 space=6 show_space=0 numbers=Right copy=0 second=1 show_trans=1 trans=3_1 show_enz=1 genes=0 show_index=0 char1=* char2=+ sp1=18 sp2=11 nums=0 show_features=0 hidden=0 crop=0
+order dna features sec_strand genes space enzymes index translation
+sites AciI 110
+sites AluI 15
+sites BfaI 115
+sites Cac8I 25 138
+sites HaeIII 67 76
+sites HhaI 29
+sites HindIII 14
+sites HpyCH4V 49 137
+sites MseI 121
+sites NlaIII 26
+sites NspI 25
+sites PstI 136
+sites SfiI 67
+sites SphI 25
+sites StuI 66
+out
+|DATE
+|a
+|       GGCCTGAGWG 76
+|       CCGGACTCWC
+|       G  L  X  G
+|        A  *  X  
+|         P  E  X 
+|
+|       GCCCGTGGCA 86
+|       CGGGCACCGT
+|         P  W  H 
+|       A  R  G  I
+|        P  V  A  
+|
+|       TATTACAGAG 96
+|       ATAATGTCTC
+|        I  T  E  
+|         L  Q  S 
+|       Y  Y  R  V
+|
+|       TGCCAAAGGC 106
+|       ACGGTTTCCG
+|       C  Q  R  L
+|        A  K  G  
+|         P  K  A 
+|
+|       TCTGCGG 113
+|       AGACGCC
+|         C
+|       S  A
+|        L  R
+|
+|
+tags
+tag dnatag - 3.7 3.17 9.7 9.17 15.7 15.17 21.7 21.17 27.7 27.14
+tag ls107_1 - 27.7 27.14
+tag ls67_1 - 3.7 3.17
+tag ls77_1 - 9.7 9.17
+tag ls87_1 - 15.7 15.17
+tag ls97_1 - 21.7 21.17
+END
+CASE textmap 50
+circular 0
+seq ggcGCATGACGTAGAGTGCCCGTACGAATTAAACTTTATGGGAAATAGTGAacgcaggg
+title pUC19.gb
+region 9 19
+rowwidth 19
+selection 9 19
+methylated 0
+enz BsaAI SspI PacI EagI XhoI HaeIII BsaBI
+settings width=10 space=5 show_space=1 numbers=Right copy=1 second=1 show_trans=1 trans=3_3 show_enz=0 genes=1 show_index=1 char1=| char2=. sp1=7 sp2=10 nums=1 show_features=0 hidden=0 crop=0
+order genes features translation enzymes index space dna sec_strand
+sites BsiWI 21
+sites HhaI 2
+sites Hpy8I 48
+sites HpyCH4IV 9
+sites MluCI 27
+sites MseI 29
+sites NlaIII 5
+sites RsaI 22
+out
+|DATE
+|pUC19.gb
+|       R  R  V
+|       ArgArgVal
+|        ValGluCys
+|         EndSer
+|          14
+|       .   |     
+|
+|
+|
+|
+|
+|       CGTAGAGTGC 19
+|       GCATCTCACG
+|
+|
+tags
+tag dnatag - 14.7 14.17
+tag ls10_1 - 14.7 14.17
+END
+CASE textmap 51
+circular 0
+seq GAGACGTAMCTATAATATCGCTTAAGCATCCAGTCTTGCGCATGATCATGCCAAADTCGAGAGACGCGCGCCGACTTTCTTGGCGCCCACGTGTGCTGGGT
+title pUC19.gb
+region all
+rowwidth 8
+selection 86 101
+methylated 0
+enz AatII AbsI Acc65I AciI AclI AfeI AflII AgeI AluI ApaI ApaLI ApoI AscI AseI AvaI AvrII BamHI BbsI BclI BfaI BglII BmgBI BsaAI BsaBI BsaI BsaWI BsiWI BsmBI BspEI BspHI BsrBI BsrGI BssHII BssSI BstBI BstUI BstYI BstZ17I Cac8I ClaI DpnI DraI EagI EcoRI EcoRV FseI FspI HaeII HaeIII HhaI HincII HindIII HpaI HpaII Hpy8I HpyCH4IV HpyCH4V KasI KpnI MauBI MboI MfeI MluCI MluI MreI MscI MseI NaeI NarI NcoI NdeI NgoMIV NheI NlaIII NotI NruI NsiI NspI PacI PaqCI PciI PmeI PmlI PshAI PsiI PstI PvuI PvuII RsaI SacI SacII SalI SapI SbfI ScaI SfiI SfoI SgfI SgrAI SgrDI SmaI SnaBI SpeI SphI SrfI SspI StuI SwaI TaqI TatI XbaI XcmI XhoI XmaI XmnI ZraI
+settings width=33 space=3 show_space=1 numbers=Right copy=0 second=1 show_trans=1 trans=1_3 show_enz=0 genes=1 show_index=0 char1=. char2=* sp1=2 sp2=11 nums=0 show_features=1 hidden=1 crop=1
+order translation index features dna space enzymes genes sec_strand
+feature 0 1 1 #cfd4aa #1fe9ea gene | 8 15 18 23 | 8 23 | x-y
+feature 1 0 0 #2acf4e #e51275 cds | 32 37 45 55 74 88 | 32 88 | CDS 1
+feature 2 0 0 #4530dd #ad8ee1 cds | 47 88 |  | lacZ
+feature 3 1 0 #c1748e #7095b7 gene | 2 19 26 63 89 95 | 2 95 | (odd) name
+sites AflII 21
+sites BclI 43
+sites BsaAI 88
+sites BsmBI 61
+sites BssHII 66
+sites BstUI 65 67
+sites Cac8I 66
+sites FspI 37
+sites HaeII 82
+sites HhaI 38 66 68 83
+sites HpyCH4IV 4 89
+sites KasI 82
+sites MboI 44
+sites MseI 22
+sites NarI 82
+sites NlaIII 41 47
+sites PmlI 88
+sites SfoI 82
+sites TaqI 57
+out
+|DATE
+|pUC19.gb
+|       GluThrXxxLeuEndTyrArgLeuSerIleGln
+|         <<<<<<<<<<<<<<<<<.......<<<<<<<
+|         (odd) name
+|                                       V
+|                                       1
+|               <<<<<<<...<<<<<         >
+|               x-y                     C
+|       GAGACGTAMCTATAATATCGCTTAAGCATCCAG 33
+|
+|
+|
+|       E  T  X  L  *  Y  R  L  S  I  Q  
+|       CTCTGCATKGATATTATAGCGAATTCGTAGGTC
+|
+|       SerCysAlaEndSerCysGlnXxxArgGluThr
+|         F          H  A  K             
+|       2
+|       >>>>........>>>>>>>>>>...........
+|       CDS 1
+|       <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<...
+|       (odd) name
+|                     M  P  X  S  R  D  A
+|                     1
+|                     >>>>>>>>>>>>>>>>>>>
+|                     lacZ
+|       TCTTGCGCATGATCATGCCAAADTCGAGAGACG 66
+|
+|
+|
+|       S  C  A  *  S  C  Q  X  R  E  T  
+|       AGAACGCGTACTAGTACGGTTTHAGCTCTCTGC
+|
+|       ArgAlaAspPheLeuGlyAlaHisValCysTrp
+|         R  R  L  S  W  R  
+|       8
+|       >>>>>>>>>>>>>>>>>>>>>>
+|       lacZ
+|               L  S  W  R  
+|             6
+|       ........>>>>>>>>>>>>>>
+|       CDS 1
+|       .......................<<<<<<
+|       (odd) name
+|       CGCGCCGACTTTCTTGGCGCCCACGTGTGCTGG 99
+|
+|
+|
+|       R  A  D  F  L  G  A  H  V  C  W
+|       GCGCGGCTGAAAGAACCGCGGGTGCACACGACC
+|
+|       
+|       GT 101
+|
+|
+|
+|       
+|       CA
+|
+|
+tags
+tag dnatag - 10.7 10.40 28.7 28.40 46.7 46.40 54.7 54.9
+tag f0# #1fe9ea 8.15 8.22 8.25 8.30
+tag f1# #2acf4e 8.39 8.40 20.7 20.11 20.19 20.29 42.15 42.29
+tag f2# #4530dd 26.21 26.40 38.7 38.29
+tag f3# #7095b7 4.9 4.26 4.33 4.40 22.7 22.37 44.30 44.36
+tag ls100_1 - 54.7 54.9
+tag ls1_1 - 10.7 10.40
+tag ls34_1 - 28.7 28.40
+tag ls67_1 - 46.7 46.40
+END
+CASE textmap 52
+circular 0
+seq ttactacTAATACATAgtcatcgttagAAATGAATATGTCGCTTTCCGTACGGTAGgatttgcct
+title a
+region all
+rowwidth 51
+selection -
+methylated 0
+enz AatII AbsI Acc65I AciI AclI AfeI AflII AgeI AluI ApaI ApaLI ApoI AscI AseI AvaI AvrII BamHI BbsI BclI BfaI BglII BmgBI BsaAI BsaBI BsaI BsaWI BsiWI BsmBI BspEI BspHI BsrBI BsrGI BssHII BssSI BstBI BstUI BstYI BstZ17I Cac8I ClaI DpnI DraI EagI EcoRI EcoRV FseI FspI HaeII HaeIII HhaI HincII HindIII HpaI HpaII Hpy8I HpyCH4IV HpyCH4V KasI KpnI MauBI MboI MfeI MluCI MluI MreI MscI MseI NaeI NarI NcoI NdeI NgoMIV NheI NlaIII NotI NruI NsiI NspI PacI PaqCI PciI PmeI PmlI PshAI PsiI PstI PvuI PvuII RsaI SacI SacII SalI SapI SbfI ScaI SfiI SfoI SgfI SgrAI SgrDI SmaI SnaBI SpeI SphI SrfI SspI StuI SwaI TaqI TatI XbaI XcmI XhoI XmaI XmnI ZraI
+settings width=150 space=6 show_space=1 numbers=Right copy=1 second=0 show_trans=0 trans=1_3 show_enz=1 genes=0 show_index=1 char1=^ char2=| sp1=15 sp2=11 nums=0 show_features=1 hidden=0 crop=1
+order space dna genes enzymes index features translation sec_strand
+feature 0 1 0 #ea5879 #895c6c gene | 45 59 |  | amp
+feature 1 0 0 #ea138f #00f978 primer_bind | 11 19 29 34 | 11 34 | b c d
+feature 2 0 0 #74941d #6c3253 rep_origin | 32 39 |  | ori
+feature 3 1 0 #d74ade #d2e899 CDS | 5 11 |  | x-y
+sites BsiWI 47
+sites RsaI 48
+out
+|DATE
+|a
+|
+|
+|
+|
+|
+|
+|       ttactacTAATACATAgtcatcgttagAAATGAATATGTCGCTTTCCGTACGGTAGgatttgcct 65
+|                                                     ||                 
+|                                                     47 BsiWI
+|                                                      48 RsaI
+|                 |   ^      |       ^  |          |^         |    ^     
+|            S  I  
+|            2
+|            <<<<<<>>>>>>>>..........>>>>>           <<<<<<<<<<<<<<
+|            x-y   b c d                             amp
+|                                       >>>>>>>
+|                                       ori
+|
+|
+tags
+tag dnatag - 9.7 9.72
+tag f0# #895c6c 9.52 9.66 16.52 16.66
+tag f1# #ea138f 9.18 9.26 9.36 9.41 16.18 16.26 16.36 16.41
+tag f2# #74941d 9.39 9.46 18.39 18.46
+tag f3# #d2e899 9.12 9.18 16.12 16.18
+tag ls1_1 - 9.7 9.72
+END
+CASE textmap 53
+circular 0
+seq GAACCGCGTGCACGCATGCGCGGAGACATGCAGAATAGGCGCCGGTAGGCGCCGACGCGTATAACGTGCGATCGCAATTACCACCATCG
+title a long name for a sequence document that is much longer than one line of the text map
+region 79 80
+rowwidth 20
+selection 79 80
+methylated 0
+enz NlaIII RsaI SacI BsaWI
+settings width=20 space=5 show_space=1 numbers=Both copy=0 second=0 show_trans=0 trans=3_1 show_enz=1 genes=0 show_index=0 char1=^ char2=| sp1=25 sp2=10 nums=1 show_features=1 hidden=1 crop=1
+order enzymes features dna translation index space sec_strand genes
+sites AciI 4 20
+sites ApaLI 8
+sites BstUI 5 19 56
+sites Cac8I 6 10 14
+sites HaeII 38 48
+sites HhaI 18 39 49
+sites HpaII 42
+sites Hpy8I 8
+sites HpyCH4IV 64
+sites HpyCH4V 9 29
+sites KasI 38 48
+sites MboI 70
+sites MluCI 76
+sites MluI 55
+sites NarI 38 48
+sites NlaIII 15 27
+sites NspI 14 26
+sites PvuI 69
+sites SfoI 38 48
+sites SgfI 68
+sites SphI 14
+out
+|DATE
+|a long name for a sequence d
+|ocument that is much longer 
+|than one line of the text ma
+|p
+|       27 NlaIII
+|       15 NlaIII
+|        
+|    80 A 80
+|
+|
+|
+|
+|
+|
+|
+tags
+tag dnatag - 9.7 9.8
+tag ls80_1 - 9.7 9.8
+END
+CASE textmap 54
+circular 1
+seq CCATCGGCGCCTTTTTGGGGTAGAAGCATTGCAAATCCGCGCGCGGGATTTTAAAGAGGCCTTCATGCAATACCGAGACCGGGCGGATATAGGT
+title pUC19.gb
+region all
+rowwidth 6
+selection 66 88
+methylated 0
+enz DraI Cac8I XmaI BclI EagI SacI NsiI SwaI NgoMIV AluI PacI PmeI
+settings width=20 space=6 show_space=1 numbers=None copy=0 second=0 show_trans=0 trans=6_1 show_enz=1 genes=0 show_index=0 char1=+ char2=_ sp1=24 sp2=6 nums=0 show_features=1 hidden=0 crop=0
+order index features enzymes genes dna translation sec_strand space
+sites AciI 37 43 83
+sites BsaI 75
+sites BssHII 39
+sites BstUI 38 40 42
+sites Cac8I 39
+sites DraI 50
+sites HaeII 6
+sites HaeIII 58
+sites HhaI 7 39 41
+sites HpaII 79
+sites HpyCH4V 30 66
+sites KasI 6
+sites MauBI 38
+sites MseI 51
+sites NarI 6
+sites NlaIII 64
+sites SfoI 6
+sites StuI 57
+out
+|DATE
+|pUC19.gb
+|       CCATCGGCGCCTTTTTGGGG 
+|
+|
+|
+|
+|
+|
+|
+|                         39 Cac8I
+|                         | 
+|       TAGAAGCATTGCAAATCCGC 
+|
+|
+|
+|
+|
+|
+|
+|                50 DraI
+|                |          
+|       GCGCGGGATTTTAAAGAGGC 
+|
+|
+|
+|
+|
+|
+|
+|       CTTCATGCAATACCGAGACC 
+|
+|
+|
+|
+|
+|
+|
+|       GGGCGGATATAGGT 
+|
+|
+|
+|
+|
+|
+|
+|
+tags
+tag dnatag - 3.7 3.27 13.7 13.27 23.7 23.27 31.7 31.27 39.7 39.21
+tag ls1_1 - 3.7 3.27
+tag ls21_1 - 13.7 13.27
+tag ls41_1 - 23.7 23.27
+tag ls61_1 - 31.7 31.27
+tag ls81_1 - 39.7 39.21
+END
+CASE textmap 55
+circular 0
+seq tatgttCTGTGTCGGAGCCTACTTCACCGGTGCTAGCGGACCGCGTgttagagcagATTAGCAGCGAGCGAACCTGCAGgttggattaagACCGTCGTAAggcaatgtac
+title a long name for a sequence document that is much longer than one line of the text map
+region all
+rowwidth 48
+selection 85 103
+methylated 1
+enz XcmI TaqI HpaII
+settings width=60 space=7 show_space=0 numbers=None copy=0 second=1 show_trans=1 trans=1_1 show_enz=1 genes=1 show_index=0 char1=: char2=* sp1=5 sp2=3 nums=0 show_features=1 hidden=1 crop=0
+order dna enzymes space sec_strand translation features index genes
+sites AciI 36 41
+sites AgeI 26
+sites BfaI 33
+sites BsaWI 26
+sites BstUI 42
+sites Cac8I 32 64
+sites HpaII 27
+sites HpyCH4V 75
+sites MseI 86
+sites NheI 32
+sites PstI 74
+sites RsaI 107
+sites SbfI 73
+sites SgrAI 25
+out
+|DATE
+|a long name for a sequence document that is much longer than one lin
+|e of the text map
+|       tatgttCTGTGTCGGAGCCTACTTCACCGGTGCTAGCGGACCGCGTgttagagcagATTA 
+|                                 |                                 
+|                                 27 HpaII
+|       atacaaGACACAGCCTCGGATGAAGTGGCCACGATCGCCTGGCGCAcaatctcgtcTAAT
+|       Y  V  L  C  R  S  L  L  H  R  C  *  R  T  A  C  *  S  R  L  
+|             L  C  R  S  L  L  H  R  C  *  R  T  A  Y            * 
+|
+|       GCAGCGAGCGAACCTGCAGgttggattaagACCGTCGTAAggcaatgtac 
+|       CGTCGCTCGCTTGGACGTCcaacctaattcTGGCAGCATTccgttacatg
+|       A  A  S  E  P  A  G  W  I  K  T  V  V  R  Q  C
+|        Q  R  A  N  L  Q             T  V  V          
+|
+|
+tags
+tag dnatag - 4.7 4.67 11.7 11.57
+tag ls1_1 - 4.7 4.67
+tag ls61_1 - 11.7 11.57
+END
+CASE textmap 56
+circular 0
+seq G
+title a
+region all
+rowwidth 64
+selection -
+methylated 0
+enz AatII AbsI Acc65I AciI AclI AfeI AflII AgeI AluI ApaI ApaLI ApoI AscI AseI AvaI AvrII BamHI BbsI BclI BfaI BglII BmgBI BsaAI BsaBI BsaI BsaWI BsiWI BsmBI BspEI BspHI BsrBI BsrGI BssHII BssSI BstBI BstUI BstYI BstZ17I Cac8I ClaI DpnI DraI EagI EcoRI EcoRV FseI FspI HaeII HaeIII HhaI HincII HindIII HpaI HpaII Hpy8I HpyCH4IV HpyCH4V KasI KpnI MauBI MboI MfeI MluCI MluI MreI MscI MseI NaeI NarI NcoI NdeI NgoMIV NheI NlaIII NotI NruI NsiI NspI PacI PaqCI PciI PmeI PmlI PshAI PsiI PstI PvuI PvuII RsaI SacI SacII SalI SapI SbfI ScaI SfiI SfoI SgfI SgrAI SgrDI SmaI SnaBI SpeI SphI SrfI SspI StuI SwaI TaqI TatI XbaI XcmI XhoI XmaI XmnI ZraI
+settings width=10 space=5 show_space=1 numbers=Left copy=0 second=0 show_trans=1 trans=1_3 show_enz=0 genes=1 show_index=0 char1=+ char2=: sp1=11 sp2=2 nums=0 show_features=0 hidden=1 crop=1
+order space dna features genes index translation sec_strand enzymes
+feature 0 0 0 #f6a5d5 #478cc7 gene |  |  | my gene
+feature 1 0 1 #0e283b #394341 rep_origin |  |  | x-y
+feature 2 1 0 #4367b9 #f07e78 misc_feature |  |  | (odd) name
+feature 3 0 1 #beda59 #f6a211 CDS |  |  | b c d
+out
+|DATE
+|a
+|
+|
+|
+|
+|
+|     1 G 
+|       
+|       
+|
+|
+tags
+tag dnatag - 8.7 8.8
+tag ls1_1 - 8.7 8.8
+END
+CASE textmap 57
+circular 1
+seq GTGTGGGTACCTAGTACTGAGCGGTGTAACCATTAACAATGAATAGATTCCCGACGCGTTGGCGCCATGATGGTGTAACCCTGACTCCGTGATACCGGAGACGGGAGCCAACGACCGAACCGATCGCAGGCCTATGTCTCCGGATGATCATGATTGATAT
+title pUC19.gb
+region 2 29
+rowwidth 32
+selection 2 29
+methylated 0
+enz SnaBI PsiI BsaAI RsaI PciI NcoI AciI NarI
+settings width=100 space=1 show_space=0 numbers=None copy=0 second=0 show_trans=1 trans=6_1 show_enz=0 genes=0 show_index=0 char1=. char2=- sp1=9 sp2=8 nums=1 show_features=1 hidden=1 crop=0
+order features index enzymes dna sec_strand genes space translation
+feature 0 1 0 #6de6c9 #b02b3c misc_feature | 101 160 0 47 |  | long feature name that goes on and on and on
+feature 1 1 0 #7a88e7 #d48990 promoter | 14 35 |  | b c d
+feature 2 1 0 #86514e #030cbd gene | 40 90 |  | b c d
+feature 3 1 0 #217618 #d432e7 rep_origin | 88 111 |  | ori
+feature 4 1 1 #0b32d8 #95c2ae CDS | 87 160 0 38 |  | x-y
+feature 5 1 1 #b1cb72 #c85d1b cds | 2 113 |  | x-y
+sites Acc65I 6
+sites AciI 21
+sites BclI 145
+sites BfaI 11
+sites BsaWI 94 139
+sites BsmBI 98
+sites BspEI 139
+sites BspHI 148
+sites BsrBI 19
+sites BstUI 55
+sites Cac8I 126
+sites HaeII 61
+sites HaeIII 129
+sites HhaI 62
+sites HpaII 95 140
+sites KasI 61
+sites KpnI 6
+sites MboI 122 146
+sites MluI 54
+sites MseI 33
+sites NarI 61
+sites NlaIII 66 149
+sites PvuI 121
+sites RsaI 7 14
+sites ScaI 13
+sites SfoI 61
+sites StuI 128
+sites TatI 13
+sites XmnI 41
+out
+|DATE
+|pUC19.gb
+|       <<<<<<<<<<<<<<<<<<<<<<<<<<<
+|       long feature name that goes on and on and on
+|       H  T  G  L  V  S  R  H  L  
+|       12
+|       <<<<<<<<<<<<<<<<<<<<<<<<<<<
+|       x-y
+|       H  T  G  L  V  S  R  H  L  
+|       37
+|       <<<<<<<<<<<<<<<<<<<<<<<<<<<
+|       x-y
+|                   <<<<<<<<<<<<<<<
+|                   b c d
+|       GTGGGTACCTAGTACTGAGCGGTGTAA 
+|       V  G  T  *  Y  *  A  V  *
+|        W  V  P  S  T  E  R  C
+|         G  Y  L  V  L  S  G  V
+|       H  T  G  L  V  S  R  H  L
+|        P  Y  R  T  S  L  P  T
+|         P  V  *  Y  Q  A  T  Y
+|
+|
+tags
+tag dnatag - 15.7 15.34
+tag f0# #b02b3c 3.7 3.34
+tag f1# #d48990 13.19 13.34
+tag f4# #95c2ae 7.7 7.34
+tag f5# #c85d1b 11.7 11.34
+tag ls3_1 - 15.7 15.34
+END
+CASE textmap 58
+circular 0
+seq CGTCGACGG
+title a long name for a sequence document that is much longer than one line of the text map
+region 8 9
+rowwidth 47
+selection 8 9
+methylated 0
+enz AatII AbsI Acc65I AciI AclI AfeI AflII AgeI AluI ApaI ApaLI ApoI AscI AseI AvaI AvrII BamHI BbsI BclI BfaI BglII BmgBI BsaAI BsaBI BsaI BsaWI BsiWI BsmBI BspEI BspHI BsrBI BsrGI BssHII BssSI BstBI BstUI BstYI BstZ17I Cac8I ClaI DpnI DraI EagI EcoRI EcoRV FseI FspI HaeII HaeIII HhaI HincII HindIII HpaI HpaII Hpy8I HpyCH4IV HpyCH4V KasI KpnI MauBI MboI MfeI MluCI MluI MreI MscI MseI NaeI NarI NcoI NdeI NgoMIV NheI NlaIII NotI NruI NsiI NspI PacI PaqCI PciI PmeI PmlI PshAI PsiI PstI PvuI PvuII RsaI SacI SacII SalI SapI SbfI ScaI SfiI SfoI SgfI SgrAI SgrDI SmaI SnaBI SpeI SphI SrfI SspI StuI SwaI TaqI TatI XbaI XcmI XhoI XmaI XmnI ZraI
+settings width=100 space=5 show_space=0 numbers=Right copy=0 second=1 show_trans=1 trans=6_3 show_enz=0 genes=0 show_index=0 char1=| char2=| sp1=21 sp2=10 nums=1 show_features=1 hidden=0 crop=1
+order space index dna sec_strand enzymes genes translation features
+feature 0 0 0 #3ddb40 #60ec73 gene | 2 9 |  | my gene
+feature 1 0 1 #f725eb #e70422 promoter | 0 5 |  | a
+feature 2 1 0 #815b98 #1c2de4 promoter | 0 4 |  | x-y
+sites HincII 2
+sites Hpy8I 2
+sites SalI 2
+sites SgrDI 1
+sites TaqI 3
+out
+|DATE
+|a long name for a sequence document that is much longer than one line of the text map
+|       G 9
+|       C
+|       
+|       
+|       
+|       
+|       
+|       
+|       >
+|       my gene
+|
+|
+tags
+tag dnatag - 3.7 3.8
+tag f0# #3ddb40 11.7 11.8
+tag ls9_1 - 3.7 3.8
+END
+CASE textmap 59
+circular 0
+seq gaAACACGGTAA
+title pUC19.gb
+region 7 10
+rowwidth 69
+selection 7 10
+methylated 0
+enz SspI XbaI BmgBI HaeIII SfoI NotI
+settings width=50 space=7 show_space=1 numbers=None copy=1 second=1 show_trans=0 trans=3_3 show_enz=0 genes=1 show_index=0 char1=- char2=_ sp1=17 sp2=3 nums=0 show_features=0 hidden=1 crop=0
+order index enzymes genes features space sec_strand dna translation
+feature 0 0 0 #aefee9 #41276e CDS | 3 9 |  | (odd) name
+feature 1 0 0 #a3f981 #a986ed cds | 2 12 |  | my gene
+ERROR can't read "textline": no such variable
+END
+CASE textmap 60
+circular 1
+seq TTCGTGGTCTAGGACTGTAATGACCGACTAAgcgct
+title a long name for a sequence document that is much longer than one line of the text map
+region all
+rowwidth 14
+selection 10 13
+methylated 0
+enz PshAI
+settings width=150 space=4 show_space=1 numbers=None copy=0 second=1 show_trans=1 trans=3_1 show_enz=1 genes=0 show_index=0 char1=- char2=- sp1=23 sp2=12 nums=1 show_features=1 hidden=0 crop=0
+order translation dna features genes sec_strand index enzymes space
+sites AfeI 31
+sites BfaI 9
+sites HaeII 31
+sites HhaI 32
+out
+|DATE
+|a long name for a sequence document that is much longer than one line of the text map
+|       F  V  V  *  D  C  N  D  R  L  S  A
+|        S  W  S  R  T  V  M  T  D  *  A
+|         R  G  L  G  L  *  *  P  T  K  R
+|       TTCGTGGTCTAGGACTGTAATGACCGACTAAgcgct 
+|       AAGCACCAGATCCTGACATTACTGGCTGATTcgcga
+|
+|
+|
+|
+|
+|
+tags
+tag dnatag - 6.7 6.43
+tag ls1_1 - 6.7 6.43
+END
+CASE textmap 61
+circular 0
+seq tcgattCTTATGATGCGAGGgtagTGGGAATTGAGATAGGTCGCGGTGAcgtgcgaact
+title pUC19.gb
+region 55 56
+rowwidth 29
+selection 55 56
+methylated 1
+enz SfiI NarI HincII ZraI BspEI SnaBI NaeI
+settings width=100 space=2 show_space=1 numbers=Left copy=0 second=0 show_trans=1 trans=3_1 show_enz=0 genes=1 show_index=0 char1=* char2=^ sp1=22 sp2=3 nums=0 show_features=1 hidden=0 crop=1
+order dna enzymes index space translation sec_strand genes features
+feature 0 1 0 #c0abdf #d5283b gene | 10 49 |  | lacZ
+sites AciI 43
+sites BmgBI 48
+sites BstUI 42
+sites HpyCH4IV 49
+sites MluCI 29
+sites TaqI 1
+out
+|DATE
+|pUC19.gb
+|    56 a 
+|
+|
+|       
+|        
+|        
+|       
+|
+|
+tags
+tag dnatag - 3.7 3.8
+tag ls56_1 - 3.7 3.8
+END
+CASE textmap 62
+circular 1
+seq CGATATCTCGTTGTACAGATATAATATGGCCTGAGCCACTCTTGCCGTTCGTACGACCTACACTAACAAAACTTTTCGACCCCCGGGCTAGGAGGTCCCGGGCGCGAAATGGCCTATCAAGATCTCAGCCTTGTTGAGCGG
+title pUC19.gb
+region 51 86
+rowwidth 62
+selection 51 86
+methylated 0
+enz AatII AbsI Acc65I AciI AclI AfeI AflII AgeI AluI ApaI ApaLI ApoI AscI AseI AvaI AvrII BamHI BbsI BclI BfaI BglII BmgBI BsaAI BsaBI BsaI BsaWI BsiWI BsmBI BspEI BspHI BsrBI BsrGI BssHII BssSI BstBI BstUI BstYI BstZ17I Cac8I ClaI DpnI DraI EagI EcoRI EcoRV FseI FspI HaeII HaeIII HhaI HincII HindIII HpaI HpaII Hpy8I HpyCH4IV HpyCH4V KasI KpnI MauBI MboI MfeI MluCI MluI MreI MscI MseI NaeI NarI NcoI NdeI NgoMIV NheI NlaIII NotI NruI NsiI NspI PacI PaqCI PciI PmeI PmlI PshAI PsiI PstI PvuI PvuII RsaI SacI SacII SalI SapI SbfI ScaI SfiI SfoI SgfI SgrAI SgrDI SmaI SnaBI SpeI SphI SrfI SspI StuI SwaI TaqI TatI XbaI XcmI XhoI XmaI XmnI ZraI
+settings width=100 space=1 show_space=0 numbers=Right copy=0 second=0 show_trans=0 trans=6_1 show_enz=1 genes=1 show_index=0 char1=: char2=+ sp1=4 sp2=9 nums=1 show_features=1 hidden=1 crop=0
+order dna translation enzymes genes features sec_strand index space
+feature 0 1 0 #e3b50e #7332e2 CDS | 57 88 113 117 | 57 117 | lacZ
+feature 1 0 0 #6ccdc0 #037cba promoter | 77 79 79 98 49 65 | 77 141 0 65 | x-y
+feature 2 1 1 #352e97 #4f0faa CDS | 104 140 |  | lacZ
+feature 3 0 0 #bb8533 #e8c73f promoter | 8 123 |  | b c d
+feature 4 0 0 #6609b3 #031ccd CDS | 0 141 |  | amp
+feature 5 0 0 #9bd710 #fa7d8b misc_feature | 14 50 79 108 | 14 108 | b c d
+sites AciI 138
+sites AvaI 82 97
+sites BfaI 88
+sites BglII 120
+sites BsiWI 50
+sites BsrBI 136
+sites BsrGI 12
+sites BstUI 103
+sites BstYI 120
+sites EcoRV 2
+sites HaeIII 28 111
+sites HhaI 102
+sites HpaII 83 98
+sites MboI 121
+sites RsaI 13 51
+sites SmaI 82 97
+sites TaqI 76
+sites TatI 12
+sites XmaI 82 97
+out
+|DATE
+|pUC19.gb
+|       TACGACCTACACTAACAAAACTTTTCGACCCCCGG 86
+|                               |     ||   
+|                               76 TaqI
+|                                     82 AvaI
+|                                     82 SmaI
+|                                     82 XmaI
+|                                      83 HpaII
+|       Y  D  L  H  *  Q  N  F  S  T  P
+|       >>>>>>>>>>>>>>
+|       x-y
+|       >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+|       b c d
+|       Y  D  L  H  *  Q  N  F  S  T  P  G 
+|       18
+|       >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+|       amp
+|             *  V  L  L  V  K  R  G  G  P 
+|             11
+|             <<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+|             lacZ
+|       ............................>>>>>>>
+|       b c d
+|
+|
+tags
+tag dnatag - 3.7 3.42
+tag f0# #7332e2 21.13 21.42
+tag f1# #6ccdc0 11.7 11.21
+tag f3# #bb8533 13.7 13.42
+tag f4# #6609b3 17.7 17.42
+tag f5# #9bd710 23.35 23.42
+tag ls52_1 - 3.7 3.42
+END
+CASE textmap 63
+circular 0
+seq TATGCCTGATAACACCGGTACCTCATACCCAGGGGAAGGTCATCATTCAGTTGGATGTGCCGAGCTCTACACGGAACCTGCCTTACAGCTCAAGTCTGCGTGAGCGCCACCGCTCGCGGCATCCAAAGTTACGAGCATCT
+title pUC19.gb
+region 117 122
+rowwidth 18
+selection 117 122
+methylated 1
+enz AatII AbsI Acc65I AciI AclI AfeI AflII AgeI AluI ApaI ApaLI ApoI AscI AseI AvaI AvrII BamHI BbsI BclI BfaI BglII BmgBI BsaAI BsaBI BsaI BsaWI BsiWI BsmBI BspEI BspHI BsrBI BsrGI BssHII BssSI BstBI BstUI BstYI BstZ17I Cac8I ClaI DpnI DraI EagI EcoRI EcoRV FseI FspI HaeII HaeIII HhaI HincII HindIII HpaI HpaII Hpy8I HpyCH4IV HpyCH4V KasI KpnI MauBI MboI MfeI MluCI MluI MreI MscI MseI NaeI NarI NcoI NdeI NgoMIV NheI NlaIII NotI NruI NsiI NspI PacI PaqCI PciI PmeI PmlI PshAI PsiI PstI PvuI PvuII RsaI SacI SacII SalI SapI SbfI ScaI SfiI SfoI SgfI SgrAI SgrDI SmaI SnaBI SpeI SphI SrfI SspI StuI SwaI TaqI TatI XbaI XcmI XhoI XmaI XmnI ZraI
+settings width=12 space=2 show_space=1 numbers=Both copy=1 second=0 show_trans=0 trans=1_1 show_enz=1 genes=0 show_index=1 char1=* char2=. sp1=14 sp2=5 nums=1 show_features=1 hidden=1 crop=0
+order space index dna features genes translation sec_strand enzymes
+sites Acc65I 17
+sites AciI 110 116
+sites AgeI 14
+sites AluI 63 87
+sites BsaWI 14
+sites BsrBI 110
+sites BstUI 115
+sites Cac8I 112
+sites HaeII 103
+sites HhaI 104
+sites HpaII 15
+sites KpnI 17
+sites RsaI 18
+sites SacI 62
+out
+|DATE
+|pUC19.gb
+|
+|
+|       
+|         .  
+|   118 GGCAT 122
+|
+|
+tags
+tag dnatag - 7.7 7.12
+tag ls118_1 - 7.7 7.12
+END
+CASE textmap 64
+circular 1
+seq CC
+title pUC19.gb
+region all
+rowwidth 28
+selection -
+methylated 1
+enz PshAI BsaAI SacI BclI EcoRV AvaI BspHI TaqI SgrAI MauBI
+settings width=20 space=4 show_space=0 numbers=Both copy=0 second=1 show_trans=0 trans=1_1 show_enz=0 genes=1 show_index=1 char1=+ char2=* sp1=16 sp2=7 nums=0 show_features=1 hidden=0 crop=0
+order features genes index dna enzymes translation space sec_strand
+out
+|DATE
+|pUC19.gb
+|       
+|         
+|     1 CC 2
+|       GG
+|
+|
+tags
+tag dnatag - 5.7 5.9
+tag ls1_1 - 5.7 5.9
+END
+CASE textmap 65
+circular 0
+seq CTTACCATTGGACCTGCAAATCGTTAACTTGAGGGCCGACAGCCTTTTATCACGTCGAGGGGAGGTCAAATGAGGGTATGATCAGCCCCAGACACATGTGTGACGATCATCC
+title a long name for a sequence document that is much longer than one line of the text map
+region 44 55
+rowwidth 70
+selection 44 55
+methylated 1
+enz HindIII BssSI SacII PmlI PvuI MauBI MboI
+settings width=10 space=5 show_space=0 numbers=Left copy=0 second=1 show_trans=0 trans=6_3 show_enz=1 genes=0 show_index=1 char1=* char2=| sp1=25 sp2=3 nums=0 show_features=1 hidden=1 crop=1
+order dna translation enzymes space genes index features sec_strand
+sites BmgBI 51
+sites DpnI 80 105
+sites HaeIII 34
+sites HincII 23
+sites HpaI 23
+sites Hpy8I 23
+sites HpyCH4IV 52
+sites HpyCH4V 15
+sites MseI 24
+sites NlaIII 95
+sites NspI 94
+sites PciI 94
+sites TaqI 55
+out
+|DATE
+|a long name for a 
+|sequence document 
+|that is much longe
+|r than one line of
+| the text map
+|    45 TTTTATCACG 
+|       |  | *|  |
+|       AAAATAGTGC
+|
+|    55 T 
+|        
+|       A
+|
+|
+tags
+tag dnatag - 7.7 7.17 11.7 11.8
+tag ls45_1 - 7.7 7.17
+tag ls55_1 - 11.7 11.8
+END
+CASE textmap 66
+circular 0
+seq TGGAGGGGGCCCACCTGCA
+title a long name for a sequence document that is much longer than one line of the text map
+region 12 17
+rowwidth 57
+selection 12 17
+methylated 0
+enz AatII AbsI Acc65I AciI AclI AfeI AflII AgeI AluI ApaI ApaLI ApoI AscI AseI AvaI AvrII BamHI BbsI BclI BfaI BglII BmgBI BsaAI BsaBI BsaI BsaWI BsiWI BsmBI BspEI BspHI BsrBI BsrGI BssHII BssSI BstBI BstUI BstYI BstZ17I Cac8I ClaI DpnI DraI EagI EcoRI EcoRV FseI FspI HaeII HaeIII HhaI HincII HindIII HpaI HpaII Hpy8I HpyCH4IV HpyCH4V KasI KpnI MauBI MboI MfeI MluCI MluI MreI MscI MseI NaeI NarI NcoI NdeI NgoMIV NheI NlaIII NotI NruI NsiI NspI PacI PaqCI PciI PmeI PmlI PshAI PsiI PstI PvuI PvuII RsaI SacI SacII SalI SapI SbfI ScaI SfiI SfoI SgfI SgrAI SgrDI SmaI SnaBI SpeI SphI SrfI SspI StuI SwaI TaqI TatI XbaI XcmI XhoI XmaI XmnI ZraI
+settings width=20 space=5 show_space=0 numbers=Left copy=1 second=1 show_trans=0 trans=3_3 show_enz=1 genes=1 show_index=1 char1=. char2=: sp1=4 sp2=7 nums=1 show_features=1 hidden=0 crop=0
+order enzymes dna index sec_strand features genes space translation
+sites ApaI 7
+sites HaeIII 8
+sites HpyCH4V 16
+out
+|DATE
+|a long name for a sequence d
+|ocument that is much longer 
+|than one line of the text ma
+|p
+|          16 HpyCH4V
+|          | 
+|    13 ACCTG 
+|        :
+|         16
+|       TGGAC
+|       T
+|
+|
+tags
+tag dnatag - 8.7 8.12
+tag ls13_1 - 8.7 8.12
+END
+CASE textmap 67
+circular 0
+seq CACCGGGTCCCGGGACAGGGACTGGCGCCGGGCGCTACAAAAGCTTCWCGTAAGCGCTACCGTTCGTCTTCGATMTTTGCTACTAGGTGGCACGTTCGCGGCCGGCCGTTGGCCAGCGCGATCGCTGCTGGAAGGTTCCCGAGCCCGTTCGAtGTGT
+title a long name for a sequence document that is much longer than one line of the text map
+region 117 129
+rowwidth 47
+selection 117 129
+methylated 0
+enz NspI
+settings width=100 space=2 show_space=1 numbers=Right copy=1 second=1 show_trans=0 trans=6_1 show_enz=1 genes=1 show_index=1 char1=- char2=| sp1=12 sp2=6 nums=1 show_features=1 hidden=1 crop=1
+order translation dna sec_strand enzymes features genes space index
+feature 0 0 0 #731c96 #9e9df9 CDS | 102 143 |  | long feature name that goes on and on and on
+feature 1 1 0 #a5812a #0a2be5 misc_feature | 87 118 |  | CDS 1
+sites AciI 98
+sites AfeI 53
+sites AluI 42
+sites AvaI 9 138
+sites BbsI 66
+sites BfaI 83
+sites BstUI 97 117
+sites Cac8I 101 112
+sites EagI 99 103
+sites FseI 100
+sites HaeII 24 31 53
+sites HaeIII 100 104 111
+sites HhaI 25 32 54 116
+sites HindIII 41
+sites HpaII 3 10 28 102
+sites HpyCH4IV 92
+sites KasI 24
+sites MboI 120
+sites MscI 110
+sites NaeI 101
+sites NarI 24
+sites NgoMIV 101
+sites PvuI 119
+sites SfoI 24
+sites SgfI 118
+sites SmaI 9
+sites TaqI 70 149
+sites XmaI 9
+out
+|DATE
+|a long name for a sequence document that is much longer than one line of the text map
+|       GCGATCGCTGCT 129
+|       CGCTAGCGACGA
+|       A  I  A  A  
+|       6
+|       >>>>>>>>>>>>
+|       long feature name that goes on and on and on
+|       <
+|       CDS 1
+|       A  I  A  A
+|
+|
+|         -     |   
+|        120
+|
+|
+tags
+tag dnatag - 3.7 3.19
+tag f0# #731c96 3.7 3.19 7.7 7.19
+tag f1# #0a2be5 3.7 3.8 9.7 9.8
+tag ls118_1 - 3.7 3.19
+END
+CASE textmap 68
+circular 1
+seq CTGGCGCCTGGAACAGGATGCGAGAATGGCTATTATTCCTGAGGTAGCGGATAAGATAATTGTGAGATAGCAACTAACTCGGTCTTAGGTGTCAAGACTATAATTGGCATCCGTAATAGAGACTGCCGTGAGTAAACGGGTAGGACGTCTCCTCGCACTGCATCGTGTTTCTACCCCCATCACCAACAGGCGGATCATTTCCACTGATATCTATGCATTGTGCCATGTGGGGCCCATGCGTTAC
+title a long name for a sequence document that is much longer than one line of the text map
+region 119 190
+rowwidth 58
+selection 119 190
+methylated 0
+enz SspI PmlI AfeI BsrGI SacI MfeI BsaAI NarI
+settings width=60 space=4 show_space=1 numbers=Left copy=0 second=1 show_trans=0 trans=1_3 show_enz=1 genes=1 show_index=0 char1=: char2=- sp1=17 sp2=11 nums=0 show_features=1 hidden=1 crop=1
+order dna space features enzymes translation sec_strand index genes
+sites AatII 144
+sites AciI 47 190
+sites ApaI 230
+sites BsmBI 146
+sites EcoRV 206
+sites HaeII 3
+sites HaeIII 231
+sites HhaI 4
+sites Hpy8I 132
+sites HpyCH4IV 145
+sites HpyCH4V 159 214
+sites KasI 3
+sites MboI 193
+sites MluCI 58 102
+sites NarI 3
+sites NlaIII 224 235
+sites NsiI 213
+sites SfoI 3
+sites XcmI 234
+sites ZraI 144
+out
+|DATE
+|a long name for a sequence document that is much longer than one lin
+|e of the text map
+|   120 AGACTGCCGTGAGTAAACGGGTAGGACGTCTCCTCGCACTGCATCGTGTTTCTACCCCCA 
+|
+|
+|
+|
+|       TCTGACGGCACTCATTTGCCCATCCTGCAGAGGAGCGTGACGTAGCACAAAGATGGGGGT
+|       R  L  P  *  V  N  G  *  D  V  S  S  H  C  I  V  F  L  P  P  
+|
+|   180 TCACCAACAGG 
+|
+|
+|
+|
+|       AGTGGTTGTCC
+|       S  P  T
+|
+|
+tags
+tag dnatag - 4.7 4.67 12.7 12.18
+tag ls120_1 - 4.7 4.67
+tag ls180_1 - 12.7 12.18
+END
+CASE textmap 69
+circular 1
+seq CTCCAACCCACATGCATCTACGAAGRCGATCGGCCAACCCGGCCGTCGCTCGTGA
+title a long name for a sequence document that is much longer than one line of the text map
+region 49 50
+rowwidth 38
+selection 49 50
+methylated 0
+enz AatII AbsI Acc65I AciI AclI AfeI AflII AgeI AluI ApaI ApaLI ApoI AscI AseI AvaI AvrII BamHI BbsI BclI BfaI BglII BmgBI BsaAI BsaBI BsaI BsaWI BsiWI BsmBI BspEI BspHI BsrBI BsrGI BssHII BssSI BstBI BstUI BstYI BstZ17I Cac8I ClaI DpnI DraI EagI EcoRI EcoRV FseI FspI HaeII HaeIII HhaI HincII HindIII HpaI HpaII Hpy8I HpyCH4IV HpyCH4V KasI KpnI MauBI MboI MfeI MluCI MluI MreI MscI MseI NaeI NarI NcoI NdeI NgoMIV NheI NlaIII NotI NruI NsiI NspI PacI PaqCI PciI PmeI PmlI PshAI PsiI PstI PvuI PvuII RsaI SacI SacII SalI SapI SbfI ScaI SfiI SfoI SgfI SgrAI SgrDI SmaI SnaBI SpeI SphI SrfI SspI StuI SwaI TaqI TatI XbaI XcmI XhoI XmaI XmnI ZraI
+settings width=100 space=4 show_space=0 numbers=Right copy=0 second=1 show_trans=0 trans=6_1 show_enz=1 genes=1 show_index=1 char1=_ char2=- sp1=16 sp2=9 nums=0 show_features=1 hidden=1 crop=0
+order index features dna space sec_strand translation genes enzymes
+feature 0 1 1 #6052e0 #149ae7 cds | 27 35 36 38 4 16 19 22 | 27 55 0 22 | ori
+feature 1 0 0 #480dcf #a36d13 terminator | 28 34 35 42 19 23 | 28 55 0 23 | my gene
+feature 2 0 0 #0b0b40 #453b37 gene | 3 6 6 17 27 47 | 3 47 | lacZ
+feature 3 0 0 #c7f536 #91eed7 cds | 5 37 |  | lacZ
+feature 4 0 0 #a3c205 #950d48 misc_feature | 4 18 30 41 42 48 | 4 48 | T7 promoter
+feature 5 1 1 #3626b9 #d7c21a CDS | 30 33 44 52 12 13 16 27 | 30 55 0 27 | long feature name that goes on and on and on
+feature 6 0 0 #6f7877 #bbd1f3 CDS | 6 14 40 44 | 6 44 | x-y
+sites BssSI 49
+sites EagI 40
+sites HaeIII 32 41
+sites HpaII 39
+sites HpyCH4V 13
+sites MboI 28
+sites NlaIII 11
+sites NsiI 12
+sites NspI 10
+sites PvuI 27
+sites SfiI 32
+out
+|DATE
+|a long name for a sequence document that is much longer than one line of the text map
+|        
+|        
+|       3
+|       <
+|       long feature name that goes on and on and on
+|       .
+|       ori
+|       .
+|       my gene
+|       T 50
+|       A
+|       
+|        
+|       10 NspI
+|       11 NlaIII
+|       12 NsiI
+|       13 HpyCH4V
+|       27 PvuI
+|       28 MboI
+|       32 HaeIII
+|       32 SfiI
+|       39 HpaII
+|       40 EagI
+|       41 HaeIII
+|       49 BssSI
+|
+|
+tags
+tag dnatag - 12.7 12.8
+tag f5# #d7c21a 6.7 6.8
+tag ls50_1 - 12.7 12.8
+END
+CASE textmap 70
+circular 1
+seq ABggcaatattttstgggccCCCGCCTGNAGGGCTCAGATCCACCGGAGATCTGAAATACTTGTACGAG
+title pUC19.gb
+region all
+rowwidth 38
+selection -
+methylated 1
+enz BsrBI AvrII NheI NotI BclI BamHI SpeI PshAI FseI BsrGI
+settings width=50 space=1 show_space=1 numbers=Left copy=0 second=0 show_trans=1 trans=1_1 show_enz=1 genes=0 show_index=0 char1=* char2=+ sp1=12 sp2=12 nums=0 show_features=1 hidden=1 crop=1
+order space features dna sec_strand translation index enzymes genes
+sites AciI 22
+sites ApaI 16
+sites BglII 48
+sites BsaWI 43
+sites BstYI 37 48
+sites DpnI 38 49
+sites HaeIII 17
+sites HpaII 44
+sites RsaI 63
+sites SspI 6
+out
+|DATE
+|pUC19.gb
+|
+|     1 ABggcaatattttstgggccCCCGCCTGNAGGGCTCAGATCCACCGGAGA 
+|       X  A  I  F  X  G  P  P  P  X  G  L  R  S  T  G  D 
+|
+|
+|    51 TCTGAAATACTTGTACGAG 
+|        L  K  Y  L  Y  E
+|
+|
+tags
+tag dnatag - 4.7 4.57 8.7 8.26
+tag ls1_1 - 4.7 4.57
+tag ls51_1 - 8.7 8.26
+END

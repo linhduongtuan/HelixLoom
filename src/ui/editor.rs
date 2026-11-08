@@ -65,6 +65,7 @@ pub fn show(ui: &mut Ui, dv: &mut DocView, env: &Env) {
     let lane_h = (env.prefs.font_size + 5.0).round();
     let avail_w = ui.available_width();
     let per_row = row_columns(avail_w, m.gutter, cw);
+    dv.per_row = per_row;
     let layout = Layout::new(
         &dv.doc,
         per_row,

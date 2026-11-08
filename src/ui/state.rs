@@ -50,6 +50,8 @@ pub struct DocView {
     pub caret: usize,
     pub anchor: Option<usize>,
     pub scroll_to: Option<usize>,
+    /// How many bases a row of the sequence view holds, as drawn last (0 until it has been drawn once).
+    pub per_row: usize,
     pub find_hits: Vec<Hit>,
     /// A paste that still needs the application (open a record, or answer a question).
     pub paste_job: Option<PasteJob>,
@@ -71,6 +73,7 @@ impl DocView {
             caret: 0,
             anchor: None,
             scroll_to: None,
+            per_row: 0,
             find_hits: Vec::new(),
             paste_job: None,
             highlight_sites: false,

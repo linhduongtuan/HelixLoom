@@ -32,6 +32,7 @@ pub mod scf;
 pub mod secstruct;
 pub mod silent;
 pub mod sitesearch;
+pub mod textmap;
 pub mod translation;
 pub mod tree;
 pub mod treelayout;

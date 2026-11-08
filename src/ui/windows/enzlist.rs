@@ -296,7 +296,7 @@ impl App {
 
     /// Whether Return and Escape are meant for the dialog: not while the command palette is open, nor while a text field had
     /// the keyboard (Find's, say), and only when the dialog is the window in front.
-    fn dialog_has_the_keys(&self, ui: &Ui, typing: bool) -> bool {
+    pub(super) fn dialog_has_the_keys(&self, ui: &Ui, typing: bool) -> bool {
         !self.palette.is_open() && !typing && ui.ctx().top_layer_id() == Some(ui.layer_id())
     }
 
@@ -335,7 +335,7 @@ impl App {
 /// The size the original gives its window: as wide as the longest line and as high as the text (`textbox_geometry`, L16817),
 /// but not more than the screen has, so that every column of a list is there when the window opens. `shape` is the lines of
 /// the text and the characters of the longest.
-fn natural_size(ctx: &egui::Context, shape: (usize, usize)) -> [f32; 2] {
+pub(super) fn natural_size(ctx: &egui::Context, shape: (usize, usize)) -> [f32; 2] {
     let style = ctx.global_style();
     let font = egui::TextStyle::Monospace.resolve(&style);
     let (advance, row) = ctx.fonts_mut(|f| (f.glyph_width(&font, 'M'), f.row_height(&font)));

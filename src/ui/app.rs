@@ -23,6 +23,7 @@ use super::windows::primer3::Primer3Win;
 use super::windows::reads::ReadsWin;
 use super::windows::sitetools::SiteToolsWin;
 use super::windows::species::SpeciesWin;
+use super::windows::textmap::TextMapWin;
 use super::windows::tools::{AlignWin, CalcWin, PcrWin};
 use super::windows::tree::TreeWin;
 use super::windows::treetools::TreeToolsWin;
@@ -97,6 +98,8 @@ pub enum Action {
     /// List Enzymes… (its dialog) and the three Quick Lists of the Enzymes menu.
     ListEnzymes,
     QuickList(Quick),
+    /// Text Map… (Cmd+Shift+T): the dialog that asks what the page holds.
+    TextMap,
     SilentSites,
     DiagnosticSites,
     /// The Enzymes menu's Selection Only switch (Cmd+Shift+E).
@@ -164,6 +167,7 @@ pub struct App {
     pub enzyme_win: EnzymeWin,
     pub digest_win: DigestWin,
     pub enz_list: EnzListWin,
+    pub text_map: TextMapWin,
     pub find_win: FindWin,
     pub assembly: AssemblyWin,
     pub orf_win: OrfWin,
@@ -220,6 +224,7 @@ impl App {
             enzyme_win: EnzymeWin::default(),
             digest_win: DigestWin::default(),
             enz_list: EnzListWin::default(),
+            text_map: TextMapWin::default(),
             find_win: FindWin::default(),
             assembly: AssemblyWin::default(),
             orf_win: OrfWin::default(),
@@ -313,6 +318,7 @@ impl App {
             Action::Digest => self.digest_win.open = true,
             Action::ListEnzymes => self.open_list_dialog(),
             Action::QuickList(quick) => self.run_quick_list(quick),
+            Action::TextMap => self.open_text_map_dialog(),
             Action::SilentSites => self.run_silent_sites(),
             Action::DiagnosticSites => self.site_win.diagnostic_open = true,
             Action::ToggleSelectionOnly => self.toggle_selection_only(),
@@ -526,6 +532,11 @@ impl App {
             ),
             (
                 Modifiers::COMMAND | Modifiers::SHIFT,
+                Key::T,
+                Action::TextMap,
+            ),
+            (
+                Modifiers::COMMAND | Modifiers::SHIFT,
                 Key::Period,
                 Action::OrfNext,
             ),
@@ -701,6 +712,7 @@ impl App {
         self.orf_window(&ctx);
         self.site_windows(&ctx);
         self.enz_list_windows(&ctx, typing);
+        self.text_map_windows(&ctx, typing);
         self.feature_window(&ctx);
         self.align_window(&ctx);
         self.pcr_window(&ctx);

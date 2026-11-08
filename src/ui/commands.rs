@@ -311,6 +311,13 @@ const COMMANDS: &[Command] = &[
     ),
     c(
         "Analyse",
+        "Text map…",
+        "Cmd+Shift+T",
+        "page print sequence rows second strand translation index features restriction sites",
+        Action::TextMap,
+    ),
+    c(
+        "Analyse",
         "Quick list: site usage",
         "",
         "enzymes how many sites each cuts",

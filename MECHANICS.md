@@ -180,6 +180,21 @@ are checked by unit tests against values printed by the original's own procs (ru
     `enzyme_diffs2` and the first `enz_selection_dialog_sel_changed` are marked NOT USED; the partial digests that read the
     switch (L17593, L17629) cannot be reached. Not built, and noted there: the Graphic Map's region (HelixLoom's map is
     always the whole sequence), Text Map and BLAST, which also read the switch.
+* **A fifteenth request** (the same words again, in a session that had just built several GPUs for one workstation job, for which
+  the original has nothing; no target was open, so each was opened again). `core_target_open` on `AppMain.tcl`
+  (`t_4467f482ee05`, 3,245,692 bytes, sha256 4467f482…) → unknown file; `native_strings_find` → "Unknown file magic"; reopened as
+  raw arm64 (`AARCH64:LE:64:v8A`): `native_strings_find` for `enz_text_map` → 0 strings (`ev_2eb37437…`), `native_functions_list`
+  → the single `entry` (`ev_01903f84…`), and `native_function_pseudocode` → **function_not_found**, one call after the other and
+  each waited for, at 0xdec9f, 0xda1ad, 0xe4a21, 0x157645 and 0x91e69. This time the tool's remedy also said that the Ghidra of
+  this computer has no decompiler program for macOS (it needs `./gradlew buildNatives`); that changes nothing, because the bytes
+  are Tcl text and there is no machine code for it to read. `native_bytes_find` finds the text of the procedures (`text_map`, 35
+  places, `ev_a35ad15d…`; table in section 8, "Text Map") and the file itself was read in full.
+  * **What the original has behind the GPUs: nothing** (`gpu`, `cuda`, `workstation`, `nvidia`: 0 hits, as in the ninth and
+    thirteenth requests). The several GPUs for one job are an addition (section 9) and no value in it changes.
+  * **What was missing and is built now: Text Map** (Enzymes menu L1197, ⇧⌘T; `enz_text_map` L19401 @0xda1ad, `do_text_map` L19730
+    @0xdec9f), which the eleventh request had listed as still to do and the thirteenth and fourteenth had left open. It is the
+    page that File ▸ Print also writes (L59534: `enz_text_map $w -1`). Section 8, "Text Map", says how it was built and what was
+    found by running the original's own code under real Tk text widgets.
 
 ### Procedure addresses
 
@@ -856,6 +871,93 @@ the sequence (`enz_digest` L17107 @0xbfeb4, `orf_map` L36205 @0x1a5554, `enz_gra
   text of the lists was run against the original's own procedures (section 8, "List Enzymes and Quick Lists"); the digest keeps
   its earlier deliberate difference (sizes are measured between true top-strand cuts, section 2); the ORF list uses the build's
   own ORF finder, whose Find Next / Find Previous use was run on 240 cases (`next_ORF`) while `orf_map` itself was only read.
+
+### Text Map (`enz_text_map` L19401 @0xda1ad, `do_text_map` L19730 @0xdec9f), built from the original's own text
+
+Enzymes menu L1197 (⇧⌘T, `after $bugdelay enz_text_map $w`), the toolbar (L4377), File ▸ Print (L59534: `enz_text_map $w -1`, which
+makes the same page and sends it to `print_text`) and the Enzyme Selector's Text button and menu item (L15531, L15676:
+`enz_text_map $enz_select_window 0`, no dialog). What the page is made of: `linear_enz_sort` L28745 @0x157645 (`ev_46a609c8…`),
+`translate` L14518 @0xa51b0, `get_tags_exact` L12530 @0x91e69 (`ev_48066dbe…`), `get_cds` L14593 @0xa5aa7 (`ev_48038cf0…`),
+`copy_tags` L12999 @0x95e09 (`ev_046bf060…`), `uppercase_cdna` L20180 @0xe4a21 (`ev_1eeef434…`), `seq_len_mod` L58532, `ix2bp` and
+`bp2ix` (the later definitions, L62199 and L62219, which are the ones that take effect), the join rule of
+`feature_table_to_taglist` (L41228–41245) and `put_tags` (L12847, called as a file is opened, L2029, so that the tags of the joined
+features come after all the others), and the start values `info(enz_text_*)` (L66936–66958). `enz_text_map` and `do_text_map`:
+`ev_65c5679e…` and `ev_f3837431…`. HelixLoom: `src/seq/textmap.rs` with `textmap/{features,genes,highlight,out,tcl}.rs` (the page),
+`src/ui/windows/textmap.rs` with `textmap/{dialog,view}.rs` (the dialog and the window; Enzymes menu, command palette, ⇧⌘T,
+`--view textmap` and `--view textmap-dialog`).
+
+* **The dialog** (L19414–19579): a box for each kind of line, in the order of `info(enz_text_dialog_order)` (index line, enzymes, DNA,
+  translation, 2nd strand, genes, features, space at the start), each with a *Show* switch (the DNA box has none) that turns its
+  choices on and off. Enzymes: All · Selected Enzymes Only. Space: Lines (1 to 7). DNA: All · Selected DNA only, Copy Highlighting,
+  Characters/line (10 to 5000) and Line Numbers (None · Left · Right · Both). 2nd Strand. Translation: 1, 3 or 6 frames, 1 or 3
+  letters. Uppercase as Genes. Index Line: two kinds of mark, each a character (` + * : | . ^ -`) every N bases, with Numbers for
+  the first. Features: Crop Labels to Sequence Width, Show Hidden Features. The original has the boxes dragged up and down;
+  HelixLoom has an Up and a Down button on each. OK or Return makes the page, Cancel or Escape closes the dialog. The start
+  (L66936–66958): 100 bases to a line, 2 blank lines, numbers on both sides, Copy Highlighting on, index marks `*` every 10 (with
+  numbers) and `*` every 5, features on, translation off at 1 frame 1 letter, the rest off; DNA starts from the Selection Only
+  switch (L19440).
+* **The page** (L19730–20175): the date and the time (`%a %b %d, %Y %k:%M %Z`; HelixLoom writes it in UTC, which is the only zone
+  it knows), the name of the sequence's window cut into lines of the line width plus 8 (L19861), then, for each run of `width`
+  bases (the last one shorter), every kind of line that is on, in the order chosen, each with a left margin of 7 characters:
+  * **Index line**: marks of the second kind (every 5 bases at the start) and of the first (every 10), the first kind drawn over the
+    second, and the number of each mark of the first kind beside it, centred on it; above the DNA if its box is above the DNA box,
+    else below.
+  * **Enzymes**: the sites that fall in the run (`linear_enz_sort`), each as "site name" at its column, on the first line where it
+    keeps a space away from the one before; a line of `|` under each site; above the DNA or below it by the order of the boxes.
+  * **DNA**: the number of its first base (right-aligned in 6 characters and a space), the bases, the number of its last (L19930–
+    19946; numbers wrap round the sequence with `seq_len_mod`). Every line of DNA is a tag `dnatag` and a tag `ls<number>_1`, which
+    is what the original's `alignlink2` reads (L20148–20151): a click puts the caret on that base, a Shift-click selects up to it.
+  * **2nd Strand**: the complement of the DNA line base by base, not turned round (L19951). **Translation**: `translate` of the
+    whole text, cut into runs: for 3 or 6 frames the reading of the second and third frame is shifted over by one and two characters
+    (one letter), but **not with three letters** (L19782–19790), where the six frames also have their reverse frames cut off the end
+    (`end-(len % 3)`, `end-(1+len % 3)`, `end-(2+len % 3)`). **Genes**: `uppercase_cdna` takes the small-letter runs out (a lead,
+    introns `gt…ag` between capitals, and the tail after a stop), the exons are translated and room is left where the introns were.
+  * **Features**: for each feature in the run, a line of `>` (or `<` for the other strand) from its first base to its last, `.` in the
+    gaps of a feature of several parts, its name under it (cut to the line width with Crop), and, for a CDS, its amino acids above
+    with the number of the first, counted along the feature (from the other end for the other strand, and from the origin round
+    for one through it: L20063–20066).
+  * After each run a blank line, and the **Space** box's blank lines where its box is.
+* **Colours**: Copy Highlighting puts the feature tags on the DNA lines (`copy_tags`); the features' own lines have them too. Each
+  feature is a tag with its colour (the colour of its direction; none for a hidden one) and, when it has several parts, a second
+  tag (`fn<n>#`) from its first base to its last, which the page reads to tell the gaps from the parts. A tag drawn later is drawn
+  over an earlier one; the tags of the sequence are raised over the rest.
+* **What running the original's own code showed, all of it kept** (each was a difference that the comparison below found):
+  1. The 2nd Strand box above the DNA box stops the original with the Tcl error `can't read "textline": no such variable` on the first
+     line (the DNA line is where `textline` is made); a selection through the origin of a circle stops it with `can't read "seq_len":
+     no such variable` (L19752 uses a name that is not set); a spacing of 0 in the Index Line box divides by zero. HelixLoom says the
+     same in its status line (its selections never run through the origin).
+  2. The first number of the index line is one spacing too far when the line begins on a multiple of the spacing (L19972).
+  3. `get_tags_exact` compares the first place of a tag with the last with `!=`, which compares two indexes that look like numbers as
+     numbers, so that "1.2" and "1.20" are the same: **a feature that begins at the second base of a row of the sequence window is
+     missing from a line that ends at that row's twentieth base**, and likewise for the 1st and the 10th or the 100th, the 3rd and
+     the 30th, and so on (L12544–12552, the line `if {[lindex $tags($tagname) 0] != $last}`). HelixLoom needs the row length of the sequence view for this (`Request::row_width`).
+  4. When the sequence is a whole number of rows long, the place after its last base is the end of the text, and the colours of the
+     last line of DNA lose their last piece (`copy_tags` asks for the tags on the line break that ends the text). The line is also cut
+     where the selection or the tag of a joined feature begins or ends, which does not change what is coloured but where the last piece
+     begins.
+  5. A mark that lies beyond the end of its line (a part of a joined feature that begins after the fea line's last character) is a
+     range to `end`, and Tk keeps such a range growing over the text that is put after it, unless that text is put with a list of tags
+     of its own (the DNA line is): the colour of a feature can reach over the lines that follow.
+  6. A feature of several parts has a line of gaps (`.`) in every run it passes through even when none of its parts is in it, and this
+     is made for hidden features too (the check for hidden features is only made for a feature that has a part in the run).
+  7. A feature whose first part begins where its last ends on a circle (28 and 28, say) is not one that runs through the origin to
+     the join rule (`first > last`), though it is by its parts.
+* **How it was checked**: `tests/tcl/text_map_driver.tcl` runs the original's code, cut out unchanged with `tests/tcl/cut_procs.tcl`,
+  against **real Tk text widgets** (the system Tcl 8.5.9 loads its own Tk): the sequence window's widget in rows of a random width
+  with the feature tags as `put_tags` makes them, the original's own `findenzymes`, `translate` and the rest, and the result window's
+  widget. A case is a random sequence (some with ambiguity codes, some with introns in small letters), 0 to 7 features (of one to
+  three parts, through the origin on circles, hidden ones, CDS), a selection, every setting of the dialog and an order of the boxes.
+  For each, the text and the places and colour of **every tag** are compared. 70 cases are kept as tests
+  (`src/seq/textmap/golden.txt`) and **5,400 more** (nine seeds of 600) were run through the ignored test
+  (`HELIXLOOM_TEXTMAP_GOLDEN=file cargo test textmap -- --ignored`): all identical. Not covered: enzyme lines on sequences shorter
+  than twelve bases (the original's site finder starts on the first five bases; the tests of List Enzymes cover the finder), and
+  letters in the DNA that are not nucleotide codes.
+* **Not built**: Print (HelixLoom prints nothing); the Enzyme Selector's Text button and menu item (no dialog, the selected
+  enzymes only); the *Graphic Map* box (`graphic_map`, L19915, marked "experimental- not used" and not in the dialog's order); the
+  dragging of the boxes (Up and Down buttons instead); and hidden features, which HelixLoom does not have (`MapFeature::hidden` is
+  false for all of them, and the choice does nothing until one is).
+* **Numbers** (all in `mechanics.json`): 100 bases to a line, 10 to 5000 offered; 2 blank lines, 1 to 7 offered; marks every 10 and
+  every 5; a margin of 7 characters; the title cut at the line width plus 8.
 
 ## 9. Added by the person during the build (not in the original)
 

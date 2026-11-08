@@ -218,6 +218,7 @@ impl App {
                 item(ui, "Highlight Sites", "", true, Action::ToggleHighlight);
                 ui.separator();
                 item(ui, "List Enzymes…", "", true, Action::ListEnzymes);
+                item(ui, "Text Map…", "⇧⌘T", true, Action::TextMap);
                 ui.menu_button("Quick Lists", |ui| {
                     for quick in Quick::ALL {
                         item(ui, quick.label(), "", true, Action::QuickList(quick));

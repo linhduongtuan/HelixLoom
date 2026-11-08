@@ -25,6 +25,12 @@ impl App {
             }
             "enzlist" => self.run_quick_list(Quick::SiteUsage),
             "enzlist-dialog" => self.open_list_dialog(),
+            "textmap" => {
+                self.open_text_map_dialog();
+                self.text_map.dialog_open = false;
+                self.make_text_map();
+            }
+            "textmap-dialog" => self.open_text_map_dialog(),
             "selection-only" => {
                 // the switch on with the coding stretch of the demo plasmid selected: the toolbar's picture, and a list of it
                 self.docs[0].select(326, 446);
