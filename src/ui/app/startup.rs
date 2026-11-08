@@ -25,6 +25,12 @@ impl App {
             }
             "enzlist" => self.run_quick_list(Quick::SiteUsage),
             "enzlist-dialog" => self.open_list_dialog(),
+            "selection-only" => {
+                // the switch on with the coding stretch of the demo plasmid selected: the toolbar's picture, and a list of it
+                self.docs[0].select(326, 446);
+                self.prefs.selection_only = true;
+                self.run_quick_list(Quick::SiteUsage);
+            }
             "linear" => self.map_linear = true,
             "assembly" | "assembly-before" => {
                 self.tab = Tab::Assembly;

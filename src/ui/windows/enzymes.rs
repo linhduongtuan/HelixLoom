@@ -80,6 +80,19 @@ pub struct EnzymeWin {
 }
 
 impl App {
+    /// The Selection Only switch of the Enzymes menu (`info(analyze_selection)`, L1170; Cmd+Shift+E, L11491; Shift-click on the
+    /// toolbar's enzyme button, L4370): the digest, the lists of enzymes and the ORF list look at the selected bases, or at all
+    /// of the sequence when nothing is selected.
+    pub fn toggle_selection_only(&mut self) {
+        self.prefs.selection_only = !self.prefs.selection_only;
+        let text = if self.prefs.selection_only {
+            "Selection Only: on. The digest, the lists of enzymes and the ORF list look at the selected bases."
+        } else {
+            "Selection Only: off. The digest, the lists of enzymes and the ORF list look at all of the sequence."
+        };
+        self.say(text);
+    }
+
     pub fn enzyme_window(&mut self, ctx: &egui::Context) {
         if !self.enzyme_win.open {
             return;
@@ -209,5 +222,43 @@ mod tests {
         assert!(!Group::Unique.includes(by("EcoRI"), 2, false));
         assert!(Group::Absent.includes(by("EcoRI"), 0, false));
         assert!(Group::Selected.includes(by("EcoRI"), 3, true));
+    }
+
+    #[test]
+    fn the_selection_only_switch_starts_off_and_turns_over_with_a_message() {
+        let mut app = App::new(crate::ui::app::Startup::default());
+        assert!(!app.prefs.selection_only);
+
+        app.toggle_selection_only();
+        assert!(app.prefs.selection_only);
+        assert!(
+            app.status.starts_with("Selection Only: on"),
+            "{}",
+            app.status
+        );
+
+        app.toggle_selection_only();
+        assert!(!app.prefs.selection_only);
+        assert!(
+            app.status.starts_with("Selection Only: off"),
+            "{}",
+            app.status
+        );
+    }
+
+    #[test]
+    fn the_palette_finds_the_switch_by_its_name_and_by_orf_and_it_works_from_any_page() {
+        use crate::ui::app::Action;
+        use crate::ui::commands::{acts_on_the_sequence, all, search};
+        let commands = all();
+        let finds = |typed: &str| {
+            let hits = search(commands, typed, 8);
+            hits.iter()
+                .any(|&i| matches!(commands[i].action, Action::ToggleSelectionOnly))
+        };
+        assert!(finds("selection only"));
+        assert!(finds("orf selection"));
+        // a preference: it turns over wherever the person is, without a trip to the sequence
+        assert!(!acts_on_the_sequence(&Action::ToggleSelectionOnly));
     }
 }

@@ -101,3 +101,47 @@ fn the_colours_follow_the_system_until_light_or_dark_is_chosen_and_follow_it_aga
     app.prefs.theme = ThemeMode::System;
     assert_eq!(frame(&mut app, 6, Some(egui::Theme::Dark)), (true, true));
 }
+
+#[test]
+fn command_shift_e_turns_selection_only_on_and_off_and_command_e_alone_still_opens_the_selector() {
+    let toggle = pressed(Key::E, Modifiers::COMMAND | Modifiers::SHIFT);
+    assert!(
+        matches!(toggle.as_slice(), [Action::ToggleSelectionOnly]),
+        "{toggle:?}"
+    );
+    let selector = pressed(Key::E, Modifiers::COMMAND);
+    assert!(
+        matches!(selector.as_slice(), [Action::EnzymeSelector]),
+        "{selector:?}"
+    );
+}
+
+#[test]
+fn holding_command_shift_e_turns_selection_only_over_once_not_again_and_again() {
+    let ctx = egui::Context::default();
+    let app = App::new(Startup::default());
+    let press = |frame: u32| {
+        let mut input = frame_input(frame);
+        input.events.push(Event::Key {
+            key: Key::E,
+            physical_key: Some(Key::E),
+            pressed: true,
+            repeat: false,
+            modifiers: Modifiers::COMMAND | Modifiers::SHIFT,
+        });
+        let mut actions = Vec::new();
+        let mut output = ctx.run_ui(input, |ui| app.shortcuts(ui.ctx(), &mut actions));
+        output.textures_delta.clear();
+        actions
+    };
+
+    let first = press(0);
+    // the key has not come up: egui takes the next press for one of its repeats
+    let held = press(1);
+
+    assert!(
+        matches!(first.as_slice(), [Action::ToggleSelectionOnly]),
+        "{first:?}"
+    );
+    assert!(held.is_empty(), "{held:?}");
+}

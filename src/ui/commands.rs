@@ -283,6 +283,13 @@ const COMMANDS: &[Command] = &[
     ),
     c(
         "Analyse",
+        "Selection only: digest, lists and ORFs look at the selected bases (on or off)",
+        "Cmd+Shift+E",
+        "selection only toggle selected dna analyze region enzymes orf",
+        Action::ToggleSelectionOnly,
+    ),
+    c(
+        "Analyse",
         "Digest…",
         "Cmd+R",
         "fragments gel restriction",
@@ -632,6 +639,7 @@ pub fn acts_on_the_sequence(action: &Action) -> bool {
             | Action::TreeTools
             | Action::Workflow
             | Action::Reads
+            | Action::ToggleSelectionOnly
     )
 }
 

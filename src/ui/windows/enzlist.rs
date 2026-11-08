@@ -149,18 +149,17 @@ fn entries_of(dv: &mut DocView, enzymes: &[Enzyme]) -> Vec<Entry> {
 }
 
 impl App {
-    /// List Enzymes…: the dialog, with the format, columns and list of the last time. "DNA" starts at All each time, as the
-    /// original starts it from its Selection Only switch (L16339), which HelixLoom does not have. With no sequence open
-    /// there is nothing to list, and the dialog does not open.
+    /// List Enzymes…: the dialog, with the format, columns and list of the last time. "DNA" starts from the Selection Only
+    /// switch each time (L16339). With no sequence open there is nothing to list, and the dialog does not open.
     pub fn open_list_dialog(&mut self) {
         if self.current_doc().is_none() {
             return self.say("Open a sequence first.");
         }
-        self.enz_list.selection_only = false;
+        self.enz_list.selection_only = self.prefs.selection_only;
         self.enz_list.dialog_open = true;
     }
 
-    /// A Quick List: its own format and enzymes, the columns of the dialog, and all of the DNA.
+    /// A Quick List: its own format and enzymes, the columns of the dialog, and the DNA the Selection Only switch says.
     pub fn run_quick_list(&mut self, quick: Quick) {
         let (format, which) = quick.format_and_list();
         let columns = self.enz_list.columns;
@@ -168,7 +167,7 @@ impl App {
             format,
             which,
             columns,
-            selection_only: false,
+            selection_only: self.prefs.selection_only,
         });
     }
 

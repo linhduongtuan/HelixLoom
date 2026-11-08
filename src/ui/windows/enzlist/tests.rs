@@ -540,3 +540,37 @@ fn the_dialog_does_not_open_without_a_sequence() {
     assert!(!app.enz_list.dialog_open);
     assert_eq!(app.status, "Open a sequence first.");
 }
+
+#[test]
+fn a_quick_list_looks_at_the_selected_bases_when_the_selection_only_switch_is_on() {
+    let mut app = app();
+    app.docs[0].select(326, 446);
+
+    app.run_quick_list(Quick::SiteUsage);
+    assert!(
+        run_of(&app).report.contains("\nFrom 0 to "),
+        "off: all of the DNA"
+    );
+    assert!(!run_of(&app).choice.selection_only);
+
+    app.prefs.selection_only = true;
+    app.run_quick_list(Quick::SiteUsage);
+    assert!(
+        run_of(&app).report.contains("\nFrom 326 to 446. \n"),
+        "on: the selection"
+    );
+    assert!(run_of(&app).choice.selection_only);
+}
+
+#[test]
+fn the_list_dialog_starts_its_dna_from_the_switch() {
+    let mut app = app();
+    app.enz_list.selection_only = true;
+
+    app.open_list_dialog();
+    assert!(!app.enz_list.selection_only, "switch off: All");
+
+    app.prefs.selection_only = true;
+    app.open_list_dialog();
+    assert!(app.enz_list.selection_only, "switch on: Selected DNA only");
+}

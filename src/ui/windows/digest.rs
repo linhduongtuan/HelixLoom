@@ -52,7 +52,6 @@ const BAND_SPACING: f32 = 5.0;
 #[derive(Default)]
 pub struct DigestWin {
     pub open: bool,
-    pub selection_only: bool,
     pub ladder: usize,
 }
 
@@ -83,9 +82,13 @@ pub fn compute(
             let inside: Vec<Site> = sites
                 .iter()
                 .filter(|s| {
+                    // of a selected piece the original takes the sites that start in it (`site >= start`, and below `end`) whose
+                    // two cuts fall in it too (L17126-17133)
                     s.cuts_inside
                         && (region.is_none()
-                            || (s.top_cut >= a
+                            || (s.start >= a
+                                && s.start < b
+                                && s.top_cut >= a
                                 && s.top_cut <= b
                                 && s.bottom_cut >= a
                                 && s.bottom_cut <= b))
@@ -235,6 +238,15 @@ fn draw_gel(ui: &mut Ui, pal: &Palette, ladder: &[usize], frags: &[Fragment]) {
 }
 
 impl App {
+    /// The digest of sequence `i` with the enzymes chosen in the Enzyme Selector: of the selected bases when the Selection Only
+    /// switch is on and some are selected (`enz_digest` takes the region as "all" when nothing is selected, L17107), of all of
+    /// it otherwise.
+    pub fn digest_now(&mut self, i: usize) -> DigestResult {
+        let chosen = self.selected.clone();
+        let selection_only = self.prefs.selection_only && self.docs[i].selection().is_some();
+        compute(&mut self.docs[i], &self.enzymes, &chosen, selection_only)
+    }
+
     pub fn digest_window(&mut self, ctx: &egui::Context) {
         if !self.digest_win.open {
             return;
@@ -249,14 +261,7 @@ impl App {
             .open(&mut open)
             .default_size([560.0, 420.0])
             .show(ctx, |ui| {
-                let chosen = self.selected.clone();
-                let has_selection = self.docs[i].selection().is_some();
-                let result = compute(
-                    &mut self.docs[i],
-                    &self.enzymes,
-                    &chosen,
-                    self.digest_win.selection_only && has_selection,
-                );
+                let result = self.digest_now(i);
                 ui.horizontal(|ui| {
                     ui.label(
                         RichText::new(if result.enzymes.is_empty() {
@@ -271,10 +276,11 @@ impl App {
                     }
                 });
                 ui.horizontal(|ui| {
-                    ui.add_enabled(
-                        has_selection,
-                        egui::Checkbox::new(&mut self.digest_win.selection_only, "Selection only"),
-                    );
+                    // the switch of the Enzymes menu: it counts when some bases are selected
+                    ui.checkbox(&mut self.prefs.selection_only, "Selection only")
+                        .on_hover_text(
+                            "Cmd+Shift+E. With nothing selected the whole sequence is digested.",
+                        );
                     ui.label("Ladder");
                     egui::ComboBox::from_id_salt("ladder")
                         .selected_text(LADDERS[self.digest_win.ladder].0)
@@ -408,6 +414,121 @@ mod tests {
         assert_eq!(r.fragments.iter().map(|f| f.length).sum::<usize>(), 450);
         assert_eq!(r.fragments.len(), 3);
         assert_eq!(r.origin, 50);
+    }
+
+    fn app_with_a_selection(chosen: &[&str]) -> App {
+        let mut app = App::new(crate::ui::app::Startup::default());
+        app.docs = vec![plasmid()];
+        app.docs[0].select(50, 500);
+        app.selected = names(chosen);
+        app
+    }
+
+    #[test]
+    fn the_selection_only_switch_makes_the_digest_window_digest_the_selected_piece() {
+        let mut app = app_with_a_selection(&["EcoRI", "HindIII"]);
+
+        let whole = app.digest_now(0);
+        app.prefs.selection_only = true;
+        let piece = app.digest_now(0);
+
+        assert_eq!((whole.total, whole.origin), (600, 0));
+        assert_eq!((piece.total, piece.origin), (450, 50));
+    }
+
+    #[test]
+    fn with_nothing_selected_the_switch_digests_all_of_the_sequence() {
+        let mut app = app_with_a_selection(&["EcoRI"]);
+        app.docs[0].place_caret(10);
+        app.prefs.selection_only = true;
+
+        let result = app.digest_now(0);
+
+        assert_eq!((result.total, result.origin), (600, 0));
+    }
+
+    thread_local! {
+        /// The frames this test has drawn: the time of a frame must never go back.
+        static FRAMES: std::cell::Cell<u32> = const { std::cell::Cell::new(0) };
+    }
+
+    fn frame(app: &mut App, ctx: &egui::Context, events: Vec<egui::Event>) -> egui::FullOutput {
+        let n = FRAMES.with(|f| f.replace(f.get() + 1));
+        let mut input = crate::ui::headless::frame_input(n);
+        input.events = events;
+        let mut output = ctx.run_ui(input, |ui| app.draw(ui));
+        output.textures_delta.clear();
+        output
+    }
+
+    /// Where a piece of text was drawn: the first that holds `text`.
+    fn text_rect(shapes: &[egui::epaint::Shape], text: &str) -> Option<egui::Rect> {
+        shapes.iter().find_map(|shape| match shape {
+            egui::epaint::Shape::Text(t) if t.galley.text().contains(text) => {
+                Some(t.visual_bounding_rect())
+            }
+            egui::epaint::Shape::Vec(inner) => text_rect(inner, text),
+            _ => None,
+        })
+    }
+
+    #[test]
+    fn the_check_box_of_the_digest_window_is_the_selection_only_switch_of_the_menu() {
+        use egui::{pos2, Event, Modifiers, PointerButton};
+        let ctx = egui::Context::default();
+        let mut app = app_with_a_selection(&["EcoRI"]);
+        app.digest_win.open = true;
+        frame(&mut app, &ctx, vec![]);
+        let shown = frame(&mut app, &ctx, vec![]);
+        let shapes: Vec<egui::epaint::Shape> =
+            shown.shapes.iter().map(|s| s.shape.clone()).collect();
+        let rect = text_rect(&shapes, "Selection only").expect("the check box is drawn");
+        let at = pos2(rect.center().x, rect.center().y);
+        let button = |pressed| Event::PointerButton {
+            pos: at,
+            button: PointerButton::Primary,
+            pressed,
+            modifiers: Modifiers::NONE,
+        };
+
+        frame(&mut app, &ctx, vec![Event::PointerMoved(at)]);
+        frame(&mut app, &ctx, vec![button(true), button(false)]);
+
+        assert!(app.prefs.selection_only, "the click turned the switch on");
+        assert_eq!(
+            app.digest_now(0).total,
+            450,
+            "and the digest looks at the selection"
+        );
+    }
+
+    #[test]
+    fn a_site_that_starts_before_the_selection_is_not_digested_though_its_cuts_fall_inside_it() {
+        // BsaI GGTCTC(1/5) at base 45 cuts 7 and 11 bases on: at 52 and 56, inside a selection from 50, but the original takes
+        // only the sites that start in the piece (`site >= start`, L17127)
+        let mut seq = vec![b'T'; 600];
+        seq[45..51].copy_from_slice(b"GGTCTC");
+        let mut dv = DocView::new(Doc::new("p", seq));
+        dv.select(50, 500);
+        let enzymes = default_enzymes();
+
+        let piece = compute(&mut dv, &enzymes, &names(&["BsaI"]), true);
+        let whole = compute(&mut dv, &enzymes, &names(&["BsaI"]), false);
+
+        assert_eq!(piece.fragments.len(), 1, "no cut in the piece");
+        assert_eq!(whole.fragments.len(), 2, "the whole sequence is cut there");
+    }
+
+    #[test]
+    fn a_site_that_starts_at_the_end_of_the_selection_is_not_digested_either() {
+        let mut seq = vec![b'T'; 600];
+        seq[100..106].copy_from_slice(b"GAATTC");
+        let mut dv = DocView::new(Doc::new("p", seq));
+        dv.select(50, 100);
+
+        let piece = compute(&mut dv, &default_enzymes(), &names(&["EcoRI"]), true);
+
+        assert_eq!(piece.fragments.len(), 1);
     }
 
     #[test]

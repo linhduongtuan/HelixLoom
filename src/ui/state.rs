@@ -200,6 +200,9 @@ pub struct Prefs {
     pub primer: PrimerParams,
     pub show_map: bool,
     pub show_features: bool,
+    /// The original's "Selection Only" switch (`info(analyze_selection)`, Enzymes menu): the digest, the lists of enzymes and the
+    /// ORF list look at the selected bases only, when there are some, instead of all of the sequence.
+    pub selection_only: bool,
 }
 
 /// How the colours are chosen: by the system (light by day, dark by night, as the person set it), or always one of them.
@@ -258,6 +261,7 @@ impl Default for Prefs {
             primer: PrimerParams::default(),
             show_map: true,
             show_features: true,
+            selection_only: false,
         }
     }
 }

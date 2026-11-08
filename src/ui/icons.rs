@@ -15,6 +15,8 @@ pub enum Icon {
     Redo,
     Find,
     Enzymes,
+    /// The same with a frame round the middle: the original's picture while Selection Only is on (`enzymes_sonly`).
+    EnzymesSelectionOnly,
     Map,
     Digest,
     Translate,
@@ -103,12 +105,15 @@ fn paint(ui: &Ui, icon: Icon, r: Rect, pal: &Palette) {
             p.circle_stroke(at(0.42, 0.42), r.width() * 0.32, k);
             seg(at(0.66, 0.66), at(0.95, 0.95), b);
         }
-        Icon::Enzymes => {
+        Icon::Enzymes | Icon::EnzymesSelectionOnly => {
             seg(at(0.1, 0.25), at(0.9, 0.25), k);
             seg(at(0.1, 0.75), at(0.9, 0.75), k);
             seg(at(0.5, 0.0), at(0.5, 1.0), b);
             seg(at(0.35, 0.12), at(0.5, 0.0), b);
             seg(at(0.65, 0.12), at(0.5, 0.0), b);
+            if icon == Icon::EnzymesSelectionOnly {
+                frame(at(0.22, 0.08), at(0.78, 0.92), b);
+            }
         }
         Icon::Map => {
             p.circle_stroke(r.center(), r.width() * 0.46, k);

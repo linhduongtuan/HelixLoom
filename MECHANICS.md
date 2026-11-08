@@ -163,6 +163,23 @@ are checked by unit tests against values printed by the original's own procs (ru
     "Partial Digestion..."`), as is the "Do Partial Digests" action of the Enzyme Selector (L17730). It is not built, for that
     reason. Still missing from that menu: Text Map (L1197), the Selection Only switch (L1170 @0xf893), Print and Export as PDF,
     Insert Piece, LabArchives.
+* **A fourteenth request** (the same words; the session had no target open, so each was opened again). `core_target_open` on
+  the bundle (`t_f903046d7ecc`) and on `AppMain.tcl` (`t_4467f482ee05`) → unknown file; `native_strings_find` → "Unknown file
+  magic"; raw arm64 (`AARCH64:LE:64:v8A`): `native_strings_find` for `Selection Only` → 0 strings (`ev_f869b67e…`),
+  `native_functions_list` → the single `entry` (`ev_69538851…`), and `native_function_pseudocode` → **function_not_found**, one
+  call after the other and each waited for, at 0xf893 (the menu line), 0x31ec2, 0x3883d, 0x87c83, 0xbfeb4 (`enz_digest`) and
+  0x1a5554 (`orf_map`). `native_bytes_find` finds the setting `analyze_selection` in **57 places** (`ev_1f267e10…`) and `proc
+  orf_map` at 0x1a5554 (`ev_7bbbb83b…`); `native_bytes_show` reads the menu line (0xf893, `ev_53ad391d…`), the key (0x87c83,
+  `ev_f88f3530…`) and the toolbar button (0x3883d, `ev_430751aa…`). The text of each was then read in full.
+  * **What was missing: the Selection Only switch**, which the thirteenth request had listed among the small things left and
+    which turned out to steer half of the Enzymes menu. It is built now (section 8, "Selection Only"): the Enzymes menu's
+    check item, its key (⌘⇧E), the toolbar button's Shift-click and its changed picture, a command in the palette, and the
+    digest, the lists of enzymes and the ORF list that read it.
+  * **What this round's reading cleared up.** The Diagnostic Site dialog's DNA choice is dead code (inside `if {0}`, L36017), so
+    Silent Sites and Diagnostic Sites, which read the selection directly (L35799), were right to ignore the switch;
+    `enzyme_diffs2` and the first `enz_selection_dialog_sel_changed` are marked NOT USED; the partial digests that read the
+    switch (L17593, L17629) cannot be reached. Not built, and noted there: the Graphic Map's region (HelixLoom's map is
+    always the whole sequence), Text Map and BLAST, which also read the switch.
 
 ### Procedure addresses
 
@@ -249,6 +266,15 @@ Read in the enzyme-list pass (List Enzymes, Quick Lists, and what they stand on)
 | `enz_site_usage_filter` | L15931 | 0xb4584 | | `ix2bp` (later definition wins) | L62219 | 0x2cf36d |
 | menu: List Enzymes… | L1184 | 0xfe05 | | menu: Quick Lists | L1186–1189 | 0xfe92 |
 | menu: Selection Only | L1170 | 0xf893 | | start values `enz_list_*` | L66960–66962 | 0x303969 |
+
+Read in the Selection Only pass (the setting `info(analyze_selection)`, "all" or "selection"):
+
+| Item | Line | Address | | Item | Line | Address |
+|---|---|---|---|---|---|---|
+| menu check item Selection Only | L1170 | 0xf893 | | `enz_digest` (its `region`) | L17086 | 0xbfeb4 |
+| write trace (the toolbar picture) | L3973 | 0x31ec2 | | `orf_map` (its `region`) | L36192 | 0x1a5554 |
+| toolbar enzyme button, Shift-click | L4370 | 0x3883d | | `enz_graphic_map` (its `region`) | L20210 | 0xe4e64 |
+| key ⌘⇧E turns it over | L11491 | 0x87c83 | | start value `"all"` | L4507 | 0x3ac1d |
 
 Values that sit in the settings block rather than in a procedure are listed by line with their byte offsets in the
 appendix at the end; `mechanics.json` carries the same sources.
@@ -388,7 +414,7 @@ appendix at the end; `mechanics.json` carries the same sources.
 ## 7. Not built in this version
 
 The trace window's editing and linking (change or add a base, link a trace to a sequence window, search a trace, print or
-save as EPS; the rest of the window is built, section 8), the Molecular Reaction Calculator's lookup of a compound's weight by name and its recipe multiplier (both ask PubChem), NCBI BLAST / Entrez download, LabArchives, printing / PDF export, protein-feature search, Golden Gate / recombination / restriction–ligation wizards, partial digests (the original's menu entry is commented out, L1180, so nothing reaches its dialog), text map, RNA documents (the original converts U↔T on paste), per-feature arrow shapes (`arrow_data`, width, offset — HelixLoom draws one arrow shape), multi-range selections, the Enzymes menu's Selection Only switch (L1170; the Digest window has its own check box), Insert Piece.
+save as EPS; the rest of the window is built, section 8), the Molecular Reaction Calculator's lookup of a compound's weight by name and its recipe multiplier (both ask PubChem), NCBI BLAST / Entrez download, LabArchives, printing / PDF export, protein-feature search, Golden Gate / recombination / restriction–ligation wizards, partial digests (the original's menu entry is commented out, L1180, so nothing reaches its dialog), text map, RNA documents (the original converts U↔T on paste), per-feature arrow shapes (`arrow_data`, width, offset — HelixLoom draws one arrow shape), multi-range selections, the regions of the Graphic Map and of Text Map and BLAST under the Selection Only switch (section 8), Insert Piece.
 
 ## 8. Editing rules read in the deep pass (all built)
 
@@ -730,9 +756,9 @@ Enzymes menu, L1184 @0xfe05 and L1186–1189 (`findenzymes $w; list_enzymes_wind
   *Columns* (1 to 10, turned off for the last two formats), *Enzymes* (All · Selected Enzymes Only · Absent Enzymes · Unique
   Enzymes) and *DNA* (All · Selected DNA only); OK or Return lists, Cancel or Escape closes it without listing (HelixLoom gives Return and Escape to the dialog only when it
   is the window in front, no text field had the keyboard as the frame began and the command palette is closed). The format, the columns and the
-  enzymes keep what was chosen last; DNA starts from the Selection Only switch (all). **Quick Lists** are the same code with
+  enzymes keep what was chosen last; DNA starts from the Selection Only switch (all at the start). **Quick Lists** are the same code with
   the choices fixed: Site Usage = format 1, all; Unique Sites = format 0, unique; Absent Sites = format 0, absent; their columns
-  are the dialog's (6 at the start); their DNA is the Selection Only switch's, which HelixLoom does not have (all of it).
+  are the dialog's (6 at the start); their DNA is the Selection Only switch's (section 8, "Selection Only").
 * **Which enzymes.** *All*: every enzyme of the file in the file's order. *Selected*: the ones chosen in the Enzyme Selector
   (`info(enz_currently_selected)`, which is kept sorted by name); none chosen lists nothing. *Absent* and *Unique*: the enzymes
   whose number of sites (`enz_count`) is 0 or exactly 1 on the DNA looked at. With a selection `enz_count` counts the sites
@@ -777,9 +803,59 @@ Enzymes menu, L1184 @0xfe05 and L1186–1189 (`findenzymes $w; list_enzymes_wind
   date; a window opens as wide as its longest line when the screen allows, and keeps its place and size while the same kind
   of list is made again; the text is read-only and *Copy as text* takes all of it. **Not built:** a selection across the
   origin (the original reads a second range, L16406–16413, L16483–16485 and in `enz_count`, L15960–15963; HelixLoom has no such
-  selection), the Selection Only switch that Quick Lists read, the Enzyme Selector's own List menu (L15509–15512: the four
+  selection), the Enzyme Selector's own List menu (L15509–15512: the four
   formats for the selected enzymes, which List Enzymes… with *Selected Enzymes Only* gives) and its Text button (L15531,
   L15676), and the output menu of the window (save, print).
+
+### Selection Only (Enzymes menu check item L1170 @0xf893; the setting `info(analyze_selection)`), built from the original's own text
+
+One global setting, `info(analyze_selection)`, "all" or "selection", starting at "all" (L4507 @0x3ac1d). It is turned over from
+four places: the Enzymes menu's check item **Selection Only** (accelerator ⌘⇧E, L1170), the key ⌘⇧E itself (L11491 @0x87c83),
+a Shift-click on the toolbar's enzyme button (a plain click opens the Enzyme Selector, L4370 @0x3883d), and the check boxes of
+dialogs that show it. Whenever it is written a trace (L3973 @0x31ec2) **swaps the picture of the toolbar's enzyme button**
+between `enzymes_all` and `enzymes_sonly`. The word means the same everywhere it is read: when it is "selection" **and some
+bases are selected**, the command works on the selected bases as a piece of its own; with nothing selected it works on all of
+the sequence (`enz_digest` L17107 @0xbfeb4, `orf_map` L36205 @0x1a5554, `enz_graphic_map` L20219, `list_enzymes_window` L16401).
+
+* **Who reads it.** Of its 57 mentions in the file these are live: **Digestion** (menu L1179, ⌘R L11418, the toolbar's two
+  digest buttons L4375–4376 and the lane list of the Digestion dialog L18317; the dialog has no check box of its own),
+  **ORF map** (menu L1222, toolbar L4347), **Graphic Map** (`enz_graphic_map` L20218), **List Enzymes**'s DNA choice at the
+  start and the **Quick Lists** (`list_enzymes_window` with no region, L16399), **Text Map**'s DNA choice at the start (L19440,
+  L19591) and **BLAST**'s check box (L49544, L49584). Dead or unreachable: the Diagnostic Site dialog's DNA choice (inside
+  `if {0}`, L36017), `enzyme_diffs2` (NOT USED), the first `enz_selection_dialog_sel_changed` (NOT USED) and the partial digests
+  (L17593, L17629). **Silent Sites and Diagnostic Sites do not read it:** they take the selection when there is one
+  (`silent_sites` L35799).
+* **HelixLoom.** `Prefs::selection_only`, off at the start. The Enzymes menu has the item **Selection Only: on / off** (⌘⇧E in
+  its key column; an item here has no check mark, so the state is in its words); ⌘⇧E turns it over (the plain ⌘E still opens the
+  selector, and the repeats of a held key are let go); the toolbar's enzyme button opens the selector and with Shift turns the
+  switch over, and its picture gets a frame round the middle while the switch is on (the original's `enzymes_sonly`); the command
+  palette has "Selection only: digest, lists and ORFs look at the selected bases (on or off)". Turning it over says so in the
+  status line, and works from any page. It is read by **the Digest window** (its check box *is* the switch; `digest_now`),
+  **List Enzymes** (the dialog's DNA starts from it) and the **Quick Lists**, and by **the ORF list**. `--view selection-only`
+  shows it.
+  * **The digest of a piece** takes the sites that *start* in it whose two cuts fall in it too (`enz_digest` L17126-17133:
+    `site >= start`, below `end`, then both cuts inside); the earlier build tested the cuts only, so a Type IIS site that begins
+    before the piece but cuts inside it was digested.
+  * **The ORF list** takes its stretch **when it is opened** (menu, toolbar or palette), as `orf_map` takes its `region`, and
+    keeps it: a click on a row selects that ORF, and a list that followed the selection would shrink to it. The stretch is read as
+    a linear piece of its own (`orf_map` reads its text alone, L36206-36219), so an ORF cut off by its ends is shown with a
+    plus after its length and has no stop codon in its residues; ORFs are numbered as in all of the sequence; the heading says
+    `in bases a–b` and the map covers that stretch. Frame numbers count from the first base of the stretch, as the original's
+    do.
+* **Differences kept.** The original says nothing when the switch turns; HelixLoom also says it in the status line (the toolbar
+  picture is small). The Digest window shows the switch as a check box, which the original's dialog does not. The ORF list is
+  one window with a map and a table, where the original's `orf_map` is a picture of its own. **Not built:** the Graphic Map's
+  region (HelixLoom's map always shows the whole sequence), Text Map and BLAST (not built at all), and a region that crosses
+  the origin of a circular sequence (a selection never does here).
+* **Checked.** By reading the original's text, and with tests of the switch's key (and that ⌘E alone still opens the selector,
+  and that a held key turns it over once), of the toolbar button's choice of picture and action, of the Digest window's check
+  box by a real click, of the digest of a piece (450 bases in three fragments for 50 to 500 of a plasmid; a site that starts
+  before or at the end of the piece is left out), of the lists of a piece (heading `From 326 to 446.`) and of the ORF list
+  (forward, reverse and circular sequences, an ORF cut by the end of the stretch, a click that does not shrink the list). **No
+  random run through the original's Tcl was made for the switch itself**, and what it hands a piece to is checked unequally: the
+  text of the lists was run against the original's own procedures (section 8, "List Enzymes and Quick Lists"); the digest keeps
+  its earlier deliberate difference (sizes are measured between true top-strand cuts, section 2); the ORF list uses the build's
+  own ORF finder, whose Find Next / Find Previous use was run on 240 cases (`next_ORF`) while `orf_map` itself was only read.
 
 ## 9. Added by the person during the build (not in the original)
 

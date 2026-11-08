@@ -99,6 +99,8 @@ pub enum Action {
     QuickList(Quick),
     SilentSites,
     DiagnosticSites,
+    /// The Enzymes menu's Selection Only switch (Cmd+Shift+E).
+    ToggleSelectionOnly,
     ToggleHighlight,
     /// Put an enzyme's recognition sequence at the caret (index into the enzyme list).
     InsertSite {
@@ -313,6 +315,7 @@ impl App {
             Action::QuickList(quick) => self.run_quick_list(quick),
             Action::SilentSites => self.run_silent_sites(),
             Action::DiagnosticSites => self.site_win.diagnostic_open = true,
+            Action::ToggleSelectionOnly => self.toggle_selection_only(),
             Action::ToggleMap => self.prefs.show_map = !self.prefs.show_map,
             Action::ToggleFeatures => self.prefs.show_features = !self.prefs.show_features,
             Action::Theme(mode) => self.prefs.theme = mode,
@@ -341,7 +344,7 @@ impl App {
             }
             Action::OrfNext => self.orf_step(OrfStep::Next),
             Action::OrfPrev => self.orf_step(OrfStep::Prev),
-            Action::OrfList => self.orf_win.list_open = true,
+            Action::OrfList => self.open_orf_list(),
             Action::CopySpecial(what) => {
                 if let Some(i) = cur {
                     let table = GENETIC_CODES[self.prefs.code].table;
@@ -518,6 +521,11 @@ impl App {
             ),
             (
                 Modifiers::COMMAND | Modifiers::SHIFT,
+                Key::E,
+                Action::ToggleSelectionOnly,
+            ),
+            (
+                Modifiers::COMMAND | Modifiers::SHIFT,
                 Key::Period,
                 Action::OrfNext,
             ),
@@ -549,8 +557,23 @@ impl App {
             (Modifiers::COMMAND, Key::I, Action::SetOrigin),
             (Modifiers::COMMAND, Key::Slash, Action::RevCom),
         ];
+        // holding Cmd+Shift+E would turn the switch over again and again: its repeats are let go
+        let repeating = ctx.input(|i| {
+            let held = |e: &egui::Event| {
+                matches!(
+                    e,
+                    egui::Event::Key {
+                        key: Key::E,
+                        repeat: true,
+                        ..
+                    }
+                )
+            };
+            i.events.iter().any(held)
+        });
         for (mods, key, action) in table {
-            if ctx.input_mut(|i| i.consume_shortcut(&KeyboardShortcut::new(mods, key))) {
+            let taken = ctx.input_mut(|i| i.consume_shortcut(&KeyboardShortcut::new(mods, key)));
+            if taken && !(repeating && matches!(action, Action::ToggleSelectionOnly)) {
                 out.push(action);
             }
         }

@@ -27,9 +27,20 @@ pub enum TranslateSource {
     Feature(usize),
 }
 
+/// The stretch the ORF list was opened on, taken once when it was opened (as the original's `orf_map` takes its `region`): a click
+/// on a row selects that ORF, and the list must not follow the selection its own clicks make.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct OrfRegion {
+    /// The sequence it is of (`DocView::id`), the first base from 0 and one past the last.
+    pub doc: u64,
+    pub from: usize,
+    pub to: usize,
+}
+
 #[derive(Default)]
 pub struct OrfWin {
     pub list_open: bool,
+    pub region: Option<OrfRegion>,
     pub translate_open: bool,
     pub translate: Options,
     pub source: TranslateSource,
@@ -63,16 +74,52 @@ impl App {
         };
     }
 
+    /// Open the ORF list on the selected bases when the Selection Only switch is on and some are selected (`orf_map` takes its
+    /// region as "all" when nothing is, L36205), on all of the sequence otherwise.
+    pub fn open_orf_list(&mut self) {
+        let region = self.current_doc().and_then(|i| {
+            let dv = &self.docs[i];
+            let selected = dv.selection().filter(|_| self.prefs.selection_only);
+            selected.map(|(from, to)| OrfRegion {
+                doc: dv.id,
+                from,
+                to,
+            })
+        });
+        self.orf_win.region = region;
+        self.orf_win.list_open = true;
+    }
+
+    /// The stretch of sequence `i` that the list was opened on, if it was opened on one and the sequence is the same and still
+    /// holds it.
+    fn orf_region(&self, i: usize) -> Option<(usize, usize)> {
+        let dv = &self.docs[i];
+        let region = self.orf_win.region.filter(|r| r.doc == dv.id)?;
+        let n = dv.doc.len();
+        let (a, b) = (region.from.min(n), region.to.min(n));
+        (a < b).then_some((a, b))
+    }
+
+    /// The ORFs of sequence `i`, numbered as in all of it. A selected stretch is a linear piece of its own: `orf_map` reads its
+    /// text alone (L36206-36219), so an ORF that runs past its ends is not one.
     fn orfs_of(&self, i: usize, nested: bool) -> Vec<Orf> {
         let d = &self.docs[i].doc;
-        find_orfs(
-            &d.seq,
-            d.circular,
+        let (seq, circular, from) = match self.orf_region(i) {
+            Some((a, b)) => (d.slice(a, b), false, a),
+            None => (&d.seq[..], d.circular, 0),
+        };
+        let mut orfs = find_orfs(
+            seq,
+            circular,
             self.prefs.orf_strand,
             self.prefs.orf_min,
             self.prefs.orf_rule,
             nested,
-        )
+        );
+        for o in &mut orfs {
+            o.start += from;
+        }
+        orfs
     }
 
     pub fn select_orf(&mut self, i: usize, o: &Orf) {
@@ -147,16 +194,9 @@ impl App {
                     self.orf_controls(ui);
                     let orfs = self.orfs_of(i, false);
                     let n = self.docs[i].doc.len();
-                    ui.label(
-                        RichText::new(format!(
-                            "{} ORF{} in {} bp",
-                            orfs.len(),
-                            if orfs.len() == 1 { "" } else { "s" },
-                            commify(n)
-                        ))
-                        .small(),
-                    );
-                    let mut pick = draw_orf_map(ui, &orfs, n, &pal);
+                    let region = self.orf_region(i);
+                    ui.label(RichText::new(orf_heading(orfs.len(), region, n)).small());
+                    let mut pick = draw_orf_map(ui, &orfs, n, region.unwrap_or((0, n)), &pal);
                     ui.separator();
                     ScrollArea::vertical()
                         .auto_shrink([false, false])
@@ -185,12 +225,9 @@ impl App {
                                             }))
                                             .monospace(),
                                         );
-                                        ui.label(RichText::new(commify(o.length)).monospace());
+                                        ui.label(RichText::new(length_text(o)).monospace());
                                         ui.label(
-                                            RichText::new(
-                                                (o.length / 3).saturating_sub(1).to_string(),
-                                            )
-                                            .monospace(),
+                                            RichText::new(amino_acids(o).to_string()).monospace(),
                                         );
                                         ui.label(format!(
                                             "{}{}",
@@ -417,8 +454,40 @@ fn orf_feature(o: &Orf, n: usize, number: usize) -> Feature {
     f
 }
 
-/// Six rows (three frames on each strand) with every ORF as a bar; returns the clicked ORF.
-fn draw_orf_map(ui: &mut Ui, orfs: &[Orf], n: usize, pal: &Palette) -> Option<usize> {
+/// "3 ORFs in 2,724 bp", or "in bases 51–300" when the list was opened on a selected stretch.
+fn orf_heading(count: usize, region: Option<(usize, usize)>, n: usize) -> String {
+    let place = match region {
+        Some((a, b)) => format!("bases {}–{}", commify(a + 1), commify(b)),
+        None => format!("{} bp", commify(n)),
+    };
+    let plural = if count == 1 { "" } else { "s" };
+    format!("{count} ORF{plural} in {place}")
+}
+
+/// The residues of an ORF: its codons less the stop codon, which an ORF that ran out of sequence before one has not got.
+fn amino_acids(o: &Orf) -> usize {
+    let codons = o.length / 3;
+    if o.open_end {
+        codons
+    } else {
+        codons.saturating_sub(1)
+    }
+}
+
+/// The length of an ORF; a plus after it when it is cut off by the end of the sequence (or of the stretch) with no stop codon.
+fn length_text(o: &Orf) -> String {
+    format!("{}{}", commify(o.length), if o.open_end { "+" } else { "" })
+}
+
+/// Six rows (three frames on each strand) with every ORF as a bar; returns the clicked ORF. `span` is the stretch the map
+/// covers, all of the sequence or the selected stretch the list was opened on.
+fn draw_orf_map(
+    ui: &mut Ui,
+    orfs: &[Orf],
+    n: usize,
+    span: (usize, usize),
+    pal: &Palette,
+) -> Option<usize> {
     let row_h = 14.0;
     let (rect, resp) = ui.allocate_exact_size(
         vec2(ui.available_width(), row_h * 6.0 + 24.0),
@@ -427,7 +496,10 @@ fn draw_orf_map(ui: &mut Ui, orfs: &[Orf], n: usize, pal: &Palette) -> Option<us
     let p = ui.painter_at(rect);
     p.rect_filled(rect, 2.0, pal.text_bg);
     let (left, right) = (rect.left() + 34.0, rect.right() - 10.0);
-    let x_of = |pos: usize| left + pos as f32 / n.max(1) as f32 * (right - left);
+    let (lo, hi) = span;
+    let x_of = |pos: usize| {
+        left + pos.saturating_sub(lo) as f32 / (hi - lo).max(1) as f32 * (right - left)
+    };
     for r in 0..6 {
         let y = rect.top() + 18.0 + r as f32 * row_h;
         let label = format!("{}{}", if r < 3 { "+" } else { "−" }, r % 3 + 1);
@@ -498,14 +570,14 @@ fn draw_orf_map(ui: &mut Ui, orfs: &[Orf], n: usize, pal: &Palette) -> Option<us
     p.text(
         pos2(left, rect.top() + 3.0),
         Align2::LEFT_TOP,
-        "1",
+        commify(lo + 1),
         FontId::proportional(10.0),
         pal.dim,
     );
     p.text(
         pos2(right, rect.top() + 3.0),
         Align2::RIGHT_TOP,
-        commify(n),
+        commify(hi),
         FontId::proportional(10.0),
         pal.dim,
     );
@@ -515,8 +587,8 @@ fn draw_orf_map(ui: &mut Ui, orfs: &[Orf], n: usize, pal: &Palette) -> Option<us
             "{}–{} • {} bp • {} aa • frame {}{}",
             commify(o.start + 1),
             commify(o.end(n).max(1)),
-            o.length,
-            o.length / 3 - 1,
+            length_text(o),
+            amino_acids(o),
             if o.reverse { "−" } else { "+" },
             o.frame + 1
         );
@@ -530,40 +602,4 @@ fn draw_orf_map(ui: &mut Ui, orfs: &[Orf], n: usize, pal: &Palette) -> Option<us
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    fn orf(start: usize) -> Orf {
-        Orf {
-            start,
-            length: 30,
-            reverse: false,
-            frame: 0,
-            open_end: false,
-        }
-    }
-
-    #[test]
-    fn orf_features_wrap_around_the_origin() {
-        let o = Orf {
-            start: 90,
-            length: 30,
-            reverse: true,
-            frame: 1,
-            open_end: false,
-        };
-        let f = orf_feature(&o, 100, 2);
-        assert_eq!(f.spans, vec![(0, 20), (90, 100)]);
-        assert!(f.reverse);
-        assert_eq!(f.name, "ORF 2");
-        assert_eq!(orf_feature(&orf(10), 100, 1).spans, vec![(10, 40)]);
-    }
-
-    #[test]
-    fn min_choices_match_the_original_menu() {
-        assert_eq!(
-            ORF_MIN_CHOICES,
-            [0, 30, 60, 90, 180, 300, 600, 900, 1200, 1500]
-        );
-    }
-}
+mod tests;

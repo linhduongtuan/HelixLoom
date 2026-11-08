@@ -205,6 +205,15 @@ impl App {
             ui.menu_button("Enzymes", |ui| {
                 item(ui, "Enzyme Selector…", "⌘E", true, Action::EnzymeSelector);
                 ui.separator();
+                // the original's check item (L1170); the state is in its words, as an item has no check mark here
+                let state = if self.prefs.selection_only {
+                    "on"
+                } else {
+                    "off"
+                };
+                let label = format!("Selection Only: {state}");
+                item(ui, &label, "⇧⌘E", true, Action::ToggleSelectionOnly);
+                ui.separator();
                 item(ui, "Digestion", "⌘R", true, Action::Digest);
                 item(ui, "Highlight Sites", "", true, Action::ToggleHighlight);
                 ui.separator();
@@ -458,8 +467,10 @@ impl App {
 
     pub(super) fn toolbar(&mut self, ui: &mut Ui, out: &mut Vec<Action>) {
         let pal = self.palette();
+        let selection_only = self.prefs.selection_only;
         ui.horizontal(|ui| {
             ui.spacing_mut().item_spacing.x = 2.0;
+            let shift = ui.input(|i| i.modifiers.shift);
             let mut b = |ui: &mut Ui, icon: Icon, tip: &str, action: Action| {
                 if icons::button(ui, icon, tip, &pal).clicked() {
                     out.push(action);
@@ -478,11 +489,14 @@ impl App {
             ui.separator();
             b(ui, Icon::Find, "Find…", Action::Find);
             ui.separator();
+            // the original's enzyme button opens the selector, and with Shift turns Selection Only on or off (L4370); its
+            // picture shows which
+            let (icon, action) = enzyme_button(selection_only, shift);
             b(
                 ui,
-                Icon::Enzymes,
-                "Enzyme Selector…",
-                Action::EnzymeSelector,
+                icon,
+                "Enzyme Selector…   Shift-click: Selection Only on or off",
+                action,
             );
             b(
                 ui,
@@ -553,5 +567,50 @@ impl App {
                 );
             });
         });
+    }
+}
+
+/// What the toolbar's enzyme button shows and does: the selector, or with Shift the Selection Only switch; its picture says
+/// whether the switch is on.
+fn enzyme_button(selection_only: bool, shift: bool) -> (Icon, Action) {
+    let icon = if selection_only {
+        Icon::EnzymesSelectionOnly
+    } else {
+        Icon::Enzymes
+    };
+    let action = if shift {
+        Action::ToggleSelectionOnly
+    } else {
+        Action::EnzymeSelector
+    };
+    (icon, action)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn the_enzyme_button_opens_the_selector_and_with_shift_turns_the_switch_over() {
+        assert!(matches!(
+            enzyme_button(false, false),
+            (Icon::Enzymes, Action::EnzymeSelector)
+        ));
+        assert!(matches!(
+            enzyme_button(false, true),
+            (Icon::Enzymes, Action::ToggleSelectionOnly)
+        ));
+    }
+
+    #[test]
+    fn the_picture_of_the_enzyme_button_shows_whether_selection_only_is_on() {
+        assert!(matches!(
+            enzyme_button(true, false),
+            (Icon::EnzymesSelectionOnly, Action::EnzymeSelector)
+        ));
+        assert!(matches!(
+            enzyme_button(true, true),
+            (Icon::EnzymesSelectionOnly, Action::ToggleSelectionOnly)
+        ));
     }
 }
