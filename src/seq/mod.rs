@@ -8,6 +8,7 @@ pub mod copyspecial;
 pub mod diagnostic;
 pub mod dna;
 pub mod doc;
+pub mod enzlist;
 pub mod enzymes;
 pub mod estimate;
 pub mod fastq;

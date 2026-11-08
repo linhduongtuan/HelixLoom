@@ -161,15 +161,30 @@ pub struct Site {
     /// Cut positions as boundaries (a cut at `k` falls before base `k`), top and bottom strand.
     pub top_cut: usize,
     pub bottom_cut: usize,
+    /// False for the one site per enzyme that the original lists although its cut lies a base before the start of a linear
+    /// sequence (see `Cuts::Edge`): it is counted, but it has no cut, so no digest or map may use `top_cut` and `bottom_cut`
+    /// (both 0 then).
+    pub cuts_inside: bool,
 }
 
+/// Where the cuts of a site fall in a sequence of `n` bases.
+enum Cuts {
+    /// The two cuts, as boundaries.
+    Inside(usize, usize),
+    /// A reverse site of an enzyme that cuts away from its site, in a linear sequence, whose top-strand cut would fall one
+    /// base before the start. The original's `findenzymes` takes out the reverse sites with `site < reach - length` (L43080-43094,
+    /// the site numbered from 1), one more than it should, so this one stays in its list; its digest rejects it (L17128-17134).
+    Edge,
+}
+
+/// The cuts of a site, or none when a linear sequence drops it for cutting beyond its ends.
 fn cut_positions(
     e: &Enzyme,
     start: usize,
     reverse: bool,
     n: usize,
     circular: bool,
-) -> Option<(usize, usize)> {
+) -> Option<Cuts> {
     let len = e.site.len() as i32;
     let (t, b) = if reverse {
         (len - e.bottom, len - e.top)
@@ -179,12 +194,46 @@ fn cut_positions(
     let (t, b) = (start as i32 + t, start as i32 + b);
     if circular {
         let m = n as i32;
-        Some((t.rem_euclid(m) as usize, b.rem_euclid(m) as usize))
+        Some(Cuts::Inside(
+            t.rem_euclid(m) as usize,
+            b.rem_euclid(m) as usize,
+        ))
     } else if t >= 0 && b >= 0 && t <= n as i32 && b <= n as i32 {
-        Some((t as usize, b as usize))
+        Some(Cuts::Inside(t as usize, b as usize))
     } else {
-        None
+        // numbered from 1, a reverse site stays unless its number is below `reach - length`
+        let reach = e.top.max(e.bottom);
+        (reverse && start as i32 + 1 >= reach - len).then_some(Cuts::Edge)
     }
+}
+
+/// Recognition sequences longer than this are not scanned base by base: the original finds them with a regular-expression
+/// search (`longnamelist` in the enzyme file, `findenzymes` L42960 @0x1f09a2), which goes on after the end of a site it has
+/// found and so never reports one that overlaps it. The 21 enzymes of the default file that this applies to are exactly the
+/// ones with more than six bases (the others go through the hash scan, L43001, which sees every start).
+const HASH_SCAN_LIMIT: usize = 6;
+
+/// The starts, from 0, where `pat` matches `text`, one strand's worth. Beyond `HASH_SCAN_LIMIT` the next start looked at is
+/// the one after the end of the last match.
+fn match_starts(pat: &[u8], text: &[u8], limit: usize) -> Vec<usize> {
+    let skip = if pat.len() > HASH_SCAN_LIMIT {
+        pat.len()
+    } else {
+        1
+    };
+    let mut starts = Vec::new();
+    let mut start = 0;
+    while start < limit {
+        let hit = pat
+            .iter()
+            .zip(&text[start..])
+            .all(|(&p, &s)| base_matches(p, s, false));
+        if hit {
+            starts.push(start);
+        }
+        start += if hit { skip } else { 1 };
+    }
+    starts
 }
 
 /// All sites of `e` in `seq`; linear sequences drop sites whose cuts fall outside the ends.
@@ -208,26 +257,31 @@ pub fn find_sites(e: &Enzyme, seq: &[u8], circular: bool) -> Vec<Site> {
     } else {
         vec![(&e.site, false), (&rc, true)]
     };
-    let mut sites = Vec::new();
-    for start in 0..n.min(text.len().saturating_sub(k - 1)) {
-        for &(pat, reverse) in &orientations {
-            let hit = pat
-                .iter()
-                .zip(&text[start..])
-                .all(|(&p, &s)| base_matches(p, s, false));
-            if hit {
-                if let Some((top_cut, bottom_cut)) = cut_positions(e, start, reverse, n, circular) {
-                    sites.push(Site {
-                        start,
-                        reverse,
-                        top_cut,
-                        bottom_cut,
-                    });
-                }
-            }
-        }
+    let limit = n.min(text.len().saturating_sub(k - 1));
+    let mut found: Vec<(usize, bool)> = Vec::new();
+    for &(pat, reverse) in &orientations {
+        let starts = match_starts(pat, &text, limit);
+        found.extend(starts.into_iter().map(|start| (start, reverse)));
     }
-    sites
+    // by start; at one start the forward strand comes first, as the original sorts its two lists into one
+    found.sort_by_key(|&(start, _)| start);
+    found
+        .into_iter()
+        .filter_map(|(start, reverse)| {
+            let (top_cut, bottom_cut, cuts_inside) =
+                match cut_positions(e, start, reverse, n, circular)? {
+                    Cuts::Inside(top, bottom) => (top, bottom, true),
+                    Cuts::Edge => (0, 0, false),
+                };
+            Some(Site {
+                start,
+                reverse,
+                top_cut,
+                bottom_cut,
+                cuts_inside,
+            })
+        })
+        .collect()
 }
 
 fn methylase_starts(seq: &[u8], motif: &[u8], circular: bool) -> Vec<usize> {
@@ -317,7 +371,7 @@ pub fn collect_cuts(chosen: &[(&Enzyme, &[Site])]) -> Vec<Cut> {
     let mut cuts: Vec<Cut> = chosen
         .iter()
         .flat_map(|(e, sites)| {
-            sites.iter().map(|s| Cut {
+            sites.iter().filter(|s| s.cuts_inside).map(|s| Cut {
                 pos: s.top_cut,
                 label: e.name.clone(),
                 site: s.start,
@@ -468,7 +522,8 @@ mod tests {
                 start: 3,
                 reverse: false,
                 top_cut: 4,
-                bottom_cut: 8
+                bottom_cut: 8,
+                cuts_inside: true
             }]
         );
         let bsai = find_sites(&enz("BsaI"), &seq, false);
@@ -480,11 +535,118 @@ mod tests {
         assert_eq!((bsai[1].top_cut, bsai[1].bottom_cut), (35, 39));
     }
 
+    /// A linear sequence of As with GAGACC (the reverse of BsaI's GGTCTC) put in at `at`.
+    fn reverse_bsai_at(at: usize) -> Vec<u8> {
+        let mut seq = vec![b'A'; 40];
+        seq[at..at + 6].copy_from_slice(b"GAGACC");
+        seq
+    }
+
+    #[test]
+    fn a_reverse_site_that_cuts_before_the_start_is_dropped_but_the_one_the_original_keeps_has_no_cut(
+    ) {
+        // BsaI cuts 5 bases upstream of a reverse site on the top strand: the cut fits from the sixth base on. The original
+        // takes out the sites numbered from 1 below 5, so the site at 0-based 4, whose cut would be a base outside, stays
+        let sites = |at: usize| find_sites(&enz("BsaI"), &reverse_bsai_at(at), false);
+        assert!(sites(3).is_empty(), "three bases before it: out");
+        let edge = sites(4);
+        assert_eq!(edge.len(), 1, "four bases before it: listed");
+        assert!(!edge[0].cuts_inside && (edge[0].top_cut, edge[0].bottom_cut) == (0, 0));
+        let inside = sites(5);
+        assert_eq!(inside.len(), 1);
+        assert!(inside[0].cuts_inside);
+        assert_eq!((inside[0].top_cut, inside[0].bottom_cut), (0, 4));
+    }
+
+    #[test]
+    fn the_edge_site_is_counted_but_makes_no_cut_in_a_digest() {
+        let bsai = enz("BsaI");
+        let seq = reverse_bsai_at(4);
+        let sites = find_sites(&bsai, &seq, false);
+
+        let cuts = collect_cuts(&[(&bsai, &sites)]);
+
+        assert_eq!(sites.len(), 1, "it is a site of the sequence");
+        assert!(cuts.is_empty(), "but it cuts nowhere");
+        assert_eq!(digest(seq.len(), false, &cuts).len(), 1);
+    }
+
+    #[test]
+    fn the_edge_site_is_found_on_the_other_type_iis_enzymes_at_their_own_distance() {
+        // the start (from 0) where each enzyme's reverse site is the edge one: reach - length - 1
+        let cases: [(&str, &[u8], usize); 4] = [
+            ("BbsI", b"GTCTTC", 5),
+            ("BsmBI", b"GAGACG", 4),
+            ("PaqCI", b"GCAGGTG", 7),
+            ("SapI", b"GAAGAGC", 3),
+        ];
+        for (name, site, at) in cases {
+            let mut seq = vec![b'A'; 50];
+            seq[at..at + site.len()].copy_from_slice(site);
+            let found = find_sites(&enz(name), &seq, false);
+            assert!(found.len() == 1 && !found[0].cuts_inside, "{name}");
+            let mut one_less = vec![b'A'; 50];
+            one_less[at - 1..at - 1 + site.len()].copy_from_slice(site);
+            assert!(
+                find_sites(&enz(name), &one_less, false).is_empty(),
+                "{name}"
+            );
+        }
+    }
+
+    #[test]
+    fn a_circular_sequence_has_no_edge_site_and_a_forward_site_near_the_end_is_dropped_as_before() {
+        let circular = find_sites(&enz("BsaI"), &reverse_bsai_at(4), true);
+        assert!(circular.iter().all(|s| s.cuts_inside));
+        // forward GGTCTC cuts 11 bases from its start on the bottom strand: it needs them
+        let mut seq = vec![b'A'; 40];
+        seq[40 - 11..40 - 5].copy_from_slice(b"GGTCTC");
+        assert_eq!(find_sites(&enz("BsaI"), &seq, false).len(), 1);
+        seq = vec![b'A'; 40];
+        seq[40 - 10..40 - 4].copy_from_slice(b"GGTCTC");
+        assert!(find_sites(&enz("BsaI"), &seq, false).is_empty());
+    }
+
     #[test]
     fn finds_degenerate_sites() {
         let seq = b"TTGAATTTTCAAAGGGCCCAAA";
         assert_eq!(find_sites(&enz("ApoI"), seq, false).len(), 1);
         assert_eq!(find_sites(&enz("SfiI"), b"GGCCAAAATGGCC", false).len(), 1);
+    }
+
+    fn starts(name: &str, seq: &[u8]) -> Vec<usize> {
+        let sites = find_sites(&enz(name), seq, false);
+        sites.iter().map(|s| s.start).collect()
+    }
+
+    #[test]
+    fn an_enzyme_with_more_than_six_bases_misses_a_site_that_overlaps_the_one_before() {
+        // MauBI CGCGCGCG occurs at 4 and, overlapping it by six bases, at 6: the original's regular-expression search goes
+        // on after the first and finds only that one
+        let seq = b"AAAACGCGCGCGCGAAAA";
+        assert_eq!(starts("MauBI", seq), [4]);
+        // a site that merely follows the first is found
+        assert_eq!(starts("MauBI", b"AAAACGCGCGCGCGCGCGCGAAAA"), [4, 12]);
+        // NotI GCGGCCGC overlaps itself by two bases
+        assert_eq!(starts("NotI", b"AAAAGCGGCCGCGGCCGCAAAA"), [4]);
+    }
+
+    #[test]
+    fn an_enzyme_with_six_bases_or_fewer_finds_every_start() {
+        // BstUI CGCG at 2, 4 and 6 in CGCGCGCG... (the hash scan sees each start)
+        assert_eq!(starts("BstUI", b"AACGCGCGCGAA"), [2, 4, 6]);
+        // AatII GACGTC cannot overlap itself; one site
+        assert_eq!(starts("AatII", b"AAGACGTCAA"), [2]);
+    }
+
+    #[test]
+    fn the_two_strands_of_a_long_enzyme_are_scanned_apart() {
+        // SapI GCTCTTC and its reverse GAAGAGC overlap each other by two bases here: both are found (the cuts are well
+        // inside the ends), in the order of their starts
+        let seq = b"AAAAAAAAGAAGAGCTCTTCAAAAAAAA";
+        let sites = find_sites(&enz("SapI"), seq, false);
+        let found: Vec<(usize, bool)> = sites.iter().map(|s| (s.start, s.reverse)).collect();
+        assert_eq!(found, [(8, true), (13, false)]);
     }
 
     #[test]

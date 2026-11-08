@@ -83,11 +83,12 @@ pub fn compute(
             let inside: Vec<Site> = sites
                 .iter()
                 .filter(|s| {
-                    region.is_none()
-                        || (s.top_cut >= a
-                            && s.top_cut <= b
-                            && s.bottom_cut >= a
-                            && s.bottom_cut <= b)
+                    s.cuts_inside
+                        && (region.is_none()
+                            || (s.top_cut >= a
+                                && s.top_cut <= b
+                                && s.bottom_cut >= a
+                                && s.bottom_cut <= b))
                 })
                 .map(|s| Site {
                     start: s.start.saturating_sub(a),

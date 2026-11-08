@@ -12,6 +12,7 @@ use super::toasts::Toasts;
 use super::windows::assembly::{AssemblyWin, Preset};
 use super::windows::calculator::CalculatorWin;
 use super::windows::digest::DigestWin;
+use super::windows::enzlist::{EnzListWin, Quick};
 use super::windows::enzymes::EnzymeWin;
 use super::windows::features::FeatureWin;
 use super::windows::find::{Dir, FindWin};
@@ -93,6 +94,9 @@ pub enum Action {
     Linearize,
     EnzymeSelector,
     Digest,
+    /// List Enzymes… (its dialog) and the three Quick Lists of the Enzymes menu.
+    ListEnzymes,
+    QuickList(Quick),
     SilentSites,
     DiagnosticSites,
     ToggleHighlight,
@@ -157,6 +161,7 @@ pub struct App {
     pub map_linear: bool,
     pub enzyme_win: EnzymeWin,
     pub digest_win: DigestWin,
+    pub enz_list: EnzListWin,
     pub find_win: FindWin,
     pub assembly: AssemblyWin,
     pub orf_win: OrfWin,
@@ -212,6 +217,7 @@ impl App {
             map_linear: false,
             enzyme_win: EnzymeWin::default(),
             digest_win: DigestWin::default(),
+            enz_list: EnzListWin::default(),
             find_win: FindWin::default(),
             assembly: AssemblyWin::default(),
             orf_win: OrfWin::default(),
@@ -303,6 +309,8 @@ impl App {
             Action::SelectRange => self.open_range(),
             Action::EnzymeSelector => self.enzyme_win.open = true,
             Action::Digest => self.digest_win.open = true,
+            Action::ListEnzymes => self.open_list_dialog(),
+            Action::QuickList(quick) => self.run_quick_list(quick),
             Action::SilentSites => self.run_silent_sites(),
             Action::DiagnosticSites => self.site_win.diagnostic_open = true,
             Action::ToggleMap => self.prefs.show_map = !self.prefs.show_map,
@@ -667,6 +675,7 @@ impl App {
         self.assembly_windows(&ctx);
         self.orf_window(&ctx);
         self.site_windows(&ctx);
+        self.enz_list_windows(&ctx);
         self.feature_window(&ctx);
         self.align_window(&ctx);
         self.pcr_window(&ctx);

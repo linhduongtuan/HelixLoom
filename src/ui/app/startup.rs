@@ -23,6 +23,8 @@ impl App {
                 self.find_win.text = "GAATTC".into();
                 self.find_highlight_all();
             }
+            "enzlist" => self.run_quick_list(Quick::SiteUsage),
+            "enzlist-dialog" => self.open_list_dialog(),
             "linear" => self.map_linear = true,
             "assembly" | "assembly-before" => {
                 self.tab = Tab::Assembly;

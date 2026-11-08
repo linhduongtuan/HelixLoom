@@ -24,8 +24,8 @@ const MONO: f32 = 13.0;
 /// The width of the first column of a row, in characters.
 const LEAD: usize = 10;
 const CLEAR: Color32 = Color32::TRANSPARENT;
-/// The heading of the copied text where the original writes the date.
-const PROGRAM: &str = "HelixLoom";
+/// The heading of the copied text where the original writes the date (the lists of `enzlist` do the same).
+pub(super) const PROGRAM: &str = "HelixLoom";
 
 /// The sequence a search was made on (told apart by `DocView::id`, not by its name), and when (`rev`: a later edit makes its
 /// rows stale), and the stretch of it that was searched, `from..to` from 0.

@@ -15,6 +15,8 @@ pub struct Case {
     pub sites: Vec<(String, Vec<usize>)>,
     /// What the original wrote into its result window (the date as `DATE`, the title as `TITLE`).
     pub text: String,
+    /// The lines of the case that this reader has no field for, as (word, the rest of the line): the choices of List Enzymes.
+    pub other: Vec<(String, String)>,
 }
 
 impl Case {
@@ -28,12 +30,19 @@ impl Case {
             mismatches: 0,
             sites: Vec::new(),
             text: String::new(),
+            other: Vec::new(),
         }
     }
 
     /// The stretch searched, `start..end`.
     pub fn region(&self) -> (usize, usize) {
         self.selection.unwrap_or((0, self.seq.len()))
+    }
+
+    /// What a line with this word at its start says after it.
+    pub fn say(&self, word: &str) -> &str {
+        let found = self.other.iter().find(|(w, _)| w == word);
+        found.map_or("", |(_, rest)| rest.as_str())
     }
 }
 
@@ -58,7 +67,7 @@ fn read_line(case: &mut Case, line: &str) {
         "mode" => case.mode = rest[0].to_string(),
         "mismatches" => case.mismatches = numbers(rest)[0],
         "sites" => case.sites.push((rest[0].to_string(), numbers(&rest[1..]))),
-        _ => {}
+        other => case.other.push((other.to_string(), rest.join(" "))),
     }
 }
 

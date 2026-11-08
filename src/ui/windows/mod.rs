@@ -3,6 +3,7 @@ pub mod assembly;
 pub mod calculator;
 pub mod contig_view;
 pub mod digest;
+pub mod enzlist;
 pub mod enzymes;
 pub mod features;
 pub mod find;

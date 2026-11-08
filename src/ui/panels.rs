@@ -104,10 +104,14 @@ impl App {
         let sites: Vec<MapSite> = shown
             .iter()
             .flat_map(|&e| {
-                all[e].iter().map(move |s| MapSite {
-                    label: enzymes[e].name.clone(),
-                    pos: s.top_cut,
-                })
+                // a site with no cut (`Site::cuts_inside`) has no place on the map
+                all[e]
+                    .iter()
+                    .filter(|s| s.cuts_inside)
+                    .map(move |s| MapSite {
+                        label: enzymes[e].name.clone(),
+                        pos: s.top_cut,
+                    })
             })
             .collect();
         let selection = dv.selection();

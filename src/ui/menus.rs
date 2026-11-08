@@ -5,6 +5,7 @@ use super::clipboard::Special;
 use super::icons::{self, Icon};
 use super::platform::Workspace;
 use super::state::{ThemeMode, TransMode};
+use super::windows::enzlist::Quick;
 use super::windows::orfs::{rule_label, ORF_MIN_CHOICES};
 use crate::seq::copyspecial::Kind;
 use crate::seq::dna::{StartRule, Strand};
@@ -206,6 +207,13 @@ impl App {
                 ui.separator();
                 item(ui, "Digestion", "⌘R", true, Action::Digest);
                 item(ui, "Highlight Sites", "", true, Action::ToggleHighlight);
+                ui.separator();
+                item(ui, "List Enzymes…", "", true, Action::ListEnzymes);
+                ui.menu_button("Quick Lists", |ui| {
+                    for quick in Quick::ALL {
+                        item(ui, quick.label(), "", true, Action::QuickList(quick));
+                    }
+                });
                 ui.separator();
                 ui.menu_button("Insert Recognition Site", |ui| {
                     for (g, group) in self.enzymes.chunks(INSERT_MENU_GROUP).enumerate() {

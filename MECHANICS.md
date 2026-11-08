@@ -127,6 +127,41 @@ are checked by unit tests against values printed by the original's own procs (ru
   (`enz_text_map` L19401, `do_text_map` L19730 @0xdec9f, 450 lines, `ev_7bbf5f47…`), Print and Export as PDF, Insert Piece,
   LabArchives. The File menu's **Duplicate Selection** and **Duplicate Full Sequence** (L1077–1078; `duplicate_window`
   L7750 @0x5c69b, `ev_7b52804b…`), which the same comparison found, are built too (section 8, table, "Duplicate Selection").
+* **A thirteenth request** (the person said again that nothing had been decompiled; the session had no target open, so each was
+  opened again). `core_target_open` on the bundle (`t_f903046d7ecc`) and on `AppMain.tcl` (`t_4467f482ee05`, 3,245,692 bytes,
+  sha256 4467f482…) → unknown file; `native_strings_find` → "Unknown file magic"; reopened as raw arm64 (`AARCH64:LE:64:v8A`):
+  `native_strings_find` for `species` → 0 strings (`ev_f4773af1…`) and for `list_enzymes_window` → 0 (`ev_1c54c4d6…`),
+  `native_functions_list` → the single `entry` (`ev_69538851…`), `native_function_pseudocode` for `entry` → `goto label_0`
+  (`ev_a2941ded…`) and **function_not_found**, one call after the other and each waited for, for `list_enzymes_window`,
+  `list_enzymes_text` 0xb8d47, `list_enzymes_dialog` 0xb7316, `enz_site_usage_filter` 0xb4584, `enz_count` 0xb4790 and 0x3070f7.
+  The bytes there are Tcl text, so what reads this program is `native_bytes_find` (`proc list_enzymes_` → 0xb7316, 0xb82e9,
+  0xb8d47, `ev_4469f099…`; `proc enz_count` 0xb4790, `ev_e7f5b09d…`; `proc enz_site_usage_filter` 0xb4584, `ev_88f514cd…`;
+  `Quick Lists` → 0x1005f, 0x2b68c7, 0x2da470, `ev_c3658ef7…`) and `native_bytes_show` (`list_enzymes_window` 0xb82e9,
+  `ev_ab176ea7…`; `list_enzymes_text` 0xb8d47, `ev_89f7bf17…`), and then the text itself, read in full.
+  * **What the original has behind the species-tree engine built in the twelfth round: nothing.** `native_bytes_find` finds no
+    `astral`, `quartet`, `coalescent`, `newick`, `phylogen`, `phylo`, `consensus`, `posterior`, `gpu` or `workstation` (ten
+    searches, 0 hits each: `ev_743ffbf0…`, `ev_43fa4620…`, `ev_095cae83…`, `ev_ccba0451…`, `ev_2723faee…`, `ev_1b5b97a6…`,
+    `ev_e5b9bddc…`, `ev_9a3f3809…`, `ev_94471653…`, `ev_924c2752…`), and `species` only four times, all in GenBank qualifier
+    lists (0x3070f7, 0x308df2, 0x309811, 0x30b2e2; `ev_9b67ccbd…`, `ev_48f9d69e…`, `ev_397f6686…`). `tree` occurs 735 times
+    (`ev_bd20b923…`), every one the Tk `ttk::treeview` that shows the feature table (`treeview_*`, `features_to_tree_view`).
+    So the ASTRAL engine has no values, formulas or addresses to follow: it is an addition (section 9) and nothing in it changes.
+  * **What did change the build.** The Enzymes menu of the original (L1160–1200) set beside the build's again: **List Enzymes…**
+    (L1184 @0xfe05) and **Quick Lists ▸ Site Usage, Unique Sites, Absent Sites** (L1186–1189 @0xfe92, 0xff1a, 0xffa7) were
+    missing. They are now built from `list_enzymes_dialog`, `list_enzymes_window`, `list_enzymes_text`, `enz_site_usage_filter`
+    and `enz_count` (section 8, "List Enzymes and Quick Lists"). Running the original's own `findenzymes` behind them, with
+    its own `initialize_methylation`, `not_in_list` and `toggle_methylation` (the earlier checks had stubs for those), showed
+    **a rule the earlier port of the site finder missed**: the 21 enzymes with more than six bases are found by a
+    regular-expression search that never reports a site overlapping the one before, and `find_sites` now does the same
+    (section 2). Of the 72 random cases, case 9 was the first to differ (MauBI in `CGCGCGCGCG`: one site, not two). A second
+    difference came out only with a stress file of 400 cases made of sites repeated at their own period (so that they
+    overlap): the original keeps one reverse Type IIS site at the very left end of a linear sequence that cuts a base outside
+    it, and `find_sites` now keeps it too, as a site with no cut (section 2). With both rules built, 2,400 more random cases
+    (500 plain and 1,900 with such runs; the driver's fourth argument) give the same lists and site lists as the original.
+  * **A correction to the eleventh request's list of what is missing.** `enz_digest_partial_dialog` (L17587 @0xc5edc) cannot be
+    reached: its menu entry is commented out in the original (L1180 and L59624, `#$w.menubar.enzymes add command -label
+    "Partial Digestion..."`), as is the "Do Partial Digests" action of the Enzyme Selector (L17730). It is not built, for that
+    reason. Still missing from that menu: Text Map (L1197), the Selection Only switch (L1170 @0xf893), Print and Export as PDF,
+    Insert Piece, LabArchives.
 
 ### Procedure addresses
 
@@ -203,6 +238,17 @@ Read in the trace pass (Sanger trace window):
 | `abi_get_seq` | L31691 | 0x175151 | | `abi_revcom` | L31733 | 0x1754b2 |
 | `mix_color` | L27844 | 0x14aaa3 | | | | |
 
+Read in the enzyme-list pass (List Enzymes, Quick Lists, and what they stand on):
+
+| Procedure | Line | Address | | Procedure | Line | Address |
+|---|---|---|---|---|---|---|
+| `list_enzymes_dialog` | L16305 | 0xb7316 | | `enz_count` | L15950 | 0xb4790 |
+| `list_enzymes_window` | L16378 | 0xb82e9 | | `not_in_list` | L43171 | 0x1f2d98 |
+| `list_enzymes_text` | L16463 | 0xb8d47 | | `toggle_methylation` | L43206 | 0x1f3111 |
+| `enz_site_usage_filter` | L15931 | 0xb4584 | | `ix2bp` (later definition wins) | L62219 | 0x2cf36d |
+| menu: List Enzymes… | L1184 | 0xfe05 | | menu: Quick Lists | L1186–1189 | 0xfe92 |
+| menu: Selection Only | L1170 | 0xf893 | | start values `enz_list_*` | L66960–66962 | 0x303969 |
+
 Values that sit in the settings block rather than in a procedure are listed by line with their byte offsets in the
 appendix at the end; `mechanics.json` carries the same sources.
 
@@ -229,6 +275,24 @@ appendix at the end; `mechanics.json` carries the same sources.
 * File format "tkDNAview enzymes file type 2": line 4 names, line 5 patterns, `^` = top-strand cut, `NAME(a/b)` = cut offsets past the site. 116 enzymes in the default set (all embedded). `read_enzymes` @0x2ea4a6.
 * Cut offsets `[top, bottom]` from the site start: with `^` at index c → `[c, len−c]`; with `(a/b)` → `[len+a, len+b]`. Reverse-strand hits: `[start+len−bottom, start+len−top]`. `enz_cut_offset` @0xd3d81.
 * Sites are found on both strands (palindromes once), circular sequences scan the first 63 bases again and keep starts < length; linear sequences drop sites whose cuts fall outside the ends. `findenzymes` @0x1f09a2.
+* **Long recognition sequences do not overlap.** The 21 enzymes of the default file with more than **6** bases (`longnamelist`,
+  line 2 of the file: AbsI AscI BsaBI FseI MauBI MreI NotI PacI PaqCI PmeI PshAI SapI SbfI SfiI SgfI SgrAI SgrDI SrfI SwaI XcmI
+  XmnI) are found with `regexp -all -inline -indices`, once for the forward pattern and once for the reverse (`findenzymes`
+  L42960–42998, @0x1f09a2), which goes on after the end of the site it has found: **a site that overlaps the one before it on
+  the same strand is not reported**, the two strands' lists are then sorted together by start. The other 95 go through the hash
+  scan (L43001–43044, "all sites <=6bp long"), which looks at every start. `find_sites` does the same (`HASH_SCAN_LIMIT`).
+  Example: MauBI (CGCGCGCG) in `CGCGCGCGCG` has one site, at the first base; NotI (GCGGCCGC) in `GCGGCCGCGGCCGC`, which has two
+  that share two bases, has one. Earlier builds found both; the difference came out when the lists of section 8 were checked
+  against the original's `findenzymes`.
+* **Sites that cut beyond the ends (linear sequences).** For an enzyme whose cuts reach past its site (BbsI, BsaI, BsmBI,
+  PaqCI, SapI), `findenzymes` L43077–43109 takes out a forward site when its number (from 1) is above `length − reach + 1`
+  (exact: the cut would fall after the end) and a reverse site when its number is below `reach − length` (**one too few: the
+  reverse site whose top-strand cut falls one base before the start stays in the list**: for BsaI a GAGACC at bases 5 to 10).
+  The digest then rejects it ("reject sites that CUT outside the range", L17128–17134), so such a site is counted by the
+  Enzyme Selector and the lists and cuts nowhere. HelixLoom keeps it the same way (`Site::cuts_inside` is false: counted, no
+  cut, no place on the map). Circular sequences drop nothing. DpnI and MalI have no site at all while Dam/Dcm methylation is off (`initialize_methylation`
+  L43126 empties them, `toggle_methylation` L43206 brings them back): the build already did that, and the 72 cases of the lists
+  run the original's own two procedures with the switch on and off.
 * Dam/Dcm blocking (default on, `methylated_default 1`): a site is hidden when `site+d1` or `site+d2` is the start of a GATC (Dam) / CCWGG (Dcm) site. Dam: BclI 1 1, BsaBI 0 6, BspEI −2 4, BspHI −2 4, ClaI −1 3, MboI 0 0, NruI −2 4, TaqI −2 2, XbaI −2 4. Dcm: Acc65I −3 4, ApaI −3 4, BsaI −3 4, MscI −2 3, StuI −2 3. DpnI only cuts methylated DNA. `initialize_methylation` @0x1f235d, table in `Default_Enzymes.txt` line 20.
 * Fragment table columns: Size, site1, site2, Mass % (`round(max(1, 100·size/total))`), sorted by size, largest first. `enz_digest` @0xbfeb4.
 * **Difference (deliberate):** the original subtracts recognition-site *starts* to get sizes, so two-enzyme digests with different cut offsets can be a few bases off. HelixLoom measures between true top-strand cuts. One-enzyme digests are identical.
@@ -323,7 +387,7 @@ appendix at the end; `mechanics.json` carries the same sources.
 ## 7. Not built in this version
 
 The trace window's editing and linking (change or add a base, link a trace to a sequence window, search a trace, print or
-save as EPS; the rest of the window is built, section 8), the Molecular Reaction Calculator's lookup of a compound's weight by name and its recipe multiplier (both ask PubChem), NCBI BLAST / Entrez download, LabArchives, printing / PDF export, protein-feature search, Golden Gate / recombination / restriction–ligation wizards, partial digests, text map, RNA documents (the original converts U↔T on paste), per-feature arrow shapes (`arrow_data`, width, offset — HelixLoom draws one arrow shape), multi-range selections, the Enzymes menu's List Enzymes and Quick Lists windows (the Enzyme Selector's groups show the same sets), Insert Piece.
+save as EPS; the rest of the window is built, section 8), the Molecular Reaction Calculator's lookup of a compound's weight by name and its recipe multiplier (both ask PubChem), NCBI BLAST / Entrez download, LabArchives, printing / PDF export, protein-feature search, Golden Gate / recombination / restriction–ligation wizards, partial digests (the original's menu entry is commented out, L1180, so nothing reaches its dialog), text map, RNA documents (the original converts U↔T on paste), per-feature arrow shapes (`arrow_data`, width, offset — HelixLoom draws one arrow shape), multi-range selections, the Enzymes menu's Selection Only switch (L1170; the Digest window has its own check box), Insert Piece.
 
 ## 8. Editing rules read in the deep pass (all built)
 
@@ -653,6 +717,63 @@ HelixLoom: `src/seq/{silent,diagnostic,sitesearch}.rs` and `src/ui/windows/sitet
 * **Letters the original does not keep.** `read_enzymes` keeps only `A C G T N W S Y R K M B D H V` of a pattern (a `U` goes)
   before it cuts the `N`s off the ends, as `flat_pattern` does. A `*` or `?` in the DNA matches whatever the site says
   (`string match "*$orig_char*"`), so `substitute` keeps it.
+
+### List Enzymes and Quick Lists (`list_enzymes_text` @0xb8d47 L16463, `list_enzymes_window` @0xb82e9 L16378, `list_enzymes_dialog` @0xb7316 L16305), built from the original's own text
+
+Enzymes menu, L1184 @0xfe05 and L1186–1189 (`findenzymes $w; list_enzymes_window $w <format> <list>`). Other procedures:
+`enz_site_usage_filter` L15931 @0xb4584, `enz_count` L15950 @0xb4790; the start values `info(enz_list_enz)` "all",
+`info(enz_list_mode_number)` 0 and `info(enz_list_columns)` 6 (L66960–66962). HelixLoom: `src/seq/enzlist.rs` (the lists),
+`src/ui/windows/enzlist.rs` (dialog and window; Enzymes menu, command palette, `--view enzlist` and `--view enzlist-dialog`).
+
+* **The dialog** (List Enzymes…): *Format* (Name · Name, #Sites · Name, Site, #Sites, Positions · Site, Name, numbered 0 to 3),
+  *Columns* (1 to 10, turned off for the last two formats), *Enzymes* (All · Selected Enzymes Only · Absent Enzymes · Unique
+  Enzymes) and *DNA* (All · Selected DNA only); OK or Return lists, Cancel does nothing. The format, the columns and the
+  enzymes keep what was chosen last; DNA starts from the Selection Only switch (all). **Quick Lists** are the same code with
+  the choices fixed: Site Usage = format 1, all; Unique Sites = format 0, unique; Absent Sites = format 0, absent; their columns
+  are the dialog's (6 at the start); their DNA is the Selection Only switch's, which HelixLoom does not have (all of it).
+* **Which enzymes.** *All*: every enzyme of the file in the file's order. *Selected*: the ones chosen in the Enzyme Selector
+  (`info(enz_currently_selected)`, which is kept sorted by name); none chosen lists nothing. *Absent* and *Unique*: the enzymes
+  whose number of sites (`enz_count`) is 0 or exactly 1 on the DNA looked at. With a selection `enz_count` counts the sites
+  numbered `start + 1` to `end` (`start` bases come before the selection, `end` is the last selected base).
+* **The text** (`list_enzymes_text`). Each enzyme's sites are the ones `findenzymes` found (numbered from 1, a site that
+  matches on both strands twice), kept when **`start` ≤ site ≤ `end`** with a selection, all of them without one. **Quirk: this
+  is one base earlier than `enz_count` counts**, so with a selection a site that begins on the base just before it is listed
+  although the enzyme was picked as absent or unique without it. Every field is padded on the right (`%-*s`) and none is cut
+  (XcmI's pattern is 16 letters, wider than its field of 15).
+  * Format 0 (Name): sorted by name (`lsort`, ASCII order, case counted), rows of *Columns* cells, each the name padded to 15.
+  * Format 1 (Name, #Sites): the same, each cell the name padded to 12 and the number of sites padded to 8.
+  * Format 2 (Name, Site, #Sites, Positions): `lsort -integer` by the number of sites, fewest first, **equal numbers keep the
+    order they came in** (the stable sort); a line is the name (15), the pattern as the enzyme file writes it (`G^AATTC`,
+    `GGTCTC(1/5)`; 15), the number (7) and the sites separated by single spaces (7), then a line break.
+  * Format 3 (Site, Name): sorted by the pattern, the pattern (15) and the name (15), then a line break.
+  * **Quirk of the columns:** the rows are `ceil(enzymes / columns)`; the line break belongs to the format of the last column
+    of a row, so **a row that is not full has none**: a list whose last row is partly empty does not end with a line break.
+* **The window** (`list_enzymes_window`). Its name is the sequence's name and the list's: `All Enzymes`, `Selected Sites`,
+  `Absent Sites`, `Unique Sites`. Its text starts with the date, the sequence's name and a space, `From <start> to <end>. `
+  (counted from 0: `From 0 to 2724.` for all of the DNA; with a selection of bases 11 to 20, `From 10 to 20.`), a blank line, the
+  list's name, a blank line, and then the text. The original makes a text window 120 characters wide and sizes it to the longest
+  line (`textbox_geometry`, L16817); it is read-only and has the output menu.
+* **Checked** with the original's own procedures, cut out unchanged with `tests/tcl/cut_procs.tcl` and run with `tclsh` 8.5.9
+  on random inputs (`tests/tcl/enzyme_list_driver.tcl`): `list_enzymes_window`, `list_enzymes_text`, `enz_site_usage_filter`,
+  `enz_count`, `findenzymes`, `initialize_methylation`, `not_in_list`, `toggle_methylation`, `read_enzymes` on
+  Default_Enzymes.txt, with a stand-in for the text window only. 72 cases: sequences of 52 to 238 bases with 4 to 17 sites of
+  random enzymes put in (some twice, on either strand), 34 linear and 38 circular, Dam/Dcm methylation off in 42 and on in 30,
+  51 with a selection (20 of them asking for the list of all of the DNA) and 21 without one (some of those asking for the
+  selection, which then falls back to all), each of the four formats in 13 cases or more, each of the four lists in 18, 1 to 10
+  columns, 0 to 13 enzymes chosen in the Selector. HelixLoom writes **the same window text** in every
+  case (`src/seq/enzlist/golden.txt`), and the sites it finds for all 116 enzymes equal the original's lists in number and
+  order. The pattern HelixLoom prints for each enzyme equals what the enzyme file gives (`enz_pattern`). The same two
+  comparisons on files made with other seeds are an ignored test (`HELIXLOOM_ENZLIST_GOLDEN=file cargo test enzlist --
+  --ignored`): 500 more cases, and 1,900 made with the driver's fourth argument 1, which puts in a site repeated at its own
+  period so that sites overlap as far as they can (this is what showed the two site-finding rules of section 2): all equal.
+* **Differences kept.** One result window that the next list replaces (the original opens a new one each time), with a *List
+  again* button and a note when the sequence has changed since; the copied text has `HelixLoom` where the original writes the
+  date; a window opens as wide as its longest line when the screen allows, and keeps its place and size while the same kind
+  of list is made again; the text is read-only and *Copy as text* takes all of it. **Not built:** a selection across the
+  origin (the original reads a second range, L16406–16413, L16483–16485 and in `enz_count`, L15960–15963; HelixLoom has no such
+  selection), the Selection Only switch that Quick Lists read, the Enzyme Selector's own List menu (L15509–15512: the four
+  formats for the selected enzymes, which List Enzymes… with *Selected Enzymes Only* gives) and its Text button (L15531,
+  L15676), and the output menu of the window (save, print).
 
 ## 9. Added by the person during the build (not in the original)
 
