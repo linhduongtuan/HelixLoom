@@ -155,8 +155,9 @@ are checked by unit tests against values printed by the original's own procs (ru
     (section 2). Of the 72 random cases, case 9 was the first to differ (MauBI in `CGCGCGCGCG`: one site, not two). A second
     difference came out only with a stress file of 400 cases made of sites repeated at their own period (so that they
     overlap): the original keeps one reverse Type IIS site at the very left end of a linear sequence that cuts a base outside
-    it, and `find_sites` now keeps it too, as a site with no cut (section 2). With both rules built, 2,400 more random cases
-    (500 plain and 1,900 with such runs; the driver's fourth argument) give the same lists and site lists as the original.
+    it, and `find_sites` now keeps it too, as a site with no cut (section 2). With both rules built, 3,600 more random cases
+    (500 plain and 3,100 with such runs; the driver's fourth argument) give the same lists and site lists as the original, and
+    48 of the dense cases are kept as tests.
   * **A correction to the eleventh request's list of what is missing.** `enz_digest_partial_dialog` (L17587 @0xc5edc) cannot be
     reached: its menu entry is commented out in the original (L1180 and L59624, `#$w.menubar.enzymes add command -label
     "Partial Digestion..."`), as is the "Do Partial Digests" action of the Enzyme Selector (L17730). It is not built, for that
@@ -727,7 +728,8 @@ Enzymes menu, L1184 @0xfe05 and L1186–1189 (`findenzymes $w; list_enzymes_wind
 
 * **The dialog** (List Enzymes…): *Format* (Name · Name, #Sites · Name, Site, #Sites, Positions · Site, Name, numbered 0 to 3),
   *Columns* (1 to 10, turned off for the last two formats), *Enzymes* (All · Selected Enzymes Only · Absent Enzymes · Unique
-  Enzymes) and *DNA* (All · Selected DNA only); OK or Return lists, Cancel does nothing. The format, the columns and the
+  Enzymes) and *DNA* (All · Selected DNA only); OK or Return lists, Cancel or Escape closes it without listing (HelixLoom gives Return and Escape to the dialog only when it
+  is the window in front, no text field had the keyboard as the frame began and the command palette is closed). The format, the columns and the
   enzymes keep what was chosen last; DNA starts from the Selection Only switch (all). **Quick Lists** are the same code with
   the choices fixed: Site Usage = format 1, all; Unique Sites = format 0, unique; Absent Sites = format 0, absent; their columns
   are the dialog's (6 at the start); their DNA is the Selection Only switch's, which HelixLoom does not have (all of it).
@@ -764,10 +766,14 @@ Enzymes menu, L1184 @0xfe05 and L1186–1189 (`findenzymes $w; list_enzymes_wind
   case (`src/seq/enzlist/golden.txt`), and the sites it finds for all 116 enzymes equal the original's lists in number and
   order. The pattern HelixLoom prints for each enzyme equals what the enzyme file gives (`enz_pattern`). The same two
   comparisons on files made with other seeds are an ignored test (`HELIXLOOM_ENZLIST_GOLDEN=file cargo test enzlist --
-  --ignored`): 500 more cases, and 1,900 made with the driver's fourth argument 1, which puts in a site repeated at its own
-  period so that sites overlap as far as they can (this is what showed the two site-finding rules of section 2): all equal.
+  --ignored`): 500 more cases, and 3,100 made with the driver's fourth argument 1, which puts in a site repeated at its own
+  period so that sites overlap as far as they can (this is what showed the two site-finding rules of section 2) and makes half
+  of the selections start and end on sites (the last 1,200): all equal. 48 such cases are kept in
+  `src/seq/enzlist/golden_dense.txt`, with a test that sites fall on every edge of the selection in them: it is there that the
+  quirk between the text (`start` <= site) and the count (`start + 1` <= site) is pinned by the original's own output.
 * **Differences kept.** One result window that the next list replaces (the original opens a new one each time), with a *List
-  again* button and a note when the sequence has changed since; the copied text has `HelixLoom` where the original writes the
+  again* button and a note when what the list was made from has changed since (the sequence, its circular or linear state, its
+  Dam/Dcm switch and, for *Selected Enzymes Only*, the Enzyme Selector's choice); the copied text has `HelixLoom` where the original writes the
   date; a window opens as wide as its longest line when the screen allows, and keeps its place and size while the same kind
   of list is made again; the text is read-only and *Copy as text* takes all of it. **Not built:** a selection across the
   origin (the original reads a second range, L16406–16413, L16483–16485 and in `enz_count`, L15960–15963; HelixLoom has no such

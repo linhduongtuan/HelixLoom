@@ -633,6 +633,8 @@ impl App {
     /// drawn with no window at all (see `headless`).
     pub(super) fn draw(&mut self, ui: &mut Ui) {
         let ctx = ui.ctx().clone();
+        // whether a text field has the keyboard as the frame begins: a key it takes (Return in Find's) is not for a dialog
+        let typing = ctx.text_edit_focused();
         // the colours follow the system until the person chooses light or dark
         self.prefs.dark = self.prefs.theme.is_dark(ctx.system_theme());
         let colours = (self.prefs.dark, self.prefs.theme == ThemeMode::System);
@@ -675,7 +677,7 @@ impl App {
         self.assembly_windows(&ctx);
         self.orf_window(&ctx);
         self.site_windows(&ctx);
-        self.enz_list_windows(&ctx);
+        self.enz_list_windows(&ctx, typing);
         self.feature_window(&ctx);
         self.align_window(&ctx);
         self.pcr_window(&ctx);

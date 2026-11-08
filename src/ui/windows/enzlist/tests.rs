@@ -219,19 +219,71 @@ fn selected_enzymes_follow_the_enzyme_selector_and_none_selected_lists_nothing()
     assert_eq!(names, ["EcoRI", "KpnI"]);
 }
 
+const STALE: &str = "The sequence has changed since this list was made";
+
+/// Whether a frame drew the note that the list is out of date.
+fn says_stale(shown: &FullOutput) -> bool {
+    let shapes: Vec<Shape> = shown.shapes.iter().map(|s| s.shape.clone()).collect();
+    text_rect(&shapes, STALE).is_some()
+}
+
 #[test]
-fn a_list_goes_stale_when_the_sequence_changes_and_listing_again_makes_a_new_one() {
+fn a_list_goes_stale_when_the_sequence_is_edited_and_listing_again_makes_a_new_one() {
     let (ctx, mut app) = (Context::default(), app());
     app.run_quick_list(Quick::UniqueSites);
     let choice = run_of(&app).choice;
-    settle(&mut app, &ctx);
+    let before = settle(&mut app, &ctx);
+    assert!(!says_stale(&before), "a list that is current has no note");
 
     app.docs[0].rev += 1;
-    frame(&mut app, &ctx, vec![]);
-    assert_ne!(run_of(&app).rev, app.docs[0].rev);
+    let after = frame(&mut app, &ctx, vec![]);
+    assert!(says_stale(&after), "the note is drawn");
 
     app.make_list(choice);
-    assert_eq!(run_of(&app).rev, app.docs[0].rev);
+    let again = frame(&mut app, &ctx, vec![]);
+    assert!(!says_stale(&again), "listing again takes it away");
+    assert_eq!(run_of(&app).basis.rev, app.docs[0].rev);
+}
+
+#[test]
+fn a_list_goes_stale_when_the_topology_or_the_dam_dcm_switch_change_the_sites() {
+    let (ctx, mut app) = (Context::default(), app());
+    app.run_quick_list(Quick::UniqueSites);
+    settle(&mut app, &ctx);
+
+    app.docs[0].doc.methylated = !app.docs[0].doc.methylated;
+    assert!(says_stale(&frame(&mut app, &ctx, vec![])), "Dam/Dcm");
+
+    app.run_quick_list(Quick::UniqueSites);
+    settle(&mut app, &ctx);
+    app.docs[0].doc.circular = !app.docs[0].doc.circular;
+    assert!(
+        says_stale(&frame(&mut app, &ctx, vec![])),
+        "circular or linear"
+    );
+}
+
+#[test]
+fn a_list_of_the_selected_enzymes_goes_stale_when_the_selector_changes_and_the_others_do_not() {
+    let (ctx, mut app) = (Context::default(), app());
+    app.selected = ["EcoRI"].iter().map(|s| s.to_string()).collect();
+    app.enz_list.which = Which::Selected;
+    app.list_dialog_ok();
+    settle(&mut app, &ctx);
+
+    app.selected.insert("KpnI".to_string());
+    assert!(
+        says_stale(&frame(&mut app, &ctx, vec![])),
+        "the selected enzymes"
+    );
+
+    app.run_quick_list(Quick::UniqueSites);
+    settle(&mut app, &ctx);
+    app.selected.insert("SacI".to_string());
+    assert!(
+        !says_stale(&frame(&mut app, &ctx, vec![])),
+        "a list of all the enzymes does not depend on it"
+    );
 }
 
 #[test]
@@ -253,6 +305,25 @@ fn the_menu_and_the_palette_reach_the_lists() {
     assert!(acts_on_the_sequence(&Action::QuickList(Quick::SiteUsage)));
     let labels: Vec<&str> = Quick::ALL.iter().map(|q| q.label()).collect();
     assert_eq!(labels, ["Site Usage", "Unique Sites", "Absent Sites"]);
+    let commands = crate::ui::commands::all();
+    let found = |typed: &str| {
+        let hits = crate::ui::commands::search(commands, typed, 8);
+        hits.into_iter()
+            .map(|i| commands[i].action.clone())
+            .collect::<Vec<Action>>()
+    };
+    assert!(found("list enzymes")
+        .iter()
+        .any(|a| matches!(a, Action::ListEnzymes)));
+    assert!(found("quick list unique")
+        .iter()
+        .any(|a| matches!(a, Action::QuickList(Quick::UniqueSites))));
+    assert!(found("absent")
+        .iter()
+        .any(|a| matches!(a, Action::QuickList(Quick::AbsentSites))));
+    assert!(found("site usage")
+        .iter()
+        .any(|a| matches!(a, Action::QuickList(Quick::SiteUsage))));
 }
 
 #[test]
@@ -323,10 +394,10 @@ fn list_again_and_copy_as_text_work_from_the_result_window() {
     settle(&mut app, &ctx);
     app.docs[0].rev += 1;
     let shown = frame(&mut app, &ctx, vec![]);
-    assert_ne!(run_of(&app).rev, app.docs[0].rev, "the list is stale");
+    assert!(says_stale(&shown), "the list is stale");
 
     let shown = click_on(&mut app, &ctx, &shown, "List again");
-    assert_eq!(run_of(&app).rev, app.docs[0].rev, "it was made again");
+    assert_eq!(run_of(&app).basis.rev, app.docs[0].rev, "it was made again");
     let after = click_on(&mut app, &ctx, &shown, "Copy as text");
 
     let copied: Vec<&String> = after
@@ -358,4 +429,114 @@ fn the_message_after_a_list_counts_the_enzymes_in_it() {
     app.list_dialog_ok();
 
     assert_eq!(app.status, "Selected Sites: 1 enzyme.");
+}
+
+#[test]
+fn a_result_window_opens_as_wide_as_its_longest_line_but_not_wider_than_the_screen() {
+    let (ctx, mut app) = (Context::default(), app());
+    settle(&mut app, &ctx);
+    let screen = ctx.content_rect().size();
+
+    let short = natural_size(&ctx, shape_of("ab\ncd\n"));
+    let wide = natural_size(&ctx, shape_of(&"x".repeat(100)));
+    let huge = natural_size(&ctx, shape_of(&"x".repeat(5_000)));
+    let tall = natural_size(&ctx, shape_of(&"x\n".repeat(5_000)));
+
+    assert_eq!(short, MIN_WINDOW, "a small text opens at the least size");
+    assert!(
+        wide[0] > short[0] && wide[0] < screen.x - SCREEN_ROOM,
+        "{wide:?}"
+    );
+    assert!(
+        (huge[0] - (screen.x - SCREEN_ROOM)).abs() < 0.01,
+        "{huge:?} on {screen:?}"
+    );
+    assert!(
+        (tall[1] - (screen.y - SCREEN_ROOM)).abs() < 0.01,
+        "{tall:?} on {screen:?}"
+    );
+}
+
+#[test]
+fn the_shape_of_a_text_is_its_lines_and_the_characters_of_the_longest() {
+    assert_eq!(shape_of(""), (0, 0));
+    assert_eq!(shape_of("ab\ncdef\n"), (2, 4));
+    assert_eq!(shape_of("a\n\nbcd"), (3, 3));
+}
+
+fn key_press(key: Key) -> Vec<Event> {
+    let event = |pressed| Event::Key {
+        key,
+        physical_key: Some(key),
+        pressed,
+        repeat: false,
+        modifiers: Modifiers::NONE,
+    };
+    vec![event(true), event(false)]
+}
+
+#[test]
+fn escape_and_the_cancel_button_close_the_dialog_without_listing() {
+    let (ctx, mut app) = (Context::default(), app());
+    app.open_list_dialog();
+    settle(&mut app, &ctx);
+    frame(&mut app, &ctx, key_press(Key::Escape));
+    assert!(
+        !app.enz_list.dialog_open && app.enz_list.run.is_none(),
+        "Escape"
+    );
+
+    app.open_list_dialog();
+    let shown = settle(&mut app, &ctx);
+    click_on(&mut app, &ctx, &shown, "Cancel");
+    assert!(
+        !app.enz_list.dialog_open && app.enz_list.run.is_none(),
+        "Cancel"
+    );
+}
+
+#[test]
+fn return_that_runs_a_palette_command_is_not_also_ok_in_the_dialog() {
+    let (ctx, mut app) = (Context::default(), app());
+    app.open_list_dialog();
+    settle(&mut app, &ctx);
+    app.palette.toggle();
+    settle(&mut app, &ctx);
+
+    frame(&mut app, &ctx, key_press(Key::Enter));
+
+    assert!(app.enz_list.dialog_open, "the dialog is still there");
+    assert!(app.enz_list.run.is_none(), "and listed nothing");
+}
+
+#[test]
+fn return_in_a_text_field_is_not_for_the_dialog() {
+    let (ctx, mut app) = (Context::default(), app());
+    app.find_win.open = true;
+    settle(&mut app, &ctx);
+    ctx.memory_mut(|m| m.request_focus(Id::new("find_text")));
+    settle(&mut app, &ctx);
+    app.open_list_dialog();
+    settle(&mut app, &ctx);
+    assert!(
+        ctx.text_edit_focused(),
+        "Find's text field has the keyboard"
+    );
+
+    // Find takes the key and lets go of the field in the same frame; the dialog still must not press OK
+    frame(&mut app, &ctx, key_press(Key::Enter));
+
+    assert!(app.enz_list.run.is_none(), "Return did not press OK");
+    assert!(app.enz_list.dialog_open, "and the dialog is still there");
+}
+
+#[test]
+fn the_dialog_does_not_open_without_a_sequence() {
+    let mut app = app();
+    app.docs.clear();
+
+    app.open_list_dialog();
+
+    assert!(!app.enz_list.dialog_open);
+    assert_eq!(app.status, "Open a sequence first.");
 }

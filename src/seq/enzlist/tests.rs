@@ -8,6 +8,10 @@ use crate::seq::sitesearch::golden::{self, Case};
 /// of its window.
 const GOLDEN: &str = include_str!("golden.txt");
 
+/// 48 more, made with the driver's dense mode (seed 4242): runs of a site repeated at its own period, so that sites overlap
+/// as far as they can, and half of the selections starting and ending on the first bases of sites or one before them.
+const DENSE: &str = include_str!("golden_dense.txt");
+
 fn entry(name: &str, pattern: &str, sites: &[usize]) -> Entry {
     Entry {
         name: name.into(),
@@ -111,6 +115,37 @@ fn lists_equal_the_originals_on_every_case() {
 #[test]
 fn the_sites_behind_the_lists_equal_the_originals_in_number_and_order() {
     check_sites(&golden::parse(GOLDEN));
+}
+
+#[test]
+fn lists_and_sites_equal_the_originals_on_the_dense_cases() {
+    let cases = golden::parse(DENSE);
+    assert_eq!(cases.len(), 48);
+    check_sites(&cases);
+    check_lists(&cases);
+}
+
+#[test]
+fn the_dense_cases_put_sites_on_each_edge_of_the_selection() {
+    // the number of cases in which some site is numbered `edge(start, end)` with a selection that was asked for
+    let cases = golden::parse(DENSE);
+    let having = |edge: fn(usize, usize) -> usize| {
+        let on_edge = |case: &&Case| {
+            let Some(Span { start, end }) = span_of(case) else {
+                return false;
+            };
+            let place = edge(start, end);
+            case.sites.iter().any(|(_, at)| at.contains(&place))
+        };
+        cases.iter().filter(on_edge).count()
+    };
+    assert!(
+        having(|a, _| a) >= 3,
+        "a site on the base before the selection"
+    );
+    assert!(having(|a, _| a + 1) >= 3, "a site on its first base");
+    assert!(having(|_, b| b) >= 3, "a site on its last base");
+    assert!(having(|_, b| b + 1) >= 3, "a site on the base after it");
 }
 
 /// The same two checks on a file that the driver made with other seeds and more cases, for a wider comparison:

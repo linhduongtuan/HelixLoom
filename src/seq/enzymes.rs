@@ -257,7 +257,7 @@ pub fn find_sites(e: &Enzyme, seq: &[u8], circular: bool) -> Vec<Site> {
     } else {
         vec![(&e.site, false), (&rc, true)]
     };
-    let limit = n.min(text.len().saturating_sub(k - 1));
+    let limit = n.min(text.len().saturating_sub(k.saturating_sub(1)));
     let mut found: Vec<(usize, bool)> = Vec::new();
     for &(pat, reverse) in &orientations {
         let starts = match_starts(pat, &text, limit);

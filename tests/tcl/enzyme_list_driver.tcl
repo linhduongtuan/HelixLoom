@@ -12,7 +12,8 @@
 set origfile [lindex $argv 0]
 set seed [lindex $argv 1]
 set ncases [lindex $argv 2]
-# with a fourth argument of 1, runs of a site repeated at its own period are put in, so that sites overlap
+# with a fourth argument of 1, runs of a site repeated at its own period are put in, so that sites overlap, and half of the
+# selections are made to start and end on sites
 set dense [expr {[lindex $argv 3] eq "1"}]
 set ACC "/Applications/ApE.app/Contents/Resources/Scripts/Accessory Files"
 
@@ -116,6 +117,21 @@ proc pick_some {n} {
   return [lsort -unique $chosen]
 }
 
+# a selection whose ends sit on the first bases of sites or one before them, so that the sites at its very edges are in one
+# list and not in the other (the text takes sites from `start`, the count of absent and unique enzymes from `start + 1`)
+proc boundary_selection {} {
+  set places [list]
+  foreach e $::enzymes { foreach p $::info($::w,$e) { lappend places $p } }
+  if {[llength $places] < 2} { return $::sel }
+  set p1 [lindex $places [rnd [llength $places]]]
+  set p2 [lindex $places [rnd [llength $places]]]
+  if {$p1 > $p2} { set t $p1; set p1 $p2; set p2 $t }
+  set a [expr {$p1 - [rnd 2]}]
+  set b [expr {$p2 - [rnd 2]}]
+  if {$a < 0 || $b <= $a || $b > [string length $::seq]} { return $::sel }
+  return [list $a $b]
+}
+
 set whiches {all selected absent unique}
 for {set k 1} {$k <= $ncases} {incr k} {
   set len [expr {50 + [rnd 190]}]
@@ -139,6 +155,7 @@ for {set k 1} {$k <= $ncases} {incr k} {
   set info($w,scanned) 0
   set info($w,Dam_Dcm_methylated) $methylated
   findenzymes $w
+  if {$dense && [rnd 2]} { set ::sel [boundary_selection]; if {$::sel ne {}} { set region selection } }
   puts "CASE list $k"
   puts "circular $circ"
   puts "seq $::seq"

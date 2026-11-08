@@ -140,6 +140,7 @@ impl App {
                 .show(ctx, |ui| {
                     let edit = ui.add(
                         egui::TextEdit::singleline(&mut self.find_win.text)
+                            .id(egui::Id::new("find_text"))
                             .hint_text("Sequence (IUPAC letters; | ; , between several)")
                             .desired_width(f32::INFINITY),
                     );

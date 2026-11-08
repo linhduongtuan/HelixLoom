@@ -9,7 +9,8 @@ use crate::ui::app::App;
 use crate::ui::design::{self, Look, Tone};
 use crate::ui::map::commify;
 use crate::ui::state::DocView;
-use eframe::egui::{self, Id, RichText, ScrollArea, TextWrapMode, Ui};
+use eframe::egui::{self, Id, Key, Modifiers, RichText, ScrollArea, TextWrapMode, Ui};
+use std::collections::BTreeSet;
 
 #[cfg(test)]
 mod tests;
@@ -53,15 +54,40 @@ struct Choice {
     selection_only: bool,
 }
 
-/// A list that was made: the sequence it is about (told apart by `DocView::id`; a later edit, `rev`, makes it stale), what it
-/// was asked for, how many enzymes it has, and the text of the original's window. `layout` stays the same while the choices do,
-/// so that the window keeps the place and the size the person gave it; another kind of list opens at the size of its own text.
-struct ListRun {
+/// What a list was made from. When any of it changes the list is out of date: the sequence (told apart by `DocView::id`, and
+/// edited: `rev`), its topology and its Dam/Dcm switch, which change the sites without an edit, and for a list of the selected
+/// enzymes the choice in the Enzyme Selector.
+#[derive(Clone, Debug, PartialEq, Eq)]
+struct Basis {
     doc: u64,
     rev: u64,
+    circular: bool,
+    methylated: bool,
+    chosen: Option<BTreeSet<String>>,
+}
+
+impl Basis {
+    fn of(dv: &DocView, which: Which, selected: &BTreeSet<String>) -> Basis {
+        Basis {
+            doc: dv.id,
+            rev: dv.rev,
+            circular: dv.doc.circular,
+            methylated: dv.doc.methylated,
+            chosen: (which == Which::Selected).then(|| selected.clone()),
+        }
+    }
+}
+
+/// A list that was made: what it was made from, what it was asked for, how many enzymes it has, the text of the original's
+/// window and its size in lines and characters. `layout` stays the same while the choices do, so that the window keeps the
+/// place and the size the person gave it; another kind of list opens at the size of its own text.
+struct ListRun {
+    basis: Basis,
     choice: Choice,
     layout: u32,
     shown: usize,
+    /// The lines of the text and the characters of the longest.
+    shape: (usize, usize),
     title: String,
     report: String,
 }
@@ -102,6 +128,12 @@ fn count_of(n: usize) -> String {
     format!("{} {word}", commify(n))
 }
 
+/// The lines of a text and the characters of its longest line.
+fn shape_of(text: &str) -> (usize, usize) {
+    let longest = text.lines().map(|l| l.chars().count()).max();
+    (text.lines().count(), longest.unwrap_or(0))
+}
+
 /// The enzymes with their sites on the sequence as the Enzyme Selector counts them (Dam/Dcm switch included), numbered from 1.
 fn entries_of(dv: &mut DocView, enzymes: &[Enzyme]) -> Vec<Entry> {
     let sites = dv.sites(enzymes);
@@ -118,8 +150,12 @@ fn entries_of(dv: &mut DocView, enzymes: &[Enzyme]) -> Vec<Entry> {
 
 impl App {
     /// List Enzymes…: the dialog, with the format, columns and list of the last time. "DNA" starts at All each time, as the
-    /// original starts it from its Selection Only switch (L16339), which HelixLoom does not have.
+    /// original starts it from its Selection Only switch (L16339), which HelixLoom does not have. With no sequence open
+    /// there is nothing to list, and the dialog does not open.
     pub fn open_list_dialog(&mut self) {
+        if self.current_doc().is_none() {
+            return self.say("Open a sequence first.");
+        }
         self.enz_list.selection_only = false;
         self.enz_list.dialog_open = true;
     }
@@ -174,11 +210,11 @@ impl App {
             None => 0,
         };
         self.enz_list.run = Some(ListRun {
-            doc: dv.id,
-            rev: dv.rev,
+            basis: Basis::of(dv, choice.which, &self.selected),
             choice,
             layout,
             shown,
+            shape: shape_of(&report),
             title,
             report,
         });
@@ -186,32 +222,33 @@ impl App {
         self.say(message);
     }
 
-    pub fn enz_list_windows(&mut self, ctx: &egui::Context) {
-        self.list_dialog_window(ctx);
+    /// Both windows; `typing` is whether a text field had the keyboard when the frame began.
+    pub fn enz_list_windows(&mut self, ctx: &egui::Context, typing: bool) {
+        self.list_dialog_window(ctx, typing);
         self.list_result_window(ctx);
     }
 
-    fn list_dialog_window(&mut self, ctx: &egui::Context) {
+    fn list_dialog_window(&mut self, ctx: &egui::Context, typing: bool) {
         if !self.enz_list.dialog_open {
             return;
         }
         let look = design::look(self.prefs.dark);
-        let (mut open, mut ok) = (true, false);
+        let (mut open, mut ok, mut cancel) = (true, false, false);
         design::window("List Enzymes")
             .open(&mut open)
             .collapsible(false)
             .resizable(false)
             .show(ctx, |ui| {
-                ok = self.list_dialog_body(ui, &look);
+                (ok, cancel) = self.list_dialog_body(ui, &look, typing);
             });
-        self.enz_list.dialog_open = open;
+        self.enz_list.dialog_open = open && !cancel;
         if ok {
             self.list_dialog_ok();
         }
     }
 
-    /// The dialog's four choices and its OK button; true when OK was pressed (or Return).
-    fn list_dialog_body(&mut self, ui: &mut Ui, look: &Look) -> bool {
+    /// The dialog's four choices and its buttons; (OK, Cancel) as pressed, or as Return and Escape ask for them.
+    fn list_dialog_body(&mut self, ui: &mut Ui, look: &Look, typing: bool) -> (bool, bool) {
         let w = &mut self.enz_list;
         ui.horizontal(|ui| {
             ui.label("Format:");
@@ -245,8 +282,23 @@ impl App {
             ui.radio_value(&mut w.selection_only, false, "All");
             ui.radio_value(&mut w.selection_only, true, "Selected DNA only");
         });
-        let pressed = design::primary_button(ui, look, "OK").clicked();
-        pressed || ui.input(|i| i.key_pressed(egui::Key::Enter))
+        let (mut ok, mut cancel) = (false, false);
+        ui.horizontal(|ui| {
+            ok = design::primary_button(ui, look, "OK").clicked();
+            cancel = design::ghost_button(ui, look, "Cancel").clicked();
+        });
+        if self.dialog_has_the_keys(ui, typing) {
+            // the original binds Return to OK and its <<Cancel>> (Escape) to Cancel (L16312-16313, L16347)
+            ok |= ui.input_mut(|i| i.consume_key(Modifiers::NONE, Key::Enter));
+            cancel |= ui.input_mut(|i| i.consume_key(Modifiers::NONE, Key::Escape));
+        }
+        (ok, cancel)
+    }
+
+    /// Whether Return and Escape are meant for the dialog: not while the command palette is open, nor while a text field had
+    /// the keyboard (Find's, say), and only when the dialog is the window in front.
+    fn dialog_has_the_keys(&self, ui: &Ui, typing: bool) -> bool {
+        !self.palette.is_open() && !typing && ui.ctx().top_layer_id() == Some(ui.layer_id())
     }
 
     fn list_result_window(&mut self, ctx: &egui::Context) {
@@ -259,23 +311,22 @@ impl App {
         };
         let look = design::look(self.prefs.dark);
         let live = self.current_doc().is_some_and(|i| {
-            let dv = &self.docs[i];
-            dv.id == run.doc && dv.rev == run.rev
+            Basis::of(&self.docs[i], run.choice.which, &self.selected) == run.basis
         });
         let (mut open, mut again, mut copy) = (true, false, false);
         design::window(run.title.as_str())
             .id(Id::new(("enz_list_result", run.layout)))
             .open(&mut open)
-            .default_size(natural_size(ctx, &run.report))
+            .default_size(natural_size(ctx, run.shape))
             .show(ctx, |ui| {
                 (again, copy) = list_head(ui, &look, run, live);
                 list_text(ui, &run.report);
             });
-        let (choice, report) = (run.choice, run.report.clone());
-        self.enz_list.result_open = open;
         if copy {
-            ctx.copy_text(report);
+            ctx.copy_text(run.report.clone());
         }
+        let choice = run.choice;
+        self.enz_list.result_open = open;
         if again {
             self.make_list(choice);
         }
@@ -283,19 +334,27 @@ impl App {
 }
 
 /// The size the original gives its window: as wide as the longest line and as high as the text (`textbox_geometry`, L16817),
-/// but not more than the screen has, so that every column of a list is there when the window opens.
-fn natural_size(ctx: &egui::Context, report: &str) -> [f32; 2] {
-    let font = egui::TextStyle::Monospace.resolve(&ctx.global_style());
+/// but not more than the screen has, so that every column of a list is there when the window opens. `shape` is the lines of
+/// the text and the characters of the longest.
+fn natural_size(ctx: &egui::Context, shape: (usize, usize)) -> [f32; 2] {
+    let style = ctx.global_style();
+    let font = egui::TextStyle::Monospace.resolve(&style);
     let (advance, row) = ctx.fonts_mut(|f| (f.glyph_width(&font, 'M'), f.row_height(&font)));
-    let rows = report.lines().count() as f32;
-    let longest = report.lines().map(|l| l.chars().count()).max().unwrap_or(0) as f32;
     let screen = ctx.content_rect().size();
     let fit =
         |wanted: f32, least: f32, room: f32| wanted.clamp(least, (room - SCREEN_ROOM).max(least));
-    let row = row + ctx.global_style().spacing.item_spacing.y;
+    let row = row + style.spacing.item_spacing.y;
     [
-        fit(longest * advance + WINDOW_EXTRA[0], MIN_WINDOW[0], screen.x),
-        fit(rows * row + WINDOW_EXTRA[1], MIN_WINDOW[1], screen.y),
+        fit(
+            shape.1 as f32 * advance + WINDOW_EXTRA[0],
+            MIN_WINDOW[0],
+            screen.x,
+        ),
+        fit(
+            shape.0 as f32 * row + WINDOW_EXTRA[1],
+            MIN_WINDOW[1],
+            screen.y,
+        ),
     ]
 }
 

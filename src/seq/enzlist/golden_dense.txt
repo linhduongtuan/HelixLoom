@@ -1,0 +1,3649 @@
+CASE list 1
+circular 0
+seq TTAATATTTGTTAGCGTACCGGTATAAACCCCGGTTTTGGGCCTTCCGGAACTTTTGAACCCTTCTTGCCAAGCCAGTCCAGAAGCATTATAAGCAATCCATAGATCTAGATCTAGATCTAGATCTAGATCTCTTGGGCCCGGGCCCTGCCCGGTGCACACTACAGGTAACTCAACGGGACATGATACCACATGTGGTCAACATGTGGGGCTGACTGGCGCGCGCGCGCCCTCACA
+sel 201 230
+enz AfeI AscI BamHI MauBI NotI PmlI XhoI
+methylated 1
+format 2
+which selected
+columns 5
+region all
+sites AgeI 18
+sites ApaI 136 142
+sites ApaLI 154
+sites AvaI 139
+sites BfaI 107 113 119 125
+sites BglII 103 109 115 121 127
+sites BsaWI 18 45
+sites BspEI 45
+sites BssHII 218 220 222 224
+sites BstUI 219 221 223 225
+sites BstYI 103 109 115 121 127
+sites Cac8I 218 220 222 224
+sites DpnI 104 110 116 122 128
+sites HaeIII 40 137 143
+sites HhaI 218 220 222 224 226
+sites HincII 197
+sites HpaII 19 31 46 140 151
+sites Hpy8I 154 197
+sites HpyCH4V 155
+sites MauBI 219
+sites MseI 1
+sites NlaIII 181 191 202
+sites NspI 190 201
+sites PciI 190 201
+sites PsiI 88
+sites RsaI 16
+sites SmaI 139
+sites SrfI 138
+sites SspI 3
+sites XmaI 139
+out
+|DATE
+|TITLE 
+|From 0 to 236. 
+|
+|Selected Sites
+|
+|AfeI           AGC^GCT        0             
+|AscI           GG^CGCGCC      0             
+|BamHI          G^GATCC        0             
+|NotI           GC^GGCCGC      0             
+|PmlI           CAC^GTG        0             
+|XhoI           C^TCGAG        0             
+|MauBI          CG^CGCGCG      1      219    
+|
+END
+CASE list 2
+circular 1
+seq TGAGTAAGACATGTAGATCTCGGCCGGCATTAATTAATTAATTAATAGCTCGAGCGCGCGCGCGCGCGTTGTGCACA
+sel -
+enz MseI
+methylated 1
+format 3
+which absent
+columns 2
+region selection
+sites AluI 47
+sites ApaLI 71
+sites AseI 29 33 37 41
+sites AvaI 49
+sites BglII 15
+sites BssHII 54 56 58 60 62
+sites BstUI 55 57 59 61 63 65
+sites BstYI 15
+sites Cac8I 23 54 56 58 60 62
+sites DpnI 16
+sites EagI 21
+sites HaeIII 22
+sites HhaI 54 56 58 60 62 64
+sites HpaII 24
+sites Hpy8I 71
+sites HpyCH4V 72
+sites MauBI 55
+sites MluCI 32 36 40
+sites MseI 30 34 38 42
+sites NaeI 23
+sites NgoMIV 23
+sites NlaIII 10 76
+sites NspI 9
+sites PacI 30 38
+sites PciI 9
+sites TaqI 50
+sites XhoI 49
+out
+|DATE
+|TITLE 
+|From 0 to 77. 
+|
+|Absent Sites
+|
+|AAT^ATT        SspI           
+|AA^CGTT        AclI           
+|AGC^GCT        AfeI           
+|AGG^CCT        StuI           
+|AGT^ACT        ScaI           
+|ATGCA^T        NsiI           
+|ATTT^AAAT      SwaI           
+|AT^CGAT        ClaI           
+|A^AGCTT        HindIII        
+|A^CCGGT        AgeI           
+|A^CGCGT        MluI           
+|A^CGT          HpyCH4IV       
+|A^CTAGT        SpeI           
+|CACCTGC(4/8)   PaqCI          
+|CAC^GTC        BmgBI          
+|CAC^GTG        PmlI           
+|CAG^CTG        PvuII          
+|CA^TATG        NdeI           
+|CCANNNNN^NNNNTGGXcmI           
+|CCC^GGG        SmaI           
+|CCGC^GG        SacII          
+|CCG^CTC        BsrBI          
+|CCTGCA^GG      SbfI           
+|CC^TCGAGG      AbsI           
+|CGAT^CG        PvuI           
+|CGTCTC(1/5)    BsmBI          
+|CG^CCGGCG      MreI           
+|CG^TCGACG      SgrDI          
+|CR^CCGGYG      SgrAI          
+|CTGCA^G        PstI           
+|C^AATTG        MfeI           
+|C^ACGAG        BssSI          
+|C^CATGG        NcoI           
+|C^CCGGG        XmaI           
+|C^CGC          AciI           
+|C^CTAGG        AvrII          
+|C^GTACG        BsiWI          
+|C^TAG          BfaI           
+|C^TTAAG        AflII          
+|GAAGAC(2/6)    BbsI           
+|GAANN^NNTTC    XmnI           
+|GACGT^C        AatII          
+|GACNN^NNGTC    PshAI          
+|GAC^GTC        ZraI           
+|GAGCT^C        SacI           
+|GATNN^NNATC    BsaBI          
+|GAT^ATC        EcoRV          
+|GCATG^C        SphI           
+|GCCC^GGGC      SrfI           
+|GCGAT^CGC      SgfI           
+|GCTCTTC(1/4)   SapI           
+|GC^GGCCGC      NotI           
+|GGCCGG^CC      FseI           
+|GGCCNNNN^NGGCC SfiI           
+|GGC^GCC        SfoI           
+|GGGCC^C        ApaI           
+|GGTAC^C        KpnI           
+|GGTCTC(1/5)    BsaI           
+|GG^CGCC        NarI           
+|GG^CGCGCC      AscI           
+|GTA^TAC        BstZ17I        
+|GTTT^AAAC      PmeI           
+|GTT^AAC        HpaI           
+|GTY^RAC        HincII         
+|GT^AC          RsaI           
+|G^AATTC        EcoRI          
+|G^CTAGC        NheI           
+|G^GATCC        BamHI          
+|G^GCGCC        KasI           
+|G^GTACC        Acc65I         
+|G^TCGAC        SalI           
+|RGCGC^Y        HaeII          
+|R^AATTY        ApoI           
+|TAC^GTA        SnaBI          
+|TCG^CGA        NruI           
+|TGC^GCA        FspI           
+|TGG^CCA        MscI           
+|TTA^TAA        PsiI           
+|TTT^AAA        DraI           
+|TT^CGAA        BstBI          
+|T^CATGA        BspHI          
+|T^CCGGA        BspEI          
+|T^CTAGA        XbaI           
+|T^GATCA        BclI           
+|T^GTACA        BsrGI          
+|W^CCGGW        BsaWI          
+|W^GTACW        TatI           
+|YAC^GTR        BsaAI          
+|^GATC          MboI           
+|
+END
+CASE list 3
+circular 1
+seq CGTGGGAAGCTGGAGTACGCCCAAAGGTACCATGGCGCGACTAGTACTAGTACTAGTTTTTCTTGACTCCAAAGGACTAGTACTAGTACTAGTACTAGTACTAGTTCAC
+sel 75 77
+enz PvuII SalI
+methylated 1
+format 2
+which unique
+columns 6
+region selection
+sites Acc65I 26
+sites AluI 8
+sites BfaI 41 47 53 77 83 89 95 101
+sites BstUI 36
+sites HhaI 35
+sites Hpy8I 104
+sites KpnI 26
+sites NcoI 30
+sites NlaIII 31
+sites RsaI 15 27 44 50 80 86 92 98
+sites ScaI 43 49 79 85 91 97
+sites SpeI 40 46 52 76 82 88 94 100
+sites TatI 43 49 79 85 91 97
+sites XcmI 21
+out
+|DATE
+|TITLE 
+|From 75 to 77. 
+|
+|Unique Sites
+|
+|BfaI           C^TAG          1      77     
+|SpeI           A^CTAGT        1      76     
+|
+END
+CASE list 4
+circular 1
+seq CACATTAGGCCTGCGCTACGCACTCACCGGCCGGCCGGCCGGGTACCGCGAGTGATCAAGAGCAAAGGCGATCGCGGAGCCTTTTATCACGCGTGAATTTAAATCGATCGCGGACAAACCGGTACTTAAGCCTAGTACTAGTACTAATGGCGGCCCACGTGACTAGTACTAGTACTAGTAGGGTCTAGAGCCGTACAGCGTTGCGGCACCCTGATTTCATAACTGCATACAGG
+sel 29 138
+enz Acc65I BclI BsiWI MscI
+methylated 1
+format 1
+which all
+columns 6
+region selection
+sites Acc65I 42
+sites AciI 46 74 110 150 203
+sites AflII 125
+sites AgeI 118
+sites ApoI 95
+sites BfaI 132 138 163 169 175 185
+sites BsaAI 156
+sites BsaWI 118
+sites BstUI 47 73 90 109
+sites Cac8I 9 30 34
+sites DpnI 54 70 106
+sites DraI 98
+sites EagI 28 32 36
+sites FseI 29
+sites HaeIII 8 29 33 37 152
+sites HhaI 13
+sites HpaII 27 31 35 39 119
+sites HpyCH4IV 157
+sites HpyCH4V 224
+sites KpnI 42
+sites MluCI 96
+sites MluI 89
+sites MseI 99 126
+sites NaeI 30 34
+sites NgoMIV 30 34
+sites PmlI 156
+sites PvuI 69 105
+sites RsaI 43 122 135 141 166 172 193
+sites ScaI 134 140 165 171
+sites SgfI 68
+sites SpeI 137 162 168 174
+sites StuI 7
+sites SwaI 97
+sites TatI 134 140 165 171
+sites XbaI 184
+out
+|DATE
+|TITLE 
+|From 29 to 138. 
+|
+|All Enzymes
+|
+|AatII       0       AbsI        0       Acc65I      1       AciI        3       AclI        0       AfeI        0       
+|AflII       1       AgeI        1       AluI        0       ApaI        0       ApaLI       0       ApoI        1       
+|AscI        0       AseI        0       AvaI        0       AvrII       0       BamHI       0       BbsI        0       
+|BclI        0       BfaI        2       BglII       0       BmgBI       0       BsaAI       0       BsaBI       0       
+|BsaI        0       BsaWI       1       BsiWI       0       BsmBI       0       BspEI       0       BspHI       0       
+|BsrBI       0       BsrGI       0       BssHII      0       BssSI       0       BstBI       0       BstUI       4       
+|BstYI       0       BstZ17I     0       Cac8I       2       ClaI        0       DpnI        3       DraI        1       
+|EagI        2       EcoRI       0       EcoRV       0       FseI        1       FspI        0       HaeII       0       
+|HaeIII      3       HhaI        0       HincII      0       HindIII     0       HpaI        0       HpaII       4       
+|Hpy8I       0       HpyCH4IV    0       HpyCH4V     0       KasI        0       KpnI        1       MauBI       0       
+|MboI        0       MfeI        0       MluCI       1       MluI        1       MreI        0       MscI        0       
+|MseI        2       NaeI        2       NarI        0       NcoI        0       NdeI        0       NgoMIV      2       
+|NheI        0       NlaIII      0       NotI        0       NruI        0       NsiI        0       NspI        0       
+|PacI        0       PaqCI       0       PciI        0       PmeI        0       PmlI        0       PshAI       0       
+|PsiI        0       PstI        0       PvuI        2       PvuII       0       RsaI        3       SacI        0       
+|SacII       0       SalI        0       SapI        0       SbfI        0       ScaI        1       SfiI        0       
+|SfoI        0       SgfI        1       SgrAI       0       SgrDI       0       SmaI        0       SnaBI       0       
+|SpeI        1       SphI        0       SrfI        0       SspI        0       StuI        0       SwaI        1       
+|TaqI        0       TatI        1       XbaI        0       XcmI        0       XhoI        0       XmaI        0       
+|XmnI        0       ZraI        0       
+END
+CASE list 5
+circular 1
+seq CGTGGGATCTATCCAGTCGGATCCGGATCCCGCGCGAAGGCCGGCGGATCACGAGCACGAGCACGAGCACGAGCACGAGGCAGATCTGAGTAGTCTTCCAGTGCCTTTGAAGGTGCCCACAGATCTTATTA
+sel 31 39
+enz MauBI TatI
+methylated 1
+format 2
+which selected
+columns 2
+region selection
+sites AciI 30 44
+sites BamHI 19 25
+sites BbsI 93
+sites BglII 82 121
+sites BsaAI 130
+sites BsaWI 22
+sites BssSI 50 56 62 68 74
+sites BstUI 31 33
+sites BstYI 5 19 25 82 121
+sites Cac8I 40
+sites DpnI 6 20 26 47 83 122
+sites HaeIII 39
+sites HhaI 32
+sites HpaII 23 41
+sites HpyCH4IV 131
+sites NaeI 40
+sites NgoMIV 40
+out
+|DATE
+|TITLE 
+|From 31 to 39. 
+|
+|Selected Sites
+|
+|MauBI          CG^CGCGCG      0             
+|TatI           W^GTACW        0             
+|
+END
+CASE list 6
+circular 1
+seq ACGTCTCTGTCGGATCCGGATCCGGATCCGGATCCTACCAGGGTTAACCCCCAACACGGGTGCACGGTGCCATCGTCGACCCAGGGCCTACGCGCGCGCGCGCGCGGCTGCATCTTTTTGGACGCAGCGCTCGCGATCGGCAACATGTGCCCGGGACCCGCTTGTTACATCTAGTAGG
+sel 12 74
+enz AbsI Acc65I AvrII BsrBI DpnI MreI SgrDI
+methylated 0
+format 2
+which absent
+columns 7
+region selection
+sites AatII 178
+sites AciI 104 158
+sites AfeI 126
+sites ApaLI 60
+sites AvaI 150
+sites BamHI 12 18 24 30
+sites BfaI 171
+sites BsaBI 13 25
+sites BsaWI 15 21 27
+sites BsmBI 2
+sites BspEI 15 21 27
+sites BssHII 92 94 96 98 100
+sites BstUI 91 93 95 97 99 101 103 132
+sites BstYI 12 18 24 30
+sites Cac8I 92 94 96 98 100 129
+sites HaeII 126
+sites HaeIII 85
+sites HhaI 92 94 96 98 100 102 127
+sites HincII 43 75
+sites HpaI 43
+sites HpaII 16 22 28 151
+sites Hpy8I 43 60 75
+sites HpyCH4IV 1
+sites HpyCH4V 61 109
+sites MauBI 91 99
+sites MboI 13 19 25 31 135
+sites MseI 44
+sites NlaIII 144
+sites NruI 131
+sites NspI 143
+sites PciI 143
+sites PvuI 134
+sites SalI 75
+sites SmaI 150
+sites TaqI 76
+sites XmaI 150
+sites ZraI 178
+out
+|DATE
+|TITLE 
+|From 12 to 74. 
+|
+|Absent Sites
+|
+|AatII          GACGT^C        0             
+|AbsI           CC^TCGAGG      0             
+|Acc65I         G^GTACC        0             
+|AciI           C^CGC          0             
+|AclI           AA^CGTT        0             
+|AfeI           AGC^GCT        0             
+|AflII          C^TTAAG        0             
+|AgeI           A^CCGGT        0             
+|AluI           AG^CT          0             
+|ApaI           GGGCC^C        0             
+|ApoI           R^AATTY        0             
+|AscI           GG^CGCGCC      0             
+|AseI           AT^TAAT        0             
+|AvaI           C^YCGRG        0             
+|AvrII          C^CTAGG        0             
+|BbsI           GAAGAC(2/6)    0             
+|BclI           T^GATCA        0             
+|BfaI           C^TAG          0             
+|BglII          A^GATCT        0             
+|BmgBI          CAC^GTC        0             
+|BsaAI          YAC^GTR        0             
+|BsaI           GGTCTC(1/5)    0             
+|BsiWI          C^GTACG        0             
+|BsmBI          CGTCTC(1/5)    0             
+|BspHI          T^CATGA        0             
+|BsrBI          CCG^CTC        0             
+|BsrGI          T^GTACA        0             
+|BssHII         G^CGCGC        0             
+|BssSI          C^ACGAG        0             
+|BstBI          TT^CGAA        0             
+|BstUI          CG^CG          0             
+|BstZ17I        GTA^TAC        0             
+|Cac8I          GCN^NGC        0             
+|ClaI           AT^CGAT        0             
+|DpnI           GA^TC          0             
+|DraI           TTT^AAA        0             
+|EagI           C^GGCCG        0             
+|EcoRI          G^AATTC        0             
+|EcoRV          GAT^ATC        0             
+|FseI           GGCCGG^CC      0             
+|FspI           TGC^GCA        0             
+|HaeII          RGCGC^Y        0             
+|HaeIII         GG^CC          0             
+|HhaI           GCG^C          0             
+|HindIII        A^AGCTT        0             
+|HpyCH4IV       A^CGT          0             
+|KasI           G^GCGCC        0             
+|KpnI           GGTAC^C        0             
+|MauBI          CG^CGCGCG      0             
+|MfeI           C^AATTG        0             
+|MluCI          ^AATT          0             
+|MluI           A^CGCGT        0             
+|MreI           CG^CCGGCG      0             
+|MscI           TGG^CCA        0             
+|NaeI           GCC^GGC        0             
+|NarI           GG^CGCC        0             
+|NcoI           C^CATGG        0             
+|NdeI           CA^TATG        0             
+|NgoMIV         G^CCGGC        0             
+|NheI           G^CTAGC        0             
+|NlaIII         CATG^          0             
+|NotI           GC^GGCCGC      0             
+|NruI           TCG^CGA        0             
+|NsiI           ATGCA^T        0             
+|NspI           RCATG^Y        0             
+|PacI           TTAAT^TAA      0             
+|PaqCI          CACCTGC(4/8)   0             
+|PciI           A^CATGT        0             
+|PmeI           GTTT^AAAC      0             
+|PmlI           CAC^GTG        0             
+|PshAI          GACNN^NNGTC    0             
+|PsiI           TTA^TAA        0             
+|PstI           CTGCA^G        0             
+|PvuI           CGAT^CG        0             
+|PvuII          CAG^CTG        0             
+|RsaI           GT^AC          0             
+|SacI           GAGCT^C        0             
+|SacII          CCGC^GG        0             
+|SalI           G^TCGAC        0             
+|SapI           GCTCTTC(1/4)   0             
+|SbfI           CCTGCA^GG      0             
+|ScaI           AGT^ACT        0             
+|SfiI           GGCCNNNN^NGGCC 0             
+|SfoI           GGC^GCC        0             
+|SgfI           GCGAT^CGC      0             
+|SgrAI          CR^CCGGYG      0             
+|SgrDI          CG^TCGACG      0             
+|SmaI           CCC^GGG        0             
+|SnaBI          TAC^GTA        0             
+|SpeI           A^CTAGT        0             
+|SphI           GCATG^C        0             
+|SrfI           GCCC^GGGC      0             
+|SspI           AAT^ATT        0             
+|StuI           AGG^CCT        0             
+|SwaI           ATTT^AAAT      0             
+|TaqI           T^CGA          0             
+|TatI           W^GTACW        0             
+|XbaI           T^CTAGA        0             
+|XcmI           CCANNNNN^NNNNTGG0             
+|XhoI           C^TCGAG        0             
+|XmaI           C^CCGGG        0             
+|XmnI           GAANN^NNTTC    0             
+|ZraI           GAC^GTC        0             
+|
+END
+CASE list 7
+circular 0
+seq TTCCGAGGCGCGCCGGCGCGCCGGCGCGCCGGCGCGCCGGCGCGCCCGCGCGCCGGCGGCCCCGGGCACGAAGAGCGAAGAGCGAAGAGCGACGTCGACGTCGACGTCATGACTGTCGCGCACGCGCGCTT
+sel 36 71
+enz AclI BclI BfaI BspEI BssSI BstYI BstZ17I FspI HpaII MseI PacI PaqCI RsaI
+methylated 1
+format 1
+which unique
+columns 7
+region selection
+sites AatII 91 97 103
+sites AciI 46 56
+sites AscI 7 15 23 31 39
+sites AvaI 61
+sites BspHI 107
+sites BssHII 8 16 24 32 40 48 124
+sites BstUI 9 17 25 33 41 47 49 117 123 125
+sites Cac8I 8 12 16 20 24 28 32 36 40 44 48 52 120 124
+sites HaeIII 58
+sites HhaI 8 10 16 18 24 26 32 34 40 42 48 50 118 124 126
+sites HincII 94 100
+sites HpaII 13 21 29 37 53 62
+sites Hpy8I 94 100
+sites HpyCH4IV 92 98 104
+sites MreI 11 19 27 35 51
+sites NaeI 12 20 28 36 52
+sites NgoMIV 12 20 28 36 52
+sites NlaIII 108
+sites SalI 94 100
+sites SapI 70 77 84
+sites SgrAI 11 19 27 35 51
+sites SgrDI 93
+sites SmaI 61
+sites TaqI 95 101
+sites XmaI 61
+sites ZraI 91 97 103
+out
+|DATE
+|TITLE 
+|From 36 to 71. 
+|
+|Unique Sites
+|
+|AscI        1       AvaI        1       HaeIII      1       MreI        1       NaeI        2       NgoMIV      2       SapI        1       
+|SgrAI       1       SmaI        1       XmaI        1       
+END
+CASE list 8
+circular 1
+seq TCGAGCGGGCACAGCGCTCCTAATACTAAAGGCCCAGGCACGACGCGGCCGCGGCCGCGGCCGCGGCCGCCTTTCTGTCCTATGGCCAAATGAAGACATGTGCACGTGCACGTGCACGTGCACGTGCACCCAACAGGGAGCGGCCCGCGGACCCCTGTCGTACACGATGCTTTGGCATCGTTGGCGGTTTGTG
+sel 4 141
+enz AclI AvrII DpnI MluI ScaI
+methylated 1
+format 2
+which all
+columns 4
+region selection
+sites AciI 5 45 49 51 55 57 61 63 67 140 145 147 184
+sites AfeI 13
+sites ApaLI 100 106 112 118 124
+sites BbsI 92
+sites BsaAI 103 109 115 121
+sites BsrBI 3 138
+sites BstUI 44 50 56 62 146
+sites Cac8I 5 143
+sites EagI 46 52 58 64
+sites HaeII 13
+sites HaeIII 31 47 53 59 65 84 142
+sites HhaI 14
+sites Hpy8I 100 106 112 118 124 160
+sites HpyCH4IV 104 110 116 122
+sites HpyCH4V 101 107 113 119 125
+sites MscI 83
+sites NlaIII 97
+sites NotI 45 57
+sites NspI 96
+sites PciI 96
+sites PmlI 103 109 115 121
+sites PshAI 150
+sites RsaI 160
+sites SacII 49 55 61 145
+sites TaqI 1
+out
+|DATE
+|TITLE 
+|From 4 to 141. 
+|
+|All Enzymes
+|
+|AatII          GACGT^C        0             
+|AbsI           CC^TCGAGG      0             
+|Acc65I         G^GTACC        0             
+|AclI           AA^CGTT        0             
+|AflII          C^TTAAG        0             
+|AgeI           A^CCGGT        0             
+|AluI           AG^CT          0             
+|ApaI           GGGCC^C        0             
+|ApoI           R^AATTY        0             
+|AscI           GG^CGCGCC      0             
+|AseI           AT^TAAT        0             
+|AvaI           C^YCGRG        0             
+|AvrII          C^CTAGG        0             
+|BamHI          G^GATCC        0             
+|BclI           T^GATCA        0             
+|BfaI           C^TAG          0             
+|BglII          A^GATCT        0             
+|BmgBI          CAC^GTC        0             
+|BsaBI          GATNN^NNATC    0             
+|BsaI           GGTCTC(1/5)    0             
+|BsaWI          W^CCGGW        0             
+|BsiWI          C^GTACG        0             
+|BsmBI          CGTCTC(1/5)    0             
+|BspEI          T^CCGGA        0             
+|BspHI          T^CATGA        0             
+|BsrGI          T^GTACA        0             
+|BssHII         G^CGCGC        0             
+|BssSI          C^ACGAG        0             
+|BstBI          TT^CGAA        0             
+|BstYI          R^GATCY        0             
+|BstZ17I        GTA^TAC        0             
+|ClaI           AT^CGAT        0             
+|DpnI           GA^TC          0             
+|DraI           TTT^AAA        0             
+|EcoRI          G^AATTC        0             
+|EcoRV          GAT^ATC        0             
+|FseI           GGCCGG^CC      0             
+|FspI           TGC^GCA        0             
+|HincII         GTY^RAC        0             
+|HindIII        A^AGCTT        0             
+|HpaI           GTT^AAC        0             
+|HpaII          C^CGG          0             
+|KasI           G^GCGCC        0             
+|KpnI           GGTAC^C        0             
+|MauBI          CG^CGCGCG      0             
+|MboI           ^GATC          0             
+|MfeI           C^AATTG        0             
+|MluCI          ^AATT          0             
+|MluI           A^CGCGT        0             
+|MreI           CG^CCGGCG      0             
+|MseI           T^TAA          0             
+|NaeI           GCC^GGC        0             
+|NarI           GG^CGCC        0             
+|NcoI           C^CATGG        0             
+|NdeI           CA^TATG        0             
+|NgoMIV         G^CCGGC        0             
+|NheI           G^CTAGC        0             
+|NruI           TCG^CGA        0             
+|NsiI           ATGCA^T        0             
+|PacI           TTAAT^TAA      0             
+|PaqCI          CACCTGC(4/8)   0             
+|PmeI           GTTT^AAAC      0             
+|PshAI          GACNN^NNGTC    0             
+|PsiI           TTA^TAA        0             
+|PstI           CTGCA^G        0             
+|PvuI           CGAT^CG        0             
+|PvuII          CAG^CTG        0             
+|RsaI           GT^AC          0             
+|SacI           GAGCT^C        0             
+|SalI           G^TCGAC        0             
+|SapI           GCTCTTC(1/4)   0             
+|SbfI           CCTGCA^GG      0             
+|ScaI           AGT^ACT        0             
+|SfiI           GGCCNNNN^NGGCC 0             
+|SfoI           GGC^GCC        0             
+|SgfI           GCGAT^CGC      0             
+|SgrAI          CR^CCGGYG      0             
+|SgrDI          CG^TCGACG      0             
+|SmaI           CCC^GGG        0             
+|SnaBI          TAC^GTA        0             
+|SpeI           A^CTAGT        0             
+|SphI           GCATG^C        0             
+|SrfI           GCCC^GGGC      0             
+|SspI           AAT^ATT        0             
+|StuI           AGG^CCT        0             
+|SwaI           ATTT^AAAT      0             
+|TaqI           T^CGA          0             
+|TatI           W^GTACW        0             
+|XbaI           T^CTAGA        0             
+|XcmI           CCANNNNN^NNNNTGG0             
+|XhoI           C^TCGAG        0             
+|XmaI           C^CCGGG        0             
+|XmnI           GAANN^NNTTC    0             
+|ZraI           GAC^GTC        0             
+|AfeI           AGC^GCT        1      13     
+|BbsI           GAAGAC(2/6)    1      92     
+|BsrBI          CCG^CTC        1      138    
+|Cac8I          GCN^NGC        1      5      
+|HaeII          RGCGC^Y        1      13     
+|HhaI           GCG^C          1      14     
+|MscI           TGG^CCA        1      83     
+|NlaIII         CATG^          1      97     
+|NspI           RCATG^Y        1      96     
+|PciI           A^CATGT        1      96     
+|NotI           GC^GGCCGC      2      45 57  
+|SacII          CCGC^GG        3      49 55 61
+|BsaAI          YAC^GTR        4      103 109 115 121
+|BstUI          CG^CG          4      44 50 56 62
+|EagI           C^GGCCG        4      46 52 58 64
+|HpyCH4IV       A^CGT          4      104 110 116 122
+|PmlI           CAC^GTG        4      103 109 115 121
+|ApaLI          G^TGCAC        5      100 106 112 118 124
+|Hpy8I          GTN^NAC        5      100 106 112 118 124
+|HpyCH4V        TG^CA          5      101 107 113 119 125
+|HaeIII         GG^CC          6      31 47 53 59 65 84
+|AciI           C^CGC          10     5 45 49 51 55 57 61 63 67 140
+|
+END
+CASE list 9
+circular 0
+seq GACCCGTAGTACTTGATAGGCCTAGGCCTTGCGCTTCGTGGCGAGAGGCGCCTGTCGAACGCGGTGTCGCCGACAACATGCTGGCCCGGGCGATGTGGCTCTGCGCGCAAAGCAGAGGAGCTCGAGCTCGAGCTCGAGCTCGCGTCCTATTCGTCGCGTTGGTTGCCCGGGCCGAGATTCC
+sel -
+enz -
+methylated 1
+format 1
+which selected
+columns 9
+region selection
+sites AciI 61
+sites AluI 119 125 131 137
+sites AvaI 85 121 127 133 166
+sites AvrII 21
+sites BfaI 22
+sites BssHII 103
+sites BstUI 60 104 141 155
+sites Cac8I 80 103 138
+sites HaeII 47
+sites HaeIII 19 25 83 170
+sites HhaI 31 48 103 105
+sites HpaII 86 167
+sites KasI 47
+sites NarI 47
+sites NlaIII 77
+sites NspI 76
+sites RsaI 9
+sites SacI 118 124 130 136
+sites ScaI 8
+sites SfoI 47
+sites SmaI 85 166
+sites SrfI 84 165
+sites StuI 18 24
+sites TaqI 55 122 128 134
+sites TatI 8
+sites XhoI 121 127 133
+sites XmaI 85 166
+out
+|DATE
+|TITLE 
+|From 0 to 181. 
+|
+|Selected Sites
+|
+|
+END
+CASE list 10
+circular 1
+seq CGCCGGCGCCGGCGCCGGCGCCGGCGCCGGCGGACTTTCTTGTACTATGCGCGTGTTTAAACGTTTAAACGTTAGGCCTAGGCCTCGGGTACCGGTACCAC
+sel 11 83
+enz BclI Hpy8I KpnI SgrDI
+methylated 0
+format 1
+which absent
+columns 1
+region selection
+sites Acc65I 88 94
+sites AciI 30 101
+sites AclI 60 68
+sites AgeI 91
+sites AvaI 84
+sites AvrII 77
+sites BfaI 78
+sites BsaWI 91
+sites BstUI 50
+sites Cac8I 2 8 14 20 26
+sites DraI 56 64
+sites HaeII 5 11 17 23
+sites HaeIII 75 81
+sites HhaI 6 12 18 24 49
+sites HpaII 3 9 15 21 27 92
+sites HpyCH4IV 61 69
+sites KasI 5 11 17 23
+sites KpnI 88 94
+sites MreI 1 13 25
+sites MseI 57 65
+sites NaeI 2 8 14 20 26
+sites NarI 5 11 17 23
+sites NgoMIV 2 8 14 20 26
+sites PmeI 55 63
+sites RsaI 42 89 95
+sites SfoI 5 11 17 23
+sites SgrAI 1 13 25
+sites StuI 74 80
+sites TatI 41
+out
+|DATE
+|TITLE 
+|From 11 to 83. 
+|
+|Absent Sites
+|
+|AatII       0       
+|AbsI        0       
+|Acc65I      0       
+|AfeI        0       
+|AflII       0       
+|AgeI        0       
+|AluI        0       
+|ApaI        0       
+|ApaLI       0       
+|ApoI        0       
+|AscI        0       
+|AseI        0       
+|AvaI        0       
+|BamHI       0       
+|BbsI        0       
+|BclI        0       
+|BglII       0       
+|BmgBI       0       
+|BsaAI       0       
+|BsaBI       0       
+|BsaI        0       
+|BsaWI       0       
+|BsiWI       0       
+|BsmBI       0       
+|BspEI       0       
+|BspHI       0       
+|BsrBI       0       
+|BsrGI       0       
+|BssHII      0       
+|BssSI       0       
+|BstBI       0       
+|BstYI       0       
+|BstZ17I     0       
+|ClaI        0       
+|DpnI        0       
+|EagI        0       
+|EcoRI       0       
+|EcoRV       0       
+|FseI        0       
+|FspI        0       
+|HincII      0       
+|HindIII     0       
+|HpaI        0       
+|Hpy8I       0       
+|HpyCH4V     0       
+|KpnI        0       
+|MauBI       0       
+|MboI        0       
+|MfeI        0       
+|MluCI       0       
+|MluI        0       
+|MscI        0       
+|NcoI        0       
+|NdeI        0       
+|NheI        0       
+|NlaIII      0       
+|NotI        0       
+|NruI        0       
+|NsiI        0       
+|NspI        0       
+|PacI        0       
+|PaqCI       0       
+|PciI        0       
+|PmlI        0       
+|PshAI       0       
+|PsiI        0       
+|PstI        0       
+|PvuI        0       
+|PvuII       0       
+|SacI        0       
+|SacII       0       
+|SalI        0       
+|SapI        0       
+|SbfI        0       
+|ScaI        0       
+|SfiI        0       
+|SgfI        0       
+|SgrDI       0       
+|SmaI        0       
+|SnaBI       0       
+|SpeI        0       
+|SphI        0       
+|SrfI        0       
+|SspI        0       
+|SwaI        0       
+|TaqI        0       
+|XbaI        0       
+|XcmI        0       
+|XhoI        0       
+|XmaI        0       
+|XmnI        0       
+|ZraI        0       
+|
+END
+CASE list 11
+circular 1
+seq GAACTCGCTACATGTATGGTTTAAAGGCACCGAAACCGATCGATCGATCGATCGATCGAGCGATATATATAACATGTCTAGATCTAGATCTAGAAAAGGACAGAGTACAGTACAGTACAGGATCGATCTAGGGTACGCCAAAGGC
+sel 75 94
+enz AatII Cac8I MseI PsiI SphI TatI
+methylated 1
+format 1
+which unique
+columns 10
+region selection
+sites BfaI 78 84 90 128
+sites BglII 80 86
+sites BstYI 80 86
+sites DpnI 38 42 46 50 54 81 87 121 125
+sites DraI 20
+sites MseI 21
+sites NlaIII 11 73
+sites NspI 10 72
+sites PciI 10 72
+sites PvuI 37 41 45 49 53
+sites RsaI 105 110 115 133
+sites TatI 104 109 114
+out
+|DATE
+|TITLE 
+|From 75 to 94. 
+|
+|Unique Sites
+|
+|
+END
+CASE list 12
+circular 1
+seq CGGCCGTTGTACTGTGCCTAGGGGGCCCCGTGCACATCTCCCGTGCGTAACCGACATGTTACAGGGCCGTGAAGGCCGTACCCCGAGCCCGAGACATGCATTTTAATGGGCCCAGTAGGCCCTCATATTTCAATTGTGCGCA
+sel 53 78
+enz AflII AseI AvrII BspHI EcoRI HaeII HhaI Hpy8I PstI PvuII ScaI SgrDI SpeI
+methylated 0
+format 0
+which all
+columns 3
+region selection
+sites ApaI 23 108
+sites ApaLI 30
+sites AvaI 82 88
+sites AvrII 17
+sites BfaI 18
+sites EagI 1
+sites FspI 137
+sites HaeIII 2 24 65 74 109 118
+sites HhaI 138
+sites Hpy8I 30
+sites HpyCH4V 31 97
+sites MfeI 131
+sites MluCI 132
+sites MseI 103
+sites NlaIII 55 95
+sites NsiI 96
+sites NspI 54 94
+sites PciI 54
+sites RsaI 9 78
+sites SfiI 65 109
+sites TatI 8
+out
+|DATE
+|TITLE 
+|From 53 to 78. 
+|
+|All Enzymes
+|
+|AatII          AbsI           Acc65I         
+|AciI           AclI           AfeI           
+|AflII          AgeI           AluI           
+|ApaI           ApaLI          ApoI           
+|AscI           AseI           AvaI           
+|AvrII          BamHI          BbsI           
+|BclI           BfaI           BglII          
+|BmgBI          BsaAI          BsaBI          
+|BsaI           BsaWI          BsiWI          
+|BsmBI          BspEI          BspHI          
+|BsrBI          BsrGI          BssHII         
+|BssSI          BstBI          BstUI          
+|BstYI          BstZ17I        Cac8I          
+|ClaI           DpnI           DraI           
+|EagI           EcoRI          EcoRV          
+|FseI           FspI           HaeII          
+|HaeIII         HhaI           HincII         
+|HindIII        HpaI           HpaII          
+|Hpy8I          HpyCH4IV       HpyCH4V        
+|KasI           KpnI           MauBI          
+|MboI           MfeI           MluCI          
+|MluI           MreI           MscI           
+|MseI           NaeI           NarI           
+|NcoI           NdeI           NgoMIV         
+|NheI           NlaIII         NotI           
+|NruI           NsiI           NspI           
+|PacI           PaqCI          PciI           
+|PmeI           PmlI           PshAI          
+|PsiI           PstI           PvuI           
+|PvuII          RsaI           SacI           
+|SacII          SalI           SapI           
+|SbfI           ScaI           SfiI           
+|SfoI           SgfI           SgrAI          
+|SgrDI          SmaI           SnaBI          
+|SpeI           SphI           SrfI           
+|SspI           StuI           SwaI           
+|TaqI           TatI           XbaI           
+|XcmI           XhoI           XmaI           
+|XmnI           ZraI           
+END
+CASE list 13
+circular 0
+seq ACCCTACAAGCCTAGATGATTATCGTGATCTCCGGTAGTAATGGCATTTAAATTTAAATTTAAATTGAAGCTAGCAACAATTTTGCTACCCAGATCGACGCCAAACACTAGTCTTTCGTAATACTGTATCGCAGATCTAGATCTAGATCTGCCGGCCGGCCGGCTGGATGGCCTT
+sel 69 169
+enz BbsI BssSI EagI FspI NsiI PmeI PsiI SalI SpeI TaqI XmaI
+methylated 0
+format 0
+which selected
+columns 1
+region selection
+sites AluI 69
+sites ApoI 50 56
+sites BfaI 12 71 108 137 143
+sites BglII 133 139 145
+sites BsaBI 15 134
+sites BsaWI 31
+sites BstYI 133 139 145
+sites Cac8I 70 151 155 159
+sites DraI 47 53 59
+sites EagI 153 157
+sites FseI 154
+sites HaeIII 154 158 170
+sites HpaII 32 152 156 160
+sites MboI 27 93 134 140 146
+sites MluCI 51 57 63 79
+sites MseI 48 54 60
+sites NaeI 151 155 159
+sites NgoMIV 151 155 159
+sites NheI 70
+sites SpeI 107
+sites SwaI 46 58
+sites TaqI 95
+sites XbaI 136 142
+out
+|DATE
+|TITLE 
+|From 69 to 169. 
+|
+|Selected Sites
+|
+|BbsI           
+|BssSI          
+|EagI           
+|FspI           
+|NsiI           
+|PmeI           
+|PsiI           
+|SalI           
+|SpeI           
+|TaqI           
+|XmaI           
+|
+END
+CASE list 14
+circular 1
+seq AAATTGTACTACCATGTTTCGGGTAGTGTTTAAACTAGCTTTAAATTAATTAATTAATTAATTTTAACGTTAACCGCCCTTTGCGATGAAACAGCTGCTGGAGCGATCGAAGATTAATCAGGCAATCGTTGACCATCATGCAGTTAACGTTAACGTTAACTCTAGAAACGGTCGCTAATTAAGTAGGGCACATGTTAGGGCCATCCAAGGCGCCAGGCCAAGCAGACTC
+sel 27 105
+enz PacI
+methylated 0
+format 3
+which absent
+columns 10
+region selection
+sites AciI 74
+sites AclI 66 146 152
+sites AluI 37 93
+sites AseI 45 49 53 57 113
+sites BfaI 35 162
+sites DraI 29 40
+sites HaeII 209
+sites HaeIII 199 216
+sites HhaI 210
+sites HincII 69 128 143 149 155
+sites HpaI 69 143 149 155
+sites Hpy8I 69 128 143 149 155
+sites HpyCH4IV 67 147 153
+sites HpyCH4V 139
+sites KasI 209
+sites MboI 105
+sites MluCI 2 44 48 52 56 60 177
+sites MseI 30 41 46 50 54 58 64 70 114 144 150 156 179
+sites NarI 209
+sites NlaIII 13 137 191
+sites NspI 190
+sites PacI 46 54
+sites PciI 190
+sites PmeI 28
+sites PvuI 104
+sites PvuII 92
+sites RsaI 6
+sites SfoI 209
+sites TaqI 107
+sites TatI 5
+sites XbaI 161
+out
+|DATE
+|TITLE 
+|From 27 to 105. 
+|
+|Absent Sites
+|
+|AAT^ATT        SspI           
+|AGC^GCT        AfeI           
+|AGG^CCT        StuI           
+|AGT^ACT        ScaI           
+|ATGCA^T        NsiI           
+|ATTT^AAAT      SwaI           
+|AT^CGAT        ClaI           
+|A^AGCTT        HindIII        
+|A^CATGT        PciI           
+|A^CCGGT        AgeI           
+|A^CGCGT        MluI           
+|A^CTAGT        SpeI           
+|A^GATCT        BglII          
+|CACCTGC(4/8)   PaqCI          
+|CAC^GTC        BmgBI          
+|CAC^GTG        PmlI           
+|CATG^          NlaIII         
+|CA^TATG        NdeI           
+|CCANNNNN^NNNNTGGXcmI           
+|CCC^GGG        SmaI           
+|CCGC^GG        SacII          
+|CCG^CTC        BsrBI          
+|CCTGCA^GG      SbfI           
+|CC^TCGAGG      AbsI           
+|CGTCTC(1/5)    BsmBI          
+|CG^CCGGCG      MreI           
+|CG^CG          BstUI          
+|CG^CGCGCG      MauBI          
+|CG^TCGACG      SgrDI          
+|CR^CCGGYG      SgrAI          
+|CTGCA^G        PstI           
+|C^AATTG        MfeI           
+|C^ACGAG        BssSI          
+|C^CATGG        NcoI           
+|C^CCGGG        XmaI           
+|C^CGG          HpaII          
+|C^CTAGG        AvrII          
+|C^GGCCG        EagI           
+|C^GTACG        BsiWI          
+|C^TCGAG        XhoI           
+|C^TTAAG        AflII          
+|C^YCGRG        AvaI           
+|GAAGAC(2/6)    BbsI           
+|GAANN^NNTTC    XmnI           
+|GACGT^C        AatII          
+|GACNN^NNGTC    PshAI          
+|GAC^GTC        ZraI           
+|GAGCT^C        SacI           
+|GATNN^NNATC    BsaBI          
+|GAT^ATC        EcoRV          
+|GA^TC          DpnI           
+|GCATG^C        SphI           
+|GCCC^GGGC      SrfI           
+|GCC^GGC        NaeI           
+|GCGAT^CGC      SgfI           
+|GCG^C          HhaI           
+|GCN^NGC        Cac8I          
+|GCTCTTC(1/4)   SapI           
+|GC^GGCCGC      NotI           
+|GGCCGG^CC      FseI           
+|GGCCNNNN^NGGCC SfiI           
+|GGC^GCC        SfoI           
+|GGGCC^C        ApaI           
+|GGTAC^C        KpnI           
+|GGTCTC(1/5)    BsaI           
+|GG^CC          HaeIII         
+|GG^CGCC        NarI           
+|GG^CGCGCC      AscI           
+|GTA^TAC        BstZ17I        
+|GT^AC          RsaI           
+|G^AATTC        EcoRI          
+|G^CCGGC        NgoMIV         
+|G^CGCGC        BssHII         
+|G^CTAGC        NheI           
+|G^GATCC        BamHI          
+|G^GCGCC        KasI           
+|G^GTACC        Acc65I         
+|G^TCGAC        SalI           
+|G^TGCAC        ApaLI          
+|RCATG^Y        NspI           
+|RGCGC^Y        HaeII          
+|R^AATTY        ApoI           
+|R^GATCY        BstYI          
+|TAC^GTA        SnaBI          
+|TCG^CGA        NruI           
+|TGC^GCA        FspI           
+|TGG^CCA        MscI           
+|TG^CA          HpyCH4V        
+|TTA^TAA        PsiI           
+|TT^CGAA        BstBI          
+|T^CATGA        BspHI          
+|T^CCGGA        BspEI          
+|T^CGA          TaqI           
+|T^CTAGA        XbaI           
+|T^GATCA        BclI           
+|T^GTACA        BsrGI          
+|W^CCGGW        BsaWI          
+|W^GTACW        TatI           
+|YAC^GTR        BsaAI          
+|
+END
+CASE list 15
+circular 1
+seq ATCCGCGCGCGCGCGCCGCCTTAAGTATCCGTATTCTATTAAGACGTCTCAGTTTAAACGTTTAAACGTTTAAACGTTTAAACGGTGGCCCTCGAGGGCGCGGCTGTACATAAGCTTAAGCTTAAGCTTAAGCTTGGGCGGTACCCCCGCCTTCCCCGGGCG
+sel -
+enz AclI AfeI AvrII BssSI ClaI MboI NotI SfiI SwaI TatI
+methylated 0
+format 3
+which unique
+columns 8
+region selection
+sites AatII 43
+sites AbsI 90
+sites Acc65I 140
+sites AciI 3 16 100 138 147
+sites AclI 57 65 73
+sites AflII 20 115 121 127
+sites AluI 113 119 125 131
+sites AvaI 91 155
+sites BsmBI 45
+sites BsrGI 105
+sites BssHII 5 7 9 11
+sites BstUI 4 6 8 10 12 99
+sites Cac8I 5 7 9 11
+sites DraI 53 61 69 77
+sites HaeIII 87
+sites HhaI 5 7 9 11 13 98
+sites HindIII 112 118 124 130
+sites HpaII 156
+sites HpyCH4IV 44 58 66 74
+sites KpnI 140
+sites MauBI 4
+sites MboI 162
+sites MseI 21 39 54 62 70 78 116 122 128
+sites PmeI 52 60 68 76
+sites RsaI 106 141
+sites SmaI 155
+sites TaqI 92
+sites TatI 105
+sites XhoI 91
+sites XmaI 155
+sites ZraI 43
+out
+|DATE
+|TITLE 
+|From 0 to 162. 
+|
+|Unique Sites
+|
+|CCC^GGG        SmaI           
+|CC^TCGAGG      AbsI           
+|CGTCTC(1/5)    BsmBI          
+|CG^CGCGCG      MauBI          
+|C^CCGGG        XmaI           
+|C^CGG          HpaII          
+|C^TCGAG        XhoI           
+|GACGT^C        AatII          
+|GAC^GTC        ZraI           
+|GGTAC^C        KpnI           
+|GG^CC          HaeIII         
+|G^GTACC        Acc65I         
+|T^CGA          TaqI           
+|T^GTACA        BsrGI          
+|W^GTACW        TatI           
+|^GATC          MboI           
+|
+END
+CASE list 16
+circular 0
+seq TGTACACGAGTCGACGCGATCGCGATCGCCGCGCCGCGCCGTTATGCACCGGTGTTCTGCGGCCGGCCGGCCGGCCGCGCCGCGGAGCTCTTCCGCGCCGACC
+sel -
+enz AclI DraI HpyCH4IV SmaI SwaI TatI
+methylated 0
+format 0
+which all
+columns 6
+region selection
+sites AciI 29 34 59 75 80 82 93
+sites AgeI 48
+sites AluI 86
+sites BsaBI 18
+sites BsaWI 48
+sites BsrGI 1
+sites BssSI 5
+sites BstUI 15 21 30 35 76 81 94
+sites Cac8I 62 66 70
+sites EagI 60 64 68 72
+sites FseI 61 69
+sites HaeIII 61 65 69 73
+sites HhaI 31 36 77 95
+sites HincII 10
+sites HpaII 49 63 67 71
+sites Hpy8I 2 10
+sites HpyCH4V 45
+sites MboI 18 24
+sites NaeI 62 66 70
+sites NgoMIV 62 66 70
+sites NruI 20
+sites PvuI 17 23
+sites RsaI 2
+sites SacI 85
+sites SacII 80
+sites SalI 10
+sites SapI 87
+sites SgfI 16
+sites SgrAI 47
+sites TaqI 11
+sites TatI 1
+out
+|DATE
+|TITLE 
+|From 0 to 103. 
+|
+|All Enzymes
+|
+|AatII          AbsI           Acc65I         AciI           AclI           AfeI           
+|AflII          AgeI           AluI           ApaI           ApaLI          ApoI           
+|AscI           AseI           AvaI           AvrII          BamHI          BbsI           
+|BclI           BfaI           BglII          BmgBI          BsaAI          BsaBI          
+|BsaI           BsaWI          BsiWI          BsmBI          BspEI          BspHI          
+|BsrBI          BsrGI          BssHII         BssSI          BstBI          BstUI          
+|BstYI          BstZ17I        Cac8I          ClaI           DpnI           DraI           
+|EagI           EcoRI          EcoRV          FseI           FspI           HaeII          
+|HaeIII         HhaI           HincII         HindIII        HpaI           HpaII          
+|Hpy8I          HpyCH4IV       HpyCH4V        KasI           KpnI           MauBI          
+|MboI           MfeI           MluCI          MluI           MreI           MscI           
+|MseI           NaeI           NarI           NcoI           NdeI           NgoMIV         
+|NheI           NlaIII         NotI           NruI           NsiI           NspI           
+|PacI           PaqCI          PciI           PmeI           PmlI           PshAI          
+|PsiI           PstI           PvuI           PvuII          RsaI           SacI           
+|SacII          SalI           SapI           SbfI           ScaI           SfiI           
+|SfoI           SgfI           SgrAI          SgrDI          SmaI           SnaBI          
+|SpeI           SphI           SrfI           SspI           StuI           SwaI           
+|TaqI           TatI           XbaI           XcmI           XhoI           XmaI           
+|XmnI           ZraI           
+END
+CASE list 17
+circular 1
+seq TCTGACCGACACGTCGGGGTGTATCGATTAGTGGCCGATCGTTTAAGGATCTGGATCTGGATCTGGATCTACCAGCTAGCAGGGCGAGCCAATTGCCACGTCCC
+sel 71 84
+enz NotI
+methylated 1
+format 1
+which selected
+columns 3
+region selection
+sites AluI 74
+sites BfaI 76
+sites BmgBI 10 97
+sites BstYI 47 53 59 65
+sites Cac8I 75 84
+sites ClaI 23
+sites DpnI 37 48 54 60 66
+sites HaeIII 33
+sites HpyCH4IV 11 98
+sites MfeI 90
+sites MluCI 91
+sites MseI 43
+sites NheI 75
+sites PvuI 36
+sites TaqI 24
+out
+|DATE
+|TITLE 
+|From 71 to 84. 
+|
+|Selected Sites
+|
+|NotI        0       
+END
+CASE list 18
+circular 1
+seq GAGAAATACGTGTACGTGTACGTGCAGCTTCGTACGATAGTGGTGGCGCCGGCGCCGGCGCCGGCGCCAAATGAATGCACAGCTACGTTTGTTTAAACGCTAGCATACCCTCGCTTCAGATAGTTGCTGATAAGCTGTCAGACTGTCGCCGGCCGGCTGATACAGTGAACTATAATATGTCCGGACAGAACCGAGAACACTACGTACCCCGACAAC
+sel 62 150
+enz -
+methylated 0
+format 1
+which absent
+columns 5
+region selection
+sites AluI 26 81 133
+sites BfaI 100
+sites BsaAI 7 13 19 201
+sites BsaWI 180
+sites BsiWI 31
+sites BspEI 180
+sites Cac8I 48 54 60 99 148 152
+sites DraI 92
+sites EagI 150
+sites HaeII 45 51 57 63
+sites HaeIII 151
+sites HhaI 46 52 58 64
+sites HpaII 49 55 61 149 153 181
+sites Hpy8I 10 16 165
+sites HpyCH4IV 8 14 20 85 202
+sites HpyCH4V 23 76
+sites KasI 45 51 57 63
+sites MreI 47 59
+sites MseI 93
+sites NaeI 48 54 60 148 152
+sites NarI 45 51 57 63
+sites NgoMIV 48 54 60 148 152
+sites NheI 99
+sites PmeI 91
+sites RsaI 12 18 32 204
+sites SfoI 45 51 57 63
+sites SgrAI 47 59
+sites SnaBI 201
+out
+|DATE
+|TITLE 
+|From 62 to 150. 
+|
+|Absent Sites
+|
+|AatII       0       AbsI        0       Acc65I      0       AciI        0       AclI        0       
+|AfeI        0       AflII       0       AgeI        0       ApaI        0       ApaLI       0       
+|ApoI        0       AscI        0       AseI        0       AvaI        0       AvrII       0       
+|BamHI       0       BbsI        0       BclI        0       BglII       0       BmgBI       0       
+|BsaAI       0       BsaBI       0       BsaI        0       BsaWI       0       BsiWI       0       
+|BsmBI       0       BspEI       0       BspHI       0       BsrBI       0       BsrGI       0       
+|BssHII      0       BssSI       0       BstBI       0       BstUI       0       BstYI       0       
+|BstZ17I     0       ClaI        0       DpnI        0       EcoRI       0       EcoRV       0       
+|FseI        0       FspI        0       HaeIII      0       HincII      0       HindIII     0       
+|HpaI        0       Hpy8I       0       KpnI        0       MauBI       0       MboI        0       
+|MfeI        0       MluCI       0       MluI        0       MreI        0       MscI        0       
+|NcoI        0       NdeI        0       NlaIII      0       NotI        0       NruI        0       
+|NsiI        0       NspI        0       PacI        0       PaqCI       0       PciI        0       
+|PmlI        0       PshAI       0       PsiI        0       PstI        0       PvuI        0       
+|PvuII       0       RsaI        0       SacI        0       SacII       0       SalI        0       
+|SapI        0       SbfI        0       ScaI        0       SfiI        0       SgfI        0       
+|SgrAI       0       SgrDI       0       SmaI        0       SnaBI       0       SpeI        0       
+|SphI        0       SrfI        0       SspI        0       StuI        0       SwaI        0       
+|TaqI        0       TatI        0       XbaI        0       XcmI        0       XhoI        0       
+|XmaI        0       XmnI        0       ZraI        0       
+END
+CASE list 19
+circular 0
+seq TAAGGCGCCGGCGCCGGCGCCGGCGCCGGCGCCTTGCACCGATCGATCGGGATGGATCCCGACCATGTACAACAGAACATCCTGGAAGCGTTTCGGAACTACGTTAGTTGACGTGCAGAAAATGCAGAGTCACAGAGACATAAGGAATAATCGTATGAAA
+sel 91 108
+enz AbsI AfeI DraI MluCI NaeI PmeI PsiI SalI SphI XbaI
+methylated 0
+format 3
+which unique
+columns 2
+region all
+sites BamHI 54
+sites BmgBI 110
+sites BsrGI 66
+sites BstYI 54
+sites Cac8I 7 13 19 25
+sites ClaI 42
+sites HaeII 4 10 16 22 28
+sites HhaI 5 11 17 23 29
+sites HincII 107
+sites HpaII 8 14 20 26
+sites Hpy8I 107
+sites HpyCH4IV 101 111
+sites HpyCH4V 35 114 123
+sites KasI 4 10 16 22 28
+sites MboI 41 45 55
+sites MreI 6 18
+sites NaeI 7 13 19 25
+sites NarI 4 10 16 22 28
+sites NgoMIV 7 13 19 25
+sites NlaIII 64
+sites PvuI 40 44
+sites RsaI 67
+sites SfoI 4 10 16 22 28
+sites SgrAI 6 18
+sites TaqI 43
+sites TatI 66
+sites XmnI 85
+out
+|DATE
+|TITLE 
+|From 0 to 160. 
+|
+|Unique Sites
+|
+|AT^CGAT        ClaI           
+|CAC^GTC        BmgBI          
+|CATG^          NlaIII         
+|GAANN^NNTTC    XmnI           
+|GTN^NAC        Hpy8I          
+|GTY^RAC        HincII         
+|GT^AC          RsaI           
+|G^GATCC        BamHI          
+|R^GATCY        BstYI          
+|T^CGA          TaqI           
+|T^GTACA        BsrGI          
+|W^GTACW        TatI           
+|
+END
+CASE list 20
+circular 1
+seq TACTCCCAAACGTCATAAGTAGGCTGATCAAAACTAGTCCGATCTAAATTTCTAATTTAAACAATTGCAATTGCAATTGCAATTGGTACGTACGTACGTACGTACCAACGACACTTTGGAGGGTTATACTGAATATGGCGCATGTTGTTTTGCTTAAACGTCGGCCGGCCGCTTGGCTTGCCGAGTACTGGTGCAACTATACGATTTAGTA
+sel -
+enz AatII AclI BbsI BsrGI BstBI BstZ17I HhaI KpnI RsaI SmaI SnaBI SrfI
+methylated 1
+format 0
+which all
+columns 6
+region all
+sites AciI 169
+sites ApoI 46
+sites BfaI 34
+sites BsaAI 87 91 95 99
+sites BsiWI 89 93 97
+sites BstZ17I 209
+sites Cac8I 164 176
+sites DpnI 26 41
+sites DraI 56
+sites EagI 162 166
+sites FseI 163
+sites HaeIII 163 167
+sites HhaI 138
+sites HpaII 165
+sites Hpy8I 209
+sites HpyCH4IV 10 88 92 96 100 158
+sites HpyCH4V 66 72 78 192
+sites MfeI 62 68 74 80
+sites MluCI 47 54 63 69 75 81
+sites MseI 57 154
+sites NaeI 164
+sites NgoMIV 164
+sites NlaIII 141
+sites NspI 140
+sites RsaI 86 90 94 98 102 185
+sites ScaI 184
+sites SnaBI 87 91 95 99
+sites SpeI 33
+sites TatI 184
+sites XcmI 105
+out
+|DATE
+|TITLE 
+|From 0 to 211. 
+|
+|All Enzymes
+|
+|AatII          AbsI           Acc65I         AciI           AclI           AfeI           
+|AflII          AgeI           AluI           ApaI           ApaLI          ApoI           
+|AscI           AseI           AvaI           AvrII          BamHI          BbsI           
+|BclI           BfaI           BglII          BmgBI          BsaAI          BsaBI          
+|BsaI           BsaWI          BsiWI          BsmBI          BspEI          BspHI          
+|BsrBI          BsrGI          BssHII         BssSI          BstBI          BstUI          
+|BstYI          BstZ17I        Cac8I          ClaI           DpnI           DraI           
+|EagI           EcoRI          EcoRV          FseI           FspI           HaeII          
+|HaeIII         HhaI           HincII         HindIII        HpaI           HpaII          
+|Hpy8I          HpyCH4IV       HpyCH4V        KasI           KpnI           MauBI          
+|MboI           MfeI           MluCI          MluI           MreI           MscI           
+|MseI           NaeI           NarI           NcoI           NdeI           NgoMIV         
+|NheI           NlaIII         NotI           NruI           NsiI           NspI           
+|PacI           PaqCI          PciI           PmeI           PmlI           PshAI          
+|PsiI           PstI           PvuI           PvuII          RsaI           SacI           
+|SacII          SalI           SapI           SbfI           ScaI           SfiI           
+|SfoI           SgfI           SgrAI          SgrDI          SmaI           SnaBI          
+|SpeI           SphI           SrfI           SspI           StuI           SwaI           
+|TaqI           TatI           XbaI           XcmI           XhoI           XmaI           
+|XmnI           ZraI           
+END
+CASE list 21
+circular 0
+seq TCGGTACCTCCGGAGCGGCGGCGGCGGCGGGCCGGCGCCGGCGCCATGCG
+sel 9 26
+enz AciI ApoI KpnI NcoI SbfI SpeI
+methylated 0
+format 3
+which selected
+columns 7
+region selection
+sites Acc65I 3
+sites AciI 15 18 21 24 27
+sites BsaWI 9
+sites BspEI 9
+sites BsrBI 13
+sites Cac8I 27 31 37
+sites HaeII 34 40
+sites HaeIII 30
+sites HhaI 35 41
+sites HpaII 10 32 38
+sites KasI 34 40
+sites KpnI 3
+sites MreI 36
+sites NaeI 31 37
+sites NarI 34 40
+sites NgoMIV 31 37
+sites NlaIII 45
+sites RsaI 4
+sites SfoI 34 40
+sites SgrAI 36
+out
+|DATE
+|TITLE 
+|From 9 to 26. 
+|
+|Selected Sites
+|
+|A^CTAGT        SpeI           
+|CCTGCA^GG      SbfI           
+|C^CATGG        NcoI           
+|C^CGC          AciI           
+|GGTAC^C        KpnI           
+|R^AATTY        ApoI           
+|
+END
+CASE list 22
+circular 0
+seq TCTACGGCCGCCTACTTACTCTAGACACTCTTGTCTAGAGTGAATGCCGGCCCCATGGGTGTCTGTCTAAATTATATCCGTGTTTTGCGCTGTCATTGTTTAGCCGGCCGCGCTCTAACGTCAAGCTTGACTACCATGGCCATGGCCATGGAGGCCCGCCGGCGCCGCCCACGCACATCGTGGCCCTAGTATACT
+sel -
+enz KasI MfeI NcoI SacI
+methylated 0
+format 0
+which absent
+columns 1
+region all
+sites AciI 8 108 156 165
+sites AluI 124
+sites BfaI 21 35 186
+sites BstUI 109
+sites BstZ17I 189
+sites Cac8I 46 103 154 158
+sites EagI 5 105
+sites HaeII 161
+sites HaeIII 6 49 106 138 144 153 182
+sites HhaI 87 110 162
+sites HindIII 123
+sites HpaII 47 104 159
+sites Hpy8I 189
+sites HpyCH4IV 118
+sites KasI 161
+sites MluCI 70
+sites MreI 157
+sites MscI 137 143
+sites NaeI 46 103 158
+sites NarI 161
+sites NcoI 53 134 140 146
+sites NgoMIV 46 103 158
+sites NlaIII 54 135 141 147
+sites SfiI 144
+sites SfoI 161
+sites SgrAI 157
+sites XbaI 20 34
+sites XcmI 169
+out
+|DATE
+|TITLE 
+|From 0 to 195. 
+|
+|Absent Sites
+|
+|AatII          
+|AbsI           
+|Acc65I         
+|AclI           
+|AfeI           
+|AflII          
+|AgeI           
+|ApaI           
+|ApaLI          
+|ApoI           
+|AscI           
+|AseI           
+|AvaI           
+|AvrII          
+|BamHI          
+|BbsI           
+|BclI           
+|BglII          
+|BmgBI          
+|BsaAI          
+|BsaBI          
+|BsaI           
+|BsaWI          
+|BsiWI          
+|BsmBI          
+|BspEI          
+|BspHI          
+|BsrBI          
+|BsrGI          
+|BssHII         
+|BssSI          
+|BstBI          
+|BstYI          
+|ClaI           
+|DpnI           
+|DraI           
+|EcoRI          
+|EcoRV          
+|FseI           
+|FspI           
+|HincII         
+|HpaI           
+|HpyCH4V        
+|KpnI           
+|MauBI          
+|MboI           
+|MfeI           
+|MluI           
+|MseI           
+|NdeI           
+|NheI           
+|NotI           
+|NruI           
+|NsiI           
+|NspI           
+|PacI           
+|PaqCI          
+|PciI           
+|PmeI           
+|PmlI           
+|PshAI          
+|PsiI           
+|PstI           
+|PvuI           
+|PvuII          
+|RsaI           
+|SacI           
+|SacII          
+|SalI           
+|SapI           
+|SbfI           
+|ScaI           
+|SgfI           
+|SgrDI          
+|SmaI           
+|SnaBI          
+|SpeI           
+|SphI           
+|SrfI           
+|SspI           
+|StuI           
+|SwaI           
+|TaqI           
+|TatI           
+|XhoI           
+|XmaI           
+|XmnI           
+|ZraI           
+|
+END
+CASE list 23
+circular 1
+seq GGCGCTCATGATCATGATCATGACTTGGAGATCTAGATCTAGATCTAGATCTAACTCCT
+sel 21 46
+enz BglII DpnI DraI EagI MscI PvuII SalI SapI SfoI SpeI
+methylated 0
+format 0
+which unique
+columns 6
+region selection
+sites BclI 9 15
+sites BfaI 33 39 45
+sites BglII 29 35 41 47
+sites BsaBI 10 30 42
+sites BspHI 6 12 18
+sites BstYI 29 35 41 47
+sites HaeII 1
+sites HhaI 2
+sites MboI 10 16 30 36 42 48
+sites NlaIII 7 13 19
+sites XbaI 32 38 44
+out
+|DATE
+|TITLE 
+|From 21 to 46. 
+|
+|Unique Sites
+|
+|
+END
+CASE list 24
+circular 0
+seq TTCAAGGTAAGCTAGCTAGCTAGCTAGCAAGCGCTGGTGGCGCTTGCAGCGCTCCGCCTATTCCACGAGGTATTCGTCTGCAAGGTTGTCAGTTTCGAACTGACCAGCAGCTGACTGCCGGGCACGTGTGTCCCGTCCCGGGCCCGGGCCTTTTGGCTTAGGAGGGGCCTTGCAAAAGAACCCCGGGAACGGATATCGGGATCCACATTGG
+sel 109 143
+enz AgeI Cac8I HincII StuI
+methylated 0
+format 0
+which all
+columns 1
+region selection
+sites AciI 54
+sites AfeI 30 48
+sites AluI 10 14 18 22 109
+sites ApaI 140
+sites AvaI 137 143 182
+sites BamHI 199
+sites BfaI 12 16 20 24
+sites BsaAI 123
+sites BssSI 64
+sites BstBI 94
+sites BstYI 199
+sites Cac8I 11 15 19 23 27 42
+sites EcoRV 192
+sites HaeII 30 39 48
+sites HaeIII 141 147 166
+sites HhaI 31 40 49
+sites HpaII 118 138 144 183
+sites HpyCH4IV 124
+sites HpyCH4V 45 79 171
+sites MboI 200
+sites NheI 11 15 19 23
+sites PmlI 123
+sites PvuII 108
+sites SmaI 137 143 182
+sites SrfI 142
+sites TaqI 95
+sites XmaI 137 143 182
+out
+|DATE
+|TITLE 
+|From 109 to 143. 
+|
+|All Enzymes
+|
+|AatII          
+|AbsI           
+|Acc65I         
+|AciI           
+|AclI           
+|AfeI           
+|AflII          
+|AgeI           
+|AluI           
+|ApaI           
+|ApaLI          
+|ApoI           
+|AscI           
+|AseI           
+|AvaI           
+|AvrII          
+|BamHI          
+|BbsI           
+|BclI           
+|BfaI           
+|BglII          
+|BmgBI          
+|BsaAI          
+|BsaBI          
+|BsaI           
+|BsaWI          
+|BsiWI          
+|BsmBI          
+|BspEI          
+|BspHI          
+|BsrBI          
+|BsrGI          
+|BssHII         
+|BssSI          
+|BstBI          
+|BstUI          
+|BstYI          
+|BstZ17I        
+|Cac8I          
+|ClaI           
+|DpnI           
+|DraI           
+|EagI           
+|EcoRI          
+|EcoRV          
+|FseI           
+|FspI           
+|HaeII          
+|HaeIII         
+|HhaI           
+|HincII         
+|HindIII        
+|HpaI           
+|HpaII          
+|Hpy8I          
+|HpyCH4IV       
+|HpyCH4V        
+|KasI           
+|KpnI           
+|MauBI          
+|MboI           
+|MfeI           
+|MluCI          
+|MluI           
+|MreI           
+|MscI           
+|MseI           
+|NaeI           
+|NarI           
+|NcoI           
+|NdeI           
+|NgoMIV         
+|NheI           
+|NlaIII         
+|NotI           
+|NruI           
+|NsiI           
+|NspI           
+|PacI           
+|PaqCI          
+|PciI           
+|PmeI           
+|PmlI           
+|PshAI          
+|PsiI           
+|PstI           
+|PvuI           
+|PvuII          
+|RsaI           
+|SacI           
+|SacII          
+|SalI           
+|SapI           
+|SbfI           
+|ScaI           
+|SfiI           
+|SfoI           
+|SgfI           
+|SgrAI          
+|SgrDI          
+|SmaI           
+|SnaBI          
+|SpeI           
+|SphI           
+|SrfI           
+|SspI           
+|StuI           
+|SwaI           
+|TaqI           
+|TatI           
+|XbaI           
+|XcmI           
+|XhoI           
+|XmaI           
+|XmnI           
+|ZraI           
+|
+END
+CASE list 25
+circular 0
+seq ACATCGACGTCGACGCGACGGGGTTCGACCTGCAGGCCTGCAGGCCCGGGCCCGGGCCAGTCGACCTGGCAGTACTCCG
+sel 9 38
+enz AvaI BspEI NdeI NheI SalI SfiI SgrAI SphI
+methylated 1
+format 0
+which selected
+columns 6
+region selection
+sites AatII 6
+sites ApaI 48
+sites AvaI 45 51
+sites BstUI 14
+sites Cac8I 32 36 40
+sites HaeIII 35 43 49 55
+sites HincII 9 60
+sites HpaII 46 52
+sites Hpy8I 9 60
+sites HpyCH4IV 7
+sites HpyCH4V 31 39
+sites PstI 30 38
+sites RsaI 72
+sites SalI 9 60
+sites SbfI 29 37
+sites ScaI 71
+sites SgrDI 8
+sites SmaI 45 51
+sites SrfI 44
+sites StuI 34
+sites TaqI 4 10 25 61
+sites TatI 71
+sites XmaI 45 51
+sites ZraI 6
+out
+|DATE
+|TITLE 
+|From 9 to 38. 
+|
+|Selected Sites
+|
+|AvaI           BspEI          NdeI           NheI           SalI           SfiI           
+|SgrAI          SphI           
+END
+CASE list 26
+circular 1
+seq AGATGCATAACTTCAATCGATCGATCGATCGATCGATCGCGGAAGACATTTGACCCCCACCGGCGACGAAGGTTTAAAGAGGAAATATACCTCCCGGGCCCGGGCCCGGGTTCAATATGTGATGCTTAGCTTGTGTTAGGCAGAGTACGATAACGTTAACGTTGTAAACCGTAATCTTGGTCCCGTTCGGTAGATCCACT
+sel 75 89
+enz ApaI NgoMIV ZraI
+methylated 1
+format 3
+which absent
+columns 8
+region selection
+sites AciI 39
+sites AclI 152 158
+sites AluI 128
+sites ApaI 96 102
+sites AvaI 93 99 105
+sites BbsI 42
+sites BfaI 199
+sites BstUI 38
+sites BstYI 192
+sites DpnI 19 23 27 31 35 193
+sites DraI 73
+sites HaeIII 97 103
+sites HincII 155
+sites HpaI 155
+sites HpaII 60 94 100 106
+sites Hpy8I 155 164
+sites HpyCH4IV 153 159
+sites HpyCH4V 4
+sites MseI 74 156
+sites NsiI 3
+sites PvuI 18 22 26 30 34
+sites RsaI 145
+sites SgrAI 58
+sites SmaI 93 99 105
+sites SrfI 98
+sites XmaI 93 99 105
+out
+|DATE
+|TITLE 
+|From 75 to 89. 
+|
+|Absent Sites
+|
+|AAT^ATT        SspI           
+|AA^CGTT        AclI           
+|AGC^GCT        AfeI           
+|AGG^CCT        StuI           
+|AGT^ACT        ScaI           
+|AG^CT          AluI           
+|ATGCA^T        NsiI           
+|ATTT^AAAT      SwaI           
+|AT^CGAT        ClaI           
+|AT^TAAT        AseI           
+|A^AGCTT        HindIII        
+|A^CATGT        PciI           
+|A^CCGGT        AgeI           
+|A^CGCGT        MluI           
+|A^CGT          HpyCH4IV       
+|A^CTAGT        SpeI           
+|A^GATCT        BglII          
+|CACCTGC(4/8)   PaqCI          
+|CAC^GTC        BmgBI          
+|CAC^GTG        PmlI           
+|CAG^CTG        PvuII          
+|CATG^          NlaIII         
+|CA^TATG        NdeI           
+|CCANNNNN^NNNNTGGXcmI           
+|CCC^GGG        SmaI           
+|CCGC^GG        SacII          
+|CCG^CTC        BsrBI          
+|CCTGCA^GG      SbfI           
+|CC^TCGAGG      AbsI           
+|CGAT^CG        PvuI           
+|CGTCTC(1/5)    BsmBI          
+|CG^CCGGCG      MreI           
+|CG^CG          BstUI          
+|CG^CGCGCG      MauBI          
+|CG^TCGACG      SgrDI          
+|CR^CCGGYG      SgrAI          
+|CTGCA^G        PstI           
+|C^AATTG        MfeI           
+|C^ACGAG        BssSI          
+|C^CATGG        NcoI           
+|C^CCGGG        XmaI           
+|C^CGC          AciI           
+|C^CGG          HpaII          
+|C^CTAGG        AvrII          
+|C^GGCCG        EagI           
+|C^GTACG        BsiWI          
+|C^TAG          BfaI           
+|C^TCGAG        XhoI           
+|C^TTAAG        AflII          
+|C^YCGRG        AvaI           
+|GAAGAC(2/6)    BbsI           
+|GAANN^NNTTC    XmnI           
+|GACGT^C        AatII          
+|GACNN^NNGTC    PshAI          
+|GAC^GTC        ZraI           
+|GAGCT^C        SacI           
+|GATNN^NNATC    BsaBI          
+|GAT^ATC        EcoRV          
+|GA^TC          DpnI           
+|GCATG^C        SphI           
+|GCCC^GGGC      SrfI           
+|GCC^GGC        NaeI           
+|GCGAT^CGC      SgfI           
+|GCG^C          HhaI           
+|GCN^NGC        Cac8I          
+|GCTCTTC(1/4)   SapI           
+|GC^GGCCGC      NotI           
+|GGCCGG^CC      FseI           
+|GGCCNNNN^NGGCC SfiI           
+|GGC^GCC        SfoI           
+|GGGCC^C        ApaI           
+|GGTAC^C        KpnI           
+|GGTCTC(1/5)    BsaI           
+|GG^CC          HaeIII         
+|GG^CGCC        NarI           
+|GG^CGCGCC      AscI           
+|GTA^TAC        BstZ17I        
+|GTN^NAC        Hpy8I          
+|GTTT^AAAC      PmeI           
+|GTT^AAC        HpaI           
+|GTY^RAC        HincII         
+|GT^AC          RsaI           
+|G^AATTC        EcoRI          
+|G^CCGGC        NgoMIV         
+|G^CGCGC        BssHII         
+|G^CTAGC        NheI           
+|G^GATCC        BamHI          
+|G^GCGCC        KasI           
+|G^GTACC        Acc65I         
+|G^TCGAC        SalI           
+|G^TGCAC        ApaLI          
+|RCATG^Y        NspI           
+|RGCGC^Y        HaeII          
+|R^AATTY        ApoI           
+|R^GATCY        BstYI          
+|TAC^GTA        SnaBI          
+|TCG^CGA        NruI           
+|TGC^GCA        FspI           
+|TGG^CCA        MscI           
+|TG^CA          HpyCH4V        
+|TTAAT^TAA      PacI           
+|TTA^TAA        PsiI           
+|TTT^AAA        DraI           
+|TT^CGAA        BstBI          
+|T^CATGA        BspHI          
+|T^CCGGA        BspEI          
+|T^CGA          TaqI           
+|T^CTAGA        XbaI           
+|T^GATCA        BclI           
+|T^GTACA        BsrGI          
+|T^TAA          MseI           
+|W^CCGGW        BsaWI          
+|W^GTACW        TatI           
+|YAC^GTR        BsaAI          
+|^AATT          MluCI          
+|^GATC          MboI           
+|
+END
+CASE list 27
+circular 1
+seq AGGCGCGCCGGCCGGCCGGCCGGCCGGCGGTTAATTAATTAATTAAGGCGCCATATCCCTGCGGCGCCCGCTACTACGTAG
+sel 21 66
+enz -
+methylated 1
+format 1
+which unique
+columns 9
+region selection
+sites AciI 27 61 68
+sites AscI 2
+sites AseI 34 38
+sites BsaAI 75
+sites BssHII 3
+sites BstUI 4
+sites Cac8I 3 7 11 15 19 23 66
+sites EagI 9 13 17 21
+sites FseI 10 18
+sites HaeII 47 63
+sites HaeIII 10 14 18 22
+sites HhaI 3 5 48 64
+sites HpaII 8 12 16 20 24
+sites HpyCH4IV 76
+sites KasI 47 63
+sites MluCI 33 37 41
+sites MseI 31 35 39 43
+sites NaeI 7 11 15 19 23
+sites NarI 47 63
+sites NgoMIV 7 11 15 19 23
+sites PacI 31 39
+sites SfoI 47 63
+sites SnaBI 75
+out
+|DATE
+|TITLE 
+|From 21 to 66. 
+|
+|Unique Sites
+|
+|HaeIII      1       HpaII       1       NaeI        1       NgoMIV      1       
+END
+CASE list 28
+circular 0
+seq TAGAGCCAACGACATGTCAATGGCAAGCACACCCCCTGAGAATTCGAATTCGGGCGCTGGCGCTAATTCGAATGGGCTCCTTCGAAATCGAGTCTAGAATGTCTCGCAACGCGCTGTAGGACTACTCTTTCGGTTTAACATTATGTTAACGTTAACGTTAACGTTAACGTTAACTTGTGTTCACTGCTCC
+sel -
+enz BamHI BbsI FseI
+methylated 1
+format 3
+which all
+columns 3
+region selection
+sites AclI 148 154 160 166
+sites ApoI 40 46
+sites BfaI 94
+sites BstBI 43 67 81
+sites BstUI 110
+sites Cac8I 23 56
+sites EcoRI 40 46
+sites HaeII 53 59
+sites HhaI 54 60 111
+sites HincII 145 151 157 163 169
+sites HpaI 145 151 157 163 169
+sites Hpy8I 145 151 157 163 169 179
+sites HpyCH4IV 149 155 161 167
+sites MluCI 41 47 65
+sites MseI 135 146 152 158 164 170
+sites NlaIII 13
+sites NspI 12
+sites PciI 12
+sites TaqI 44 68 82 88
+sites XbaI 93
+out
+|DATE
+|TITLE 
+|From 0 to 190. 
+|
+|All Enzymes
+|
+|AAT^ATT        SspI           
+|AA^CGTT        AclI           
+|AGC^GCT        AfeI           
+|AGG^CCT        StuI           
+|AGT^ACT        ScaI           
+|AG^CT          AluI           
+|ATGCA^T        NsiI           
+|ATTT^AAAT      SwaI           
+|AT^CGAT        ClaI           
+|AT^TAAT        AseI           
+|A^AGCTT        HindIII        
+|A^CATGT        PciI           
+|A^CCGGT        AgeI           
+|A^CGCGT        MluI           
+|A^CGT          HpyCH4IV       
+|A^CTAGT        SpeI           
+|A^GATCT        BglII          
+|CACCTGC(4/8)   PaqCI          
+|CAC^GTC        BmgBI          
+|CAC^GTG        PmlI           
+|CAG^CTG        PvuII          
+|CATG^          NlaIII         
+|CA^TATG        NdeI           
+|CCANNNNN^NNNNTGGXcmI           
+|CCC^GGG        SmaI           
+|CCGC^GG        SacII          
+|CCG^CTC        BsrBI          
+|CCTGCA^GG      SbfI           
+|CC^TCGAGG      AbsI           
+|CGAT^CG        PvuI           
+|CGTCTC(1/5)    BsmBI          
+|CG^CCGGCG      MreI           
+|CG^CG          BstUI          
+|CG^CGCGCG      MauBI          
+|CG^TCGACG      SgrDI          
+|CR^CCGGYG      SgrAI          
+|CTGCA^G        PstI           
+|C^AATTG        MfeI           
+|C^ACGAG        BssSI          
+|C^CATGG        NcoI           
+|C^CCGGG        XmaI           
+|C^CGC          AciI           
+|C^CGG          HpaII          
+|C^CTAGG        AvrII          
+|C^GGCCG        EagI           
+|C^GTACG        BsiWI          
+|C^TAG          BfaI           
+|C^TCGAG        XhoI           
+|C^TTAAG        AflII          
+|C^YCGRG        AvaI           
+|GAAGAC(2/6)    BbsI           
+|GAANN^NNTTC    XmnI           
+|GACGT^C        AatII          
+|GACNN^NNGTC    PshAI          
+|GAC^GTC        ZraI           
+|GAGCT^C        SacI           
+|GATNN^NNATC    BsaBI          
+|GAT^ATC        EcoRV          
+|GA^TC          DpnI           
+|GCATG^C        SphI           
+|GCCC^GGGC      SrfI           
+|GCC^GGC        NaeI           
+|GCGAT^CGC      SgfI           
+|GCG^C          HhaI           
+|GCN^NGC        Cac8I          
+|GCTCTTC(1/4)   SapI           
+|GC^GGCCGC      NotI           
+|GGCCGG^CC      FseI           
+|GGCCNNNN^NGGCC SfiI           
+|GGC^GCC        SfoI           
+|GGGCC^C        ApaI           
+|GGTAC^C        KpnI           
+|GGTCTC(1/5)    BsaI           
+|GG^CC          HaeIII         
+|GG^CGCC        NarI           
+|GG^CGCGCC      AscI           
+|GTA^TAC        BstZ17I        
+|GTN^NAC        Hpy8I          
+|GTTT^AAAC      PmeI           
+|GTT^AAC        HpaI           
+|GTY^RAC        HincII         
+|GT^AC          RsaI           
+|G^AATTC        EcoRI          
+|G^CCGGC        NgoMIV         
+|G^CGCGC        BssHII         
+|G^CTAGC        NheI           
+|G^GATCC        BamHI          
+|G^GCGCC        KasI           
+|G^GTACC        Acc65I         
+|G^TCGAC        SalI           
+|G^TGCAC        ApaLI          
+|RCATG^Y        NspI           
+|RGCGC^Y        HaeII          
+|R^AATTY        ApoI           
+|R^GATCY        BstYI          
+|TAC^GTA        SnaBI          
+|TCG^CGA        NruI           
+|TGC^GCA        FspI           
+|TGG^CCA        MscI           
+|TG^CA          HpyCH4V        
+|TTAAT^TAA      PacI           
+|TTA^TAA        PsiI           
+|TTT^AAA        DraI           
+|TT^CGAA        BstBI          
+|T^CATGA        BspHI          
+|T^CCGGA        BspEI          
+|T^CGA          TaqI           
+|T^CTAGA        XbaI           
+|T^GATCA        BclI           
+|T^GTACA        BsrGI          
+|T^TAA          MseI           
+|W^CCGGW        BsaWI          
+|W^GTACW        TatI           
+|YAC^GTR        BsaAI          
+|^AATT          MluCI          
+|^GATC          MboI           
+|
+END
+CASE list 29
+circular 0
+seq AAGGGTACCAAAGTTTACCGACGTCGACGTCGACTGCGCATGCGCATGCGCAGTCTACCTTTATTGTCTGAGCTCGCACGTGGGACGGCGATCGCGCCGCCCATCAAAAGTCGGTCTTATTCAGTACCACTGCGGCGCGCCGGCATCCTCGAGTTCCGGATGGTTTAAACGGCTGGGTTATC
+sel 137 167
+enz Acc65I BsrBI EcoRV NcoI NheI PaqCI PsiI SapI SpeI XcmI
+methylated 1
+format 2
+which selected
+columns 7
+region all
+sites AatII 20 26
+sites Acc65I 4
+sites AciI 97 132
+sites AluI 71
+sites AscI 134
+sites AvaI 148
+sites BsaAI 77
+sites BsaWI 155
+sites BspEI 155
+sites BssHII 135
+sites BstUI 93 136
+sites Cac8I 38 44 72 135 139
+sites DpnI 90
+sites DraI 164
+sites FspI 35 41 47
+sites HhaI 36 42 48 94 135 137
+sites HincII 23 29
+sites HpaII 140 156
+sites Hpy8I 13 23 29 53
+sites HpyCH4IV 21 27 78
+sites KpnI 4
+sites MseI 165
+sites NaeI 139
+sites NgoMIV 139
+sites NlaIII 39 45
+sites NspI 38 44
+sites PmeI 163
+sites PmlI 77
+sites PvuI 89
+sites RsaI 5 124
+sites SacI 70
+sites SalI 23 29
+sites SgfI 88
+sites SgrDI 22
+sites SphI 38 44
+sites TaqI 24 30 149
+sites XhoI 148
+sites ZraI 20 26
+out
+|DATE
+|TITLE 
+|From 0 to 182. 
+|
+|Selected Sites
+|
+|BsrBI          CCG^CTC        0             
+|EcoRV          GAT^ATC        0             
+|NcoI           C^CATGG        0             
+|NheI           G^CTAGC        0             
+|PaqCI          CACCTGC(4/8)   0             
+|PsiI           TTA^TAA        0             
+|SapI           GCTCTTC(1/4)   0             
+|SpeI           A^CTAGT        0             
+|XcmI           CCANNNNN^NNNNTGG0             
+|Acc65I         G^GTACC        1      4      
+|
+END
+CASE list 30
+circular 0
+seq TAGTTCTCGCAGTGGGCCCGGGCCCGGGCCCGGGCCCGGGCCCAGACGATGTGCACCACGTACGTACGTGGAAGCGCTCCGGTGAGACCCTAGAGCCGCGCGCGCGTGCGATCGCCACCTGCGGGCGTACGTAGCTCTTCGCTCTAGACGAGGATTCGTCGAA
+sel 120 158
+enz AbsI BsaAI DpnI MseI SalI XmnI
+methylated 0
+format 2
+which absent
+columns 1
+region selection
+sites AciI 96 121
+sites AfeI 73
+sites AluI 133
+sites ApaI 14 20 26 32 38
+sites ApaLI 51
+sites AvaI 17 23 29 35
+sites BfaI 90 144
+sites BsaAI 57 61 65 128
+sites BsaI 84
+sites BsaWI 78
+sites BsiWI 59 63 126
+sites BssHII 98 100
+sites BstUI 97 99 101 103
+sites Cac8I 98 100 104 121
+sites HaeII 73
+sites HaeIII 15 21 27 33 39
+sites HhaI 74 98 100 102
+sites HpaII 18 24 30 36 79
+sites Hpy8I 51
+sites HpyCH4IV 58 62 66 129
+sites HpyCH4V 52
+sites MauBI 97
+sites MboI 110
+sites PaqCI 116
+sites PvuI 109
+sites RsaI 60 64 127
+sites SapI 134
+sites SgfI 108
+sites SmaI 17 23 29 35
+sites SnaBI 61 128
+sites SrfI 16 28
+sites TaqI 159
+sites XbaI 143
+sites XmaI 17 23 29 35
+out
+|DATE
+|TITLE 
+|From 120 to 158. 
+|
+|Absent Sites
+|
+|AatII          GACGT^C        0             
+|AbsI           CC^TCGAGG      0             
+|Acc65I         G^GTACC        0             
+|AclI           AA^CGTT        0             
+|AfeI           AGC^GCT        0             
+|AflII          C^TTAAG        0             
+|AgeI           A^CCGGT        0             
+|ApaI           GGGCC^C        0             
+|ApaLI          G^TGCAC        0             
+|ApoI           R^AATTY        0             
+|AscI           GG^CGCGCC      0             
+|AseI           AT^TAAT        0             
+|AvaI           C^YCGRG        0             
+|AvrII          C^CTAGG        0             
+|BamHI          G^GATCC        0             
+|BbsI           GAAGAC(2/6)    0             
+|BclI           T^GATCA        0             
+|BglII          A^GATCT        0             
+|BmgBI          CAC^GTC        0             
+|BsaBI          GATNN^NNATC    0             
+|BsaI           GGTCTC(1/5)    0             
+|BsaWI          W^CCGGW        0             
+|BsmBI          CGTCTC(1/5)    0             
+|BspEI          T^CCGGA        0             
+|BspHI          T^CATGA        0             
+|BsrBI          CCG^CTC        0             
+|BsrGI          T^GTACA        0             
+|BssHII         G^CGCGC        0             
+|BssSI          C^ACGAG        0             
+|BstBI          TT^CGAA        0             
+|BstUI          CG^CG          0             
+|BstYI          R^GATCY        0             
+|BstZ17I        GTA^TAC        0             
+|ClaI           AT^CGAT        0             
+|DpnI           GA^TC          0             
+|DraI           TTT^AAA        0             
+|EagI           C^GGCCG        0             
+|EcoRI          G^AATTC        0             
+|EcoRV          GAT^ATC        0             
+|FseI           GGCCGG^CC      0             
+|FspI           TGC^GCA        0             
+|HaeII          RGCGC^Y        0             
+|HaeIII         GG^CC          0             
+|HhaI           GCG^C          0             
+|HincII         GTY^RAC        0             
+|HindIII        A^AGCTT        0             
+|HpaI           GTT^AAC        0             
+|HpaII          C^CGG          0             
+|Hpy8I          GTN^NAC        0             
+|HpyCH4V        TG^CA          0             
+|KasI           G^GCGCC        0             
+|KpnI           GGTAC^C        0             
+|MauBI          CG^CGCGCG      0             
+|MboI           ^GATC          0             
+|MfeI           C^AATTG        0             
+|MluCI          ^AATT          0             
+|MluI           A^CGCGT        0             
+|MreI           CG^CCGGCG      0             
+|MscI           TGG^CCA        0             
+|MseI           T^TAA          0             
+|NaeI           GCC^GGC        0             
+|NarI           GG^CGCC        0             
+|NcoI           C^CATGG        0             
+|NdeI           CA^TATG        0             
+|NgoMIV         G^CCGGC        0             
+|NheI           G^CTAGC        0             
+|NlaIII         CATG^          0             
+|NotI           GC^GGCCGC      0             
+|NruI           TCG^CGA        0             
+|NsiI           ATGCA^T        0             
+|NspI           RCATG^Y        0             
+|PacI           TTAAT^TAA      0             
+|PaqCI          CACCTGC(4/8)   0             
+|PciI           A^CATGT        0             
+|PmeI           GTTT^AAAC      0             
+|PmlI           CAC^GTG        0             
+|PshAI          GACNN^NNGTC    0             
+|PsiI           TTA^TAA        0             
+|PstI           CTGCA^G        0             
+|PvuI           CGAT^CG        0             
+|PvuII          CAG^CTG        0             
+|SacI           GAGCT^C        0             
+|SacII          CCGC^GG        0             
+|SalI           G^TCGAC        0             
+|SbfI           CCTGCA^GG      0             
+|ScaI           AGT^ACT        0             
+|SfiI           GGCCNNNN^NGGCC 0             
+|SfoI           GGC^GCC        0             
+|SgfI           GCGAT^CGC      0             
+|SgrAI          CR^CCGGYG      0             
+|SgrDI          CG^TCGACG      0             
+|SmaI           CCC^GGG        0             
+|SpeI           A^CTAGT        0             
+|SphI           GCATG^C        0             
+|SrfI           GCCC^GGGC      0             
+|SspI           AAT^ATT        0             
+|StuI           AGG^CCT        0             
+|SwaI           ATTT^AAAT      0             
+|TaqI           T^CGA          0             
+|TatI           W^GTACW        0             
+|XcmI           CCANNNNN^NNNNTGG0             
+|XhoI           C^TCGAG        0             
+|XmaI           C^CCGGG        0             
+|XmnI           GAANN^NNTTC    0             
+|ZraI           GAC^GTC        0             
+|
+END
+CASE list 31
+circular 1
+seq ACGTACGGCGCTCTTCGCTCTTCGCTCTTCGCTGATCATGATCATGATCATGATCAGCGGAGCGGAGCGGAGCGCCGGCCGGCGTCGCCACACGTGTATCTTGGATGGAGGATCCCGCCTCTCACCGACGAACCCCGATAATATTTAGTTTATGGCAGCTGACCGGGTCACGAGACGGCAGCGTTCATC
+sel 59 94
+enz AseI Hpy8I HpyCH4IV HpyCH4V MboI MluI SacI SacII SphI
+methylated 0
+format 3
+which unique
+columns 9
+region selection
+sites AciI 57 62 67 115
+sites AluI 157
+sites BamHI 110
+sites BclI 33 39 45 51
+sites BsaAI 91 189
+sites BsaBI 34 46
+sites BsiWI 2
+sites BsmBI 172
+sites BspHI 36 42 48
+sites BsrBI 60 65
+sites BssSI 169
+sites BstYI 110
+sites Cac8I 74 78
+sites EagI 76
+sites HaeII 7 71
+sites HaeIII 77
+sites HhaI 8 72
+sites HpaII 75 79 163
+sites HpyCH4IV 1 92
+sites MboI 34 40 46 52 111
+sites NaeI 74 78
+sites NgoMIV 74 78
+sites NlaIII 37 43 49
+sites PmlI 91
+sites PvuII 156
+sites RsaI 3
+sites SapI 10 17 24
+sites SspI 140
+out
+|DATE
+|TITLE 
+|From 59 to 94. 
+|
+|Unique Sites
+|
+|A^CGT          HpyCH4IV       
+|CAC^GTG        PmlI           
+|C^GGCCG        EagI           
+|GCG^C          HhaI           
+|GG^CC          HaeIII         
+|RGCGC^Y        HaeII          
+|YAC^GTR        BsaAI          
+|
+END
+CASE list 32
+circular 0
+seq ATGGTTATTAATGCAGTTCGGATGCGACGCGCGCGCAATACATATGGGCGGCGGCAAGGAGAGTTGAGCCAAATCCAAGAAGCTAGCTCCGGCGCCACGCCGGCGATGTCATGAGGAAACGCGACGGATAGCGATCGATAGCGATCGATAGCGATCGATAGCGATCGATAGCGATCGTACGTACGTACGTACGTGAAT
+sel 64 107
+enz AflII Cac8I NaeI NlaIII SpeI XcmI
+methylated 1
+format 0
+which all
+columns 3
+region selection
+sites AciI 48 51
+sites AluI 81 85
+sites AseI 7
+sites BfaI 83
+sites BsaAI 178 182 186 190
+sites BsiWI 176 180 184 188
+sites BspHI 109
+sites BssHII 29 31
+sites BstUI 28 30 32 120
+sites Cac8I 29 31 82 99
+sites DpnI 133 143 153 163 173
+sites HaeII 91
+sites HhaI 29 31 33 92
+sites HpaII 89 100
+sites HpyCH4IV 179 183 187 191
+sites HpyCH4V 12
+sites KasI 91
+sites MauBI 28
+sites MreI 98
+sites MseI 8
+sites NaeI 99
+sites NarI 91
+sites NdeI 41
+sites NgoMIV 99
+sites NheI 82
+sites NlaIII 110
+sites PvuI 132 142 152 162 172
+sites RsaI 177 181 185 189
+sites SfoI 91
+sites SgrAI 98
+sites SnaBI 178 182 186
+out
+|DATE
+|TITLE 
+|From 64 to 107. 
+|
+|All Enzymes
+|
+|AatII          AbsI           Acc65I         
+|AciI           AclI           AfeI           
+|AflII          AgeI           AluI           
+|ApaI           ApaLI          ApoI           
+|AscI           AseI           AvaI           
+|AvrII          BamHI          BbsI           
+|BclI           BfaI           BglII          
+|BmgBI          BsaAI          BsaBI          
+|BsaI           BsaWI          BsiWI          
+|BsmBI          BspEI          BspHI          
+|BsrBI          BsrGI          BssHII         
+|BssSI          BstBI          BstUI          
+|BstYI          BstZ17I        Cac8I          
+|ClaI           DpnI           DraI           
+|EagI           EcoRI          EcoRV          
+|FseI           FspI           HaeII          
+|HaeIII         HhaI           HincII         
+|HindIII        HpaI           HpaII          
+|Hpy8I          HpyCH4IV       HpyCH4V        
+|KasI           KpnI           MauBI          
+|MboI           MfeI           MluCI          
+|MluI           MreI           MscI           
+|MseI           NaeI           NarI           
+|NcoI           NdeI           NgoMIV         
+|NheI           NlaIII         NotI           
+|NruI           NsiI           NspI           
+|PacI           PaqCI          PciI           
+|PmeI           PmlI           PshAI          
+|PsiI           PstI           PvuI           
+|PvuII          RsaI           SacI           
+|SacII          SalI           SapI           
+|SbfI           ScaI           SfiI           
+|SfoI           SgfI           SgrAI          
+|SgrDI          SmaI           SnaBI          
+|SpeI           SphI           SrfI           
+|SspI           StuI           SwaI           
+|TaqI           TatI           XbaI           
+|XcmI           XhoI           XmaI           
+|XmnI           ZraI           
+END
+CASE list 33
+circular 1
+seq GGTAGCATTAGCGGAGACTGGCGGACAATAACACCCAGCTGCAGCCCTCGAGGCCTCGAGGTATGCATGCATGCATGCATGCATTTCGCGCGCACT
+sel 69 88
+enz AclI ApaI BamHI BfaI MluI
+methylated 1
+format 3
+which selected
+columns 9
+region selection
+sites AbsI 46 54
+sites AciI 11 21
+sites AluI 37
+sites AvaI 47 55
+sites BssHII 88
+sites BstUI 87 89
+sites Cac8I 65 69 73 77 88
+sites HaeIII 52
+sites HhaI 88 90
+sites HpyCH4V 40 64 68 72 76 80
+sites NlaIII 66 70 74 78
+sites NsiI 63 67 71 75 79
+sites NspI 65 69 73 77
+sites PstI 39
+sites PvuII 36
+sites SphI 65 69 73 77
+sites StuI 51
+sites TaqI 48 56
+sites XhoI 47 55
+out
+|DATE
+|TITLE 
+|From 69 to 88. 
+|
+|Selected Sites
+|
+|AA^CGTT        AclI           
+|A^CGCGT        MluI           
+|C^TAG          BfaI           
+|GGGCC^C        ApaI           
+|G^GATCC        BamHI          
+|
+END
+CASE list 34
+circular 1
+seq AACAGGTAGCGCTAGCGCTGTGACGCGCGCAGATCCCGGGGGCGCCCCTTATCCTCTTACGTAAGGCGCCATGGTGCAAGATAGATGAAGAGTCCCGGGCCCGGGCCCGGGCCCGGGCCCGGGACACATGGCCCGCCGTGTA
+sel 85 125
+enz ApoI AseI BclI BsrGI BstBI ClaI EcoRI FspI MseI NdeI SacI ScaI XcmI
+methylated 1
+format 0
+which absent
+columns 9
+region all
+sites AciI 133
+sites AfeI 8 14
+sites ApaI 97 103 109 115
+sites AvaI 35 94 100 106 112 118
+sites BfaI 12
+sites BsaAI 58
+sites BssHII 25
+sites BstUI 24 26
+sites BstYI 31
+sites Cac8I 11 25 131
+sites DpnI 32
+sites HaeII 8 14 41 65
+sites HaeIII 98 104 110 116 130
+sites HhaI 9 15 25 27 42 66
+sites HpaII 36 95 101 107 113 119
+sites Hpy8I 140
+sites HpyCH4IV 59
+sites HpyCH4V 75
+sites KasI 41 65
+sites NarI 41 65
+sites NcoI 69
+sites NheI 11
+sites NlaIII 70 127
+sites SfoI 41 65
+sites SmaI 35 94 100 106 112 118
+sites SnaBI 58
+sites SrfI 99 111
+sites XmaI 35 94 100 106 112 118
+out
+|DATE
+|TITLE 
+|From 0 to 142. 
+|
+|Absent Sites
+|
+|AatII          AbsI           Acc65I         AclI           AflII          AgeI           AluI           ApaLI          ApoI           
+|AscI           AseI           AvrII          BamHI          BbsI           BclI           BglII          BmgBI          BsaBI          
+|BsaI           BsaWI          BsiWI          BsmBI          BspEI          BspHI          BsrBI          BsrGI          BssSI          
+|BstBI          BstZ17I        ClaI           DraI           EagI           EcoRI          EcoRV          FseI           FspI           
+|HincII         HindIII        HpaI           KpnI           MauBI          MboI           MfeI           MluCI          MluI           
+|MreI           MscI           MseI           NaeI           NdeI           NgoMIV         NotI           NruI           NsiI           
+|NspI           PacI           PaqCI          PciI           PmeI           PmlI           PshAI          PsiI           PstI           
+|PvuI           PvuII          RsaI           SacI           SacII          SalI           SapI           SbfI           ScaI           
+|SfiI           SgfI           SgrAI          SgrDI          SpeI           SphI           SspI           StuI           SwaI           
+|TaqI           TatI           XbaI           XcmI           XhoI           XmnI           ZraI           
+END
+CASE list 35
+circular 0
+seq AGATAAGGATTGCGCAGTTTTGCGCGCTAAGGCGCCTCGAGGTTTTATGCATAGACAATCTATCAATGTAAAGAGTTCCCTCGGCGCCCAGCTGCATTGAGATCTTTGGGTACCGGTACCGGTACCGGTACCGGTACCTCATGGATGTCCCGGATTAATCTGACTGCCTTCATTAGGATGCATGCAAGGTTTTAAGCCA
+sel 158 176
+enz AfeI BmgBI BsaAI BssHII DraI HpaII KpnI MluI NarI SbfI SgrAI
+methylated 1
+format 3
+which unique
+columns 1
+region all
+sites AbsI 35
+sites Acc65I 109 115 121 127 133
+sites AgeI 112 118 124 130
+sites AluI 90
+sites AseI 154
+sites AvaI 36
+sites BglII 100
+sites BsaWI 112 118 124 130
+sites BssHII 22
+sites BstUI 23
+sites BstYI 100
+sites Cac8I 22 180
+sites DpnI 101
+sites FspI 11
+sites HaeII 31 83
+sites HhaI 12 22 24 32 84
+sites HpaII 113 119 125 131 150
+sites HpyCH4V 48 93 179 183
+sites KasI 31 83
+sites KpnI 109 115 121 127 133
+sites MseI 155 192
+sites NarI 31 83
+sites NlaIII 140 181
+sites NsiI 47 178
+sites NspI 180
+sites PvuII 89
+sites RsaI 110 116 122 128 134
+sites SfoI 31 83
+sites SphI 180
+sites TaqI 37
+sites XhoI 36
+out
+|DATE
+|TITLE 
+|From 0 to 199. 
+|
+|Unique Sites
+|
+|AG^CT          AluI           
+|AT^TAAT        AseI           
+|A^GATCT        BglII          
+|CAG^CTG        PvuII          
+|CC^TCGAGG      AbsI           
+|CG^CG          BstUI          
+|C^TCGAG        XhoI           
+|C^YCGRG        AvaI           
+|GA^TC          DpnI           
+|GCATG^C        SphI           
+|G^CGCGC        BssHII         
+|RCATG^Y        NspI           
+|R^GATCY        BstYI          
+|TGC^GCA        FspI           
+|T^CGA          TaqI           
+|
+END
+CASE list 36
+circular 1
+seq CTGCGCGCGTATGTTACCGCTTAATTAACTGCTGCTCACATCACGTAAATCCAAGCGCTAGCGCTAGCGCTAGCGCTACCCCTGGCGCCCCGGTGTTTAATTAAGCGTCGATCGATCGACAGATGGTCGGTGACCCTCCATATGCATATGTGAGCTAGGGCAAATGAACGTAGAAGA
+sel -
+enz -
+methylated 1
+format 0
+which all
+columns 4
+region all
+sites AciI 17
+sites AfeI 54 60 66 72
+sites AluI 153
+sites BbsI 173
+sites BfaI 58 64 70 155
+sites BsaAI 42
+sites BssHII 3
+sites BstUI 4 6
+sites Cac8I 3 57 63 69
+sites DpnI 110 114
+sites HaeII 54 60 66 72 84
+sites HhaI 3 5 55 61 67 73 85
+sites HpaII 90
+sites HpyCH4IV 43 168
+sites HpyCH4V 143
+sites KasI 84
+sites MluCI 23 99
+sites MseI 21 25 97 101
+sites NarI 84
+sites NdeI 139 145
+sites NheI 57 63 69
+sites NsiI 142
+sites PacI 21 97
+sites PvuI 109 113
+sites SfoI 84
+out
+|DATE
+|TITLE 
+|From 0 to 177. 
+|
+|All Enzymes
+|
+|AatII          AbsI           Acc65I         AciI           
+|AclI           AfeI           AflII          AgeI           
+|AluI           ApaI           ApaLI          ApoI           
+|AscI           AseI           AvaI           AvrII          
+|BamHI          BbsI           BclI           BfaI           
+|BglII          BmgBI          BsaAI          BsaBI          
+|BsaI           BsaWI          BsiWI          BsmBI          
+|BspEI          BspHI          BsrBI          BsrGI          
+|BssHII         BssSI          BstBI          BstUI          
+|BstYI          BstZ17I        Cac8I          ClaI           
+|DpnI           DraI           EagI           EcoRI          
+|EcoRV          FseI           FspI           HaeII          
+|HaeIII         HhaI           HincII         HindIII        
+|HpaI           HpaII          Hpy8I          HpyCH4IV       
+|HpyCH4V        KasI           KpnI           MauBI          
+|MboI           MfeI           MluCI          MluI           
+|MreI           MscI           MseI           NaeI           
+|NarI           NcoI           NdeI           NgoMIV         
+|NheI           NlaIII         NotI           NruI           
+|NsiI           NspI           PacI           PaqCI          
+|PciI           PmeI           PmlI           PshAI          
+|PsiI           PstI           PvuI           PvuII          
+|RsaI           SacI           SacII          SalI           
+|SapI           SbfI           ScaI           SfiI           
+|SfoI           SgfI           SgrAI          SgrDI          
+|SmaI           SnaBI          SpeI           SphI           
+|SrfI           SspI           StuI           SwaI           
+|TaqI           TatI           XbaI           XcmI           
+|XhoI           XmaI           XmnI           ZraI           
+|
+END
+CASE list 37
+circular 0
+seq TAAGGATCCTGGATGCCAGTAGTACGTACCTAGAGCATGCATGCATGGCTACCACCTAGGGACGGCCGGCCATGGCCTGGATCAATTGGACGGTAATAGTTAACATGAGCGGCCGCACAGGCGGCCGCTTATACTACATGTCTAGGGCTC
+sel 99 110
+enz AbsI BsaAI Hpy8I MscI SgfI
+methylated 1
+format 0
+which selected
+columns 7
+region selection
+sites AciI 109 113 121 125
+sites AvrII 55
+sites BamHI 4
+sites BfaI 30 56 142
+sites BsaAI 23
+sites BsrBI 107
+sites BstYI 4
+sites Cac8I 35 39 65
+sites DpnI 5 80
+sites EagI 63 110 122
+sites FseI 64
+sites HaeIII 64 68 74 111 123
+sites HincII 99
+sites HpaI 99
+sites HpaII 66
+sites Hpy8I 99
+sites HpyCH4IV 24
+sites HpyCH4V 38 42
+sites MfeI 83
+sites MluCI 84
+sites MseI 100
+sites NaeI 65
+sites NcoI 70
+sites NgoMIV 65
+sites NlaIII 36 40 44 71 104 137
+sites NotI 109 121
+sites NsiI 37 41
+sites NspI 35 39 136
+sites PciI 136
+sites RsaI 22 26
+sites SnaBI 23
+sites SphI 35 39
+out
+|DATE
+|TITLE 
+|From 99 to 110. 
+|
+|Selected Sites
+|
+|AbsI           BsaAI          Hpy8I          MscI           SgfI           
+END
+CASE list 38
+circular 1
+seq CTACATGTAGGCGCCTGTATACGGCGCCGGCGCCAAACGTTTAAACGTTTAAACGTTTAAACGGGAAGTGCACACGGTCAAAAGGATTGCTCAAATACGGCCGCCCCGACAACCGGCCGTTCGAGAGCTCGAGACGCCCGGGATCCGCTACACTGGGCCGCGGCTGACTATATGCCTAGGTAATGCTAGGGTAGCCGGGGTTTTCGAAACCAGTCAG
+sel 167 202
+enz BamHI BsaBI HaeIII KasI MluCI NdeI NotI PstI XbaI
+methylated 0
+format 0
+which absent
+columns 5
+region selection
+sites AciI 101 145 158 160
+sites AclI 36 44 52
+sites AluI 126 216
+sites ApaLI 68
+sites AvaI 128 137
+sites AvrII 175
+sites BamHI 141
+sites BfaI 176 186
+sites BsmBI 131
+sites BstBI 203
+sites BstUI 159
+sites BstYI 141
+sites BstZ17I 17
+sites Cac8I 26
+sites DraI 40 48 56
+sites EagI 98 114
+sites HaeII 10 23 29
+sites HaeIII 99 115 156
+sites HhaI 11 24 30
+sites HpaII 27 113 138 195
+sites Hpy8I 17 68
+sites HpyCH4IV 37 45 53
+sites HpyCH4V 69
+sites KasI 10 23 29
+sites MboI 142
+sites MreI 25
+sites MseI 41 49 57
+sites NaeI 26
+sites NarI 10 23 29
+sites NgoMIV 26
+sites NlaIII 4
+sites NspI 3
+sites PciI 3
+sites PmeI 39 47 55
+sites SacI 125
+sites SacII 158
+sites SfoI 10 23 29
+sites SgrAI 25
+sites SmaI 137
+sites TaqI 121 129 204
+sites XhoI 128
+sites XmaI 137
+out
+|DATE
+|TITLE 
+|From 167 to 202. 
+|
+|Absent Sites
+|
+|AatII          AbsI           Acc65I         AciI           AclI           
+|AfeI           AflII          AgeI           AluI           ApaI           
+|ApaLI          ApoI           AscI           AseI           AvaI           
+|BamHI          BbsI           BclI           BglII          BmgBI          
+|BsaAI          BsaBI          BsaI           BsaWI          BsiWI          
+|BsmBI          BspEI          BspHI          BsrBI          BsrGI          
+|BssHII         BssSI          BstBI          BstUI          BstYI          
+|BstZ17I        Cac8I          ClaI           DpnI           DraI           
+|EagI           EcoRI          EcoRV          FseI           FspI           
+|HaeII          HaeIII         HhaI           HincII         HindIII        
+|HpaI           Hpy8I          HpyCH4IV       HpyCH4V        KasI           
+|KpnI           MauBI          MboI           MfeI           MluCI          
+|MluI           MreI           MscI           MseI           NaeI           
+|NarI           NcoI           NdeI           NgoMIV         NheI           
+|NlaIII         NotI           NruI           NsiI           NspI           
+|PacI           PaqCI          PciI           PmeI           PmlI           
+|PshAI          PsiI           PstI           PvuI           PvuII          
+|RsaI           SacI           SacII          SalI           SapI           
+|SbfI           ScaI           SfiI           SfoI           SgfI           
+|SgrAI          SgrDI          SmaI           SnaBI          SpeI           
+|SphI           SrfI           SspI           StuI           SwaI           
+|TaqI           TatI           XbaI           XcmI           XhoI           
+|XmaI           XmnI           ZraI           
+END
+CASE list 39
+circular 1
+seq TAAGTGTGAGCTCGCTCGCTCGCTCGCCAGCTGGGTTTGGATCTCCAACTGGCCGTGCACAATCACAGCAGGTTGGCTTTGTGTTAGGATGCCGTTTTCGGGTGGGCTCTTCACGTGACTGATGCAGGGCCCTACCGCATTTTGTCATCCTCGAGCGAACACCGCTCCGCTCCGCTCCGCTCCGCTCGTTGTCCCGGTACCTGATGATCTGGT
+sel 54 172
+enz HaeIII
+methylated 0
+format 0
+which unique
+columns 1
+region selection
+sites Acc65I 196
+sites AciI 135 162 167 172 177 182
+sites AluI 9 29
+sites ApaI 127
+sites ApaLI 55
+sites AvaI 150
+sites BsaAI 112
+sites BsrBI 162 167 172 177 182
+sites BstYI 39
+sites Cac8I 10 14 18 22 26
+sites HaeIII 51 128
+sites HpaII 194
+sites Hpy8I 55
+sites HpyCH4IV 113
+sites HpyCH4V 56 123
+sites KpnI 196
+sites MboI 40 206
+sites MseI 213
+sites PmlI 112
+sites PvuII 28
+sites RsaI 197
+sites SacI 8
+sites SapI 106
+sites TaqI 151
+sites XhoI 150
+out
+|DATE
+|TITLE 
+|From 54 to 172. 
+|
+|Unique Sites
+|
+|ApaI           
+|ApaLI          
+|AvaI           
+|BsaAI          
+|HaeIII         
+|Hpy8I          
+|HpyCH4IV       
+|PmlI           
+|SapI           
+|TaqI           
+|XhoI           
+|
+END
+CASE list 40
+circular 1
+seq ATAGTACGGTACCCTGCAGCACGTACGTACGTGGCGGGGTCTTTGCGAGGTTCAGTACACTTGCGAACTGACGTTCTAGATCTAGATCTAGGCGCGCGCGCAGACTCT
+sel 22 95
+enz PmlI
+methylated 0
+format 0
+which all
+columns 4
+region selection
+sites Acc65I 8
+sites AciI 34
+sites BfaI 76 82 88
+sites BglII 78 84
+sites BsaAI 20 24 28
+sites BsaBI 79
+sites BsiWI 22 26
+sites BssHII 92 94 96
+sites BstUI 93 95 97
+sites BstYI 78 84
+sites Cac8I 92 94 96
+sites HhaI 92 94 96 98
+sites Hpy8I 55
+sites HpyCH4IV 21 25 29 71
+sites HpyCH4V 15
+sites KpnI 8
+sites MauBI 93
+sites MboI 79 85
+sites PstI 14
+sites RsaI 4 9 23 27 55
+sites SnaBI 24
+sites TatI 54
+sites XbaI 75 81
+out
+|DATE
+|TITLE 
+|From 22 to 95. 
+|
+|All Enzymes
+|
+|AatII          AbsI           Acc65I         AciI           
+|AclI           AfeI           AflII          AgeI           
+|AluI           ApaI           ApaLI          ApoI           
+|AscI           AseI           AvaI           AvrII          
+|BamHI          BbsI           BclI           BfaI           
+|BglII          BmgBI          BsaAI          BsaBI          
+|BsaI           BsaWI          BsiWI          BsmBI          
+|BspEI          BspHI          BsrBI          BsrGI          
+|BssHII         BssSI          BstBI          BstUI          
+|BstYI          BstZ17I        Cac8I          ClaI           
+|DpnI           DraI           EagI           EcoRI          
+|EcoRV          FseI           FspI           HaeII          
+|HaeIII         HhaI           HincII         HindIII        
+|HpaI           HpaII          Hpy8I          HpyCH4IV       
+|HpyCH4V        KasI           KpnI           MauBI          
+|MboI           MfeI           MluCI          MluI           
+|MreI           MscI           MseI           NaeI           
+|NarI           NcoI           NdeI           NgoMIV         
+|NheI           NlaIII         NotI           NruI           
+|NsiI           NspI           PacI           PaqCI          
+|PciI           PmeI           PmlI           PshAI          
+|PsiI           PstI           PvuI           PvuII          
+|RsaI           SacI           SacII          SalI           
+|SapI           SbfI           ScaI           SfiI           
+|SfoI           SgfI           SgrAI          SgrDI          
+|SmaI           SnaBI          SpeI           SphI           
+|SrfI           SspI           StuI           SwaI           
+|TaqI           TatI           XbaI           XcmI           
+|XhoI           XmaI           XmnI           ZraI           
+|
+END
+CASE list 41
+circular 1
+seq ATTCCGTTGACTGGGCCGGCCGGCCGGCCGGCCCTTAAAGGCTCAAGCCCGGGCCCGGGCCCGGGCCCGGGCCGGGAATTCGAACGGCCGTGGTCATGATGGACTTCGAAATTCCTGATAGATCTCAGATCTATCGTAC
+sel 25 26
+enz DraI MluCI SacI
+methylated 0
+format 1
+which selected
+columns 4
+region selection
+sites ApaI 51 57 63
+sites ApoI 76 109
+sites AvaI 48 54 60 66
+sites BglII 120 127
+sites BspHI 94
+sites BstBI 79 105
+sites BstYI 120 127
+sites Cac8I 15 19 23 27
+sites EagI 17 21 25 85
+sites EcoRI 76
+sites FseI 14 22
+sites HaeIII 14 18 22 26 30 52 58 64 70 86
+sites HincII 6
+sites HpaII 16 20 24 28 49 55 61 67 72
+sites Hpy8I 6
+sites MboI 121 128
+sites MluCI 77 110
+sites MseI 35
+sites NaeI 15 19 23 27
+sites NgoMIV 15 19 23 27
+sites NlaIII 95
+sites RsaI 136
+sites SmaI 48 54 60 66
+sites SrfI 47 59
+sites TaqI 80 106
+sites XmaI 48 54 60 66
+out
+|DATE
+|TITLE 
+|From 25 to 26. 
+|
+|Selected Sites
+|
+|DraI        0       MluCI       0       SacI        0       
+END
+CASE list 42
+circular 1
+seq AATATTCGGCCGTTGTCCCCTGCAGCGCGCGGGGAAACGCTAGCCCTAGGCCTAGGGATCTAACCACGTGCGTTGTTTCATACCGCCCGGGCCCGGGCCCGGGCCCGGGCACT
+sel 36 92
+enz ApaLI AvaI HpaI KasI
+methylated 0
+format 1
+which absent
+columns 10
+region all
+sites AciI 29 83
+sites ApaI 89 95 101
+sites AvaI 86 92 98 104
+sites AvrII 45 51
+sites BfaI 40 46 52
+sites BsaAI 65
+sites BssHII 25
+sites BstUI 26 28
+sites BstYI 56
+sites Cac8I 25 39
+sites EagI 7
+sites HaeIII 8 49 90 96 102
+sites HhaI 25 27
+sites HpaII 87 93 99 105
+sites HpyCH4IV 66
+sites HpyCH4V 21
+sites MboI 57
+sites NheI 39
+sites PmlI 65
+sites PstI 20
+sites SmaI 86 92 98 104
+sites SrfI 85 97
+sites SspI 1
+sites StuI 48
+sites XmaI 86 92 98 104
+out
+|DATE
+|TITLE 
+|From 0 to 113. 
+|
+|Absent Sites
+|
+|AatII       0       AbsI        0       Acc65I      0       AclI        0       AfeI        0       AflII       0       AgeI        0       AluI        0       ApaLI       0       ApoI        0       
+|AscI        0       AseI        0       BamHI       0       BbsI        0       BclI        0       BglII       0       BmgBI       0       BsaBI       0       BsaI        0       BsaWI       0       
+|BsiWI       0       BsmBI       0       BspEI       0       BspHI       0       BsrBI       0       BsrGI       0       BssSI       0       BstBI       0       BstZ17I     0       ClaI        0       
+|DpnI        0       DraI        0       EcoRI       0       EcoRV       0       FseI        0       FspI        0       HaeII       0       HincII      0       HindIII     0       HpaI        0       
+|Hpy8I       0       KasI        0       KpnI        0       MauBI       0       MfeI        0       MluCI       0       MluI        0       MreI        0       MscI        0       MseI        0       
+|NaeI        0       NarI        0       NcoI        0       NdeI        0       NgoMIV      0       NlaIII      0       NotI        0       NruI        0       NsiI        0       NspI        0       
+|PacI        0       PaqCI       0       PciI        0       PmeI        0       PshAI       0       PsiI        0       PvuI        0       PvuII       0       RsaI        0       SacI        0       
+|SacII       0       SalI        0       SapI        0       SbfI        0       ScaI        0       SfiI        0       SfoI        0       SgfI        0       SgrAI       0       SgrDI       0       
+|SnaBI       0       SpeI        0       SphI        0       SwaI        0       TaqI        0       TatI        0       XbaI        0       XcmI        0       XhoI        0       XmnI        0       
+|ZraI        0       
+END
+CASE list 43
+circular 1
+seq ATTCGAAGCGCCGCGTCAACGTGGCACTGGCCGGCCGGCTGACGTATTTAAATTTAAATTTAAATACGTCTGGC
+sel 53 57
+enz Acc65I BssSI Cac8I NspI SalI
+methylated 0
+format 1
+which unique
+columns 6
+region selection
+sites AciI 11
+sites ApoI 50 56
+sites BstBI 2
+sites BstUI 12
+sites Cac8I 30 34
+sites DraI 47 53 59
+sites EagI 32
+sites FseI 29
+sites HaeII 7
+sites HaeIII 29 33
+sites HhaI 8
+sites HincII 15
+sites HpaII 31 35
+sites Hpy8I 15
+sites HpyCH4IV 19 42 66
+sites MluCI 51 57
+sites MseI 48 54 60
+sites NaeI 30 34
+sites NgoMIV 30 34
+sites SwaI 46 58
+sites TaqI 3
+out
+|DATE
+|TITLE 
+|From 53 to 57. 
+|
+|Unique Sites
+|
+|ApoI        1       MluCI       1       MseI        1       
+END
+CASE list 44
+circular 0
+seq TAAGCCCGGGCCCGGGCCCGGGCTTCGGCCGGCCGGCCGGCCGTTTTGATCGTGCGATGGTTATCGATGGTTATCACGCCTATGAC
+sel 31 63
+enz HhaI MauBI PvuII SalI
+methylated 1
+format 0
+which all
+columns 10
+region selection
+sites ApaI 8 14
+sites AvaI 5 11 17
+sites BsaBI 56 66
+sites Cac8I 28 32 36
+sites ClaI 63
+sites DpnI 48
+sites EagI 26 30 34 38
+sites FseI 27 35
+sites HaeIII 9 15 27 31 35 39
+sites HpaII 6 12 18 29 33 37
+sites NaeI 28 32 36
+sites NgoMIV 28 32 36
+sites SmaI 5 11 17
+sites SrfI 4 16
+sites TaqI 64
+sites XmaI 5 11 17
+out
+|DATE
+|TITLE 
+|From 31 to 63. 
+|
+|All Enzymes
+|
+|AatII          AbsI           Acc65I         AciI           AclI           AfeI           AflII          AgeI           AluI           ApaI           
+|ApaLI          ApoI           AscI           AseI           AvaI           AvrII          BamHI          BbsI           BclI           BfaI           
+|BglII          BmgBI          BsaAI          BsaBI          BsaI           BsaWI          BsiWI          BsmBI          BspEI          BspHI          
+|BsrBI          BsrGI          BssHII         BssSI          BstBI          BstUI          BstYI          BstZ17I        Cac8I          ClaI           
+|DpnI           DraI           EagI           EcoRI          EcoRV          FseI           FspI           HaeII          HaeIII         HhaI           
+|HincII         HindIII        HpaI           HpaII          Hpy8I          HpyCH4IV       HpyCH4V        KasI           KpnI           MauBI          
+|MboI           MfeI           MluCI          MluI           MreI           MscI           MseI           NaeI           NarI           NcoI           
+|NdeI           NgoMIV         NheI           NlaIII         NotI           NruI           NsiI           NspI           PacI           PaqCI          
+|PciI           PmeI           PmlI           PshAI          PsiI           PstI           PvuI           PvuII          RsaI           SacI           
+|SacII          SalI           SapI           SbfI           ScaI           SfiI           SfoI           SgfI           SgrAI          SgrDI          
+|SmaI           SnaBI          SpeI           SphI           SrfI           SspI           StuI           SwaI           TaqI           TatI           
+|XbaI           XcmI           XhoI           XmaI           XmnI           ZraI           
+END
+CASE list 45
+circular 1
+seq AGGGCGGCGGTACATGCAGATCGAGACGTCCTGCCGGACTCATCGCCGTGTGACGGCGATAAATGCGTTAACGTTATAATTATAATTATAATTATAATTATAACGAAATGGTTCCGATAGATGACTCCGAATACTAGTATTATTAATTTTATCGATGTTTGACATCAGGCTCTTGGCACACGTACGTGATCAGACGTCTGAGCCACCACGAACACACGTACA
+sel -
+enz -
+methylated 0
+format 0
+which selected
+columns 6
+region selection
+sites AatII 25 193
+sites AciI 4 7
+sites AclI 70
+sites AseI 142
+sites BclI 187
+sites BfaI 134
+sites BsaAI 179 183 215
+sites BsiWI 181
+sites BsmBI 23
+sites ClaI 151
+sites HincII 67
+sites HpaI 67
+sites HpaII 34
+sites Hpy8I 67
+sites HpyCH4IV 26 71 180 184 194 216
+sites HpyCH4V 15
+sites MboI 19 188
+sites MluCI 78 84 90 96 145
+sites MseI 68 143
+sites NlaIII 13
+sites NspI 12
+sites PsiI 74 80 86 92 98
+sites RsaI 10 182 218
+sites SpeI 133
+sites TaqI 21 152
+sites XmnI 105
+sites ZraI 25 193
+out
+|DATE
+|TITLE 
+|From 0 to 222. 
+|
+|Selected Sites
+|
+|
+END
+CASE list 46
+circular 0
+seq CACCTGCTAAAGTTCGCGAACCCGGGCCCGGGCCCGGGCCCGGGATTCCGAATTTAAATGACGTGGCTGGGCCCATGGCCACGAGCACGAGCATGGCCAGCGCTAGCGCTATCGCAAGATAATACGGCCGCTCCGGCGAACATGTTCTG
+sel 15 95
+enz BsrBI HaeII HindIII MluCI NdeI PaqCI PsiI PvuII SapI SrfI XmnI ZraI
+methylated 1
+format 0
+which absent
+columns 2
+region selection
+sites AciI 128
+sites AfeI 99 105
+sites ApaI 24 30 36 69
+sites ApoI 50
+sites AvaI 21 27 33 39
+sites BfaI 103
+sites BmgBI 60
+sites BsrBI 128
+sites BssSI 80 86
+sites BstUI 15
+sites Cac8I 96 102
+sites DraI 53
+sites EagI 125
+sites HaeII 99 105
+sites HaeIII 25 31 37 70 77 95 126
+sites HhaI 100 106
+sites HpaII 22 28 34 40 133
+sites HpyCH4IV 61
+sites MluCI 51
+sites MscI 76 94
+sites MseI 54
+sites NcoI 73
+sites NheI 102
+sites NlaIII 74 92 141
+sites NruI 14
+sites NspI 140
+sites PaqCI 1
+sites PciI 140
+sites SmaI 21 27 33 39
+sites SrfI 26
+sites SwaI 52
+sites XmaI 21 27 33 39
+sites XmnI 138
+out
+|DATE
+|TITLE 
+|From 15 to 95. 
+|
+|Absent Sites
+|
+|AatII          AbsI           
+|Acc65I         AciI           
+|AclI           AfeI           
+|AflII          AgeI           
+|AluI           ApaLI          
+|AscI           AseI           
+|AvrII          BamHI          
+|BbsI           BclI           
+|BfaI           BglII          
+|BsaAI          BsaBI          
+|BsaI           BsaWI          
+|BsiWI          BsmBI          
+|BspEI          BspHI          
+|BsrBI          BsrGI          
+|BssHII         BstBI          
+|BstUI          BstYI          
+|BstZ17I        Cac8I          
+|ClaI           DpnI           
+|EagI           EcoRI          
+|EcoRV          FseI           
+|FspI           HaeII          
+|HhaI           HincII         
+|HindIII        HpaI           
+|Hpy8I          HpyCH4V        
+|KasI           KpnI           
+|MauBI          MboI           
+|MfeI           MluI           
+|MreI           NaeI           
+|NarI           NdeI           
+|NgoMIV         NheI           
+|NotI           NruI           
+|NsiI           NspI           
+|PacI           PaqCI          
+|PciI           PmeI           
+|PmlI           PshAI          
+|PsiI           PstI           
+|PvuI           PvuII          
+|RsaI           SacI           
+|SacII          SalI           
+|SapI           SbfI           
+|ScaI           SfiI           
+|SfoI           SgfI           
+|SgrAI          SgrDI          
+|SnaBI          SpeI           
+|SphI           SspI           
+|StuI           TaqI           
+|TatI           XbaI           
+|XcmI           XhoI           
+|XmnI           ZraI           
+|
+END
+CASE list 47
+circular 1
+seq CTCACCCCTATGAAATGATTACTGCGTCTTGCCGGAGACGCGGCCGCGGCCGCCTGCCGGCAATTGGTATCCGGTGCTTGATTAATCCTCAGTCGTAGGATCCAGGCGCCGGCGCCGGCGCCCCGGCCGGGCCGGCGCCGCTATCGCGGCTCGAGGGCCAGTACTGAGCTCGATCGCAGGGGTGTGTTCCGTCTATCCCGTCTTGCCACCCGGCACCGGTCTCGAGGCTTT
+sel 52 151
+enz Acc65I AvrII BsmBI NotI StuI
+methylated 0
+format 0
+which unique
+columns 3
+region selection
+sites AciI 40 44 46 50 138 146
+sites AgeI 215
+sites AluI 167
+sites AseI 81
+sites AvaI 150 221
+sites BamHI 98
+sites BsaI 218
+sites BsaWI 70 215
+sites BsmBI 35
+sites BstUI 39 45 145
+sites BstYI 98
+sites Cac8I 52 56 108 114 131
+sites EagI 41 47 124
+sites HaeII 105 111 117 134
+sites HaeIII 42 48 125 130 156
+sites HhaI 106 112 118 135
+sites HpaII 32 57 71 109 115 123 127 132 210 216
+sites KasI 105 111 117 134
+sites MboI 99 172
+sites MfeI 61
+sites MluCI 62
+sites MreI 107
+sites MseI 82
+sites NaeI 56 108 114 131
+sites NarI 105 111 117 134
+sites NgoMIV 56 108 114 131
+sites NotI 40
+sites PvuI 171
+sites RsaI 161
+sites SacI 166
+sites SacII 44
+sites ScaI 160
+sites SfoI 105 111 117 134
+sites SgrAI 107
+sites TaqI 151 170 222
+sites TatI 160
+sites XhoI 150 221
+out
+|DATE
+|TITLE 
+|From 52 to 151. 
+|
+|Unique Sites
+|
+|AseI           AvaI           BamHI          
+|BsaWI          BstUI          BstYI          
+|EagI           MboI           MfeI           
+|MluCI          MreI           MseI           
+|SgrAI          TaqI           XhoI           
+|
+END
+CASE list 48
+circular 1
+seq CGTATATCGGAACGTCTCGAGATGATGCGACGTCGCCTACATCGACCCTTAAGCCGAGCGCTAGCGCTAGCGCTAGCGCTTCGAATTCGAATTCGAATTCGAATTAGGTAGCAGATCAAACGTTAACTCTGGATTTCATAG
+sel -
+enz AfeI AluI ApoI BamHI FspI HaeIII HindIII PmlI SgfI ZraI
+methylated 0
+format 1
+which all
+columns 7
+region selection
+sites AatII 29
+sites AclI 119
+sites AfeI 57 63 69 75
+sites AflII 48
+sites ApoI 83 89 95
+sites AvaI 16
+sites BfaI 61 67 73
+sites BsmBI 13
+sites BstBI 80 86 92 98
+sites Cac8I 60 66 72
+sites EcoRI 83 89 95
+sites HaeII 57 63 69 75
+sites HhaI 58 64 70 76
+sites HincII 122
+sites HpaI 122
+sites Hpy8I 122
+sites HpyCH4IV 12 30 120
+sites MboI 114
+sites MluCI 84 90 96 102
+sites MseI 49 123
+sites NheI 60 66 72
+sites TaqI 17 42 81 87 93 99
+sites XhoI 16
+sites ZraI 29
+out
+|DATE
+|TITLE 
+|From 0 to 141. 
+|
+|All Enzymes
+|
+|AatII       1       AbsI        0       Acc65I      0       AciI        0       AclI        1       AfeI        4       AflII       1       
+|AgeI        0       AluI        0       ApaI        0       ApaLI       0       ApoI        3       AscI        0       AseI        0       
+|AvaI        1       AvrII       0       BamHI       0       BbsI        0       BclI        0       BfaI        3       BglII       0       
+|BmgBI       0       BsaAI       0       BsaBI       0       BsaI        0       BsaWI       0       BsiWI       0       BsmBI       1       
+|BspEI       0       BspHI       0       BsrBI       0       BsrGI       0       BssHII      0       BssSI       0       BstBI       4       
+|BstUI       0       BstYI       0       BstZ17I     0       Cac8I       3       ClaI        0       DpnI        0       DraI        0       
+|EagI        0       EcoRI       3       EcoRV       0       FseI        0       FspI        0       HaeII       4       HaeIII      0       
+|HhaI        4       HincII      1       HindIII     0       HpaI        1       HpaII       0       Hpy8I       1       HpyCH4IV    3       
+|HpyCH4V     0       KasI        0       KpnI        0       MauBI       0       MboI        1       MfeI        0       MluCI       4       
+|MluI        0       MreI        0       MscI        0       MseI        2       NaeI        0       NarI        0       NcoI        0       
+|NdeI        0       NgoMIV      0       NheI        3       NlaIII      0       NotI        0       NruI        0       NsiI        0       
+|NspI        0       PacI        0       PaqCI       0       PciI        0       PmeI        0       PmlI        0       PshAI       0       
+|PsiI        0       PstI        0       PvuI        0       PvuII       0       RsaI        0       SacI        0       SacII       0       
+|SalI        0       SapI        0       SbfI        0       ScaI        0       SfiI        0       SfoI        0       SgfI        0       
+|SgrAI       0       SgrDI       0       SmaI        0       SnaBI       0       SpeI        0       SphI        0       SrfI        0       
+|SspI        0       StuI        0       SwaI        0       TaqI        6       TatI        0       XbaI        0       XcmI        0       
+|XhoI        1       XmaI        0       XmnI        0       ZraI        1       
+END
