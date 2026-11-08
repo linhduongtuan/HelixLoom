@@ -396,6 +396,17 @@ impl Request {
         }
     }
 
+    /// The most GPUs the job can put to use at once. A PhyloCNN job shares its trees out over the GPUs it is given, so one for
+    /// each tree at most; a structure is folded by the workstation's own program, which uses `fold_gpus` of them (what the
+    /// person who runs the server says); no other job uses a GPU.
+    pub fn most_gpus(&self, fold_gpus: usize) -> usize {
+        match self {
+            Request::PhyloCnn { newick, .. } => newick.matches(';').count().max(1),
+            Request::Fold { .. } => fold_gpus.max(1),
+            _ => 1,
+        }
+    }
+
     pub fn encode(&self) -> Container {
         match self {
             Request::Align { seqs, mafft } => Container::new()

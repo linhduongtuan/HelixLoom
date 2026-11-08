@@ -3,6 +3,7 @@
 use super::http::{self, Allowed, Reply, RESULT_REPLY, SMALL_REPLY};
 use super::jobs::{valid_id, JobInfo, Status};
 use super::one_line;
+use super::settings::GpusPerJob;
 use super::tasks::{Kind, Request, Response};
 use super::wire::{meta, Container};
 use super::DEFAULT_PORT;
@@ -144,6 +145,8 @@ impl ServerStatus {
 pub struct Remote {
     address: String,
     token: String,
+    /// How many GPUs one job is to have at once, when it can use several.
+    gpus: GpusPerJob,
 }
 
 /// The address only: the token is a password, and a log line or a failed test must never print it.
@@ -152,6 +155,7 @@ impl std::fmt::Debug for Remote {
         f.debug_struct("Remote")
             .field("address", &self.address)
             .field("token", &"<hidden>")
+            .field("gpus", &self.gpus)
             .finish()
     }
 }
@@ -169,7 +173,13 @@ impl Remote {
         Ok(Remote {
             address: parse_address(address)?,
             token: token.to_string(),
+            gpus: GpusPerJob::default(),
         })
+    }
+
+    /// The same connection, asking for `gpus` GPUs for each job that can use several.
+    pub fn with_gpus(self, gpus: GpusPerJob) -> Remote {
+        Remote { gpus, ..self }
     }
 
     pub fn address(&self) -> &str {
@@ -253,7 +263,12 @@ impl Remote {
     /// Send a request to be run, with a label for the list of jobs; the job's id.
     pub fn submit(&self, request: &Request, label: &str) -> Result<String, String> {
         let kind = request.kind();
-        let job = format!("kind={}\nlabel={}\n", kind.name(), super::one_line(label));
+        let job = format!(
+            "kind={}\nlabel={}\ngpus={}\n",
+            kind.name(),
+            super::one_line(label),
+            self.gpus.wire()
+        );
         let body = request.encode().with("job", job).encode();
         let reply = self.container("POST", "/v1/jobs", &body)?;
         // the id goes into the address of every later request: it is only taken if it is one this server makes
@@ -525,6 +540,93 @@ mod tests {
         };
         let why = remote(&at).submit(&request, "x").expect_err("refused");
         assert!(why.contains("job number"), "{why}");
+    }
+
+    /// A server on this computer that takes one request whole, answers that the job is queued as `j1-1`, and hands what it was
+    /// sent to the receiver: its address.
+    fn recording() -> (String, std::sync::mpsc::Receiver<Vec<u8>>) {
+        use std::io::{Read, Write};
+        let listener = std::net::TcpListener::bind("127.0.0.1:0").expect("a port");
+        let address = listener.local_addr().expect("an address").to_string();
+        let (send, receive) = std::sync::mpsc::channel();
+        std::thread::spawn(move || {
+            let (mut stream, _) = listener.accept().expect("a connection");
+            let mut got = Vec::new();
+            let mut chunk = [0u8; 4096];
+            // until the header is in and as many bytes of the body as it says
+            let whole = |got: &[u8]| {
+                let text = String::from_utf8_lossy(got);
+                let Some(end) = text.find("\r\n\r\n") else {
+                    return false;
+                };
+                let length: usize = text[..end]
+                    .lines()
+                    .find_map(|l| l.strip_prefix("Content-Length: "))
+                    .and_then(|n| n.trim().parse().ok())
+                    .unwrap_or(0);
+                got.len() >= end + 4 + length
+            };
+            while !whole(&got) {
+                let n = stream.read(&mut chunk).unwrap_or(0);
+                if n == 0 {
+                    break;
+                }
+                got.extend_from_slice(&chunk[..n]);
+            }
+            let body = Container::new().with("id", "j1-1").encode();
+            let head = format!(
+                "HTTP/1.1 201 Created\r\nContent-Length: {}\r\nConnection: close\r\n\r\n",
+                body.len()
+            );
+            let _ = stream.write_all(head.as_bytes());
+            let _ = stream.write_all(&body);
+            let _ = send.send(got);
+        });
+        (address, receive)
+    }
+
+    #[test]
+    fn a_job_is_sent_asking_for_the_gpus_the_connection_was_set_to() {
+        let request = Request::Fold {
+            sequence: b"MQIFVKTLTGKTITLEVEPSDTIENVKAKIQ".to_vec(),
+            local: true,
+        };
+        // a connection that has not been told asks for one, as before jobs could have several
+        for (gpus, line) in [
+            (None, "gpus=1\n"),
+            (Some(GpusPerJob::Count(1)), "gpus=1\n"),
+            (Some(GpusPerJob::Count(3)), "gpus=3\n"),
+            (Some(GpusPerJob::All), "gpus=0\n"),
+        ] {
+            let (at, sent) = recording();
+            let connection = gpus.map_or_else(|| remote(&at), |g| remote(&at).with_gpus(g));
+            assert_eq!(connection.submit(&request, "x").expect("queued"), "j1-1");
+            let body = sent
+                .recv_timeout(Duration::from_secs(10))
+                .expect("what was sent");
+            let text = String::from_utf8_lossy(&body);
+            assert!(text.contains(line), "{gpus:?}: {text}");
+            assert!(text.contains("kind=fold\n"), "{text}");
+        }
+    }
+
+    #[test]
+    fn two_connections_to_one_workstation_are_the_same_only_when_they_ask_for_the_same_gpus() {
+        let a = Remote::new("h:1", "token-token-token-1").expect("a connection");
+        assert_eq!(a.clone(), a);
+        assert_ne!(a.clone().with_gpus(GpusPerJob::All), a);
+        assert_eq!(
+            a.clone().with_gpus(GpusPerJob::Count(1)),
+            a,
+            "one is what a new connection asks for"
+        );
+        // the token is still never printed, and what the connection asks for is
+        let shown = format!("{:?}", a.with_gpus(GpusPerJob::Count(2)));
+        assert!(
+            shown.contains("<hidden>") && shown.contains("Count(2)"),
+            "{shown}"
+        );
+        assert!(!shown.contains("token-token"), "{shown}");
     }
 
     #[test]

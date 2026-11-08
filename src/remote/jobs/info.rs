@@ -54,14 +54,26 @@ pub struct JobInfo {
     pub created: u64,
     pub started: u64,
     pub finished: u64,
-    pub gpu: Option<usize>,
-    pub needs_gpu: bool,
+    /// The GPUs the job was given, lowest first: none while it waits and for a job that needs none.
+    pub gpus: Vec<usize>,
+    /// How many GPUs the job needs at once: 0 for a job that needs none.
+    pub gpus_wanted: usize,
     pub error: String,
 }
 
+/// The most GPUs one job can have (the numbers `--gpus` takes go up to 63).
+const MOST_GPUS: usize = 64;
+
 impl JobInfo {
-    /// The job as one line of tab-separated fields.
+    /// Whether the job needs a GPU.
+    pub fn needs_gpu(&self) -> bool {
+        self.gpus_wanted > 0
+    }
+
+    /// The job as one line of tab-separated fields. The GPUs it was given are a list with commas between (`0,1`), and the
+    /// field after it is how many it wants (`1` for one GPU, as before jobs could have several).
     pub fn to_line(&self) -> String {
+        let given: Vec<String> = self.gpus.iter().map(usize::to_string).collect();
         [
             self.id.clone(),
             self.kind.name().to_string(),
@@ -69,8 +81,8 @@ impl JobInfo {
             self.created.to_string(),
             self.started.to_string(),
             self.finished.to_string(),
-            self.gpu.map_or(String::new(), |g| g.to_string()),
-            u8::from(self.needs_gpu).to_string(),
+            given.join(","),
+            self.gpus_wanted.to_string(),
             one_line(&self.label),
             one_line(&self.error),
         ]
@@ -79,7 +91,7 @@ impl JobInfo {
 
     pub fn from_line(line: &str) -> Option<JobInfo> {
         let f: Vec<&str> = line.trim_end_matches(['\r', '\n']).split('\t').collect();
-        let [id, kind, status, created, started, finished, gpu, needs_gpu, label, error] =
+        let [id, kind, status, created, started, finished, gpus, wanted, label, error] =
             f.as_slice()
         else {
             return None;
@@ -95,12 +107,8 @@ impl JobInfo {
             created: created.parse().ok()?,
             started: started.parse().ok()?,
             finished: finished.parse().ok()?,
-            gpu: if gpu.is_empty() {
-                None
-            } else {
-                Some(gpu.parse().ok()?)
-            },
-            needs_gpu: *needs_gpu == "1",
+            gpus: gpu_numbers(gpus)?,
+            gpus_wanted: wanted.parse().ok().filter(|&n| n <= MOST_GPUS)?,
             label: one_line(label),
             error: one_line(error),
         })
@@ -110,6 +118,19 @@ impl JobInfo {
     pub(super) fn expired(&self, now: u64, keep: Duration) -> bool {
         self.status.is_over() && now.saturating_sub(self.finished) > keep.as_secs()
     }
+}
+
+/// The GPU numbers in a job's line: none for an empty field, else numbers with commas between. A line from a server that
+/// names more GPUs than a machine has, or a number that is not one, is not a line this program reads.
+fn gpu_numbers(field: &str) -> Option<Vec<usize>> {
+    if field.is_empty() {
+        return Some(Vec::new());
+    }
+    let numbers: Vec<usize> = field
+        .split(',')
+        .map(|n| n.parse().ok().filter(|&g| g < MOST_GPUS))
+        .collect::<Option<_>>()?;
+    (numbers.len() <= MOST_GPUS).then_some(numbers)
 }
 
 /// The order in which jobs were made: by time, then by the counter in the id as a number (as text, `…-10` would come

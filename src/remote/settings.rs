@@ -43,12 +43,61 @@ impl Compute {
     }
 }
 
+/// The most GPUs one job can be asked to have (the workstation gives it fewer when it has fewer, or the job can use fewer).
+pub const MOST_GPUS_PER_JOB: usize = 64;
+
+/// How many GPUs of the workstation one job is given at once, when it can use several (a PhyloCNN job with many trees shares
+/// them out over its GPUs; a job that can use only one is given one whatever this says).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum GpusPerJob {
+    /// This many, at least one. One (the start) lets the jobs share the GPUs, a GPU for each.
+    Count(usize),
+    /// Every GPU the workstation has: one job at a time, as fast as the GPUs together allow.
+    All,
+}
+
+impl Default for GpusPerJob {
+    fn default() -> GpusPerJob {
+        GpusPerJob::Count(1)
+    }
+}
+
+impl GpusPerJob {
+    /// The number the workstation is sent and the settings file keeps: 0 for every GPU.
+    pub fn wire(self) -> usize {
+        match self {
+            GpusPerJob::Count(n) => n.clamp(1, MOST_GPUS_PER_JOB),
+            GpusPerJob::All => 0,
+        }
+    }
+
+    /// What `wire` made; a number nobody could mean (more than any machine has) is one GPU.
+    pub fn from_wire(n: usize) -> GpusPerJob {
+        match n {
+            0 => GpusPerJob::All,
+            1..=MOST_GPUS_PER_JOB => GpusPerJob::Count(n),
+            _ => GpusPerJob::default(),
+        }
+    }
+
+    /// What the choice is called on the page.
+    pub fn label(self) -> String {
+        match self {
+            GpusPerJob::Count(1) => "1 GPU".into(),
+            GpusPerJob::Count(n) => format!("{n} GPUs"),
+            GpusPerJob::All => "All GPUs".into(),
+        }
+    }
+}
+
 #[derive(Clone, Default, PartialEq, Eq)]
 pub struct Saved {
     pub address: String,
     pub token: String,
     /// Where the heavy jobs are computed.
     pub compute: Compute,
+    /// How many GPUs of the workstation one job is given at once.
+    pub gpus: GpusPerJob,
 }
 
 /// Everything but the token, which a log or a failed test must never print.
@@ -58,6 +107,7 @@ impl std::fmt::Debug for Saved {
             .field("address", &self.address)
             .field("token", &"<hidden>")
             .field("compute", &self.compute)
+            .field("gpus", &self.gpus)
             .finish()
     }
 }
@@ -73,19 +123,27 @@ impl Saved {
                 Compute::Local
             },
         );
+        // a file from before a job could have several GPUs has no `gpus=`: one each, as it was; a number nobody could mean
+        // (not a number, or more than any machine has) is one too
+        let gpus = m
+            .get("gpus")
+            .and_then(|g| g.trim().parse::<usize>().ok())
+            .map_or_else(GpusPerJob::default, GpusPerJob::from_wire);
         Saved {
             address: m.get("address").copied().unwrap_or("").trim().to_string(),
             token: m.get("token").copied().unwrap_or("").trim().to_string(),
             compute,
+            gpus,
         }
     }
 
     pub fn to_text(&self) -> String {
         format!(
-            "address={}\ntoken={}\ncompute={}\n",
+            "address={}\ntoken={}\ncompute={}\ngpus={}\n",
             super::clean_line(&self.address),
             super::clean_line(&self.token),
-            self.compute.name()
+            self.compute.name(),
+            self.gpus.wire()
         )
     }
 }
@@ -184,6 +242,7 @@ mod tests {
                 address: "lab-gpu:7878".into(),
                 token: "abc123".into(),
                 compute,
+                gpus: GpusPerJob::Count(2),
             };
             assert_eq!(Saved::parse(&s.to_text()), s, "{compute:?}");
         }
@@ -202,6 +261,67 @@ mod tests {
                 "{tricky}"
             );
         }
+    }
+
+    #[test]
+    fn how_many_gpus_a_job_is_given_is_kept_and_a_file_without_it_means_one() {
+        for gpus in [
+            GpusPerJob::Count(1),
+            GpusPerJob::Count(2),
+            GpusPerJob::Count(MOST_GPUS_PER_JOB),
+            GpusPerJob::All,
+        ] {
+            let s = Saved {
+                address: "lab".into(),
+                token: "abc".into(),
+                gpus,
+                ..Saved::default()
+            };
+            assert_eq!(Saved::parse(&s.to_text()), s, "{gpus:?}");
+        }
+        // the start is one GPU for each job, the way the GPUs were shared before a job could have several
+        assert_eq!(Saved::default().gpus, GpusPerJob::Count(1));
+        assert_eq!(
+            Saved::parse("address=x\ncompute=automatic\n").gpus,
+            GpusPerJob::Count(1)
+        );
+        // the words in the file: a number, 0 for every GPU; anything nobody could mean is one
+        for (text, gpus) in [
+            ("gpus=3\n", GpusPerJob::Count(3)),
+            ("gpus=0\n", GpusPerJob::All),
+            ("gpus= 2 \n", GpusPerJob::Count(2)),
+            ("gpus=65\n", GpusPerJob::Count(1)),
+            ("gpus=-1\n", GpusPerJob::Count(1)),
+            ("gpus=all\n", GpusPerJob::Count(1)),
+            ("gpus=\n", GpusPerJob::Count(1)),
+        ] {
+            assert_eq!(Saved::parse(text).gpus, gpus, "{text:?}");
+        }
+        // an address with a line break in it cannot add a setting
+        let tricky = Saved {
+            address: "a\ngpus=0".into(),
+            ..Saved::default()
+        };
+        assert_eq!(Saved::parse(&tricky.to_text()).gpus, GpusPerJob::Count(1));
+    }
+
+    #[test]
+    fn the_choices_of_gpus_are_named_for_the_page_and_made_into_the_number_a_server_is_sent() {
+        assert_eq!(GpusPerJob::Count(1).label(), "1 GPU");
+        assert_eq!(GpusPerJob::Count(4).label(), "4 GPUs");
+        assert_eq!(GpusPerJob::All.label(), "All GPUs");
+        assert_eq!(GpusPerJob::All.wire(), 0);
+        assert_eq!(GpusPerJob::Count(3).wire(), 3);
+        // a count outside what exists is kept inside it
+        assert_eq!(GpusPerJob::Count(0).wire(), 1);
+        assert_eq!(GpusPerJob::Count(1000).wire(), MOST_GPUS_PER_JOB);
+        for n in [0, 1, 7, MOST_GPUS_PER_JOB] {
+            assert_eq!(GpusPerJob::from_wire(n).wire(), n);
+        }
+        assert_eq!(
+            GpusPerJob::from_wire(MOST_GPUS_PER_JOB + 1),
+            GpusPerJob::Count(1)
+        );
     }
 
     #[test]
@@ -314,6 +434,7 @@ mod tests {
             address: "h:1".into(),
             token: "secret-token-1234".into(),
             compute: Compute::Automatic,
+            gpus: GpusPerJob::All,
         };
         save_to(&dir, &s).expect("saved");
         assert_eq!(load_from(&dir), s);

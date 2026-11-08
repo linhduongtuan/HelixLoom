@@ -1,18 +1,21 @@
-//! The server's jobs: the queue, the GPUs handed out one job at a time, the process that runs each job, and everything
-//! kept on disk so that results wait for the person after the job is done, and survive a restart of the server.
+//! The server's jobs: the queue, the GPUs handed out to the jobs (one or several to a job), the process that runs each job,
+//! and everything kept on disk so that results wait for the person after the job is done, and survive a restart of the
+//! server.
 //!
 //! A job lives in a folder of its own, `<data>/jobs/<id>/`: `meta.txt` (one line: what the list shows), `request.bin`
 //! (what was sent), `result.bin` (what came back), `log.txt` (what the job's process printed). Each job runs in a new
 //! process, `helixloom run-job`, so that a job that crashes, runs too long or is cancelled cannot harm the server, and
-//! a GPU job can be shown exactly one GPU.
+//! a GPU job can be shown exactly the GPUs it was given.
 
 mod config;
 mod info;
+mod scheduler;
 
 use super::gpus::Gpu;
 use super::one_line;
 use super::tasks::Kind;
 use info::{counter_of, made_order};
+use scheduler::Scheduler;
 use std::collections::{BTreeMap, HashSet, VecDeque};
 use std::fs::File;
 use std::path::{Path, PathBuf};
@@ -23,6 +26,7 @@ use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 pub use config::Config;
 pub use info::{valid_id, JobInfo, Status};
+pub use scheduler::{gpus_for, Slot};
 
 /// How often a running job's process is looked at.
 const WATCH: Duration = Duration::from_millis(200);
@@ -33,63 +37,6 @@ const RESULT_FILE: &str = "result.bin";
 const ERROR_FILE: &str = "error.txt";
 const META_FILE: &str = "meta.txt";
 const LOG_FILE: &str = "log.txt";
-
-/// What a worker may use for a job.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum Slot {
-    Cpu,
-    Gpu(usize),
-}
-
-/// Hands out the GPUs one job at a time, and a limited number of CPU jobs at once.
-#[derive(Debug)]
-pub struct Scheduler {
-    free_gpus: Vec<usize>,
-    free_cpu: usize,
-}
-
-impl Scheduler {
-    pub fn new(gpus: &[usize], cpu_jobs: usize) -> Scheduler {
-        let mut free_gpus = gpus.to_vec();
-        free_gpus.sort_unstable();
-        free_gpus.dedup();
-        Scheduler {
-            free_gpus,
-            free_cpu: cpu_jobs.max(1),
-        }
-    }
-
-    pub fn can_take(&self, needs_gpu: bool) -> bool {
-        if needs_gpu {
-            !self.free_gpus.is_empty()
-        } else {
-            self.free_cpu > 0
-        }
-    }
-
-    /// The lowest free GPU for a job that needs one, or one of the CPU places.
-    pub fn take(&mut self, needs_gpu: bool) -> Option<Slot> {
-        if !self.can_take(needs_gpu) {
-            return None;
-        }
-        if needs_gpu {
-            Some(Slot::Gpu(self.free_gpus.remove(0)))
-        } else {
-            self.free_cpu -= 1;
-            Some(Slot::Cpu)
-        }
-    }
-
-    pub fn give_back(&mut self, slot: Slot) {
-        match slot {
-            Slot::Cpu => self.free_cpu += 1,
-            Slot::Gpu(id) => {
-                self.free_gpus.push(id);
-                self.free_gpus.sort_unstable();
-            }
-        }
-    }
-}
 
 struct State {
     jobs: BTreeMap<String, JobInfo>,
@@ -432,13 +379,13 @@ impl Shared {
         None
     }
 
-    /// Put a request in the queue; the id it will be known by.
+    /// Put a request in the queue; the id it will be known by. `gpus_wanted` is how many GPUs the job needs at once (0: none).
     pub fn submit(
         &self,
         kind: Kind,
         label: &str,
         request: &[u8],
-        needs_gpu: bool,
+        gpus_wanted: usize,
     ) -> Result<String, String> {
         let id = format!(
             "j{:x}-{:x}",
@@ -459,8 +406,8 @@ impl Shared {
             created: now(),
             started: 0,
             finished: 0,
-            gpu: None,
-            needs_gpu,
+            gpus: Vec::new(),
+            gpus_wanted,
             error: String::new(),
         };
         private_dir(&dir)
@@ -517,6 +464,8 @@ impl Shared {
         st.queue.retain(|q| q != id);
         st.jobs.remove(id);
         drop(st);
+        // a job that waited for several GPUs may have been holding up the GPU jobs behind it (`next_to_start`)
+        self.wake.notify_all();
         let _ = std::fs::remove_dir_all(self.job_dir(id));
         Ok(())
     }
@@ -526,7 +475,7 @@ impl Shared {
         let busy = |gpu: usize| {
             st.jobs
                 .values()
-                .find(|j| j.status == Status::Running && j.gpu == Some(gpu))
+                .find(|j| j.status == Status::Running && j.gpus.contains(&gpu))
                 .map(|j| j.id.clone())
         };
         Overview {
@@ -564,30 +513,44 @@ impl Shared {
     fn work(&self) {
         loop {
             let (id, slot) = self.next_job();
-            let outcome = self.run_job(&id, slot);
-            self.finish(&id, slot, outcome);
+            let outcome = self.run_job(&id, &slot);
+            self.finish(&id, &slot, outcome);
         }
     }
 
-    /// Wait for a job that can start (a GPU job needs a free GPU, any other a free CPU place).
+    /// The place in the queue of the next job that can start now. A job that needs no GPU needs a free CPU place; a GPU job
+    /// needs all the GPUs it wants free at once, and **GPU jobs start in the order they were sent**: while the first of them
+    /// waits for its GPUs none behind it starts, so that a job that wants several is not kept waiting for ever by a stream
+    /// of jobs that want one.
+    fn next_to_start(st: &State) -> Option<usize> {
+        let mut gpu_queue_blocked = false;
+        st.queue.iter().position(|id| {
+            let Some(job) = st.jobs.get(id) else {
+                return false;
+            };
+            if job.gpus_wanted == 0 {
+                return st.scheduler.can_take(0);
+            }
+            if gpu_queue_blocked {
+                return false;
+            }
+            let can = st.scheduler.can_take(job.gpus_wanted);
+            gpu_queue_blocked = !can;
+            can
+        })
+    }
+
+    /// Wait for a job that can start (see `next_to_start`).
     fn next_job(&self) -> (String, Slot) {
         let mut st = self.lock();
         loop {
-            let pick = st.queue.iter().position(|id| {
-                st.jobs
-                    .get(id)
-                    .is_some_and(|j| st.scheduler.can_take(j.needs_gpu))
-            });
-            if let Some(slot_at) = pick {
+            if let Some(slot_at) = Self::next_to_start(&st) {
                 let id = st.queue.remove(slot_at).unwrap_or_default();
-                let needs = st.jobs.get(&id).is_some_and(|j| j.needs_gpu);
-                if let (Some(slot), Some(job)) = (st.scheduler.take(needs), st.jobs.get_mut(&id)) {
+                let wanted = st.jobs.get(&id).map_or(0, |j| j.gpus_wanted);
+                if let (Some(slot), Some(job)) = (st.scheduler.take(wanted), st.jobs.get_mut(&id)) {
                     job.status = Status::Running;
                     job.started = now();
-                    job.gpu = match slot {
-                        Slot::Gpu(g) => Some(g),
-                        Slot::Cpu => None,
-                    };
+                    job.gpus = slot.gpus().to_vec();
                     let job = job.clone();
                     // the disk is written without holding the table, so a slow disk does not hold up the others
                     drop(st);
@@ -600,7 +563,7 @@ impl Shared {
     }
 
     /// Run a job's process and wait for it, stopping it if it is cancelled or runs too long.
-    fn run_job(&self, id: &str, slot: Slot) -> Outcome {
+    fn run_job(&self, id: &str, slot: &Slot) -> Outcome {
         let dir = self.job_dir(id);
         let tmp = dir.join("tmp");
         let outcome = match self.start_process(&dir, &tmp, slot) {
@@ -612,7 +575,7 @@ impl Shared {
     }
 
     /// Start `helixloom run-job` for the job in `dir`, in a process group of its own so that all of it can be stopped at once.
-    fn start_process(&self, dir: &Path, tmp: &Path, slot: Slot) -> Result<Child, String> {
+    fn start_process(&self, dir: &Path, tmp: &Path, slot: &Slot) -> Result<Child, String> {
         std::fs::create_dir_all(tmp).map_err(|e| format!("Could not make a work folder: {e}"))?;
         let log =
             File::create(dir.join(LOG_FILE)).map_err(|e| format!("Could not open the log: {e}"))?;
@@ -631,25 +594,19 @@ impl Shared {
         if let Some(words) = &self.config.fold_command {
             cmd.arg("--").args(words);
         }
-        // the job sees the GPU it was given and no other, keeps its temporary files in its own folder, and is never
-        // handed the token (a server started with HELIXLOOM_TOKEN has it in its environment). The GPUs are numbered as
-        // `nvidia-smi` numbers them (by place on the bus), not in CUDA's own order (fastest first), so that the number
-        // on the status page and in `--gpus` is the card the job gets.
-        cmd.env(
-            "CUDA_VISIBLE_DEVICES",
-            match slot {
-                Slot::Gpu(g) => g.to_string(),
-                Slot::Cpu => String::new(),
-            },
-        )
-        .env("CUDA_DEVICE_ORDER", "PCI_BUS_ID")
-        .env_remove("HELIXLOOM_TOKEN")
-        .env("TMPDIR", tmp)
-        .env("TEMP", tmp)
-        .env("TMP", tmp)
-        .stdin(Stdio::null())
-        .stdout(log)
-        .stderr(err);
+        // the job sees the GPUs it was given and no others (one or several, with commas between), keeps its temporary
+        // files in its own folder, and is never handed the token (a server started with HELIXLOOM_TOKEN has it in its
+        // environment). The GPUs are numbered as `nvidia-smi` numbers them (by place on the bus), not in CUDA's own order
+        // (fastest first), so that the numbers on the status page and in `--gpus` are the cards the job gets.
+        cmd.env("CUDA_VISIBLE_DEVICES", slot.visible_devices())
+            .env("CUDA_DEVICE_ORDER", "PCI_BUS_ID")
+            .env_remove("HELIXLOOM_TOKEN")
+            .env("TMPDIR", tmp)
+            .env("TEMP", tmp)
+            .env("TMP", tmp)
+            .stdin(Stdio::null())
+            .stdout(log)
+            .stderr(err);
         #[cfg(unix)]
         {
             use std::os::unix::process::CommandExt;
@@ -687,7 +644,7 @@ impl Shared {
         }
     }
 
-    fn finish(&self, id: &str, slot: Slot, outcome: Outcome) {
+    fn finish(&self, id: &str, slot: &Slot, outcome: Outcome) {
         // what was sent is not needed any more (the result, or the reason, is what is kept), and it may be hundreds of
         // megabytes. It goes before the job is shown as over, so that nobody sees "done" with the request still on the disk.
         let _ = std::fs::remove_file(self.job_dir(id).join(REQUEST_FILE));

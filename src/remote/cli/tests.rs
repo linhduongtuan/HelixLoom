@@ -46,6 +46,8 @@ fn the_server_starts_with_safe_defaults_given_only_a_token() {
         (7 * 86400, 24 * 3600)
     );
     assert!(c.gpus.is_empty() && c.fold_command.is_none());
+    // a structure is folded on one GPU unless the person who runs the server says the program uses more
+    assert_eq!(c.fold_gpus, 1);
     // the folder is named as an absolute path, so that what the jobs are told about it holds wherever they run
     assert!(c.data_dir.is_absolute() && c.data_dir.ends_with("helixloom-data"));
 }
@@ -73,6 +75,8 @@ fn every_option_is_read() {
             "12",
             "--fold-command",
             "/opt/esm/run.sh --fast",
+            "--fold-gpus",
+            "2",
             "--name",
             "lab\nGPU",
         ]),
@@ -80,6 +84,7 @@ fn every_option_is_read() {
     )
     .expect("options");
     assert_eq!(o.listen.port(), 9000);
+    assert_eq!(o.config.fold_gpus, 2);
     assert!(!o.listen.ip().is_loopback());
     let c = o.config;
     assert_eq!(
@@ -146,6 +151,18 @@ fn wrong_options_are_refused_in_words() {
             vec!["--token-file", &t, "--cpu-jobs", "100000"],
         ),
         ("bad gpu", vec!["--token-file", &t, "--gpus", "x"]),
+        (
+            "zero fold gpus",
+            vec!["--token-file", &t, "--fold-gpus", "0"],
+        ),
+        (
+            "absurd fold gpus",
+            vec!["--token-file", &t, "--fold-gpus", "1000"],
+        ),
+        (
+            "fold gpus in words",
+            vec!["--token-file", &t, "--fold-gpus", "two"],
+        ),
         (
             "bad address",
             vec!["--token-file", &t, "--listen", "not an address"],

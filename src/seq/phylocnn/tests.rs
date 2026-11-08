@@ -265,6 +265,155 @@ fn same_outputs(device: &candle_core::Device, tolerance: f32) {
     }
 }
 
+/// A small network of the program's own making, so that these checks need none of the networks' files: a convolution over
+/// the whole width with three filters, normalisation, a convolution of width one with two filters, the mean over the rows
+/// and a layer of three outputs (the shape of the real networks, in little).
+#[cfg(feature = "gpu")]
+fn small_network() -> Network {
+    let numbers = |n: usize, k: f32| -> Vec<f32> {
+        (0..n)
+            .map(|i| ((i * 7 + 3) % 11) as f32 * 0.07 - k)
+            .collect()
+    };
+    Network {
+        input: [4, 5, 2],
+        layers: vec![
+            Layer::Conv {
+                groups: 1,
+                kw: 5,
+                cin: 2,
+                filters: 3,
+                act: Act::Elu,
+                w: numbers(5 * 2 * 3, 0.3),
+            },
+            Layer::Norm {
+                eps: 1e-3,
+                gamma: vec![1.1, 0.9, 1.0],
+                beta: vec![0.05, -0.05, 0.0],
+                mean: vec![0.1, -0.1, 0.0],
+                var: vec![0.8, 1.2, 1.0],
+            },
+            Layer::Conv {
+                groups: 1,
+                kw: 1,
+                cin: 3,
+                filters: 2,
+                act: Act::Relu,
+                w: numbers(3 * 2, 0.2),
+            },
+            Layer::Pool,
+            Layer::Dense {
+                inputs: 2,
+                outputs: 3,
+                act: Act::Softmax,
+                w: numbers(6, 0.2),
+                b: vec![0.1, 0.0, -0.1],
+            },
+        ],
+    }
+}
+
+#[cfg(feature = "gpu")]
+fn inputs_of(count: usize) -> Vec<Vec<f32>> {
+    (0..count)
+        .map(|k| {
+            (0..4 * 5 * 2)
+                .map(|i| ((i * 5 + k * 13) % 17) as f32 * 0.11 - 0.8)
+                .collect()
+        })
+        .collect()
+}
+
+#[cfg(feature = "gpu")]
+#[test]
+fn trees_shared_out_over_several_devices_come_back_in_their_own_order_with_the_same_answers() {
+    use candle_core::Device;
+    let net = small_network();
+    // three "devices" that are all the processor: what is checked is the sharing, the threads and the order of the answers
+    let devices = [Device::Cpu, Device::Cpu, Device::Cpu];
+    // 0 inputs, fewer inputs than devices, a count the devices do not divide, and more than one chunk of 128 on a device
+    for count in [0, 1, 2, 3, 7, 10, 300] {
+        let inputs = inputs_of(count);
+        let one = gpu::run_batch_on(&net, &inputs, &Device::Cpu).unwrap();
+        let many = gpu::run_batch_across(&net, &inputs, &devices).unwrap();
+        assert_eq!(many.len(), count, "{count} inputs");
+        for (k, (a, b)) in many.iter().zip(&one).enumerate() {
+            for (x, y) in a.iter().zip(b) {
+                assert!(
+                    (x - y).abs() <= 1e-6,
+                    "input {k} of {count}: {a:?} vs {b:?}"
+                );
+            }
+        }
+        // each answer belongs to its own input, not to a neighbour: the plain Rust network says the same
+        for (k, (x, got)) in inputs.iter().zip(&many).enumerate().step_by(7) {
+            let want = net.run(x).unwrap();
+            for (a, b) in got.iter().zip(&want) {
+                assert!((a - b).abs() <= 1e-4, "input {k} of {count}");
+            }
+        }
+    }
+}
+
+#[cfg(feature = "gpu")]
+#[test]
+fn one_device_is_the_plain_run_and_no_device_is_an_error_that_says_so() {
+    use candle_core::Device;
+    let net = small_network();
+    let inputs = inputs_of(5);
+    let alone = gpu::run_batch_across(&net, &inputs, &[Device::Cpu]).unwrap();
+    assert_eq!(
+        alone,
+        gpu::run_batch_on(&net, &inputs, &Device::Cpu).unwrap()
+    );
+    let none = gpu::run_batch_across(&net, &inputs, &[]).unwrap_err();
+    assert!(none.contains("no GPU"), "{none}");
+}
+
+#[cfg(feature = "gpu")]
+#[test]
+fn a_wrong_sized_input_on_any_device_is_reported_not_lost() {
+    use candle_core::Device;
+    let net = small_network();
+    let mut inputs = inputs_of(6);
+    inputs[5].pop();
+    let devices = [Device::Cpu, Device::Cpu];
+    let why = gpu::run_batch_across(&net, &inputs, &devices).unwrap_err();
+    assert!(why.contains("numbers"), "{why}");
+}
+
+#[cfg(feature = "gpu")]
+#[test]
+fn only_the_devices_that_have_inputs_are_counted_as_used() {
+    // 8 inputs over 4 devices: all four; 3 over 4: three; 5 over 4 (shares of 2): three; none: none
+    for (count, devices, used) in [
+        (8, 4, 4),
+        (3, 4, 3),
+        (5, 4, 3),
+        (0, 4, 0),
+        (9, 1, 1),
+        (1, 1, 1),
+    ] {
+        assert_eq!(
+            gpu::devices_used(count, devices),
+            used,
+            "{count} over {devices}"
+        );
+    }
+}
+
+#[cfg(feature = "gpu")]
+#[test]
+fn the_devices_found_agree_with_the_best_one_and_are_the_apple_gpu_alone_without_the_cuda_build() {
+    let found = gpu::devices();
+    // there is a best GPU exactly when there is a device to list
+    assert_eq!(found.is_empty(), gpu::device().is_none());
+    // a Mac has one GPU for the program; the cards of a CUDA build are counted from 0 without a gap
+    if !cfg!(feature = "cuda") {
+        assert!(found.len() <= 1, "{} devices without CUDA", found.len());
+    }
+}
+
 #[cfg(feature = "gpu")]
 #[test]
 fn candle_on_the_cpu_gives_the_plain_networks_answers() {

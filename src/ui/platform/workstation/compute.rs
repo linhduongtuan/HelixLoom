@@ -1,13 +1,13 @@
 //! Where a job runs: the choice of this computer, the workstation, or each job by its size, and the small control that every
 //! page that starts a job shows beside its button.
 
-use super::dim;
+use super::{dim, Clicks, WorkstationPage};
 use crate::remote::client::Remote;
-use crate::remote::settings::Compute;
+use crate::remote::settings::{Compute, GpusPerJob};
 use crate::remote::weight::{
     HEAVY_GENERATIONS, HEAVY_LETTERS, HEAVY_REPLICATES, HEAVY_SEQUENCES, HEAVY_TREES,
 };
-use crate::ui::design::Look;
+use crate::ui::design::{self, Look};
 use crate::ui::map::commify;
 use eframe::egui::{self, RichText, Ui};
 
@@ -52,6 +52,71 @@ pub(super) fn explain(choice: Compute) -> String {
             commify(HEAVY_TREES),
         ),
     }
+}
+
+/// What each choice of how many GPUs one job is given means.
+pub(super) fn explain_gpus(choice: GpusPerJob) -> String {
+    match choice {
+        GpusPerJob::Count(1) => "Each job that needs GPUs is given one, so several jobs run side by side, a GPU each.".into(),
+        GpusPerJob::Count(n) => format!(
+            "A job that can use several GPUs (PhyloCNN with many trees) is given {n} at once and shares its trees out over \
+             them; a job that can use fewer is given what it can use. The jobs behind it wait for GPUs in the order they \
+             were sent."
+        ),
+        GpusPerJob::All => "A job that can use several GPUs is given every GPU the workstation has: one job at a time, as \
+                            fast as the GPUs together allow."
+            .into(),
+    }
+}
+
+/// The choices of how many GPUs one job is given on a workstation with `have` GPUs: one up to all of them, and every GPU.
+pub(super) fn gpu_choices(have: usize) -> Vec<GpusPerJob> {
+    let counts = (1..=have.min(crate::remote::settings::MOST_GPUS_PER_JOB)).map(GpusPerJob::Count);
+    counts.chain([GpusPerJob::All]).collect()
+}
+
+/// How many GPUs one job is given, when the workstation has several. It is the choice that a job that can use several GPUs is
+/// sent with; with one GPU there is nothing to choose.
+fn gpus_section(ui: &mut Ui, look: &Look, page: &WorkstationPage, c: &mut Clicks) {
+    if page.active.is_none() || page.gpu_count() < 2 {
+        return;
+    }
+    design::section(ui, look, "GPUs for one job");
+    let mut chosen = page.gpus;
+    egui::ComboBox::from_id_salt("workstation_gpus_per_job")
+        .selected_text(chosen.label())
+        .show_ui(ui, |ui| {
+            for choice in gpu_choices(page.gpu_count()) {
+                ui.selectable_value(&mut chosen, choice, choice.label());
+            }
+        });
+    if chosen != page.gpus {
+        c.gpus = Some(chosen);
+    }
+    ui.label(dim(look, explain_gpus(page.gpus)));
+}
+
+/// Where the heavy jobs are computed: this computer, the workstation, or each job by its size, and how many GPUs of the
+/// workstation one job is given. The same choice of where is on every page that starts a job.
+pub(super) fn heavy_jobs_section(ui: &mut Ui, look: &Look, page: &WorkstationPage, c: &mut Clicks) {
+    design::section(ui, look, "Where jobs run");
+    let connected = page.active.is_some();
+    let mut mode = page.compute;
+    for choice in Compute::ALL {
+        // this computer can always be chosen; the others need a workstation to send to
+        let usable = connected || choice == Compute::Local;
+        ui.add_enabled_ui(usable, |ui| {
+            ui.radio_value(&mut mode, choice, choice.label());
+        });
+        ui.label(dim(look, explain(choice)));
+    }
+    if mode != page.compute {
+        c.choose = Some(mode);
+    }
+    if !connected {
+        ui.label(dim(look, "Connect a workstation to send jobs there."));
+    }
+    gpus_section(ui, look, page, c);
 }
 
 /// Where a click on the choice waits for the next frame: the pages that show the choice are drawn while the page that

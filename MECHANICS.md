@@ -988,7 +988,14 @@ clean-room re-implementation is acceptable under each project's licence).
   trees of 200 tips, BDSS network): the plain-Rust code on every CPU core takes **0.20 s**; the GPU takes **1.04 s**
   after a **13.5 s one-time build of its shader programs**; the two agree to 3.6e-6. For networks this small the GPU
   does **not** beat the CPU, which is why the window offers it as a choice, with CPU the default, and a single tree always
-  runs on the CPU. Everything else that is heavy (multiple alignment, the four model fits, Bayesian runs) runs on all CPU
+  runs on the CPU. **Several GPUs for one batch** (asked for by the person: "run in parallel GPUs"): `gpu::run_batch_across`
+  shares the trees of a batch among the devices it is given in contiguous shares of about equal size (never more devices than
+  trees), runs each share on a thread of its own and puts the estimates back in the order of the trees; the devices are
+  Metal 0 on a Mac, or CUDA 0, 1, 2… (up to 64) in a build with the `cuda` feature. **Checked here** only with the processor
+  standing in for three devices (counts of 0, 1, 2, 3, 7, 10 and 300 trees give what one device gives to 1e-6 and what the
+  plain-Rust code gives to 1e-4, in the same order); the CUDA branch that opens GPU 0, 1, 2… was **not compiled or run** (no
+  NVIDIA GPU here) and how much faster several GPUs are was **not measured** (open question `unk_8a5aef7bb830d823`).
+  Everything else that is heavy (multiple alignment, the four model fits, Bayesian runs) runs on all CPU
   cores through `src/seq/par.rs`; those are loops over small matrices that would not gain from a GPU either.
 * **MAFFT, IQ-TREE, primer3, Snakemake, Nextflow → Pipelines workspace** (`src/pipeline/`, `src/ui/platform/pipelines.rs`;
   Tools → Pipelines opens it, and it replaced the earlier floating Workflow window).
@@ -1114,16 +1121,25 @@ clean-room re-implementation is acceptable under each project's licence).
   tree by recursion). **There is no encryption**, and a computer that can reach the port can make it busy without the
   token: `DEPLOY.md` says to use an SSH tunnel or a private network with a firewall, and never the open internet.
   **GPUs:** `--gpus auto` lists them with `nvidia-smi` (or takes the Apple GPU), or the person names them; each
-  GPU runs one job at a time; a job is started as a process of its own with `CUDA_VISIBLE_DEVICES` set to the one GPU it
-  was given; a job behind one that waits for a GPU may use the processor; a job that is stopped, or runs too long, is
-  killed with everything it started. The jobs call the functions the app calls for itself (the tree estimators were
+  GPU runs one job at a time; a job is started as a process of its own with `CUDA_VISIBLE_DEVICES` set to the GPUs it
+  was given (one, or a list such as `0,1` for a job that can use several); a job behind one that waits for a GPU may use
+  the processor; a job that is stopped, or runs too long, is killed with everything it started. **Several GPUs to one
+  job** (asked for by the person in a later request: "use my workstation using multiple GPUs"): the Workstation page offers
+  **GPUs for one job** (1 up to what the workstation has, or all of them; kept as `gpus=` in the settings file, 1 at the
+  start, 0 for all), the app sends it as `gpus=N` in the job's meta section, and the server gives the job the lowest free
+  GPUs, but no more than the job can use (PhyloCNN: as many as it has trees; a structure: `--fold-gpus`, 1 unless the
+  person who runs the server says the folding program uses more) or the workstation has. Jobs that want GPUs start in the
+  order they were sent and none overtakes one that is still waiting for its GPUs. The limits (a choice of up to 64 GPUs,
+  `--fold-gpus` up to 64) are **estimates**, not read from any program. The jobs call the functions the app calls for itself (the tree estimators were
   moved from the tree window to `src/seq/estimate.rs` so that both use them). **Tried here, on a Mac with the server and
   the app on one computer:** unit tests of every part; `tests/remote.rs` starts the real program and speaks plain HTTP to
   it (jobs run in their own processes and come back; the token and the limits; results kept across a restart; a running
   job stopped and its process gone; three jobs sharing two pretend GPUs, with a stand-in program that reports the GPU it
-  was shown); whole-window tests send an alignment, a tree, a pipeline, PhyloCNN estimates and a structure to a server on
-  this computer and show the answers. **Not tried:** a real NVIDIA GPU or the `cuda` build, several real GPUs, the systemd
-  unit and the ESMFold example in `deploy/`, the server on Windows, the app on Windows and Linux, an SSH tunnel or
+  was shown; a job given two of three pretend GPUs at once with the next job waiting its turn behind it; a job that asks
+  for more GPUs than its server lets it have getting one); whole-window tests send an alignment, a tree, a pipeline,
+  PhyloCNN estimates and a structure to a server on this computer and show the answers, and click the **GPUs for one job**
+  choice. **Not tried:** a real NVIDIA GPU or the `cuda` build, several real GPUs (the PhyloCNN share-out is only checked with
+  the processor standing in for the devices), the systemd unit and the ESMFold example in `deploy/`, the server on Windows, the app on Windows and Linux, an SSH tunnel or
   Tailscale, and uploads of hundreds of megabytes.
 
 * **HelixLoom: the name, the interface, the models folder, the web build** (November 2026, asked for by the person; none of it

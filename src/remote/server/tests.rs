@@ -114,7 +114,7 @@ fn the_routes_answer_status_jobs_results_and_removal() {
 fn a_finished_jobs_result_is_handed_over_as_stored() {
     let shared = Shared::open(config("server-result"), false).expect("a store");
     let id = shared
-        .submit(Kind::Align, "x", b"request", false)
+        .submit(Kind::Align, "x", b"request", 0)
         .expect("queued");
     let mut job = shared.get(&id).expect("a job");
     job.status = Status::Done;
@@ -220,6 +220,122 @@ fn a_job_that_needs_what_the_workstation_lacks_is_refused_at_once() {
     assert_eq!(r.status, 400);
     let web = route(&shared, "POST", "/v1/jobs", &upload(&fold(false)));
     assert_eq!(web.status, 201, "{}", text(&web));
+}
+
+/// A fold job sent with the given `gpus=` line (none: as a program from before jobs could have several GPUs sends it).
+fn fold_upload(gpus: Option<&str>) -> Vec<u8> {
+    let line = gpus.map_or(String::new(), |g| format!("gpus={g}\n"));
+    let request = Request::Fold {
+        sequence: b"MQIFVKTLTGKTITLEVEP".to_vec(),
+        local: true,
+    };
+    request
+        .encode()
+        .with("job", format!("kind=fold\nlabel=a fold\n{line}"))
+        .encode()
+}
+
+#[test]
+fn a_job_is_queued_for_the_gpus_it_asked_for_within_what_the_workstation_has_and_the_program_uses()
+{
+    let mut c = config("server-gpus");
+    c.gpus = (0..4)
+        .map(|id| Gpu {
+            id,
+            name: format!("GPU {id}"),
+        })
+        .collect();
+    c.fold_command = Some(vec!["fold".into()]);
+    // the folding program uses two GPUs for a structure
+    c.fold_gpus = 2;
+    let shared = Shared::open(c, false).expect("a store");
+    let wanted = |gpus: Option<&str>| {
+        let sent = route(&shared, "POST", "/v1/jobs", &fold_upload(gpus));
+        assert_eq!(sent.status, 201, "{}", text(&sent));
+        let id = Container::decode(&sent.body)
+            .expect("a container")
+            .require("id")
+            .expect("an id")
+            .to_string();
+        shared.get(&id).expect("a job").gpus_wanted
+    };
+    assert_eq!(wanted(None), 1, "a program that says nothing asks for one");
+    assert_eq!(wanted(Some("1")), 1);
+    assert_eq!(wanted(Some("2")), 2);
+    assert_eq!(wanted(Some("4")), 2, "the program uses two, so two");
+    assert_eq!(
+        wanted(Some("0")),
+        2,
+        "every GPU, within what the program uses"
+    );
+    assert_eq!(wanted(Some(" 2 ")), 2);
+    assert_eq!(
+        wanted(Some("many")),
+        1,
+        "words nobody could mean are one GPU"
+    );
+    assert_eq!(wanted(Some("-1")), 1);
+    // a job that needs no GPU is queued for none, whatever it asked for
+    let align = request_with_gpus(&align_request(), "3");
+    let sent = route(&shared, "POST", "/v1/jobs", &align);
+    assert_eq!(sent.status, 201, "{}", text(&sent));
+    let id = Container::decode(&sent.body)
+        .expect("a container")
+        .require("id")
+        .expect("an id")
+        .to_string();
+    assert_eq!(shared.get(&id).expect("a job").gpus_wanted, 0);
+}
+
+/// `request` as an upload that asks for `gpus` GPUs.
+fn request_with_gpus(request: &Request, gpus: &str) -> Vec<u8> {
+    request
+        .encode()
+        .with(
+            "job",
+            format!(
+                "kind={}\nlabel=a test\ngpus={gpus}\n",
+                request.kind().name()
+            ),
+        )
+        .encode()
+}
+
+#[test]
+fn a_phylocnn_job_is_given_no_more_gpus_than_it_has_trees() {
+    if !cfg!(feature = "gpu") {
+        return;
+    }
+    let mut c = config("server-trees");
+    c.gpus = (0..4)
+        .map(|id| Gpu {
+            id,
+            name: format!("GPU {id}"),
+        })
+        .collect();
+    let shared = Shared::open(c, false).expect("a store");
+    let cnn = Request::PhyloCnn {
+        newick: "((A:1,B:1):1,C:2);\n((A:1,B:2):1,C:2);\n((A:2,B:1):1,C:2);".into(),
+        sampling: 0.5,
+        task: crate::seq::phylocnn::Task::Bd,
+        priors: crate::seq::phylocnn::Priors::Simulated,
+        gpu: true,
+    };
+    // three trees: three GPUs of the four at most, whatever is asked for
+    for (asked, given) in [("1", 1), ("2", 2), ("0", 3), ("4", 3)] {
+        let sent = route(&shared, "POST", "/v1/jobs", &request_with_gpus(&cnn, asked));
+        assert_eq!(sent.status, 201, "{}", text(&sent));
+        let id = Container::decode(&sent.body)
+            .expect("a container")
+            .require("id")
+            .expect("an id")
+            .to_string();
+        assert_eq!(
+            shared.get(&id).expect("a job").gpus_wanted,
+            given,
+            "asked for {asked}"
+        );
+    }
 }
 
 #[test]

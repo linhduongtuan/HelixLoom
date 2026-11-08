@@ -27,6 +27,9 @@ pub struct Config {
     pub max_kept: usize,
     /// The program that folds proteins on a GPU (its words), if the workstation has one.
     pub fold_command: Option<Vec<String>>,
+    /// How many GPUs that program uses for one structure: a fold job is given this many at once (and no more, whatever the
+    /// app asks for).
+    pub fold_gpus: usize,
     /// The programs found on this machine and their versions, for the status page.
     pub tools: Vec<(String, String)>,
 }
@@ -46,6 +49,7 @@ impl std::fmt::Debug for Config {
             .field("max_queued", &self.max_queued)
             .field("max_kept", &self.max_kept)
             .field("fold_command", &self.fold_command)
+            .field("fold_gpus", &self.fold_gpus)
             .field("tools", &self.tools)
             .finish()
     }
@@ -65,6 +69,7 @@ impl Config {
             max_queued: 1000,
             max_kept: 2000,
             fold_command: None,
+            fold_gpus: 1,
             tools: Vec::new(),
         }
     }

@@ -496,7 +496,16 @@ fn a_job_ends_by_itself_when_its_server_is_gone() {
 }
 
 fn fold_job(label: &str) -> Vec<u8> {
-    let job = format!("kind=fold\nlabel={label}\n");
+    fold_job_saying(&format!("kind=fold\nlabel={label}\n"))
+}
+
+/// A folding job whose sender asks for `gpus` GPUs (0 asks for every GPU there is).
+#[cfg(unix)]
+fn fold_job_asking(label: &str, gpus: usize) -> Vec<u8> {
+    fold_job_saying(&format!("kind=fold\nlabel={label}\ngpus={gpus}\n"))
+}
+
+fn fold_job_saying(job: &str) -> Vec<u8> {
     container(&[
         ("meta", b"local=1\n"),
         ("sequence", b"MQIFVKTLTGKTITLEVEPSDTIENVKAKIQ"),
@@ -504,9 +513,53 @@ fn fold_job(label: &str) -> Vec<u8> {
     ])
 }
 
-/// What a GPU is given to a job's process: "0", "1", ..., or nothing for a job that uses none.
+/// What GPUs are given to a job's process: "0", "0,1", ..., or nothing for a job that uses none.
 fn gpu_of(line: &[String]) -> &str {
     &line[6]
+}
+
+/// The command of a stand-in for a folding program: it takes a moment, then writes the GPUs it was shown.
+#[cfg(unix)]
+fn fold_command(folder: &Folder) -> String {
+    let script = folder.file(
+        "fold.sh",
+        "#!/bin/sh\nsleep 1.5\nprintf 'REMARK GPU=%s\\nATOM      1  N   MET A   1       0.000   0.000   0.000  1.00 90.00           N\\nEND\\n' \"$CUDA_VISIBLE_DEVICES\" > \"$2\"\n",
+    );
+    format!("sh {}", script.display())
+}
+
+/// The GPUs that the stand-in program of a finished job says it was shown.
+#[cfg(unix)]
+fn gpus_seen(address: &str, id: &str) -> String {
+    let pdb = section(&parse(&result(address, id)), "pdb");
+    pdb.lines()
+        .find_map(|l| l.strip_prefix("REMARK GPU="))
+        .expect("the program wrote the GPUs it saw")
+        .to_string()
+}
+
+/// Wait until a job is running; its line.
+#[cfg(unix)]
+fn wait_running(address: &str, id: &str) -> Vec<String> {
+    let end = Instant::now() + WAIT;
+    loop {
+        let fields = job_line(address, id);
+        if fields[2] == "running" {
+            return fields;
+        }
+        assert!(Instant::now() < end, "the job is still {}", fields[2]);
+        std::thread::sleep(Duration::from_millis(20));
+    }
+}
+
+/// Who holds each GPU of the server, by the GPU's place in the list: a job's id, or nothing for a free one.
+#[cfg(unix)]
+fn gpu_holders(address: &str) -> Vec<String> {
+    let (_, reply) = call(address, "GET", "/v1/status", Some(TOKEN), b"");
+    let rows = section(&parse(&reply), "gpus");
+    rows.lines()
+        .map(|row| row.split('\t').nth(2).unwrap_or("").to_string())
+        .collect()
 }
 
 #[cfg(unix)]
@@ -514,12 +567,7 @@ fn gpu_of(line: &[String]) -> &str {
 fn each_gpu_job_gets_a_gpu_of_its_own_sees_only_that_one_and_the_next_waits_for_a_free_one() {
     let folder = Folder::new("gpus");
     let token = folder.file("token.txt", TOKEN);
-    // a stand-in for a folding program: it takes a moment, then writes the number of the one GPU it was shown
-    let script = folder.file(
-        "fold.sh",
-        "#!/bin/sh\nsleep 1.5\nprintf 'REMARK GPU=%s\\nATOM      1  N   MET A   1       0.000   0.000   0.000  1.00 90.00           N\\nEND\\n' \"$CUDA_VISIBLE_DEVICES\" > \"$2\"\n",
-    );
-    let command = format!("sh {}", script.display());
+    let command = fold_command(&folder);
     let server = start(
         &folder,
         &token,
@@ -572,12 +620,7 @@ fn each_gpu_job_gets_a_gpu_of_its_own_sees_only_that_one_and_the_next_waits_for_
     for id in &ids {
         let line = wait_over(at, id);
         assert_eq!(line[2], "done", "{line:?}");
-        let pdb = section(&parse(&result(at, id)), "pdb");
-        let gpu = pdb
-            .lines()
-            .find_map(|l| l.strip_prefix("REMARK GPU="))
-            .expect("the program wrote the GPU it saw")
-            .to_string();
+        let gpu = gpus_seen(at, id);
         assert!(
             gpu == gpu_of(&line),
             "the job's line says GPU {} but the program saw {gpu}",
@@ -588,6 +631,90 @@ fn each_gpu_job_gets_a_gpu_of_its_own_sees_only_that_one_and_the_next_waits_for_
     let first_two: std::collections::BTreeSet<&String> = seen.iter().take(2).collect();
     assert_eq!(first_two.len(), 2, "{seen:?}");
     assert!(seen[2] == "0" || seen[2] == "1", "{seen:?}");
+}
+
+#[cfg(unix)]
+#[test]
+fn a_job_is_given_several_gpus_together_and_the_jobs_behind_it_keep_their_places() {
+    let folder = Folder::new("several-gpus");
+    let token = folder.file("token.txt", TOKEN);
+    let command = fold_command(&folder);
+    // three GPUs, and the folding program may use two of them at once
+    let server = start(
+        &folder,
+        &token,
+        &[
+            "--gpus",
+            "0,1,2",
+            "--fold-gpus",
+            "2",
+            "--fold-command",
+            &command,
+        ],
+    );
+    let at = server.address.as_str();
+
+    // two jobs that ask for two GPUs each, and behind them one that asks for a single GPU
+    let first = submit(at, &fold_job_asking("two", 2));
+    let second = submit(at, &fold_job_asking("two more", 2));
+    let third = submit(at, &fold_job_asking("one", 1));
+    let line = wait_running(at, &first);
+    assert_eq!((gpu_of(&line), line[7].as_str()), ("0,1", "2"), "{line:?}");
+    // GPU 2 is free, but the second job cannot use it alone, and the third, which could, stays behind the second
+    for (id, wanted) in [(&second, "2"), (&third, "1")] {
+        let waiting = job_line(at, id);
+        let (status, gpus) = (waiting[2].as_str(), gpu_of(&waiting));
+        assert_eq!((status, gpus, waiting[7].as_str()), ("queued", "", wanted));
+    }
+    // both of the first job's GPUs show it
+    assert_eq!(gpu_holders(at), [first.as_str(), first.as_str(), ""]);
+
+    // when the first job is over the other two run together, and each program was shown exactly its job's GPUs
+    let mut seen = Vec::new();
+    for id in [&first, &second, &third] {
+        let line = wait_over(at, id);
+        assert_eq!(line[2], "done", "{line:?}");
+        let gpus = gpus_seen(at, id);
+        assert_eq!(gpus, gpu_of(&line), "the job's line says what it was shown");
+        seen.push(gpus);
+    }
+    assert_eq!(seen, ["0,1", "0,1", "2"]);
+}
+
+#[cfg(unix)]
+#[test]
+fn a_job_is_given_one_gpu_when_the_server_has_not_said_its_program_uses_more() {
+    let folder = Folder::new("one-gpu-each");
+    let token = folder.file("token.txt", TOKEN);
+    let command = fold_command(&folder);
+    // three GPUs; no `--fold-gpus`, so the folding program is given one GPU at a time
+    let server = start(
+        &folder,
+        &token,
+        &["--gpus", "0,1,2", "--fold-command", &command],
+    );
+    let at = server.address.as_str();
+
+    // two GPUs asked for, every GPU asked for, and more GPUs than there are
+    let ids: Vec<String> = [2, 0, 9]
+        .iter()
+        .map(|&asked| submit(at, &fold_job_asking(&format!("asks {asked}"), asked)))
+        .collect();
+    for id in &ids {
+        assert_eq!(job_line(at, id)[7], "1", "one GPU is wanted");
+    }
+    let mut seen = Vec::new();
+    for id in &ids {
+        let line = wait_over(at, id);
+        assert_eq!(line[2], "done", "{line:?}");
+        let gpus = gpus_seen(at, id);
+        assert_eq!(gpus, gpu_of(&line), "the job's line says what it was shown");
+        assert!(!gpus.contains(','), "one GPU, not {gpus}");
+        seen.push(gpus);
+    }
+    // the three ran together, a GPU each
+    seen.sort_unstable();
+    assert_eq!(seen, ["0", "1", "2"]);
 }
 
 #[test]

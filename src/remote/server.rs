@@ -6,7 +6,7 @@
 //! put its port on the open internet.
 
 use super::http::{self, Failure, Within, IO_TIMEOUT};
-use super::jobs::{valid_id, Config, JobInfo, Lookup, Shared, Status};
+use super::jobs::{gpus_for, valid_id, Config, JobInfo, Lookup, Shared, Status};
 use super::tasks::{Kind, Request};
 use super::wire::{meta, Container};
 use super::PROTOCOL;
@@ -189,12 +189,19 @@ fn submit(shared: &Shared, body: &[u8]) -> Reply {
             "This workstation has no folding program configured (see --fold-command).".into(),
         );
     }
-    match shared.submit(
-        kind,
-        job.get("label").copied().unwrap_or(""),
-        body,
-        needs_gpu,
-    ) {
+    // how many GPUs: what the sender asked for (`gpus=`; 0 is every GPU, and one when it says nothing, as a program from before
+    // jobs could have several does), within what this workstation has and the job can use
+    let asked = job
+        .get("gpus")
+        .and_then(|g| g.trim().parse::<usize>().ok())
+        .unwrap_or(1);
+    let wanted = if needs_gpu {
+        let most = request.most_gpus(shared.config.fold_gpus);
+        gpus_for(asked, shared.config.gpus.len(), most)
+    } else {
+        0
+    };
+    match shared.submit(kind, job.get("label").copied().unwrap_or(""), body, wanted) {
         Ok(id) => Reply::container(201, &Container::new().with("id", id)),
         Err(why) => Reply::text(503, &why),
     }

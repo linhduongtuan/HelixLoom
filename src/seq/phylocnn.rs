@@ -646,6 +646,8 @@ pub struct Batch {
     pub per_tree: Vec<Vec<Estimate>>,
     pub skipped: Vec<(usize, String)>,
     pub seconds: f64,
+    /// How many GPUs worked on the trees (none when the processor did).
+    pub gpus: usize,
 }
 
 /// Run a network on every tree. A tree that cannot be encoded (not binary, too many tips) is skipped and
@@ -680,10 +682,13 @@ pub fn estimate_many(
         return Err(format!("No tree can be used. {why}"));
     }
     let start = web_time::Instant::now();
-    let raw: Vec<Vec<f32>> = match engine {
-        Engine::Cpu => par_map(&inputs, |x| net.run(x))
-            .into_iter()
-            .collect::<Result<_, _>>()?,
+    let (raw, gpus): (Vec<Vec<f32>>, usize) = match engine {
+        Engine::Cpu => (
+            par_map(&inputs, |x| net.run(x))
+                .into_iter()
+                .collect::<Result<_, _>>()?,
+            0,
+        ),
         #[cfg(all(feature = "gpu", not(target_arch = "wasm32")))]
         Engine::Gpu => gpu::run_batch(&net, &inputs)?,
     };
@@ -697,6 +702,7 @@ pub fn estimate_many(
         per_tree,
         skipped,
         seconds,
+        gpus,
     })
 }
 

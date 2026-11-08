@@ -137,7 +137,7 @@ fn predict_on_the_workstation(gpu_fold: bool) -> (Request, StructurePage) {
         assert!(Instant::now() < end, "the job never arrived");
         std::thread::sleep(Duration::from_millis(20));
     };
-    assert_eq!((queued.kind, queued.needs_gpu), (Kind::Fold, gpu_fold));
+    assert_eq!((queued.kind, queued.needs_gpu()), (Kind::Fold, gpu_fold));
     assert_eq!(queued.label, "Fold of 76 residues");
     let folder = server.shared.job_dir(&queued.id);
     let sent = std::fs::read(folder.join("request.bin")).expect("a request");

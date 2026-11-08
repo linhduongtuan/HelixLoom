@@ -35,6 +35,7 @@ Options of `serve`:
   --keep-days N         days a finished job's result is kept (default 7)
   --job-hours N         hours one job may run (default 24)
   --fold-command CMD    program that folds a protein on a GPU, run as CMD input.fasta output.pdb
+  --fold-gpus N         GPUs that program uses for one structure, given to it at once (default 1)
   --name NAME           the name shown to clients (default: this computer's)
 
 The server does not encrypt anything: reach it over an SSH tunnel or a private network (see DEPLOY.md).
@@ -45,6 +46,7 @@ const MOST_CPU_JOBS: u64 = 1024;
 const MOST_UPLOAD_MB: u64 = 64 * 1024;
 const MOST_KEEP_DAYS: u64 = 3650;
 const MOST_JOB_HOURS: u64 = 24 * 365;
+const MOST_FOLD_GPUS: u64 = 64;
 
 /// A word after a flag, or why there is none.
 fn value<'a>(args: &'a [String], flag: &str, i: usize) -> Result<&'a str, String> {
@@ -132,6 +134,7 @@ struct Typed {
     keep_days: u64,
     job_hours: u64,
     fold: Option<Vec<String>>,
+    fold_gpus: usize,
     name: Option<String>,
 }
 
@@ -147,6 +150,7 @@ impl Default for Typed {
             keep_days: 7,
             job_hours: 24,
             fold: None,
+            fold_gpus: 1,
             name: None,
         }
     }
@@ -180,6 +184,7 @@ fn read_flags(args: &[String]) -> Result<Typed, String> {
                 let words: Vec<String> = v()?.split_whitespace().map(str::to_string).collect();
                 typed.fold = (!words.is_empty()).then_some(words);
             }
+            "--fold-gpus" => typed.fold_gpus = number(v()?, flag)?,
             "--name" => typed.name = Some(super::one_line(v()?)),
             other => return Err(format!("Unknown option {other}.")),
         }
@@ -206,10 +211,12 @@ fn check_numbers(t: &Typed) -> Result<(), String> {
         ("--max-upload-mb", t.upload_mb as u64, MOST_UPLOAD_MB),
         ("--keep-days", t.keep_days, MOST_KEEP_DAYS),
         ("--job-hours", t.job_hours, MOST_JOB_HOURS),
+        ("--fold-gpus", t.fold_gpus as u64, MOST_FOLD_GPUS),
     ];
     if asked.iter().any(|&(_, n, _)| n == 0) {
         return Err(
-            "--cpu-jobs, --max-upload-mb, --keep-days and --job-hours must be at least 1.".into(),
+            "--cpu-jobs, --max-upload-mb, --keep-days, --job-hours and --fold-gpus must be at least 1."
+                .into(),
         );
     }
     match asked.iter().find(|&&(_, n, most)| n > most) {
@@ -244,6 +251,7 @@ pub fn serve_options(
     config.keep = std::time::Duration::from_secs(typed.keep_days * 24 * 3600);
     config.job_limit = std::time::Duration::from_secs(typed.job_hours * 3600);
     config.fold_command = typed.fold;
+    config.fold_gpus = typed.fold_gpus;
     if let Some(n) = typed.name.filter(|n| !n.is_empty()) {
         config.name = n;
     }

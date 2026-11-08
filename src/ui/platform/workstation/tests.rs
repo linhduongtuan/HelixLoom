@@ -57,8 +57,8 @@ fn job(id: &str, kind: Kind, status: Status) -> JobInfo {
         created: 100,
         started: 110,
         finished: 0,
-        gpu: None,
-        needs_gpu: false,
+        gpus: Vec::new(),
+        gpus_wanted: 0,
         error: String::new(),
     }
 }
@@ -420,10 +420,14 @@ fn durations_and_job_lines_are_written_for_reading() {
 
     let mut j = job("j1-1", Kind::Align, Status::Queued);
     assert_eq!(detail(&j), "waiting");
-    j.needs_gpu = true;
+    j.gpus_wanted = 1;
     assert_eq!(detail(&j), "waiting for a GPU");
-    (j.status, j.gpu) = (Status::Running, Some(2));
+    j.gpus_wanted = 3;
+    assert_eq!(detail(&j), "waiting for 3 GPUs");
+    (j.status, j.gpus) = (Status::Running, vec![2]);
     assert_eq!(detail(&j), "on GPU 2");
+    j.gpus = vec![0, 1, 3];
+    assert_eq!(detail(&j), "on GPUs 0, 1, 3");
     (j.status, j.finished) = (Status::Done, 130);
     assert_eq!(detail(&j), "took 20 s");
     j.status = Status::Failed;
@@ -940,7 +944,7 @@ fn the_page_draws_in_every_state_in_both_themes() {
             job: Some("j1-2".into()),
         });
         let mut running = job("j1-2", Kind::PhyloCnn, Status::Running);
-        (running.gpu, running.needs_gpu) = (Some(1), true);
+        (running.gpus, running.gpus_wanted) = (vec![1], 1);
         let mut failed = job("j1-4", Kind::Fold, Status::Failed);
         failed.error = "the program stopped".into();
         page.status = Some(s);
@@ -963,4 +967,163 @@ fn the_page_draws_in_every_state_in_both_themes() {
         }
         frame(&mut app, &ctx, 5);
     }
+}
+
+/// Where `text` was drawn in a frame: the first piece of text that holds it.
+fn text_rect(shapes: &[egui::epaint::Shape], text: &str) -> Option<egui::Rect> {
+    shapes.iter().find_map(|shape| match shape {
+        egui::epaint::Shape::Text(t) if t.galley.text().contains(text) => {
+            Some(t.visual_bounding_rect())
+        }
+        egui::epaint::Shape::Vec(inner) => text_rect(inner, text),
+        _ => None,
+    })
+}
+
+/// One frame of the whole window with `events`, numbered by a counter that goes up with each (the time of a frame must never
+/// go back).
+fn frame_with(
+    app: &mut App,
+    ctx: &egui::Context,
+    n: &mut u32,
+    events: Vec<egui::Event>,
+) -> egui::FullOutput {
+    let mut input = frame_input(*n);
+    input.events = events;
+    *n += 1;
+    let mut output = ctx.run_ui(input, |ui| app.draw(ui));
+    output.textures_delta.clear();
+    output
+}
+
+/// A page connected to nothing in particular, set to send every job to the workstation, which has said that it has `gpus`
+/// GPUs.
+fn page_with_gpus(dir: PathBuf, gpus: u8) -> WorkstationPage {
+    let mut page = WorkstationPage {
+        address: "127.0.0.1:1".into(),
+        token: TOKEN.into(),
+        ..WorkstationPage::open(Some(dir))
+    };
+    page.connect();
+    page.set_compute(Compute::Workstation);
+    let mut s = status(&[]);
+    for id in 1..gpus {
+        s.gpus.push(GpuState {
+            id: usize::from(id),
+            name: format!("NVIDIA {id}"),
+            job: None,
+        });
+    }
+    page.status = Some(s);
+    // it has just looked: it does not try the closed port while the test draws
+    page.looked = Some(Instant::now());
+    page
+}
+
+#[test]
+fn the_choice_of_gpus_for_one_job_is_on_the_page_only_when_the_workstation_has_several() {
+    let ctx = egui::Context::default();
+    let dir = work_folder("workstation-gpus-shown").expect("a folder");
+    for (gpus, shown) in [(1, false), (2, true), (8, true)] {
+        let mut app = App::new(Startup::default());
+        app.workspace = Workspace::Workstation;
+        app.platform.workstation = page_with_gpus(dir.clone(), gpus);
+        frame(&mut app, &ctx, u32::from(gpus) * 10);
+        let mut input = frame_input(u32::from(gpus) * 10 + 1);
+        input.events.clear();
+        let drawn = ctx.run_ui(input, |ui| app.draw(ui));
+        let shapes: Vec<egui::epaint::Shape> =
+            drawn.shapes.iter().map(|s| s.shape.clone()).collect();
+        // a heading is drawn in capitals
+        let found = text_rect(&shapes, "GPUS FOR ONE JOB").is_some();
+        assert_eq!(found, shown, "{gpus} GPUs");
+    }
+}
+
+#[test]
+fn a_click_on_the_gpus_choice_is_kept_and_the_jobs_sent_afterwards_ask_for_that_many() {
+    use egui::{pos2, Event, Modifiers, PointerButton};
+    let dir = work_folder("workstation-gpus-click").expect("a folder");
+    let ctx = egui::Context::default();
+    let mut app = App::new(Startup::default());
+    app.workspace = Workspace::Workstation;
+    app.platform.workstation = page_with_gpus(dir.clone(), 4);
+    assert_eq!(app.platform.workstation.gpus, GpusPerJob::Count(1));
+
+    let mut n = 0;
+    let centre_of = |shown: &egui::FullOutput, text: &str| {
+        let shapes: Vec<egui::epaint::Shape> =
+            shown.shapes.iter().map(|s| s.shape.clone()).collect();
+        let rect = text_rect(&shapes, text).unwrap_or_else(|| panic!("{text} was not drawn"));
+        pos2(rect.center().x, rect.center().y)
+    };
+    let click = |app: &mut App, n: &mut u32, at: egui::Pos2| {
+        let button = |pressed| Event::PointerButton {
+            pos: at,
+            button: PointerButton::Primary,
+            pressed,
+            modifiers: Modifiers::NONE,
+        };
+        frame_with(app, &ctx, n, vec![Event::PointerMoved(at)]);
+        frame_with(app, &ctx, n, vec![button(true), button(false)])
+    };
+
+    frame_with(&mut app, &ctx, &mut n, vec![]);
+    let shown = frame_with(&mut app, &ctx, &mut n, vec![]);
+    // the choice shows what it is now; a click opens its list, and a click on a number in the list chooses it
+    let at = centre_of(&shown, "1 GPU");
+    click(&mut app, &mut n, at);
+    let opened = frame_with(&mut app, &ctx, &mut n, vec![]);
+    let at = centre_of(&opened, "3 GPUs");
+    click(&mut app, &mut n, at);
+    frame_with(&mut app, &ctx, &mut n, vec![]);
+    assert_eq!(app.platform.workstation.gpus, GpusPerJob::Count(3));
+
+    // it is kept with the connection, and the jobs that go there ask for it
+    assert_eq!(WorkstationPage::open(Some(dir)).gpus, GpusPerJob::Count(3));
+    let Place::There(remote) = app.platform.workstation.place(&Weight::default()) else {
+        panic!("every job goes to the workstation");
+    };
+    let plain = Remote::new("127.0.0.1:1", TOKEN).expect("a connection");
+    assert_eq!(remote, plain.with_gpus(GpusPerJob::Count(3)));
+}
+
+#[test]
+fn the_choices_are_one_gpu_up_to_all_the_workstations_and_then_every_gpu_it_has() {
+    assert_eq!(
+        compute::gpu_choices(3),
+        [
+            GpusPerJob::Count(1),
+            GpusPerJob::Count(2),
+            GpusPerJob::Count(3),
+            GpusPerJob::All
+        ]
+    );
+    assert_eq!(compute::gpu_choices(0), [GpusPerJob::All]);
+    // never more than a job can be asked for
+    assert_eq!(
+        compute::gpu_choices(1000).len(),
+        crate::remote::settings::MOST_GPUS_PER_JOB + 1
+    );
+    // each choice says what it does
+    for choice in compute::gpu_choices(4) {
+        assert!(!compute::explain_gpus(choice).is_empty(), "{choice:?}");
+    }
+    assert!(compute::explain_gpus(GpusPerJob::All).contains("every GPU"));
+    assert!(compute::explain_gpus(GpusPerJob::Count(1)).contains("side by side"));
+    assert!(compute::explain_gpus(GpusPerJob::Count(4)).contains("4 at once"));
+}
+
+#[test]
+fn forgetting_the_workstation_forgets_the_gpus_choice_with_it() {
+    let dir = work_folder("workstation-gpus-forget").expect("a folder");
+    let mut page = page_with_gpus(dir.clone(), 2);
+    page.set_gpus(GpusPerJob::All);
+    assert_eq!(
+        WorkstationPage::open(Some(dir.clone())).gpus,
+        GpusPerJob::All
+    );
+    page.forget();
+    assert_eq!(page.gpus, GpusPerJob::Count(1));
+    assert_eq!(WorkstationPage::open(Some(dir)).gpus, GpusPerJob::Count(1));
 }

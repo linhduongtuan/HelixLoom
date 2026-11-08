@@ -9,7 +9,7 @@ use super::Workspace;
 use crate::pipeline::tools;
 use crate::remote::client::{Remote, ServerStatus};
 use crate::remote::jobs::{JobInfo, Status};
-use crate::remote::settings::{self, Compute, Saved};
+use crate::remote::settings::{self, Compute, GpusPerJob, Saved};
 use crate::remote::tasks::Response;
 use crate::remote::weight::Weight;
 use crate::remote::PROTOCOL;
@@ -22,7 +22,7 @@ use std::time::Duration;
 use web_time::Instant;
 
 pub use compute::Place;
-use compute::{choice_id, explain};
+use compute::{choice_id, heavy_jobs_section};
 pub(in crate::ui) use compute::{compute_picker, ComputeView};
 
 const OPTIONS_WIDTH: f32 = 340.0;
@@ -58,6 +58,8 @@ pub struct WorkstationPage {
     active: Option<Remote>,
     /// Where the heavy jobs are computed. It is `Local` while no workstation is connected.
     pub compute: Compute,
+    /// How many GPUs of the workstation one job is given at once, when it can use several.
+    pub gpus: GpusPerJob,
     status: Option<ServerStatus>,
     jobs: Vec<JobInfo>,
     /// Why the last request failed; empty when it worked.
@@ -80,7 +82,9 @@ impl WorkstationPage {
     /// no folder nothing is read or kept.
     pub fn open(dir: Option<PathBuf>) -> WorkstationPage {
         let saved = dir.as_deref().map(settings::load_from).unwrap_or_default();
-        let active = Remote::new(&saved.address, &saved.token).ok();
+        let active = Remote::new(&saved.address, &saved.token)
+            .ok()
+            .map(|r| r.with_gpus(saved.gpus));
         WorkstationPage {
             address: saved.address,
             token: saved.token,
@@ -89,10 +93,16 @@ impl WorkstationPage {
             } else {
                 Compute::Local
             },
+            gpus: saved.gpus,
             active,
             dir,
             ..WorkstationPage::default()
         }
+    }
+
+    /// How many GPUs the workstation has, as far as it has said: none until it has answered.
+    pub fn gpu_count(&self) -> usize {
+        self.status.as_ref().map_or(0, |s| s.gpus.len())
     }
 
     /// Whether a job of this weight goes to the workstation: when one is connected and the choice says so (Automatic: when
@@ -153,6 +163,7 @@ impl WorkstationPage {
             address: r.address().to_string(),
             token: r.token().to_string(),
             compute: self.compute,
+            gpus: self.gpus,
         });
         if let Err(why) = settings::save_to(dir, &saved) {
             self.message = why;
@@ -163,7 +174,7 @@ impl WorkstationPage {
     pub(super) fn connect(&mut self) {
         match Remote::new(&self.address, &self.token) {
             Ok(remote) => {
-                self.active = Some(remote);
+                self.active = Some(remote.with_gpus(self.gpus));
                 (self.status, self.jobs, self.looked, self.work) = (None, Vec::new(), None, None);
                 self.problem.clear();
                 self.message = "Connecting…".into();
@@ -194,6 +205,13 @@ impl WorkstationPage {
         if self.compute != Compute::Local && self.status.is_none() {
             self.looked = None;
         }
+        self.save();
+    }
+
+    /// Choose how many GPUs one job is given at once (when it can use several): the jobs sent from now on ask for that many.
+    pub(super) fn set_gpus(&mut self, gpus: GpusPerJob) {
+        self.gpus = gpus;
+        self.active = self.active.take().map(|r| r.with_gpus(gpus));
         self.save();
     }
 
@@ -282,6 +300,8 @@ struct Clicks {
     refresh: bool,
     /// Where the heavy jobs are to run from now on.
     choose: Option<Compute>,
+    /// How many GPUs one job is to be given from now on.
+    gpus: Option<GpusPerJob>,
     open: Option<JobInfo>,
     /// The job to remove, and whether it is running (so that it is stopped, not removed).
     remove: Option<(String, bool)>,
@@ -414,6 +434,9 @@ impl App {
         if let Some(mode) = c.choose {
             page.set_compute(mode);
         }
+        if let Some(gpus) = c.gpus {
+            page.set_gpus(gpus);
+        }
         if c.refresh {
             page.looked = None;
         }
@@ -477,28 +500,6 @@ fn connection_panel(ui: &mut Ui, look: &Look, page: &mut WorkstationPage, c: &mu
         .size(11.5)
         .color(look.warn),
     );
-}
-
-/// Where the heavy jobs are computed: this computer, the workstation, or each job by its size. The same choice is on every
-/// page that starts a job.
-fn heavy_jobs_section(ui: &mut Ui, look: &Look, page: &WorkstationPage, c: &mut Clicks) {
-    design::section(ui, look, "Where jobs run");
-    let connected = page.active.is_some();
-    let mut mode = page.compute;
-    for choice in Compute::ALL {
-        // this computer can always be chosen; the others need a workstation to send to
-        let usable = connected || choice == Compute::Local;
-        ui.add_enabled_ui(usable, |ui| {
-            ui.radio_value(&mut mode, choice, choice.label());
-        });
-        ui.label(dim(look, explain(choice)));
-    }
-    if mode != page.compute {
-        c.choose = Some(mode);
-    }
-    if !connected {
-        ui.label(dim(look, "Connect a workstation to send jobs there."));
-    }
 }
 
 fn overview(ui: &mut Ui, look: &Look, page: &WorkstationPage, c: &mut Clicks) {
@@ -744,16 +745,26 @@ fn status_tone(status: Status) -> Tone {
 
 /// What the list says about a job beside its name.
 fn detail(job: &JobInfo) -> String {
-    match (job.status, job.gpu) {
-        (Status::Queued, _) if job.needs_gpu => "waiting for a GPU".into(),
+    match (job.status, job.gpus.as_slice()) {
+        (Status::Queued, _) if job.gpus_wanted > 1 => {
+            format!("waiting for {} GPUs", job.gpus_wanted)
+        }
+        (Status::Queued, _) if job.needs_gpu() => "waiting for a GPU".into(),
         (Status::Queued, _) => "waiting".into(),
-        (Status::Running, Some(gpu)) => format!("on GPU {gpu}"),
-        (Status::Running, None) => "running".into(),
+        (Status::Running, [one]) => format!("on GPU {one}"),
+        (Status::Running, [_, ..]) => format!("on GPUs {}", numbers(&job.gpus)),
+        (Status::Running, []) => "running".into(),
         (Status::Done, _) if job.finished >= job.started && job.started > 0 => {
             format!("took {}", duration_text(job.finished - job.started))
         }
         _ => String::new(),
     }
+}
+
+/// GPU numbers for a sentence: `0, 1, 3`.
+fn numbers(ids: &[usize]) -> String {
+    let words: Vec<String> = ids.iter().map(usize::to_string).collect();
+    words.join(", ")
 }
 
 fn duration_text(seconds: u64) -> String {

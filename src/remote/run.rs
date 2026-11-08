@@ -37,15 +37,15 @@ pub fn run_phylocnn(
 ) -> Result<CnnResult, String> {
     let trees = NwTree::parse_all(text)?;
     #[cfg(all(feature = "gpu", not(target_arch = "wasm32")))]
-    let (engine, name) = if gpu && trees.len() > 1 {
-        (Engine::Gpu, "GPU")
+    let engine = if gpu && trees.len() > 1 {
+        Engine::Gpu
     } else {
-        (Engine::Cpu, "CPU")
+        Engine::Cpu
     };
     #[cfg(not(all(feature = "gpu", not(target_arch = "wasm32"))))]
-    let (engine, name) = {
+    let engine = {
         let _ = gpu;
-        (Engine::Cpu, "CPU")
+        Engine::Cpu
     };
     let batch = estimate_many(&trees, sampling, task, priors, engine)?;
     Ok(CnnResult {
@@ -53,10 +53,19 @@ pub fn run_phylocnn(
         per_tree: batch.per_tree,
         skipped: batch.skipped,
         seconds: batch.seconds,
-        engine: name.to_string(),
+        engine: engine_name(batch.gpus),
         trees: trees.len(),
         tips: trees.first().map_or(0, NwTree::leaf_count),
     })
+}
+
+/// What the result says computed it: the processor, the GPU, or several GPUs.
+fn engine_name(gpus: usize) -> String {
+    match gpus {
+        0 => "CPU".into(),
+        1 => "GPU".into(),
+        n => format!("{n} GPUs"),
+    }
 }
 
 fn installed(use_installed: bool) -> Available {

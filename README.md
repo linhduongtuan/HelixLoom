@@ -54,7 +54,10 @@ helixloom token > token.txt
 helixloom serve --listen 127.0.0.1:7878 --token-file token.txt --data-dir ./data --gpus auto
 ```
 
-[DEPLOY.md](DEPLOY.md) explains every step (an SSH tunnel, a systemd service, a folding program on the GPUs).
+[DEPLOY.md](DEPLOY.md) explains every step (an SSH tunnel, a systemd service, a folding program on the GPUs). With two or
+more GPUs, the Workstation page asks how many one job is given (**GPUs for one job**): PhyloCNN shares its trees among
+them, and `--fold-gpus N` tells the server that a folding program can use more than one. The CUDA path for several GPUs has
+not been run on real hardware.
 
 ### The web version
 

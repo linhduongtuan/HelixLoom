@@ -12,8 +12,13 @@ the effort.
   page), every page and window that starts a heavy job shows the choice *This computer*, *Workstation* (the machine with
   several GPUs, over `helixloom serve`) or *Automatic* (big jobs go to the workstation, small ones stay), with a line that says
   where this run will go; the choice is kept between sessions. The new species-tree job uses it like the others
-  (`docs/SPECIES.md`). What is not there yet: choosing *which* GPUs, or splitting one job over several (today each GPU runs
-  one job at a time and the jobs are shared out among them), and showing a cost or time estimate before a job is sent.
+  (`docs/SPECIES.md`). **How many GPUs one job gets is also your choice** now (Workstation page, *GPUs for one job*: 1, 2, …
+  up to what the workstation has, or all): a job that can use several GPUs (PhyloCNN with many trees shares them out) is
+  given that many at once, the others wait their turn in the order they were sent, and `--fold-gpus` lets a folding program
+  use more than one. What is not there yet: choosing *which* GPUs by number, jobs other than PhyloCNN that spread one job
+  over GPUs (an alignment or a tree search does not), the CUDA path for several GPUs run on real hardware (it was only
+  checked with the processor standing in), other tensor libraries than candle (burn, tch-rs and dfdx are not built), the
+  web version reaching a workstation, and showing a cost or time estimate before a job is sent.
 * **ASTRAL is rebuilt and checked against the real ASTRAL; the rest of ASTER is not.** Tools → *Species Tree from Gene Trees*
   and `helixloom astral` give the same scores, supports and branch lengths as ASTRAL 5.7.8 on every comparison that was run,
   several times faster. Weighted ASTRAL, gene families (ASTRAL-Pro3), CASTER and WASTER are the next steps (2.3).

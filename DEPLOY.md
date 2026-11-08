@@ -9,7 +9,7 @@ the HelixLoom app as usual and have one extra page, **Workstation**, where you c
   ┌─────────────────────────────┐   jobs go over the    ┌────────────────────────────────┐
   │ HelixLoom app                │   network (a private  │ helixloom serve                 │
   │  Alignment, Phylogeny,      │ ────────────────────▶ │  queue ─▶ one process per job  │
-  │  Pipelines, PhyloCNN,       │   network or an SSH   │  each GPU job sees one GPU     │
+  │  Pipelines, PhyloCNN,       │   network or an SSH   │  each job sees only its GPUs   │
   │  Structure                  │   tunnel)             │  results kept on disk          │
   │  Workstation page: connect, │ ◀──────────────────── │  (7 days, and across restarts) │
   │  jobs list, Open results    │   results come back   └────────────────────────────────┘
@@ -23,8 +23,8 @@ What is sent, and what is not:
 | Alignment (built-in or MAFFT) | the workstation's processor |
 | Phylogeny: neighbour-joining, UPGMA, maximum likelihood, Bayesian, bootstrap | the workstation's processor |
 | Pipelines (align, tree, primers) | the workstation's processor, with its MAFFT, IQ-TREE and primer3 |
-| PhyloCNN epidemic estimates | the workstation, on one GPU when "many trees run on the GPU" is chosen |
-| Structure prediction | the workstation's GPU with your folding program, or the ESM Atlas web service asked from the workstation |
+| PhyloCNN epidemic estimates | the workstation, on one GPU or on several at once (see "GPUs for one job" below) when "many trees run on the GPU" is chosen |
+| Structure prediction | the workstation's GPU with your folding program (one GPU, or more if the server is told the program uses them: `--fold-gpus`), or the ESM Atlas web service asked from the workstation |
 | Plasmid editing, the contig assembler, sequencing reads, chromatograms, tree drawing, primer3 window, tree tools | stays on your computer: they are quick, or they are about what is on your screen |
 
 **You choose where the jobs run**, and can change it at any time, on the Workstation page or on any page that starts a job
@@ -38,6 +38,13 @@ What is sent, and what is not:
 
 Workstation and Automatic need a connected workstation; with none, everything runs on your computer. These sizes are
 estimates, not measurements; if a job should go the other way, pick This computer or Workstation for it.
+
+**GPUs for one job.** When the connected workstation has two or more GPUs, the Workstation page (under *Where jobs run*)
+also asks how many of them one job is given: **1 GPU** (the start: every job that needs a GPU takes one, so several jobs run
+side by side), **2 GPUs**, **3 GPUs** and so on up to what the workstation has, or **All GPUs**. A job that can spread its
+work over several GPUs (PhyloCNN with many trees: it shares the trees out over them) is given that many at once, or fewer if
+it has fewer trees to share or the workstation has fewer GPUs. A job that cannot use more than one GPU (a structure, unless
+the server was told its program does) is given one whatever you choose. The choice is remembered with the address and token.
 
 ## 1. On the workstation
 
@@ -115,20 +122,26 @@ never see it). A token shorter than 32 characters is refused.
 | `--keep-days N` | days a finished job's result is kept; default 7 |
 | `--job-hours N` | hours one job may run before it is stopped; default 24 |
 | `--fold-command "PROGRAM words"` | a program that folds a protein on a GPU (step 5) |
+| `--fold-gpus N` | how many GPUs one folding job is given; default 1. Raise it only if your folding program uses several GPUs (it is shown all of them) |
 | `--name NAME` | the name your computers see; default the workstation's own |
 
 ### 1.6 How the GPUs are shared
 
-Each GPU does one job at a time. A job that needs a GPU takes the lowest-numbered free one and is shown that GPU only (the
-server sets `CUDA_VISIBLE_DEVICES` for that job, and numbers the GPUs as `nvidia-smi` does), so two jobs never meet on a GPU.
-If every GPU is busy, the next GPU job waits in the queue, and jobs that need no GPU go ahead on the processor in the
-meantime. Every job runs in a process of its own: a job that crashes, runs too long (`--job-hours`) or is stopped from the
+Each GPU does one job at a time. A job that needs GPUs takes the lowest-numbered free ones (one, unless the person who sent
+it chose more under *GPUs for one job* and the job can use them) and is shown those GPUs only (the server sets
+`CUDA_VISIBLE_DEVICES` for that job, a list such as `0,1`, and numbers the GPUs as `nvidia-smi` does), so two jobs never meet
+on a GPU. A job that wants several waits until that many are free. If the GPUs are busy, the next GPU job waits in the queue
+in the order the jobs were sent, and none behind it overtakes it, so a job that wants four GPUs is not kept waiting for ever
+by a stream of jobs that want one. Jobs that need no GPU go ahead on the processor in the meantime. What a job may be given is
+cut to what it can use: PhyloCNN no more GPUs than it has trees, a structure no more than `--fold-gpus`, and no job more
+than the workstation has. Every job runs in a process of its own: a job that crashes, runs too long (`--job-hours`) or is stopped from the
 app cannot take the server down, and the server cleans up after it, including any program the job started. What one request
 may hold is limited (5,000 sequences, 64 million letters of sequence in all, 20,000 trees), which keeps the memory of one job
 to a few gigabytes; the service file (step 3) also caps the memory of the server and all its jobs together, so that a job
 that is asked to do something enormous is stopped instead of slowing the whole machine.
 
-What uses a GPU: PhyloCNN estimates of many trees (with the CUDA build), and structure prediction with `--fold-command`.
+What uses a GPU: PhyloCNN estimates of many trees (with the CUDA build; it divides the trees among the GPUs it is given, and
+the estimates come back in the order of the trees), and structure prediction with `--fold-command`.
 The PhyloCNN networks are files of their authors' and are not part of the program: install them on the workstation too (a
 `models` folder next to the server's settings, or the folder named by `HELIXLOOM_MODELS`; see `docs/MODELS.md`).
 Alignments, trees and pipelines run on the processor.
@@ -242,6 +255,8 @@ on a GPU of the workstation.
 | "This workstation speaks version 2 of the protocol…" | The app and the server are from different versions: build both from the same folder. |
 | The page lists no GPU | `nvidia-smi` must work for the user that runs the server; or name the GPUs yourself with `--gpus 0,1`. |
 | A GPU job says "no GPU set up" | The server runs with `--gpus none`, or `--gpus auto` found none. |
+| A job was given fewer GPUs than "GPUs for one job" says | It can use no more (a structure needs `--fold-gpus` on the server; PhyloCNN needs at least as many trees as GPUs), or the workstation has fewer. The job's line on the Workstation page says which GPUs it got. |
+| A job waits although a GPU is free | The job in front of it wants more GPUs than are free; jobs wait in the order they were sent. Choose fewer GPUs for one job, or wait for the job in front. |
 | A PhyloCNN run on the GPU fails with "This computer has no GPU the program can use" | The program on the workstation was built without `--features cuda`, or the CUDA driver is not usable by it: build again as in step 1.2. |
 | "…has no folding program configured" | Start the server with `--fold-command` (step 5), or let the app use the web service. |
 | A job failed | The reason is on the job's line; the job's own log is `jobs/<id>/log.txt` in the server's data folder. |
@@ -281,11 +296,14 @@ on a GPU of the workstation.
 Tried, on a Mac, with the server and the app on the same computer: the whole path (the app sends an alignment, a tree, a
 pipeline, PhyloCNN estimates, a species tree or a structure; the server queues it and runs it in a process of its own; the result comes
 back and opens in its page), the token and the limits, results kept across a restart, stopping a running job and ending its
-process, and the sharing of two (pretend) GPUs, with a stand-in folding program that reports which GPU it was shown. These
-are automatic tests (`cargo test`, including `tests/remote.rs`, which starts the real program).
+process, and the sharing of (pretend) GPUs, with a stand-in folding program that reports which GPUs it was shown: one GPU to
+a job, then several GPUs to one job, and the order in which jobs wait for them. The sharing of one batch of PhyloCNN trees
+over several devices was tried with the processor standing in for the devices (the estimates equal those of a single
+device). These are automatic tests (`cargo test`, including `tests/remote.rs`, which starts the real program).
 
-**Not tried:** a real NVIDIA GPU or the `cuda` build, several real GPUs at once, the systemd unit and the ESMFold example (no
-Linux GPU machine was at hand), running the server on Windows, building and running the app on Windows and Linux, an SSH
+**Not tried:** a real NVIDIA GPU or the `cuda` build, PhyloCNN on several real GPUs at once (the code that opens GPU number 0, 1,
+2… of the CUDA build has never been compiled or run, and how much faster it is than one GPU is not measured), the systemd unit
+and the ESMFold example (no Linux GPU machine was at hand), running the server on Windows, building and running the app on Windows and Linux, an SSH
 tunnel or Tailscale (they are standard tools, but they were not run), and uploads of hundreds of megabytes. Expect to try each
 of these once on your own machines; if one fails, the message on the Workstation page or in `journalctl` says where.
 
@@ -297,8 +315,8 @@ sequence of sections, each `@name length`, a line break, exactly `length` bytes 
 | Request | Meaning |
 | --- | --- |
 | `GET /v1/status` | name, version, protocol, running and waiting jobs, GPUs and what they do, the programs found |
-| `GET /v1/jobs` | every job, one line each: id, kind, status, times, GPU, label, error |
-| `POST /v1/jobs` | send a job: the sections of its kind and a `job` section (`kind=align`, `label=…`); answers `201` with its `id` |
+| `GET /v1/jobs` | every job, one line each: id, kind, status, times, the GPUs it was given (`0,1`), how many GPUs it waits for, label, error |
+| `POST /v1/jobs` | send a job: the sections of its kind and a `job` section (`kind=align`, `label=…`, and optionally `gpus=N`: how many GPUs the sender asks for, 0 for every GPU, one when it says nothing); answers `201` with its `id` |
 | `GET /v1/jobs/ID` | one job's line |
 | `GET /v1/jobs/ID/result` | the result of a finished job (`409` while it is not ready or if it failed) |
 | `DELETE /v1/jobs/ID` | remove a job; stop it if it is running |
@@ -320,7 +338,9 @@ that shows a fetched result in the page it belongs to (the compiler asks for it)
    server's own options, never from a request.
 3. **How big it is**: say what makes a job of this kind slow, either in a `Weight` constructor next to the others in
    `src/remote/weight.rs` (sequences, letters, structures, a GPU) or by adding a field and a limit to `Weight`. This is
-   all Automatic needs to decide; `needs_gpu` on the request tells the server to give the job one GPU.
+   all Automatic needs to decide; `needs_gpu` on the request tells the server to give the job a GPU, and `most_gpus` (in
+   `src/remote/tasks.rs`) says how many it can use at once: one, unless the model spreads its work over several GPUs the way
+   PhyloCNN does (`src/seq/phylocnn/gpu.rs`, `run_batch_across`).
 4. **A page** that builds the request and asks `platform.place(&weight)` where it runs: `Place::Here` runs `execute` on a
    worker thread, `Place::There(remote)` calls `remote.run(&request, label)`. Drawing `compute_picker` beside the button
    gives the page the same choice as the others, and `platform.programs_at(&place)` gives the programs of the computer it
