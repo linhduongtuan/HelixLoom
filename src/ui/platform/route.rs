@@ -91,6 +91,10 @@ impl App {
     /// Open a file where it belongs and go there: a trace in Signals, a structure in Structure, a tree in Trees,
     /// sequences in Sequences, or added to the list when Alignment or Phylogeny is showing.
     pub fn open_source(&mut self, file: Source) {
+        if let Some(path) = file.on_disk() {
+            let path = path.to_path_buf();
+            self.keeper.remember(&path);
+        }
         match kind_of(file.path()) {
             Kind::Trace => {
                 self.load_trace(file);

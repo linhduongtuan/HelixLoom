@@ -5,8 +5,9 @@
 //! The messages are not encrypted. Reach the server over an SSH tunnel or a private network (see DEPLOY.md), and never
 //! put its port on the open internet.
 
-use super::http::{self, Failure, Within, IO_TIMEOUT};
+use super::http::{self, Failure, Within, IO_TIMEOUT, MIN_UPLOAD_RATE};
 use super::jobs::{gpus_for, valid_id, Config, JobInfo, Lookup, Shared, Status};
+use super::site::{self, File};
 use super::tasks::{Kind, Request};
 use super::wire::{meta, Container};
 use super::PROTOCOL;
@@ -24,8 +25,6 @@ const MAX_PER_PEER: usize = 8;
 const HEAD_TIMEOUT: Duration = Duration::from_secs(5);
 /// Requests other than a job upload carry no body; this is room for a small one anyway.
 const SMALL_BODY: usize = 64 * 1024;
-/// The slowest upload that is waited for, in bytes a second (the largest upload, at this rate, takes about three hours).
-const MIN_UPLOAD_RATE: usize = 50 * 1024;
 const CONTAINER: &str = "application/x-helixloom";
 
 /// Who is connected: how many connections there are from each address, in all and one by one.
@@ -78,11 +77,35 @@ pub struct Server {
     pub shared: Arc<Shared>,
 }
 
+/// What an answer carries: bytes made for it, or a file of the page, which every answer that sends it shares (so that a
+/// request for the page costs no copy of it, however many are asking at once).
+pub enum Body {
+    Owned(Vec<u8>),
+    Page(Arc<File>),
+}
+
+impl std::ops::Deref for Body {
+    type Target = [u8];
+
+    fn deref(&self) -> &[u8] {
+        match self {
+            Body::Owned(bytes) => bytes,
+            Body::Page(file) => &file.bytes,
+        }
+    }
+}
+
+impl From<Vec<u8>> for Body {
+    fn from(bytes: Vec<u8>) -> Body {
+        Body::Owned(bytes)
+    }
+}
+
 /// An answer: a status, what kind of body, and the body.
 pub struct Reply {
     pub status: u16,
     pub content_type: &'static str,
-    pub body: Vec<u8>,
+    pub body: Body,
 }
 
 impl Reply {
@@ -90,7 +113,7 @@ impl Reply {
         Reply {
             status,
             content_type: "text/plain; charset=utf-8",
-            body: message.as_bytes().to_vec(),
+            body: message.as_bytes().to_vec().into(),
         }
     }
 
@@ -98,7 +121,7 @@ impl Reply {
         Reply {
             status,
             content_type: CONTAINER,
-            body: c.encode(),
+            body: c.encode().into(),
         }
     }
 }
@@ -179,10 +202,12 @@ fn submit(shared: &Shared, body: &[u8]) -> Reply {
         Ok(r) => r,
         Err(why) => return bad(why),
     };
-    let needs_gpu = request.needs_gpu();
-    if needs_gpu && shared.config.gpus.is_empty() {
+    let no_gpus = shared.config.gpus.is_empty();
+    if request.needs_gpu() && no_gpus && !request.can_do_without_gpu() {
         return bad("This workstation has no GPU set up for that job (see --gpus).".into());
     }
+    // a job that can do without GPUs is given none where there are none, and the processor runs it
+    let needs_gpu = request.needs_gpu() && !no_gpus;
     if matches!(request, Request::Fold { local: true, .. }) && shared.config.fold_command.is_none()
     {
         return bad(
@@ -243,7 +268,7 @@ fn route(shared: &Shared, method: &str, target: &str, body: &[u8]) -> Reply {
             Ok(bytes) => Reply {
                 status: 200,
                 content_type: CONTAINER,
-                body: bytes,
+                body: bytes.into(),
             },
             Err(why) => lookup_failure(&why),
         },
@@ -251,7 +276,7 @@ fn route(shared: &Shared, method: &str, target: &str, body: &[u8]) -> Reply {
             Ok(()) => Reply {
                 status: 204,
                 content_type: "text/plain",
-                body: Vec::new(),
+                body: Vec::new().into(),
             },
             Err(why) => lookup_failure(&why),
         },
@@ -271,24 +296,67 @@ fn serve_connection(stream: &mut TcpStream, shared: &Shared, head_time: Duration
     let _ = stream.set_write_timeout(Some(IO_TIMEOUT));
     // the whole header within the time, however slowly it is sent: a stranger cannot hold a place by dribbling
     let head = http::read_head(&mut Within::new(stream, head_time));
-    let reply = match head {
+    let site = &shared.config.site;
+    let (reply, extra) = match head {
         Err(Failure::Closed(_)) => return,
-        Err(why) => Reply::text(why.status(), &why.message()),
-        Ok(head) if !same_token(bearer(head.header("authorization")), &shared.config.token) => {
-            Reply::text(401, "The token is missing or wrong.")
+        Err(why) => (Reply::text(why.status(), &why.message()), Vec::new()),
+        Ok(head) => {
+            // a page of an origin that was named may read every answer it gets, a refusal included (else it sees only
+            // "network error")
+            let mut extra = site.origin_headers(head.header("origin"));
+            // the page and the browser's questions need no token; the jobs do
+            if let Some((reply, more)) = site.answer(&head) {
+                extra.extend(more);
+                (reply, extra)
+            } else if !same_token(bearer(head.header("authorization")), &shared.config.token) {
+                (Reply::text(401, "The token is missing or wrong."), extra)
+            } else {
+                match take_in(stream, shared, head) {
+                    Some(reply) => (reply, extra),
+                    None => return,
+                }
+            }
         }
-        Ok(head) => match take_in(stream, shared, head) {
-            Some(reply) => reply,
-            None => return,
-        },
     };
-    let _ = http::respond(stream, reply.status, reply.content_type, &reply.body);
+    // A file of the page goes to anyone, with no token: only so many at once (a person with the token must always find a place),
+    // and in a time that a slow link still meets. Everything else is for someone who has the token.
+    let page = matches!(reply.body, Body::Page(_));
+    let place = if page { site.take_send_place() } else { None };
+    let (reply, time) = match (page, place.is_some()) {
+        (true, false) => {
+            let busy = Reply::text(
+                503,
+                "The page is being sent to other computers: try again in a moment.",
+            );
+            let time = transfer_time(busy.body.len());
+            (busy, time)
+        }
+        (true, true) => {
+            let time = site::page_time(reply.body.len());
+            (reply, time)
+        }
+        (false, _) => {
+            let time = transfer_time(reply.body.len());
+            (reply, time)
+        }
+    };
+    // the whole reply within its time, however slowly it is taken
+    let mut out = Within::new(stream, time).idle(IO_TIMEOUT);
+    let _ = http::respond_with(
+        &mut out,
+        reply.status,
+        reply.content_type,
+        &extra,
+        &reply.body,
+    );
     http::finish(stream);
 }
 
-/// How long an upload of `length` bytes may take in all: a minute, and as long as it needs at the slowest rate that is
-/// waited for. Without that a sender that gives a byte now and then could keep its share of the memory for ever.
-fn upload_time(length: usize) -> Duration {
+/// How long a transfer of `length` bytes may take in all, an upload or the reply to a request: a minute, and as long as it
+/// needs at the slowest rate that is waited for. Without that a sender that gives a byte now and then could keep its share
+/// of the memory for ever, and a receiver that takes a byte now and then could keep its place (for the page, which anyone
+/// may ask for, that is a place held with no token).
+fn transfer_time(length: usize) -> Duration {
     Duration::from_secs(60 + (length / MIN_UPLOAD_RATE) as u64)
 }
 
@@ -322,7 +390,7 @@ fn take_in(stream: &mut TcpStream, shared: &Shared, head: http::Head) -> Option<
         None
     };
     // the whole body within the time that its length allows, however slowly it comes
-    let mut body = Within::new(stream, upload_time(length)).idle(IO_TIMEOUT);
+    let mut body = Within::new(stream, transfer_time(length)).idle(IO_TIMEOUT);
     match http::read_body(&mut body, head, limit) {
         Ok(request) => Some(route(
             shared,

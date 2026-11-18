@@ -2,6 +2,7 @@
 
 use crate::seq::assemble::{Contig, Placed};
 use crate::seq::dna::{base_matches, revcom};
+use crate::ui::fonts::FontWeight;
 use crate::ui::map::commify;
 use crate::ui::theme::{self, Palette};
 use eframe::egui::{
@@ -58,7 +59,11 @@ pub fn pack_rows(spans: &[(usize, usize)]) -> (Vec<usize>, usize) {
     (rows, ends.len())
 }
 
-pub fn base_color(b: u8) -> Color32 {
+/// The colour of base `b` in the consensus: the letters of the trace (see `appearance::safe`) when the safe colours are chosen.
+pub fn base_color(b: u8, pal: &Palette) -> Color32 {
+    if pal.safe_colours {
+        return crate::ui::appearance::safe::trace(b, pal.dark);
+    }
     match b.to_ascii_uppercase() {
         b'A' => Color32::from_rgb(52, 160, 64),
         b'C' => Color32::from_rgb(58, 100, 220),
@@ -201,7 +206,7 @@ pub fn show(
                 }
                 resp.on_hover_ui(|ui| {
                     let (mism, compared) = compare_to_consensus(contig, pl, seq);
-                    ui.label(egui::RichText::new(&inputs[pl.read].0).strong());
+                    ui.label(egui::RichText::new(&inputs[pl.read].0).semibold());
                     ui.label(format!(
                         "{} • {}–{} • {} bp{}",
                         if pl.reverse {
@@ -320,10 +325,10 @@ fn consensus_row(c: &Ctx, contig: &Contig) {
                 Align2::CENTER_CENTER,
                 (b as char).to_string(),
                 c.geo.font.clone(),
-                base_color(b),
+                base_color(b, c.pal),
             );
         } else if c.geo.zoom >= BLOCK_ZOOM {
-            c.p.rect_filled(cell, 0.0, base_color(b).gamma_multiply(0.85));
+            c.p.rect_filled(cell, 0.0, base_color(b, c.pal).gamma_multiply(0.85));
         }
         if contig
             .disagree

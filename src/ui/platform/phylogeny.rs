@@ -3,8 +3,10 @@
 //! beside the log and becomes the tree the Trees page shows.
 
 use super::treeview::{self, Camera, Options};
-use super::workstation::{compute_picker, ComputeView, Place};
+use super::workstation::{run_button, ComputeView, Place};
 use super::Workspace;
+use crate::pipeline::steps::Aligned;
+use crate::provenance::{Asked, Input, Provenance};
 use crate::remote::tasks::{Request, Response};
 use crate::remote::weight::Weight;
 use crate::seq::estimate::{estimate, Analysis, Estimate, EstimateOptions};
@@ -13,18 +15,22 @@ use crate::seq::treelayout::lay_out;
 use crate::ui::app::{Action, App};
 use crate::ui::design::{self, Look, Tone};
 use crate::ui::job::{Job, Poll};
-use eframe::egui::{self, RichText, ScrollArea, Ui};
+use crate::ui::provenance as made_ui;
+use eframe::egui::{self, RichText, Ui};
 use std::time::Duration;
 use web_time::Instant;
 
-const OPTIONS_WIDTH: f32 = 320.0;
 const WORKING_REDRAW: Duration = Duration::from_millis(150);
-const MAX_REPLICATES: usize = 1000;
-const GENERATION_RANGE: std::ops::RangeInclusive<usize> = 1_000..=1_000_000;
+pub(in crate::ui) const MAX_REPLICATES: usize = 1000;
+pub(in crate::ui) const GENERATION_RANGE: std::ops::RangeInclusive<usize> = 1_000..=1_000_000;
 
 #[derive(Default)]
 pub struct PhylogenyPage {
     job: Option<(Job<Result<Estimate, String>>, Instant)>,
+    /// What the estimation that is going was asked, with its settings; and, for the tree that it made (while that is the tree
+    /// shown), the record of what made it.
+    asked: Option<(Asked, EstimateOptions)>,
+    pub made: Option<(Provenance, EstimateOptions)>,
     pub message: String,
     camera: Camera,
     /// Estimate as soon as an alignment is there (an example was loaded).
@@ -39,12 +45,39 @@ impl PhylogenyPage {
 
 #[derive(Default)]
 struct Clicks {
+    made: made_ui::Asks,
     run: bool,
+    example: bool,
     to_alignment: bool,
     to_trees: bool,
     phylocnn: bool,
     species: bool,
     tree_tools: bool,
+}
+
+/// The inputs and the settings of an estimation: the rows of the alignment, the method, and the settings that the method uses.
+pub fn as_it_is(aligned: &Aligned, o: &EstimateOptions) -> (Vec<Input>, Vec<(String, String)>) {
+    let inputs = aligned
+        .rows
+        .iter()
+        .map(|(name, row)| Input::of(name, row))
+        .collect();
+    let method = METHODS
+        .iter()
+        .find(|m| m.0 == o.analysis)
+        .map_or("", |m| m.1);
+    let mut settings = vec![("method".to_string(), method.to_string())];
+    match o.analysis {
+        Analysis::NeighborJoining | Analysis::Upgma => {
+            settings.push(("distances".to_string(), o.model.label().to_string()));
+            settings.push(("bootstrap resamples".to_string(), o.bootstrap.to_string()));
+        }
+        Analysis::Bayesian => {
+            settings.push(("generations per run".to_string(), o.generations.to_string()));
+        }
+        Analysis::Likelihood => {}
+    }
+    (inputs, settings)
 }
 
 /// The methods the page offers, with what each is good for.
@@ -94,13 +127,19 @@ impl App {
                     .map_or(0.0, |(_, started)| started.elapsed().as_secs_f64());
                 let tips = done.tree.leaf_count();
                 page.message = format!("Estimated a tree of {tips} tips in {seconds:.2} s.");
+                // the methods are this program's own, so it is the only program named
+                page.made = page
+                    .asked
+                    .take()
+                    .map(|(asked, options)| (asked.made(Vec::new(), seconds), options));
                 page.camera = Camera::default();
                 self.tree_win.details = done.details;
-                self.tree_win.tree = Some(done.tree);
+                self.tree_win.set_tree(Some(done.tree));
                 self.platform.trees.reset_view();
             }
-            Poll::Done(Err(why)) => (page.message, page.job) = (why, None),
+            Poll::Done(Err(why)) => (page.message, page.job, page.asked) = (why, None, None),
             Poll::Died => {
+                page.asked = None;
                 (page.message, page.job) =
                     ("The estimation stopped without an answer.".into(), None)
             }
@@ -127,7 +166,21 @@ impl App {
             options.generations,
         );
         let place = self.platform.place(&weight);
+        let (inputs, parameters) = as_it_is(aligned, &options);
         let page = &mut self.platform.phylogeny;
+        page.asked = Some((
+            Asked {
+                analysis: "Tree estimation",
+                inputs,
+                parameters,
+                ran_on: if matches!(place, Place::There(_)) {
+                    "the workstation"
+                } else {
+                    "this computer"
+                },
+            },
+            options,
+        ));
         let Place::There(remote) = place else {
             let msa = aligned.msa();
             page.message = "Estimating…".into();
@@ -151,15 +204,18 @@ impl App {
             generations: options.generations,
         };
         page.job = Some((
-            Job::spawn(ctx, move || {
-                remote.run(&request, &label).and_then(Response::into_tree)
+            Job::spawn_async(ctx, async move {
+                remote
+                    .run_async(&request, &label)
+                    .await
+                    .and_then(Response::into_tree)
             }),
             Instant::now(),
         ));
     }
 
     pub(super) fn phylogeny_page(&mut self, ui: &mut Ui, out: &mut Vec<Action>) {
-        let look = design::look(self.prefs.dark);
+        let look = self.prefs.look();
         let mut c = Clicks::default();
         let have_tree = self.tree_win.tree.is_some();
         let summary = self
@@ -178,6 +234,7 @@ impl App {
                 Weight::of_tree(*rows, *columns, w.analysis, w.bootstrap, w.generations)
             });
         let view = self.platform.workstation.view(&weight);
+        let aligned = self.platform.alignment.result.as_ref();
         let (page, options) = (&mut self.platform.phylogeny, &mut self.tree_win);
         design::page(ui, |ui| {
             design::page_header(
@@ -188,33 +245,39 @@ impl App {
                 |ui| {
                     ui.add_enabled_ui(have_tree, |ui| {
                         c.to_trees = design::primary_button(ui, &look, "Open in Trees").clicked();
+                        crate::ui::figure::button(ui);
                     });
                 },
             );
-            egui::Panel::left("phylo_options")
-                .exact_size(OPTIONS_WIDTH)
-                .resizable(false)
-                .frame(egui::Frame::new())
-                .show(ui, |ui| {
-                    ScrollArea::vertical()
-                        .auto_shrink([false, false])
-                        .show(ui, |ui| {
-                            design::card(ui, &look, |ui| {
-                                let input = (summary.as_ref(), view);
-                                options_panel(ui, &look, page, options, input, &mut c)
-                            });
-                        });
-                });
-            egui::CentralPanel::default()
-                .frame(egui::Frame::new().inner_margin(egui::Margin {
-                    left: design::PAGE_MARGIN,
-                    ..egui::Margin::ZERO
-                }))
-                .show(ui, |ui| {
-                    result_panel(ui, &look, page, tree.as_ref(), &details)
-                });
+            design::controls_panel(ui, &look, "phylo_options", |ui| {
+                let input = (summary.as_ref(), view);
+                options_panel(ui, &look, page, options, input, &mut c)
+            });
+            design::results_area(ui, |ui| {
+                let current = EstimateOptions {
+                    analysis: options.analysis,
+                    model: options.model,
+                    bootstrap: options.bootstrap,
+                    generations: options.generations,
+                };
+                let now = || aligned.map_or_else(Default::default, |a| as_it_is(a, &current));
+                result_panel(ui, &look, page, (tree.as_ref(), &details), now, &mut c)
+            });
         });
-        if c.run {
+        if c.made.again {
+            // with the settings the tree that is shown was made with
+            if let Some((_, o)) = &self.platform.phylogeny.made {
+                let w = &mut self.tree_win;
+                (w.analysis, w.model, w.bootstrap, w.generations) =
+                    (o.analysis, o.model, o.bootstrap, o.generations);
+            }
+        }
+        if let (true, Some((made, _))) = (c.made.copy, &self.platform.phylogeny.made) {
+            ui.ctx().copy_text(made.to_text());
+            self.platform.phylogeny.message = "Copied the record of how the tree was made.".into();
+        }
+        self.checks_win.open |= c.made.checks;
+        if c.run || c.made.again {
             self.start_estimation(ui.ctx());
         }
         if c.to_alignment {
@@ -222,6 +285,9 @@ impl App {
         }
         if c.to_trees {
             out.push(Action::Go(Workspace::Trees));
+        }
+        if c.example {
+            out.push(Action::Example(Workspace::Phylogeny));
         }
         if c.phylocnn {
             self.phylocnn_win.open = true;
@@ -305,20 +371,8 @@ fn options_panel(
             });
         }
     }
-    ui.add_space(8.0);
-    compute_picker(ui, look, view);
-    ui.horizontal(|ui| {
-        let ready = alignment.is_some() && !page.is_running();
-        c.run = ui
-            .add_enabled(
-                ready,
-                egui::Button::new(RichText::new("Estimate tree").strong()),
-            )
-            .clicked();
-        if page.is_running() {
-            ui.spinner();
-        }
-    });
+    let state = (alignment.is_some(), page.is_running());
+    c.run = run_button(ui, look, view, "Estimate tree", state);
     if !page.message.is_empty() {
         ui.label(RichText::new(&page.message).size(12.0).color(look.dim));
     }
@@ -342,25 +396,24 @@ fn result_panel(
     ui: &mut Ui,
     look: &Look,
     page: &mut PhylogenyPage,
-    tree: Option<&crate::seq::tree::Node>,
-    details: &[String],
+    (tree, details): (Option<&crate::seq::tree::Node>, &[String]),
+    now: impl FnOnce() -> (Vec<Input>, Vec<(String, String)>),
+    c: &mut Clicks,
 ) {
     let Some(tree) = tree else {
-        design::card(ui, look, |ui| {
-            ui.label(
-                RichText::new("No tree yet")
-                    .size(17.0)
-                    .strong()
-                    .color(look.text),
-            );
-            ui.label(
-                RichText::new(
-                    "Choose a method on the left and press Estimate tree. A preview appears here, with how the tree \
-                     was made; the full viewer is on the Trees page.",
-                )
-                .color(look.dim),
-            );
-        });
+        let pick = design::empty_state(
+            ui,
+            look,
+            "No tree yet",
+            "Choose a method on the left and press Estimate tree. A preview appears here, with how the tree \
+             was made; the full viewer is on the Trees page.",
+            &["Try the example", "Add sequences in Alignment"],
+        );
+        match pick {
+            Some(0) => c.example = true,
+            Some(1) => c.to_alignment = true,
+            _ => {}
+        }
         return;
     };
     if !details.is_empty() {
@@ -371,13 +424,19 @@ fn result_panel(
         });
         ui.add_space(8.0);
     }
-    egui::Frame::new()
-        .fill(look.surface)
-        .stroke(egui::Stroke::new(1.0, look.border))
-        .corner_radius(egui::CornerRadius::same(design::CARD_RADIUS))
-        .show(ui, |ui| {
-            let laid = lay_out(tree, crate::seq::treelayout::Layout::Phylogram);
-            let options = Options::default();
-            treeview::show(ui, look, &laid, &options, &mut page.camera, &mut None, true);
+    if let Some((made, _)) = &page.made {
+        c.made = made_ui::section(ui, look, made, now, !page.is_running());
+        ui.add_space(8.0);
+    }
+    let laid = lay_out(tree, crate::seq::treelayout::Layout::Phylogram);
+    let options = Options::default();
+    if let Some(format) = crate::ui::figure::wanted() {
+        let mut camera = page.camera;
+        page.message = crate::ui::figure::save(format, "tree", ui.available_size(), |ui| {
+            treeview::show(ui, look, &laid, &options, &mut camera, &mut None, false);
         });
+    }
+    design::view_frame(ui, look, |ui| {
+        treeview::show(ui, look, &laid, &options, &mut page.camera, &mut None, true);
+    });
 }

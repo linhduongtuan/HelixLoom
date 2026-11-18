@@ -3,7 +3,7 @@
 //! message that was only a line of small text at the bottom is now seen, wherever the person is looking.
 
 use super::app::App;
-use super::design::{self, Look, Tone, CARD_RADIUS};
+use super::design::{Look, Tone, CARD_RADIUS};
 use eframe::egui::{
     self, vec2, Align2, Context, CornerRadius, Frame, Id, Margin, Order, RichText, Stroke,
 };
@@ -26,8 +26,6 @@ struct Toast {
 #[derive(Default)]
 pub struct Toasts {
     items: Vec<Toast>,
-    /// How many analyses were running at the last look.
-    running: usize,
 }
 
 /// What a message says about how things went, from how it starts.
@@ -72,14 +70,6 @@ impl Toasts {
         }
     }
 
-    /// Say so when fewer analyses are running than a moment ago: one has finished, wherever the person was looking.
-    pub fn follow_jobs(&mut self, running: usize) {
-        if running < self.running {
-            self.push("An analysis has finished.", Tone::Good);
-        }
-        self.running = running;
-    }
-
     /// Start the clock of the new toasts at `now` and drop the ones that have run out.
     fn tick(&mut self, now: f64) {
         for toast in &mut self.items {
@@ -97,19 +87,23 @@ impl Toasts {
     pub fn is_empty(&self) -> bool {
         self.items.is_empty()
     }
+
+    /// What the toasts say, the oldest first.
+    #[cfg(test)]
+    pub fn texts(&self) -> Vec<String> {
+        self.items.iter().map(|t| t.text.clone()).collect()
+    }
 }
 
 impl App {
     /// Show the toasts in the corner of the window.
     pub(super) fn toasts_ui(&mut self, ctx: &Context) {
-        let running = self.running_analyses();
-        self.toasts.follow_jobs(running);
         let now = ctx.input(|i| i.time);
         self.toasts.tick(now);
         if self.toasts.is_empty() {
             return;
         }
-        let look = design::look(self.prefs.dark);
+        let look = self.prefs.look();
         egui::Area::new(Id::new("toasts"))
             .order(Order::Tooltip)
             .anchor(Align2::RIGHT_BOTTOM, MARGIN)
@@ -132,6 +126,7 @@ impl App {
 fn show_toast(ui: &mut egui::Ui, look: &Look, toast: &Toast) {
     let dot = match toast.tone {
         Tone::Good => look.good,
+        Tone::Warn => look.warn,
         Tone::Bad => look.bad,
         Tone::Accent => look.accent,
         Tone::Neutral => look.accent2,
@@ -188,17 +183,6 @@ mod tests {
         // copying twice is two toasts, a while apart
         toasts.push("Saved a.gb.", Tone::Good);
         assert_eq!(toasts.items.len(), 1);
-    }
-
-    #[test]
-    fn a_toast_says_when_an_analysis_has_finished() {
-        let mut toasts = Toasts::default();
-        toasts.follow_jobs(0);
-        toasts.follow_jobs(2);
-        assert!(toasts.is_empty(), "starting is not news");
-        toasts.follow_jobs(1);
-        assert_eq!(toasts.items.len(), 1);
-        assert_eq!(toasts.items[0].tone, Tone::Good);
     }
 
     #[test]

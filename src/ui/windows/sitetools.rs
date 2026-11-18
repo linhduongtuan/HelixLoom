@@ -372,7 +372,7 @@ impl App {
         if !self.site_win.silent_open {
             return;
         }
-        let look = design::look(self.prefs.dark);
+        let look = self.prefs.look();
         let live = self.is_current(self.site_win.silent.as_ref().map(|r| &r.at));
         let (mut open, mut again, mut copy, mut pick) = (true, false, false, None);
         design::window("Silent Sites")
@@ -414,7 +414,7 @@ impl App {
         if !self.site_win.diagnostic_open {
             return;
         }
-        let look = design::look(self.prefs.dark);
+        let look = self.prefs.look();
         let live = self.is_current(self.site_win.diagnostic.as_ref().map(|r| &r.at));
         let (mut open, mut find, mut copy, mut pick) = (true, false, false, None);
         design::window("Diagnostic Sites")

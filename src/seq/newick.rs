@@ -161,6 +161,16 @@ impl NwTree {
     /// Every tree in `text` (each ends with `;`). A missing branch length is 0 for the root and
     /// 1 for any other node, as ETE reads it.
     pub fn parse_all(text: &str) -> Result<Vec<NwTree>, String> {
+        NwTree::parse_trees(text, true)
+    }
+
+    /// `parse_all`, but a branch length that is not written stays NaN, so that a tree with no lengths can be told from one whose
+    /// lengths are all 1.
+    pub fn parse_all_raw(text: &str) -> Result<Vec<NwTree>, String> {
+        NwTree::parse_trees(text, false)
+    }
+
+    fn parse_trees(text: &str, fill_missing: bool) -> Result<Vec<NwTree>, String> {
         let mut reader = Reader {
             text: text.as_bytes(),
             pos: 0,
@@ -178,7 +188,7 @@ impl NwTree {
             }
             let mut nodes = std::mem::take(&mut reader.nodes);
             for (i, n) in nodes.iter_mut().enumerate() {
-                if n.dist.is_nan() {
+                if fill_missing && n.dist.is_nan() {
                     n.dist = if i == root { 0.0 } else { 1.0 };
                 }
             }

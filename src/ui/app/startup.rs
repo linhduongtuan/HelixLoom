@@ -38,6 +38,65 @@ impl App {
                 self.run_quick_list(Quick::SiteUsage);
             }
             "linear" => self.map_linear = true,
+            "tour" => self.tour.replay(),
+            "interface" => {
+                self.workspace = Workspace::Structure;
+                self.platform.structure.show_example_interface();
+            }
+            "pipeline-file" | "pipeline-file-run" => {
+                self.workspace = Workspace::Pipelines;
+                self.platform.pipelines.mode = crate::ui::platform::pipelines::flow::Mode::File;
+                if view == "pipeline-file-run" {
+                    self.show_example_flow_run();
+                }
+            }
+            "empty-alignment" => self.workspace = Workspace::Alignment,
+            // one selection on two pages: a column of the alignment, and the residue of the structure lined up with it
+            "linked-column" | "linked-residue" => {
+                self.show_linked_example(view == "linked-residue")
+            }
+            "inspector" | "inspector-linear" => {
+                // the first gene of the demo plasmid selected, with what overlaps it listed
+                self.map_linear = view == "inspector-linear";
+                let gene = self.docs[0]
+                    .doc
+                    .features
+                    .iter()
+                    .position(|f| f.kind == "CDS");
+                self.docs[0].select_feature(gene.unwrap_or(0));
+            }
+            "motifs" => self.motif_win.show_example(),
+            "domains" => self.domains_win.show_example(),
+            "programs" => self.programs_win.open = true,
+            "tray" => {
+                // two analyses that ran, one that is going on, and the panel open
+                let mut past = |label: &'static str, key: &'static str, took: u64, ago: u64| {
+                    let now = web_time::Instant::now();
+                    let source = crate::ui::tray::Source {
+                        key,
+                        label,
+                        open: Action::Go(Workspace::Phylogeny),
+                    };
+                    let began = now
+                        .checked_sub(std::time::Duration::from_secs(took + ago))
+                        .unwrap_or(now);
+                    self.tray.observe(std::slice::from_ref(&source), began);
+                    self.tray
+                        .observe(&[], began + std::time::Duration::from_secs(took));
+                };
+                past("Alignment", "alignment", 7, 190);
+                past("Phylogeny", "phylogeny", 154, 40);
+                let going = crate::ui::tray::Source {
+                    key: "structure",
+                    label: "Structure prediction",
+                    open: Action::Go(Workspace::Structure),
+                };
+                let began = web_time::Instant::now()
+                    .checked_sub(std::time::Duration::from_secs(73))
+                    .unwrap_or_else(web_time::Instant::now);
+                self.tray.observe(&[going], began);
+                self.tray.open = true;
+            }
             "assembly" | "assembly-before" => {
                 self.tab = Tab::Assembly;
                 self.assembly.load_demo();
@@ -50,10 +109,24 @@ impl App {
                 self.assembly.load_demo();
                 self.assembly.set_preset(Preset::Gibson);
             }
-            "orfs" => {
+            "orfs" | "orf-selected" => {
                 self.prefs.orf_min = 300;
                 self.prefs.orf_strand = Strand::Both;
                 self.orf_win.list_open = true;
+                if view == "orf-selected" {
+                    // the bases of the demo plasmid's forward ORF, selected as Find Next ORF selects them: the list marks it
+                    self.docs[0].select(287, 902);
+                }
+            }
+            // a base of the example trace picked, and a stretch of it: the line above the trace says what they are
+            "peak" | "peaks" => {
+                self.load_example(Workspace::Signals);
+                let bases = if view == "peak" {
+                    (156, 157)
+                } else {
+                    (149, 180)
+                };
+                self.platform.signals.pick(Some(bases));
             }
             "translate" => {
                 self.docs[0].select(326, 446);
@@ -160,6 +233,8 @@ impl App {
             }
             "palette" => self.palette.toggle(),
             "shortcuts" => self.shortcuts_open = true,
+            "checks" => self.checks_win.open = true,
+            "appearance" => self.appearance_open = true,
             _ => {}
         }
     }

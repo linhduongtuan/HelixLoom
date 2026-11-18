@@ -6,6 +6,7 @@ use crate::seq::features::{
 };
 use crate::ui::app::App;
 use crate::ui::dialog::{self, Wanted};
+use crate::ui::fonts::FontWeight;
 use crate::ui::platform::route::Source;
 use eframe::egui::{self, RichText};
 
@@ -369,7 +370,7 @@ impl App {
                     "Add feature".to_string()
                 };
                 ui.horizontal(|ui| {
-                    if ui.button(RichText::new(label).strong()).clicked() {
+                    if ui.button(RichText::new(label).semibold()).clicked() {
                         apply = true;
                     }
                 });

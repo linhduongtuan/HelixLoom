@@ -13,9 +13,9 @@ use crate::seq::scf;
 use crate::ui::app::{Action, App};
 use crate::ui::design::{self, Look, Tone};
 use crate::ui::dialog::{self, Wanted};
+use crate::ui::fonts::FontWeight;
 use eframe::egui::{self, RichText, ScrollArea, Ui};
 
-const OPTIONS_WIDTH: f32 = 300.0;
 /// The quality that trimming starts from: a base this good has a 1 in 20 chance of being wrong.
 const DEFAULT_TRIM_QUALITY: f32 = 13.0;
 /// The original's scales (`abi_x_scale`, `abi_scale`): across 0.5 to 5 times and up 1 to 5 times, both 1 at first.
@@ -155,7 +155,7 @@ struct Clicks {
 
 impl App {
     pub(super) fn signals_page(&mut self, ui: &mut Ui, out: &mut Vec<Action>) {
-        let look = design::look(self.prefs.dark);
+        let look = self.prefs.look();
         let mut c = Clicks::default();
         let mut reads_clicks = None;
         design::page(ui, |ui| {
@@ -166,6 +166,14 @@ impl App {
                 "Raw signals",
                 "Sanger chromatograms and sequencing reads: check, trim and send on",
                 |ui| {
+                    // there while the traces are shown, pale until there is one: the header does not move when a
+                    // trace is opened. It is the first thing of the row (the header is filled from the right), since
+                    // it is in a room of its own to be pale in, and a room wraps with a row only from the row's edge
+                    if tab == Tab::Sanger {
+                        ui.add_enabled_ui(self.platform.signals.loaded.is_some(), |ui| {
+                            crate::ui::figure::button(ui);
+                        });
+                    }
                     ui.selectable_value(&mut tab, Tab::Reads, "Reads (FASTQ)");
                     ui.selectable_value(&mut tab, Tab::Sanger, "Sanger traces");
                 },
@@ -258,23 +266,10 @@ impl App {
 }
 
 fn sanger_tab(ui: &mut Ui, look: &Look, page: &mut SignalsPage, c: &mut Clicks) {
-    egui::Panel::left("signals_options")
-        .exact_size(OPTIONS_WIDTH)
-        .resizable(false)
-        .frame(egui::Frame::new())
-        .show(ui, |ui| {
-            ScrollArea::vertical()
-                .auto_shrink([false, false])
-                .show(ui, |ui| {
-                    design::card(ui, look, |ui| options_panel(ui, look, page, c));
-                });
-        });
-    egui::CentralPanel::default()
-        .frame(egui::Frame::new().inner_margin(egui::Margin {
-            left: design::PAGE_MARGIN,
-            ..egui::Margin::ZERO
-        }))
-        .show(ui, |ui| viewer_panel(ui, look, page));
+    design::controls_panel(ui, look, "signals_options", |ui| {
+        options_panel(ui, look, page, c)
+    });
+    design::results_area(ui, |ui| viewer_panel(ui, look, page, c));
 }
 
 /// What the original's File Info window says about a trace (`abi_file_info`, AppMain.tcl:31840, 0x176398): the sample,
@@ -394,11 +389,11 @@ fn options_panel(ui: &mut Ui, look: &Look, page: &mut SignalsPage, c: &mut Click
         for (k, base) in b"ACGT".iter().enumerate() {
             // in a reverse-complemented view a channel is drawn as the base it pairs with
             let shown = shown_base(*base, reverse);
-            let colour = design::trace_color(shown, look.dark);
+            let colour = design::trace_color(shown, look);
             ui.checkbox(
                 &mut page.shown[k],
                 RichText::new(char::from(shown).to_string())
-                    .strong()
+                    .semibold()
                     .color(colour),
             );
         }
@@ -451,24 +446,32 @@ fn options_panel(ui: &mut Ui, look: &Look, page: &mut SignalsPage, c: &mut Click
     }
 }
 
-fn viewer_panel(ui: &mut Ui, look: &Look, page: &mut SignalsPage) {
+fn viewer_panel(ui: &mut Ui, look: &Look, page: &mut SignalsPage, c: &mut Clicks) {
+    // what the picked base is, or the picked bases, above the trace
+    if page.loaded.is_some() {
+        let words = page.picked_words();
+        let links = [(pick::CLEAR, "Let go of the picked bases")];
+        let clicked = design::selection_line(ui, look, pick::HINT, words.as_deref(), &links);
+        if clicked == Some(0) {
+            page.selection = None;
+        }
+        ui.add_space(4.0);
+    }
     let kept = page.kept();
     let Some(loaded) = &page.loaded else {
-        design::card(ui, look, |ui| {
-            ui.label(
-                RichText::new("No trace yet")
-                    .size(17.0)
-                    .strong()
-                    .color(look.text),
-            );
-            ui.label(
-                RichText::new(
-                    "Open a .ab1 or .scf file, or drop one on the window. The four colour traces appear here with the \
-                     bases the machine called, a graph of how sure it was of each, and the weak ends shaded.",
-                )
-                .color(look.dim),
-            );
-        });
+        let pick = design::empty_state(
+            ui,
+            look,
+            "No trace yet",
+            "Open a .ab1 or .scf file, or drop one on the window. The four colour traces appear here with the \
+             bases the machine called, a graph of how sure it was of each, and the weak ends shaded.",
+            &["Open trace…", "Try the example"],
+        );
+        match pick {
+            Some(0) => c.open = true,
+            Some(1) => c.example = true,
+            _ => {}
+        }
         return;
     };
     let view = View {
@@ -480,19 +483,31 @@ fn viewer_panel(ui: &mut Ui, look: &Look, page: &mut SignalsPage) {
         kept,
         quality_graph: page.quality_graph,
         reverse: page.reverse,
+        scroll: None,
     };
-    let touched = egui::Frame::new()
-        .fill(look.surface)
-        .stroke(egui::Stroke::new(1.0, look.border))
-        .corner_radius(egui::CornerRadius::same(design::CARD_RADIUS))
-        .show(ui, |ui| chromatogram::show(ui, &view, page.selection))
-        .inner;
+    let mut said = String::new();
+    if let Some(format) = crate::ui::figure::wanted() {
+        // what the window shows: the same room, scrolled as far
+        let scrolled = View {
+            scroll: Some(chromatogram::scrolled(ui.ctx())),
+            ..view
+        };
+        said = crate::ui::figure::save(format, "trace", ui.available_size(), |ui| {
+            chromatogram::show(ui, &scrolled, page.selection);
+        });
+    }
+    let touched = design::view_frame(ui, look, |ui| chromatogram::show(ui, &view, page.selection));
+    if !said.is_empty() {
+        page.message = said;
+    }
     if touched.picked.is_some() {
         page.selection = touched.picked;
     } else if touched.cleared {
         page.selection = None;
     }
 }
+
+mod pick;
 
 #[cfg(test)]
 mod tests {

@@ -1,7 +1,9 @@
 //! The species tree as Newick text, with each inner branch annotated the way ASTRAL's `-t` option asks: nothing (0), the
 //! quartet support of the branch in percent (1), all the quantities (2), the local posterior probability (3, the usual one),
-//! the three posteriors (4) or the three quartet supports (8). Lengths are in coalescent units; leaves have none.
+//! the three posteriors (4), the three quartet supports (8) or the p-value of the test for a polytomy (10; a branch that
+//! was not tested has only its length). Lengths are in coalescent units; leaves have none.
 
+use super::polytomy::p_text;
 use super::species::{Branch, Sp};
 
 /// A number written as ASTRAL's Java does for the `#.##` format: at most two decimals, no trailing zeros.
@@ -23,8 +25,18 @@ fn full(x: f64) -> String {
     format!("{x:?}").replace('e', "E")
 }
 
+/// A bootstrap support in percent, with at most one decimal and no trailing zero: `100`, `98.5`.
+pub(super) fn support_text(percent: f64) -> String {
+    let text = format!("{percent:.1}");
+    text.trim_end_matches('0').trim_end_matches('.').to_string()
+}
+
 fn label(b: &Branch, level: u8) -> String {
     let length = full(b.length);
+    // with a bootstrap, the support of a branch is its label, as in ASTRAL (nothing at all for level 0)
+    if let (Some(support), true) = (b.bootstrap, level != 0) {
+        return format!("{}:{length}", support_text(support));
+    }
     let three = |v: [f64; 3], name: &str| {
         let parts: Vec<String> = v
             .iter()
@@ -35,6 +47,10 @@ fn label(b: &Branch, level: u8) -> String {
     };
     match level {
         0 => String::new(),
+        10 => match b.polytomy {
+            Some(t) => format!("{}:{length}", p_text(t.p)),
+            None => format!(":{length}"),
+        },
         1 => format!("{}:{length}", two(b.q[0] * 100.0)),
         2 => {
             let each = |name: &str, v: [f64; 3]| {
@@ -72,7 +88,7 @@ pub fn newick(sp: &Sp, taxa: &[String], branches: &[Branch], level: u8) -> Strin
 
 /// A species name as Newick writes it: as it is, or in single quotes (a quote inside is written twice) when it holds a space,
 /// a bracket, a comma, a colon, a semicolon or a quote, which would otherwise end or break the name.
-fn name(species: &str) -> String {
+pub(super) fn name(species: &str) -> String {
     let plain = !species.is_empty()
         && !species
             .chars()
@@ -134,6 +150,83 @@ mod tests {
         assert_eq!(full(0.2876820724517809), "0.2876820724517809");
         assert_eq!(full(1.3691758792688155e-6), "1.3691758792688155E-6");
         assert_eq!(full(f64::INFINITY), "Infinity");
+    }
+
+    #[test]
+    fn a_bootstrap_support_is_the_label_of_its_branch_unless_labels_are_off() {
+        assert_eq!(support_text(100.0), "100");
+        assert_eq!(support_text(98.5), "98.5");
+        assert_eq!(support_text(50.04), "50");
+        assert_eq!(support_text(0.0), "0");
+        assert_eq!(support_text(10.0), "10");
+        let kids = [None, None, Some((0, 1)), None, Some((2, 3))];
+        let taxon = [Some(0), Some(1), None, Some(2), None];
+        let sp = Sp::from_shape(4, 3, &kids, &taxon, 4);
+        let names: Vec<String> = ["a", "b", "c", "d"].map(String::from).to_vec();
+        let branch = |node, support| Branch {
+            node,
+            f: [1.0, 0.0, 0.0],
+            q: [1.0, 0.0, 0.0],
+            pp: [0.5, 0.0, 0.0],
+            en: 1.0,
+            quartets: 1,
+            length: 2.0,
+            bootstrap: Some(support),
+            polytomy: None,
+        };
+        let branches = [branch(2, 87.5), branch(4, 100.0)];
+        assert_eq!(
+            newick(&sp, &names, &branches, 3),
+            "(d,((a,b)87.5:2.0,c)100:2.0);"
+        );
+        assert_eq!(
+            newick(&sp, &names, &branches, 1),
+            "(d,((a,b)87.5:2.0,c)100:2.0);"
+        );
+        assert_eq!(newick(&sp, &names, &branches, 0), "(d,((a,b),c));");
+    }
+
+    #[test]
+    fn the_p_value_of_the_test_for_a_polytomy_is_the_label_and_an_untested_branch_has_only_its_length(
+    ) {
+        use super::super::polytomy::Polytomy;
+        let kids = [None, None, Some((0, 1)), None, Some((2, 3))];
+        let taxon = [Some(0), Some(1), None, Some(2), None];
+        let sp = Sp::from_shape(4, 3, &kids, &taxon, 4);
+        let names: Vec<String> = ["a", "b", "c", "d"].map(String::from).to_vec();
+        let branch = |node, polytomy| Branch {
+            node,
+            f: [1.0, 0.0, 0.0],
+            q: [1.0, 0.0, 0.0],
+            pp: [0.5, 0.0, 0.0],
+            en: 1.0,
+            quartets: 1,
+            length: 2.0,
+            bootstrap: None,
+            polytomy,
+        };
+        let tested = Polytomy {
+            genes: 30,
+            chi2: 15.0,
+            p: 5.53e-4,
+        };
+        let branches = [branch(2, Some(tested)), branch(4, None)];
+        assert_eq!(
+            newick(&sp, &names, &branches, 10),
+            "(d,((a,b)5.5E-4:2.0,c):2.0);"
+        );
+        // the posterior is what the usual level writes, whatever the test found
+        assert_eq!(
+            newick(&sp, &names, &branches, 3),
+            "(d,((a,b)0.5:2.0,c)0.5:2.0);"
+        );
+        // a bootstrap support is still the label when both are asked for
+        let mut with_support = branches;
+        with_support[0].bootstrap = Some(90.0);
+        assert_eq!(
+            newick(&sp, &names, &with_support, 10),
+            "(d,((a,b)90:2.0,c):2.0);"
+        );
     }
 
     #[test]
@@ -204,6 +297,8 @@ mod tests {
             en: 1.0,
             quartets: 1,
             length: 2.0,
+            bootstrap: None,
+            polytomy: None,
         };
         let text = newick(&sp, &names, &[branch(2, 0.5), branch(4, 0.25)], 3);
         assert_eq!(text, "(d,((a,b)0.5:2.0,c)0.25:2.0);");

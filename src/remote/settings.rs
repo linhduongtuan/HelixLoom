@@ -3,7 +3,8 @@
 
 use std::path::{Path, PathBuf};
 
-const FILE: &str = "workstation.txt";
+/// The name the connection is kept under: a file of the settings folder, or an entry of the table a browser gives a tab.
+pub const FILE: &str = "workstation.txt";
 
 /// Where the heavy jobs are computed: the person's choice, kept with the connection.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]

@@ -175,7 +175,7 @@ fn heavy_jobs_go_only_where_the_person_said_and_only_over_a_good_connection() {
         ("automatic", "address=lab-gpu\ntoken=\ncompute=automatic\n"),
     ] {
         let dir = work_folder(&format!("workstation-bad-saved-{label}")).expect("a folder");
-        std::fs::write(dir.join("workstation.txt"), text).expect("a file");
+        std::fs::write(dir.join(settings::FILE), text).expect("a file");
         assert_eq!(WorkstationPage::open(Some(dir)).compute, Compute::Local);
     }
 }
@@ -475,9 +475,18 @@ fn a_fetched_result_opens_in_the_page_it_belongs_to() {
         &env,
     )
     .expect("a tree");
+    // the lines about a tree that was there before are not this tree's; its own come with it
+    app.tree_win.details = vec!["of the tree before".to_string()];
+    let Response::Tree(mut estimate) = tree else {
+        panic!("a tree was asked for");
+    };
+    estimate.details.push("a line of its own".to_string());
+    let lines = estimate.details.clone();
+    let tree = Response::Tree(estimate);
     app.open_remote_result(&job("j1-2", Kind::Tree, Status::Done), tree);
     assert_eq!(app.workspace, Workspace::Trees);
     assert!(app.tree_win.tree.is_some());
+    assert_eq!(app.tree_win.details, lines);
 
     let choice = Choice {
         align: true,
@@ -496,9 +505,23 @@ fn a_fetched_result_opens_in_the_page_it_belongs_to() {
         &env,
     )
     .expect("a pipeline");
+    // a run of the page from before left its record: the fetched result is not what that record is of
+    let stale = crate::provenance::Asked {
+        analysis: "Pipeline",
+        inputs: Vec::new(),
+        parameters: Vec::new(),
+        ran_on: "this computer",
+    }
+    .made(Vec::new(), 1.0);
+    let ticked = (crate::ui::platform::pipelines::Source::Example, [true; 5]);
+    app.platform.pipelines.made = Some((stale, ticked));
     app.open_remote_result(&job("j1-3", Kind::Pipeline, Status::Done), run);
     assert_eq!(app.workspace, Workspace::Pipelines);
     assert!(app.platform.pipelines.outcome.is_some());
+    assert!(
+        app.platform.pipelines.made.is_none(),
+        "what the workstation made is not what the page's last run was made from"
+    );
 
     // the networks are the authors' files, which this repository does not carry: without them there is no estimate to open
     if !crate::models::phylocnn_missing() {
@@ -549,6 +572,180 @@ fn a_fetched_result_opens_in_the_page_it_belongs_to() {
         "{}",
         app.species_win.message
     );
+}
+
+#[test]
+fn a_domain_result_opens_in_its_window_and_says_it_came_from_the_workstation() {
+    let mut app = App::new(Startup::default());
+    let found = crate::remote::domains::DomainsResult {
+        names: vec!["ubiquitin".into()],
+        lengths: vec![76],
+        hits: Vec::new(),
+        program: "HMMER 3.4".into(),
+        database: "Pfam-A.hmm".into(),
+        seconds: 2.0,
+    };
+    app.open_remote_result(
+        &job("j1-10", Kind::Domains, Status::Done),
+        Response::Domains(found),
+    );
+    assert!(app.domains_win.open);
+    assert_eq!(
+        app.domains_win.result.as_ref().map(|r| r.names.len()),
+        Some(1)
+    );
+    assert!(
+        app.domains_win
+            .message
+            .starts_with("No domain found in 1 sequence by HMMER 3.4")
+            && app.domains_win.message.ends_with("on the workstation."),
+        "{}",
+        app.domains_win.message
+    );
+}
+
+#[test]
+fn a_domain_search_is_sent_there_when_the_choice_says_so_and_its_answer_or_its_reason_comes_back() {
+    let server = serving("workstation-domains");
+    let (mut app, ctx) = window_for(&server);
+    app.domains_win.open = true;
+    app.domains_win.text =
+        ">ubiquitin\nMQIFVKTLTGKTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGKQLEDGRTLSDYNIQKESTLHLVLRLRGG"
+            .into();
+    let place = app.platform.place(&app.domains_win.weight());
+    assert!(place.is_there(), "the choice is the workstation");
+    app.domains_win.start(&ctx, place);
+    draw_until(&mut app, &ctx, |_| !server.shared.list().is_empty());
+    assert!(app.domains_win.running() && app.running_analyses() >= 1);
+    // (a worker here: this computer may or may not have HMMER and Pfam, so the job is run, and what it says is kept either way)
+    let queued = server
+        .shared
+        .list()
+        .into_iter()
+        .find(|j| j.status == Status::Queued)
+        .expect("a queued job");
+    let folder = server.shared.job_dir(&queued.id);
+    let sent = std::fs::read(folder.join("request.bin")).expect("a request");
+    let request = Request::decode(queued.kind, &Container::decode(&sent).expect("a container"))
+        .expect("a request");
+    let mut finished = queued.clone();
+    match execute(request.clone(), &Env::default()) {
+        Ok(response) => {
+            std::fs::write(folder.join("result.bin"), response.encode().encode())
+                .expect("a result");
+            finished.status = Status::Done;
+        }
+        Err(why) => (finished.status, finished.error) = (Status::Failed, why),
+    }
+    server.shared.replace_for_tests(finished);
+    assert_eq!(queued.kind, Kind::Domains);
+    assert_eq!(queued.label, "Domain search of 1 sequences");
+    assert!(matches!(
+        request,
+        Request::Domains(ref job) if job.queries.len() == 1 && job.queries[0].0 == "ubiquitin"
+            && job.queries[0].1.len() == 76 && job.cutoff == crate::pipeline::domains::Cutoff::Curated
+    ));
+    draw_until(&mut app, &ctx, |a| !a.domains_win.running());
+    // this computer may or may not have HMMER and Pfam: either the domains come back, or the reason does
+    let said = &app.domains_win.message;
+    assert!(
+        said.contains("on the workstation") || said.contains("hmmscan") || said.contains("Pfam"),
+        "{said}"
+    );
+}
+
+#[test]
+fn a_motif_result_opens_in_the_finder_only_if_it_is_about_the_sequences_the_window_holds() {
+    let mut app = App::new(Startup::default());
+    let text = crate::sample::motif_demo();
+    let (_, seqs) = crate::seq::motif::read_sequences(&text).expect("the example");
+    let found = crate::remote::motif::run(&crate::remote::motif::MotifJob {
+        seqs,
+        settings: crate::seq::motif::Settings {
+            width: 10,
+            ..crate::seq::motif::Settings::default()
+        },
+    })
+    .expect("motifs");
+    // the window holds other sequences: the result is not shown as if it were theirs
+    app.motif_win.text = "ACGTACGTAC\nTTGACCAGGT\n".into();
+    app.open_remote_result(
+        &job("j1-9", Kind::Motif, Status::Done),
+        Response::Motif(found.clone()),
+    );
+    assert!(app.motif_win.open && app.motif_win.run.is_none());
+    assert!(
+        app.motif_win.message.contains("no longer holds"),
+        "{}",
+        app.motif_win.message
+    );
+    // the sequences it is about: shown, and the message says where it was made
+    app.motif_win.text = text;
+    app.open_remote_result(
+        &job("j1-9", Kind::Motif, Status::Done),
+        Response::Motif(found),
+    );
+    assert_eq!(app.motif_win.run.as_ref().map(|r| r.found.len()), Some(1));
+    assert!(
+        app.motif_win.message.contains("on the workstation"),
+        "{}",
+        app.motif_win.message
+    );
+}
+
+#[test]
+fn a_motif_search_is_computed_there_when_the_choice_says_so_and_shown_when_it_comes_back() {
+    let server = serving("workstation-motif");
+    let (mut app, ctx) = window_for(&server);
+    app.motif_win.open = true;
+    app.motif_win.text = crate::sample::motif_demo();
+    app.motif_win.settings.width = 10;
+    app.motif_win.settings.effort = 3.0;
+    app.start_motifs(&ctx);
+    draw_until(&mut app, &ctx, |_| !server.shared.list().is_empty());
+    assert!(app.motif_win.running() && app.running_analyses() >= 1);
+
+    let (queued, request) = answer(&server);
+    assert_eq!(queued.kind, Kind::Motif);
+    assert_eq!(queued.label, "Motif search in 12 sequences");
+    assert!(matches!(
+        request,
+        Request::Motif(ref job) if job.seqs.len() == 12 && job.settings.width == 10
+            && job.settings.effort == 3.0
+    ));
+    draw_until(&mut app, &ctx, |a| a.motif_win.run.is_some());
+    let said = &app.motif_win.message;
+    assert!(said.contains("on the workstation"), "{said}");
+    assert_eq!(app.motif_win.run.as_ref().map(|r| r.found.len()), Some(1));
+    assert!(!app.motif_win.running());
+}
+
+#[test]
+fn the_report_of_a_pipeline_file_that_the_workstation_ran_opens_on_the_page_that_runs_them() {
+    let (mut app, _) = (App::new(Startup::default()), ());
+    let done = crate::remote::flow::run(
+        crate::remote::flow::FlowJob {
+            pipeline: crate::pipeline::flow::Pipeline::loci_to_species(),
+            loci: crate::pipeline::flow::tests::loci(4),
+        },
+        None,
+    )
+    .expect("a result");
+    app.open_remote_result(&job("j1-8", Kind::Flow, Status::Done), Response::Flow(done));
+    assert_eq!(app.workspace, Workspace::Pipelines);
+    let page = &app.platform.pipelines;
+    assert_eq!(page.mode, crate::ui::platform::pipelines::flow::Mode::File);
+    assert_eq!(page.flow.ran_on, "the workstation");
+    assert!(
+        page.flow.message.contains("job j1-8"),
+        "{}",
+        page.flow.message
+    );
+    let report = page.flow.report.as_ref().expect("a report");
+    assert!(matches!(
+        report.output,
+        Some(crate::pipeline::flow::Value::Tree(_))
+    ));
 }
 
 // ---------------------------------------------------------------------------------------------------------------
@@ -855,6 +1052,158 @@ fn a_species_tree_is_computed_there_when_the_choice_says_so_and_shown_when_it_co
     assert!(!app.species_win.is_running());
 }
 
+/// A folder of `n` loci of six taxa each, as the files of an alignment, removed when the test ends.
+struct Loci(std::path::PathBuf);
+
+impl Loci {
+    fn new(label: &str, n: u64) -> Loci {
+        let dir = work_folder(label).expect("a folder");
+        for (name, value) in crate::pipeline::flow::tests::loci(n) {
+            std::fs::write(dir.join(format!("{name}.fa")), value.to_text()).expect("a file");
+        }
+        Loci(dir)
+    }
+}
+
+impl Drop for Loci {
+    fn drop(&mut self) {
+        let _ = std::fs::remove_dir_all(&self.0);
+    }
+}
+
+#[test]
+fn a_pipeline_file_is_run_there_when_the_choice_says_so_and_its_report_comes_back_to_its_page() {
+    let server = serving("workstation-flow");
+    let (mut app, ctx) = window_for(&server);
+    let loci = Loci::new("workstation-flow-loci", 4);
+    app.platform.pipelines.flow.folder = Some(loci.0.clone());
+    app.start_flow(&ctx);
+    draw_until(&mut app, &ctx, |_| !server.shared.list().is_empty());
+    assert!(app.platform.pipelines.flow.is_running() && app.running_analyses() == 1);
+
+    let (queued, request) = answer(&server);
+    assert_eq!(queued.kind, Kind::Flow);
+    assert!(queued.label.ends_with("on 4 files"), "{}", queued.label);
+    assert!(matches!(
+        request,
+        Request::Flow(ref job) if job.loci.len() == 4
+            && job.pipeline == crate::pipeline::flow::Pipeline::loci_to_species()
+    ));
+    draw_until(&mut app, &ctx, |a| {
+        a.platform.pipelines.flow.report.is_some()
+    });
+    let page = &app.platform.pipelines.flow;
+    assert_eq!(page.ran_on, "the workstation");
+    assert!(page.message.starts_with("5 steps run"), "{}", page.message);
+    let report = page.report.as_ref().expect("a report");
+    assert!(matches!(
+        report.output,
+        Some(crate::pipeline::flow::Value::Tree(_))
+    ));
+    assert!(!page.is_running());
+}
+
+#[test]
+fn with_the_choice_on_automatic_a_small_pipeline_file_stays_here_and_one_over_many_files_goes_there(
+) {
+    let server = serving("workstation-flow-automatic");
+    let (mut app, ctx) = window_for(&server);
+    app.platform.workstation.set_compute(Compute::Automatic);
+    let few = Loci::new("workstation-flow-few", 3);
+    app.platform.pipelines.flow.folder = Some(few.0.clone());
+    app.start_flow(&ctx);
+    draw_until(&mut app, &ctx, |a| {
+        a.platform.pipelines.flow.report.is_some()
+    });
+    assert!(server.shared.list().is_empty(), "a small run was sent");
+    assert_eq!(app.platform.pipelines.flow.ran_on, "this computer");
+
+    // more files than the trees at which a run is big
+    let many = Loci::new("workstation-flow-many", HEAVY_TREES as u64 + 1);
+    app.platform.pipelines.flow.folder = Some(many.0.clone());
+    app.start_flow(&ctx);
+    draw_until(&mut app, &ctx, |_| !server.shared.list().is_empty());
+    let (queued, _) = answer(&server);
+    assert_eq!(queued.kind, Kind::Flow);
+    draw_until(&mut app, &ctx, |a| {
+        a.platform.pipelines.flow.report.is_some()
+    });
+    assert_eq!(app.platform.pipelines.flow.ran_on, "the workstation");
+}
+
+#[test]
+fn a_weighted_species_search_is_computed_there_with_its_weights_and_shown_as_weighted() {
+    let server = serving("workstation-species-weighted");
+    let (mut app, ctx) = window_for(&server);
+    app.species_win.open = true;
+    app.species_win.genes = "(A:0.1,B:0.1,(C:0.1,D:0.1)0.95:0.1);\n".repeat(3)
+        + &"(A:0.1,C:0.1,(B:0.1,D:0.1)0.05:0.1);\n".repeat(4);
+    app.species_win.weights = crate::seq::astral::Weights::Hybrid;
+    app.run_species();
+    draw_until(&mut app, &ctx, |_| !server.shared.list().is_empty());
+    let (queued, request) = answer(&server);
+    assert_eq!(queued.kind, Kind::Species);
+    assert!(matches!(
+        request,
+        Request::Species(ref job) if job.weights == crate::seq::astral::Weights::Hybrid
+    ));
+    draw_until(&mut app, &ctx, |a| a.species_win.result.is_some());
+    let result = app.species_win.result.clone().expect("a result");
+    assert_eq!(result.weights, crate::seq::astral::Weights::Hybrid);
+    assert!(result.weighted_score.is_some());
+    let said = &app.species_win.message;
+    assert!(
+        said.contains("on the workstation") && said.contains("weighted by both"),
+        "{said}"
+    );
+}
+
+#[test]
+fn a_bootstrap_is_computed_there_with_its_replicates_and_shown_with_its_support() {
+    let server = serving("workstation-species-bootstrap");
+    let (mut app, ctx) = window_for(&server);
+    app.species_win.open = true;
+    app.species_win.genes = "((A,B),(C,D));\n".repeat(6);
+    app.species_win.replicates = 6;
+    app.species_win.seed = 3;
+    app.run_species();
+    draw_until(&mut app, &ctx, |_| !server.shared.list().is_empty());
+    let (queued, request) = answer(&server);
+    assert_eq!(queued.kind, Kind::Species);
+    assert!(matches!(request, Request::Species(ref job) if job.replicates == 6 && job.seed == 3));
+    draw_until(&mut app, &ctx, |a| a.species_win.result.is_some());
+    let result = app.species_win.result.clone().expect("a result");
+    assert_eq!(result.branches[0].bootstrap, Some(100.0));
+    let said = &app.species_win.message;
+    assert!(
+        said.contains("on the workstation") && said.contains("Bootstrap support from 6 of 6"),
+        "{said}"
+    );
+}
+
+#[test]
+fn gene_families_are_computed_there_when_asked_for_and_shown_as_families() {
+    let server = serving("workstation-species-families");
+    let (mut app, ctx) = window_for(&server);
+    app.species_win.open = true;
+    app.species_win.genes =
+        "(((A,B),(C,(D,E))),((A,B),(C,(D,E))));\n(((A,B),(C,(D,E))),((A,B),(D,E)));\n".into();
+    app.species_win.families = true;
+    app.run_species();
+    draw_until(&mut app, &ctx, |_| !server.shared.list().is_empty());
+    let (queued, request) = answer(&server);
+    assert_eq!(queued.kind, Kind::Species);
+    assert!(matches!(request, Request::Species(ref job) if job.families));
+    draw_until(&mut app, &ctx, |a| a.species_win.result.is_some());
+    let result = app.species_win.result.clone().expect("a result");
+    assert!(result.families && result.score > 0);
+    assert!(
+        app.species_win.message.contains("on the workstation"),
+        "{}",
+        app.species_win.message
+    );
+}
+
 #[test]
 fn with_the_choice_on_automatic_a_small_species_search_stays_here_and_a_big_one_goes_there() {
     let server = serving("workstation-species-automatic");
@@ -1126,4 +1475,278 @@ fn forgetting_the_workstation_forgets_the_gpus_choice_with_it() {
     page.forget();
     assert_eq!(page.gpus, GpusPerJob::Count(1));
     assert_eq!(WorkstationPage::open(Some(dir)).gpus, GpusPerJob::Count(1));
+}
+
+#[test]
+fn the_button_of_an_analysis_is_pressed_once_ready_never_while_it_runs_and_a_wheel_turns_beside_it()
+{
+    use eframe::egui::epaint::Shape;
+    use eframe::egui::{Event, Modifiers, PointerButton, Pos2};
+    fn walk(shape: &Shape, see: &mut dyn FnMut(&Shape)) {
+        match shape {
+            Shape::Vec(v) => v.iter().for_each(|s| walk(s, see)),
+            other => see(other),
+        }
+    }
+    let look = design::look(false);
+    let view = ComputeView {
+        mode: Compute::Local,
+        connected: false,
+        there: false,
+    };
+    // (where the words of the button are, whether a wheel is drawn, whether a click on the button pressed it)
+    let tried = |state: (bool, bool)| -> (bool, bool) {
+        let ctx = egui::Context::default();
+        let mut pressed = false;
+        let mut n = 0;
+        let mut frame = |events: Vec<Event>| {
+            let mut input = crate::ui::headless::frame_input(n);
+            n += 1;
+            input.events = events;
+            let mut out = ctx.run_ui(input, |ui| {
+                pressed |= super::run_button(ui, &look, view, "Go on", state);
+            });
+            out.textures_delta.clear();
+            out.shapes
+        };
+        let shapes = frame(vec![]);
+        let (mut at, mut wheel) = (None::<Pos2>, false);
+        for clipped in &shapes {
+            walk(&clipped.shape, &mut |s| match s {
+                Shape::Text(t) if t.galley.text() == "Go on" => {
+                    at = Some(t.pos + t.galley.rect.center().to_vec2());
+                }
+                Shape::Path(_) | Shape::LineSegment { .. } => wheel = true,
+                _ => {}
+            });
+        }
+        let at = at.expect("the button says what it does");
+        let button = |down| Event::PointerButton {
+            pos: at,
+            button: PointerButton::Primary,
+            pressed: down,
+            modifiers: Modifiers::NONE,
+        };
+        frame(vec![Event::PointerMoved(at)]);
+        frame(vec![button(true)]);
+        frame(vec![button(false)]);
+        frame(vec![]);
+        (wheel, pressed)
+    };
+    assert_eq!(
+        tried((true, false)),
+        (false, true),
+        "ready: no wheel, and a click runs it"
+    );
+    assert_eq!(
+        tried((false, false)),
+        (false, false),
+        "not ready: a click does nothing"
+    );
+    assert_eq!(
+        tried((true, true)),
+        (true, false),
+        "running: a wheel, and a click does nothing"
+    );
+}
+
+/// A table that stands where the storage a browser gives one tab does: it is that tab's alone, and is gone with it.
+fn a_tab() -> std::rc::Rc<crate::ui::session::Memory> {
+    std::rc::Rc::new(crate::ui::session::Memory::default())
+}
+
+/// The names a tab's table holds.
+fn kept_in(tab: &crate::ui::session::Memory) -> Vec<String> {
+    crate::ui::session::Shelf::names(tab)
+}
+
+/// What a tab's table holds of the connection.
+fn entry_of(tab: &crate::ui::session::Memory) -> Option<String> {
+    crate::ui::session::Shelf::get(tab, settings::FILE)
+}
+
+/// A page of the tab with `address` and the token typed, and Connect pressed.
+fn connected_in(tab: &std::rc::Rc<crate::ui::session::Memory>, address: &str) -> WorkstationPage {
+    let mut page = WorkstationPage {
+        address: address.into(),
+        token: TOKEN.into(),
+        ..WorkstationPage::on_tab(tab.clone())
+    };
+    page.connect();
+    assert!(page.problem.is_empty(), "{}", page.problem);
+    page
+}
+
+#[test]
+fn in_a_tab_the_connection_is_kept_for_the_tab_and_comes_back_when_the_page_is_loaded_again() {
+    let tab = a_tab();
+    let fresh = WorkstationPage::on_tab(tab.clone());
+    assert!(fresh.active.is_none() && fresh.token.is_empty() && kept_in(&tab).is_empty());
+    let mut page = connected_in(&tab, "lab-gpu");
+    assert_eq!(
+        page.message, "Connecting…",
+        "it was kept: nothing to say of that"
+    );
+    page.set_compute(Compute::Workstation);
+    // the tab's table holds it, under one name of its own
+    assert_eq!(kept_in(&tab), [settings::FILE]);
+    let kept = entry_of(&tab).expect("kept");
+    assert!(
+        kept.contains("address=lab-gpu:7878") && kept.contains("compute=workstation"),
+        "the address and the choice are kept"
+    );
+    assert!(kept.contains(&format!("token={TOKEN}")), "and the token");
+
+    // the page is loaded again in the same tab: it is connected as it was, and sends its jobs where it did
+    let mut again = WorkstationPage::on_tab(tab.clone());
+    assert_eq!(
+        (again.address.as_str(), again.token.as_str()),
+        ("lab-gpu:7878", TOKEN)
+    );
+    assert!(again.active.is_some() && again.compute == Compute::Workstation && goes_there(&again));
+    // the other choices are kept by the tab as they are made, each of them
+    again.set_compute(Compute::Automatic);
+    again.set_gpus(GpusPerJob::Count(2));
+    let third = WorkstationPage::on_tab(tab.clone());
+    assert_eq!(
+        (third.compute, third.gpus),
+        (Compute::Automatic, GpusPerJob::Count(2))
+    );
+
+    // another tab, or this page once its tab was closed, has a table of its own, and that one is empty
+    let other = WorkstationPage::on_tab(a_tab());
+    assert!(other.active.is_none() && other.token.is_empty() && other.compute == Compute::Local);
+
+    // Forget takes it out of the tab's table at once: nothing is left to load
+    let mut page = third;
+    page.forget();
+    assert!(kept_in(&tab).is_empty(), "{:?}", kept_in(&tab));
+    let cleared = WorkstationPage::on_tab(tab.clone());
+    assert!(
+        cleared.active.is_none() && cleared.token.is_empty() && cleared.compute == Compute::Local
+    );
+    // and the page that forgot still keeps what it is told next
+    page.address = "another-gpu".into();
+    page.token = TOKEN.into();
+    page.connect();
+    assert!(entry_of(&tab).is_some_and(|kept| kept.contains("address=another-gpu:7878")));
+}
+
+#[test]
+fn a_tab_whose_storage_takes_nothing_still_connects_and_says_that_it_will_ask_again() {
+    let tab = a_tab();
+    tab.room.set(Some(0));
+    let page = connected_in(&tab, "lab-gpu");
+    assert!(page.active.is_some());
+    assert_eq!(page.message, NOT_KEPT_FOR_THE_TAB);
+    assert!(
+        !NOT_KEPT_FOR_THE_TAB.contains("Connected"),
+        "the workstation has not answered yet: the page does not say that it has"
+    );
+    assert!(kept_in(&tab).is_empty());
+}
+
+#[test]
+fn a_connection_that_could_not_be_kept_does_not_leave_the_one_before_it_to_come_back() {
+    let tab = a_tab();
+    let _first = connected_in(&tab, "the-first-gpu");
+    assert!(entry_of(&tab).is_some_and(|kept| kept.contains("the-first-gpu")));
+    // the table takes no more of this entry, and the person connects to another workstation
+    *tab.refused.borrow_mut() = Some(settings::FILE.to_string());
+    let second = connected_in(&tab, "the-second-gpu");
+    assert_eq!(second.message, NOT_KEPT_FOR_THE_TAB);
+    assert_eq!(
+        second.active.as_ref().map(Remote::address),
+        Some("the-second-gpu:7878")
+    );
+    // the first is not what the page comes back to
+    assert_eq!(entry_of(&tab), None);
+    let again = WorkstationPage::on_tab(tab);
+    assert!(again.active.is_none() && again.token.is_empty());
+}
+
+#[test]
+fn an_entry_of_a_tab_that_makes_no_connection_is_removed_and_nothing_of_it_is_shown() {
+    // not what the page kept: it keeps only what made a connection. A token with a space in it makes none
+    for unusable in [
+        "address=lab-gpu\ntoken=two words\ncompute=workstation\n",
+        "address=\ntoken=abcdefghijklmnopqrstuvwx\ncompute=automatic\n",
+        "nothing that can be read",
+    ] {
+        let tab = a_tab();
+        crate::ui::session::Shelf::set(tab.as_ref(), settings::FILE, unusable).expect("set");
+        let page = WorkstationPage::on_tab(tab.clone());
+        assert!(page.active.is_none(), "{unusable:?}");
+        assert!(
+            page.token.is_empty() && page.address.is_empty(),
+            "{unusable:?}"
+        );
+        assert_eq!(page.compute, Compute::Local, "{unusable:?}");
+        assert_eq!(entry_of(&tab), None, "{unusable:?}");
+    }
+    // a folder's file is the person's own, and is left as they wrote it
+    let dir = work_folder("workstation-unusable").expect("a folder");
+    let text = "address=lab-gpu\ntoken=two words\ncompute=workstation\n";
+    std::fs::write(dir.join(settings::FILE), text).expect("a file");
+    let page = WorkstationPage::open(Some(dir.clone()));
+    assert!(page.active.is_none() && page.compute == Compute::Local);
+    assert_eq!(
+        std::fs::read_to_string(dir.join(settings::FILE)).expect("still there"),
+        text
+    );
+}
+
+#[test]
+fn the_page_says_what_is_true_of_where_the_token_is_kept() {
+    // a tab: kept for the tab, and how to be rid of it; nothing that a browser does not hold to
+    let tab = privacy_text(true, true);
+    assert!(
+        tab.contains("for this tab") && tab.contains("Forget removes them"),
+        "{tab}"
+    );
+    assert!(
+        tab.contains("duplicated") && tab.contains("brings the tab back"),
+        "{tab}"
+    );
+    assert!(
+        !tab.contains("until this tab is closed"),
+        "a browser may bring a closed tab back"
+    );
+    // whether the page is in a browser does not decide it: what the page keeps does
+    assert_eq!(privacy_text(true, false), tab);
+    // a browser that gives the page no storage, and the program on a computer
+    assert!(privacy_text(false, true).contains("it is not kept"));
+    assert!(privacy_text(false, false).contains("not encrypted"));
+    assert!(!privacy_text(false, false).contains("tab"));
+    for words in [tab, privacy_text(false, true), privacy_text(false, false)] {
+        assert!(words.contains("SSH tunnel"), "{words}");
+    }
+    assert!(forget_hint(true).contains("this tab") && forget_hint(false).contains("this computer"));
+}
+
+#[test]
+fn the_page_of_a_tab_shows_those_words_and_never_the_token() {
+    use crate::ui::app::App;
+    use crate::ui::platform::Workspace;
+    use crate::ui::testing::Screen;
+    let said_of = |page: WorkstationPage| {
+        let mut app = App::new(Startup::default());
+        app.platform.workstation = WorkstationPage {
+            address: "lab-gpu".into(),
+            token: TOKEN.into(),
+            ..page
+        };
+        app.workspace = Workspace::Workstation;
+        let mut screen = Screen::new();
+        screen.settle(&mut app);
+        screen.text()
+    };
+    // the words of a paragraph are drawn in rows: one that is short enough to stand in one row is looked for
+    let in_a_tab = said_of(WorkstationPage::on_tab(a_tab()));
+    assert!(in_a_tab.contains("for this tab"), "{in_a_tab}");
+    assert!(!in_a_tab.contains(TOKEN), "the token is typed unseen");
+    // where nothing is kept, the page does not say that anything is
+    let nowhere = said_of(WorkstationPage::open(None));
+    assert!(!nowhere.contains("for this tab"), "{nowhere}");
+    assert!(!nowhere.contains(TOKEN));
 }

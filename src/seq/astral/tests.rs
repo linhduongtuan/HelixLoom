@@ -249,6 +249,124 @@ fn the_frequencies_around_every_branch_equal_counting_every_quartet() {
     }
 }
 
+/// The polytomy test's counts for a branch: each gene tree that resolves some quartet of the groups gives the share of its
+/// resolved quartets for each pairing, counting the quartets one by one; and how many gene trees do.
+fn brute_resolved(genes: &Genes, groups: [&Bits; 4]) -> ([f64; 3], usize) {
+    let mut n = [0.0; 3];
+    let mut used = 0;
+    for tree in &genes.trees {
+        let clusters = tree.clusters(genes.taxa.len());
+        let present = &clusters[tree.root];
+        let members: Vec<Vec<usize>> = groups
+            .iter()
+            .map(|g| g.iter().filter(|&t| present.contains(t)).collect())
+            .collect();
+        let mut counts = [0usize; 3];
+        for &l in &members[0] {
+            for &r in &members[1] {
+                for &s in &members[2] {
+                    for &o in &members[3] {
+                        match topology(&clusters, [l, r, s, o]) {
+                            Some(0) => counts[0] += 1,
+                            Some(1) => counts[2] += 1,
+                            Some(2) => counts[1] += 1,
+                            _ => {}
+                        }
+                    }
+                }
+            }
+        }
+        let resolved: usize = counts.iter().sum();
+        if resolved > 0 {
+            used += 1;
+            for (x, c) in n.iter_mut().zip(counts) {
+                *x += c as f64 / resolved as f64;
+            }
+        }
+    }
+    (n, used)
+}
+
+#[test]
+fn the_counts_of_the_polytomy_test_equal_counting_every_quartet_and_the_frequencies_when_trees_are_binary(
+) {
+    let mut rng = Rng::new(31);
+    for (collapse, missing) in [(0.0, 0.0), (0.3, 0.0), (0.0, 0.3), (0.4, 0.3)] {
+        let genes = read(&random_genes(&mut rng, 8, 14, collapse, missing), 0).expect("genes");
+        let n = genes.taxa.len();
+        let sp = Sp::from_newick(&random_species(&mut rng, n), &genes.taxa).expect("species tree");
+        let all = Bits::of(n, 0..n);
+        for b in sp.annotate(&genes, 0.5) {
+            let node = &sp.nodes[b.node];
+            let (l, r) = node.kids.expect("an inner branch");
+            let parent = &sp.nodes[node.parent.expect("a parent")];
+            let sib = match parent.kids.expect("two children") {
+                (a, _) if a != b.node => a,
+                (_, c) => c,
+            };
+            let o = all.minus(&node.set.union(&sp.nodes[sib].set));
+            let groups = [&sp.nodes[l].set, &sp.nodes[r].set, &sp.nodes[sib].set, &o];
+            let mine = super::weight::resolved_around(
+                &genes.genes,
+                groups[0],
+                groups[1],
+                groups[2],
+                groups[3],
+            );
+            let (counted, used) = brute_resolved(&genes, groups);
+            assert_eq!(mine.genes, used, "collapse={collapse} missing={missing}");
+            for (m, c) in mine.n.iter().zip(counted) {
+                assert!((m - c).abs() < 1e-9, "{:?} against {counted:?}", mine.n);
+            }
+            // a gene tree adds one in all, however many of its quartets it resolves
+            assert!((mine.n.iter().sum::<f64>() - used as f64).abs() < 1e-9);
+            if collapse == 0.0 {
+                // binary trees resolve every quartet, so the shares are the ones of the posteriors
+                for (m, f) in mine.n.iter().zip(b.f) {
+                    assert!((m - f).abs() < 1e-9);
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn a_branch_is_tested_when_ten_gene_trees_count_and_rejected_when_they_agree() {
+    let tree = |k: usize| ["((A,B),(C,D));", "((A,C),(B,D));", "((A,D),(B,C));"][k];
+    let text = |counts: [usize; 3]| -> String {
+        (0..3)
+            .flat_map(|k| std::iter::repeat_n(tree(k), counts[k]))
+            .collect::<Vec<_>>()
+            .join("\n")
+    };
+    let test = |counts: [usize; 3]| {
+        let genes = read(&text(counts), 0).expect("genes");
+        let sp = Sp::from_newick("((A,B),(C,D));", &genes.taxa).expect("species tree");
+        let found = sp.polytomy_tests(&genes);
+        assert_eq!(found.len(), 1, "four taxa have one inner branch");
+        found[0].1
+    };
+    // a third each is no branch at all
+    let even = test([10, 10, 10]).expect("tested");
+    assert_eq!((even.genes, even.chi2, even.p), (30, 0.0, 1.0));
+    // every gene tree agrees: 30 0 0 has the statistic 60 and p of exp(-30)
+    let sure = test([30, 0, 0]).expect("tested");
+    assert!((sure.chi2 - 60.0).abs() < 1e-9 && (sure.p - (-30.0_f64).exp()).abs() < 1e-18);
+    assert!(sure.rejected());
+    // 12 12 6 is the case worked in the unit test of the statistic
+    let some = test([12, 12, 6]).expect("tested");
+    assert!((some.p - 0.301_194_211_912_202_14).abs() < 1e-12 && !some.rejected());
+    // nine gene trees are too few, ten are enough
+    assert_eq!(test([9, 0, 0]), None);
+    assert!(test([10, 0, 0]).is_some());
+    // a gene tree that lacks a taxon or resolves nothing around the branch is not one of the gene trees that count
+    let mut genes_text = text([10, 0, 0]);
+    genes_text.push_str("\n(A,B,C);\n(A,B,C,D);\n");
+    let genes = read(&genes_text, 0).expect("genes");
+    let sp = Sp::from_newick("((A,B),(C,D));", &genes.taxa).expect("species tree");
+    assert_eq!(sp.polytomy_tests(&genes)[0].1.map(|t| t.genes), Some(10));
+}
+
 #[test]
 fn a_species_tree_is_read_whatever_its_root_and_refused_when_it_is_not_binary() {
     let genes = read("((A,B),(C,(D,E)));", 0).expect("genes");

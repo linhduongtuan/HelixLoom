@@ -11,6 +11,16 @@ use super::tree::{msa_distances, neighbor_joining, DistanceModel, Node};
 use std::collections::{BTreeMap, HashMap};
 
 pub mod bayes;
+#[cfg(all(feature = "gpu", not(target_arch = "wasm32")))]
+pub mod check;
+#[cfg(all(feature = "gpu", not(target_arch = "wasm32")))]
+mod engine;
+#[cfg(all(feature = "gpu", not(target_arch = "wasm32")))]
+pub mod gpu;
+#[cfg(all(feature = "gpu", not(target_arch = "wasm32")))]
+mod plan;
+#[cfg(all(feature = "gpu", not(target_arch = "wasm32")))]
+pub mod torch;
 
 type Matrix = [[f64; 4]; 4];
 
@@ -23,6 +33,9 @@ const TAYLOR_TERMS: u32 = 12;
 /// Most topology changes accepted in one search, and the smallest log-likelihood gain that counts.
 const NNI_MOVES: usize = 20;
 const NNI_MIN_GAIN: f64 = 1e-3;
+/// The share of the log-likelihood that a change must exceed on the GPUs (see `Sites::smallest_gain`).
+#[cfg(all(feature = "gpu", not(target_arch = "wasm32")))]
+const GPU_NOISE_SHARE: f64 = 1e-6;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Kind {
@@ -62,6 +75,90 @@ struct Sites {
     total: f64,
     /// Base frequencies of the alignment (every base counted once more, so none is zero).
     freqs: [f64; 4],
+    /// The columns on the GPUs, when there are some and the alignment is big enough to be worth it (`accelerate`).
+    #[cfg_attr(
+        not(all(feature = "gpu", not(target_arch = "wasm32"))),
+        allow(dead_code)
+    )]
+    accel: Accel,
+}
+
+#[cfg(all(feature = "gpu", not(target_arch = "wasm32")))]
+type Accel = Option<engine::Engine>;
+#[cfg(not(all(feature = "gpu", not(target_arch = "wasm32"))))]
+type Accel = ();
+
+impl Sites {
+    /// Put the columns on the GPUs if there are some and the likelihood is big enough to be worth it (patterns times tips: see
+    /// `accel::threshold`); the processor does it otherwise. Says where it will be computed, for the report of the result: where
+    /// the GPUs were meant to be used and could not be, that too (and on the standard error, which a job's log keeps).
+    fn accelerate(&mut self) -> Option<String> {
+        #[cfg(all(feature = "gpu", not(target_arch = "wasm32")))]
+        {
+            use crate::accel::{note_failure, threshold, worth_it};
+            let cells = self.patterns.len() as f64 * self.tips as f64;
+            if worth_it(cells, threshold::likelihood_cells()) {
+                match engine::Engine::open(self) {
+                    Ok(Some(engine)) => {
+                        let place = engine.describe();
+                        self.accel = Some(engine);
+                        return Some(place);
+                    }
+                    // `worth_it` says there is a device
+                    Ok(None) => {}
+                    Err(why) => {
+                        note_failure(
+                            "the GPUs could not take the likelihood",
+                            &format!("{why}; the processor does it"),
+                        );
+                        return Some(format!("the processor (the GPUs could not be used: {why})"));
+                    }
+                }
+            }
+        }
+        None
+    }
+
+    /// Whether the likelihood is worked out on the processor: there are no GPUs for it, or a card failed and the processor has taken over.
+    fn on_processor(&self) -> bool {
+        #[cfg(all(feature = "gpu", not(target_arch = "wasm32")))]
+        if self.accel.as_ref().is_some_and(|e| !e.broken()) {
+            return false;
+        }
+        true
+    }
+
+    /// Where the likelihood was computed, as `accelerate` said, or that a card failed and the processor finished it.
+    fn accelerator(&self, said: Option<String>) -> Option<String> {
+        #[cfg(all(feature = "gpu", not(target_arch = "wasm32")))]
+        if let Some(why) = self.accel.as_ref().and_then(engine::Engine::failure) {
+            return Some(format!(
+                "a GPU failed ({why}), and the processor finished the likelihood"
+            ));
+        }
+        #[cfg(all(feature = "gpu", not(target_arch = "wasm32")))]
+        if let Some(why) = self.accel.as_ref().and_then(engine::Engine::retried) {
+            return Some(format!(
+                "{}; a GPU failed ({why}) and another GPU did its share",
+                said.as_deref().unwrap_or("the GPUs")
+            ));
+        }
+        said
+    }
+
+    /// The least a change of topology must raise the log-likelihood by to count as an improvement. On the processor, any rise
+    /// above rounding does. On GPUs the likelihood is summed from 32-bit logarithms, whose noise (estimated, not measured on
+    /// a CUDA card) grows with the size of the alignment and is a fixed fraction of the likelihood itself; a rise smaller than
+    /// that fraction could be noise taken for a better tree. 0.1 log-likelihood units is also the stopping tolerance that
+    /// IQ-TREE uses, so little real signal is lost at that size.
+    fn smallest_gain(&self, ln_l: f64) -> f64 {
+        #[cfg(all(feature = "gpu", not(target_arch = "wasm32")))]
+        if self.accel.as_ref().is_some_and(|e| !e.broken()) {
+            return NNI_MIN_GAIN.max(GPU_NOISE_SHARE * ln_l.abs());
+        }
+        let _ = ln_l;
+        NNI_MIN_GAIN
+    }
 }
 
 fn state(c: u8) -> u8 {
@@ -100,6 +197,7 @@ fn sites(msa: &Msa) -> Option<Sites> {
         counts,
         total,
         freqs: bases.map(|b| b / sum),
+        accel: Accel::default(),
     })
 }
 
@@ -283,6 +381,14 @@ impl Tree {
 
     /// Log-likelihood of the alignment, rooted at tip 0 (any root gives the same value).
     fn ln_likelihood(&self, sites: &Sites, q: &Matrix, freqs: &[f64; 4]) -> f64 {
+        #[cfg(all(feature = "gpu", not(target_arch = "wasm32")))]
+        if let Some(value) = sites
+            .accel
+            .as_ref()
+            .and_then(|engine| engine.ln_likelihood(self, q, freqs))
+        {
+            return value;
+        }
         let (first, length) = self.adj[0][0];
         let below = self.partial(first, 0, sites, q);
         let p = expm(q, length);
@@ -348,6 +454,123 @@ fn golden(mut f: impl FnMut(f64) -> f64, mut lo: f64, mut hi: f64, tolerance: f6
     (lo + hi) / 2.0
 }
 
+/// The log-likelihood as a function of the length of one branch, everything else of the tree held fixed. What lies beyond each end of
+/// the branch is worked out once, as a likelihood for each state at that end and each pattern, and with the stationary frequency of the
+/// state at one end multiplied in, the 16 products of a pattern are all that a length tried costs. The pruning of the whole tree that
+/// `Tree::ln_likelihood` does for every length (about twenty of them for a branch) is done twice for the branch, as one pruning. The same
+/// likelihood to rounding (the sums are made in another order), whatever the branch.
+struct EdgeScan {
+    /// For each pattern, `freqs[s]` times the likelihood beyond one end given state `s` there, times the likelihood beyond the other end
+    /// given state `t` there, at `4 s + t`.
+    weights: Vec<[f64; 16]>,
+}
+
+impl EdgeScan {
+    fn new(
+        tree: &Tree,
+        a: usize,
+        b: usize,
+        sites: &Sites,
+        q: &Matrix,
+        freqs: &[f64; 4],
+    ) -> EdgeScan {
+        let beyond_a = tree.partial(a, b, sites, q);
+        let beyond_b = tree.partial(b, a, sites, q);
+        let weights = beyond_a
+            .iter()
+            .zip(&beyond_b)
+            .map(|(x, y)| std::array::from_fn(|k| freqs[k / 4] * x[k / 4] * y[k % 4]))
+            .collect();
+        EdgeScan { weights }
+    }
+
+    /// The log-likelihood of the alignment with the branch `length` long.
+    fn ln_likelihood(&self, sites: &Sites, q: &Matrix, length: f64) -> f64 {
+        let p = expm(q, length);
+        self.weights
+            .iter()
+            .zip(&sites.counts)
+            .map(|(w, count)| {
+                let l: f64 = w.iter().zip(p.iter().flatten()).map(|(w, p)| w * p).sum();
+                count * l.ln()
+            })
+            .sum()
+    }
+}
+
+/// The best length of the branch `a`-`b`, tried on the processor through its `EdgeScan`.
+fn best_length_on_processor(
+    tree: &Tree,
+    (a, b): (usize, usize),
+    sites: &Sites,
+    q: &Matrix,
+    freqs: &[f64; 4],
+) -> f64 {
+    let scan = EdgeScan::new(tree, a, b, sites, q, freqs);
+    golden(
+        |x| scan.ln_likelihood(sites, q, x.exp()),
+        MIN_BRANCH.ln(),
+        MAX_BRANCH.ln(),
+        LOG_TOLERANCE,
+    )
+}
+
+/// The same with the whole tree's likelihood for every length (what the GPUs do where they do not keep the partial likelihoods).
+fn best_length_by_whole_tree(
+    tree: &mut Tree,
+    (a, b): (usize, usize),
+    sites: &Sites,
+    q: &Matrix,
+    freqs: &[f64; 4],
+) -> f64 {
+    golden(
+        |x| {
+            tree.set_length(a, b, x.exp());
+            tree.ln_likelihood(sites, q, freqs)
+        },
+        MIN_BRANCH.ln(),
+        MAX_BRANCH.ln(),
+        LOG_TOLERANCE,
+    )
+}
+
+/// The same on the GPUs, where they keep what lies beyond both ends of the branch (PyTorch): `None` where they do not, or a card failed
+/// on the way (and the processor has taken over).
+#[cfg(all(feature = "gpu", not(target_arch = "wasm32")))]
+fn best_length_on_cards(
+    tree: &Tree,
+    (a, b): (usize, usize),
+    sites: &Sites,
+    q: &Matrix,
+    freqs: &[f64; 4],
+) -> Option<f64> {
+    let scan = sites.accel.as_ref()?.edge_scan(tree, a, b, q, freqs)?;
+    let mut failed = false;
+    let best = golden(
+        |x| {
+            scan.ln_likelihood(q, x.exp()).unwrap_or_else(|| {
+                failed = true;
+                f64::NEG_INFINITY
+            })
+        },
+        MIN_BRANCH.ln(),
+        MAX_BRANCH.ln(),
+        LOG_TOLERANCE,
+    );
+    (!failed).then_some(best)
+}
+
+#[cfg(not(all(feature = "gpu", not(target_arch = "wasm32"))))]
+fn best_length_on_cards(
+    _: &Tree,
+    _: (usize, usize),
+    _: &Sites,
+    _: &Matrix,
+    _: &[f64; 4],
+) -> Option<f64> {
+    None
+}
+
 /// Set each listed branch to its best length, `sweeps` times round.
 fn optimize_edges(
     tree: &mut Tree,
@@ -358,17 +581,21 @@ fn optimize_edges(
     freqs: &[f64; 4],
 ) {
     for _ in 0..sweeps {
-        for &(a, b) in edges {
-            let best = golden(
-                |x| {
-                    tree.set_length(a, b, x.exp());
-                    tree.ln_likelihood(sites, q, freqs)
-                },
-                MIN_BRANCH.ln(),
-                MAX_BRANCH.ln(),
-                LOG_TOLERANCE,
-            );
-            tree.set_length(a, b, best.exp());
+        for &edge in edges {
+            let on_cards = if sites.on_processor() {
+                None
+            } else {
+                best_length_on_cards(tree, edge, sites, q, freqs)
+            };
+            let best = match on_cards {
+                Some(best) => best,
+                // the processor, or a card failed on the way and the processor has taken over
+                None if sites.on_processor() => {
+                    best_length_on_processor(tree, edge, sites, q, freqs)
+                }
+                None => best_length_by_whole_tree(tree, edge, sites, q, freqs),
+            };
+            tree.set_length(edge.0, edge.1, best.exp());
         }
     }
 }
@@ -452,7 +679,7 @@ fn improve_topology(tree: &mut Tree, sites: &Sites, q: &Matrix, freqs: &[f64; 4]
                 let local = candidate.around(u, v);
                 optimize_edges(&mut candidate, &local, 1, sites, q, freqs);
                 let l = candidate.ln_likelihood(sites, q, freqs);
-                if l > best + NNI_MIN_GAIN {
+                if l > best + sites.smallest_gain(best) {
                     (*tree, best, moved) = (candidate, l, true);
                     break 'edges;
                 }
@@ -484,14 +711,24 @@ pub struct MlResult {
     pub best: Fit,
     /// Every model tried on the starting tree, in the order JC69, K80, F81, HKY85.
     pub fits: Vec<Fit>,
+    /// Where the likelihood was computed when it was not on the processor: the GPUs, with the share of each.
+    pub accelerator: Option<String>,
 }
 
 /// The maximum-likelihood tree of an alignment of at least three sequences.
 pub fn ml_tree(msa: &Msa) -> Result<MlResult, String> {
+    ml_tree_using(msa, Sites::accelerate)
+}
+
+/// The same, with the putting of the columns on the GPUs (or not) done by `accelerate`: what the tests use to try a pool of their own.
+fn ml_tree_using(
+    msa: &Msa,
+    accelerate: impl FnOnce(&mut Sites) -> Option<String>,
+) -> Result<MlResult, String> {
     if msa.rows.len() < 3 {
         return Err("A likelihood tree needs at least three sequences.".into());
     }
-    let sites = sites(msa).ok_or("No column of the alignment holds a base.")?;
+    let mut sites = sites(msa).ok_or("No column of the alignment holds a base.")?;
     let start = [
         DistanceModel::Kimura2,
         DistanceModel::JukesCantor,
@@ -503,6 +740,9 @@ pub fn ml_tree(msa: &Msa) -> Result<MlResult, String> {
     let start_tree = neighbor_joining(&msa.names, &start)
         .and_then(|t| Tree::from_node(&t, &msa.names))
         .ok_or("The starting tree could not be built.")?;
+    // the columns go to the GPUs after the starting tree's distances, which have had theirs and let them go: the two are not on a
+    // card together
+    let placed = accelerate(&mut sites);
     // the four models are fitted side by side, each on its own copy of the starting tree
     let fitted = par_map(&Kind::ALL, |&kind| {
         let mut tree = start_tree.clone();
@@ -530,6 +770,7 @@ pub fn ml_tree(msa: &Msa) -> Result<MlResult, String> {
         tree: tree.to_node(&msa.names),
         best,
         fits,
+        accelerator: sites.accelerator(placed),
     })
 }
 
@@ -600,6 +841,7 @@ mod tests {
             counts: vec![10.0, 3.0, 1.0],
             total: 14.0,
             freqs: [0.25; 4],
+            accel: Default::default(),
         };
         let (q, freqs) = jc();
         let got = tree.ln_likelihood(&sites, &q, &freqs);
@@ -637,6 +879,7 @@ mod tests {
             counts: vec![1.0],
             total: 1.0,
             freqs: [0.25; 4],
+            accel: Default::default(),
         };
         let with_gap = tree.ln_likelihood(&mk(4), &q, &freqs);
         let two_only = Tree {
@@ -650,6 +893,7 @@ mod tests {
                 counts: vec![1.0],
                 total: 1.0,
                 freqs: [0.25; 4],
+                accel: Default::default(),
             },
             &q,
             &freqs,
@@ -755,5 +999,270 @@ mod tests {
             rows: vec![b"AC".to_vec(); 2]
         })
         .is_err());
+    }
+
+    // ---- the likelihood of one branch's length alone, against the whole tree's pruning for every length ----
+
+    /// Setting each listed branch to its best length by trying the whole tree for every length: the way it was done before `EdgeScan`.
+    fn optimize_edges_reference(
+        tree: &mut Tree,
+        edges: &[(usize, usize)],
+        sweeps: usize,
+        sites: &Sites,
+        q: &Matrix,
+        freqs: &[f64; 4],
+    ) {
+        for _ in 0..sweeps {
+            for &(a, b) in edges {
+                let best = golden(
+                    |x| {
+                        tree.set_length(a, b, x.exp());
+                        tree.ln_likelihood(sites, q, freqs)
+                    },
+                    MIN_BRANCH.ln(),
+                    MAX_BRANCH.ln(),
+                    LOG_TOLERANCE,
+                );
+                tree.set_length(a, b, best.exp());
+            }
+        }
+    }
+
+    /// The search of topologies as it was, with the reference's way of setting branches.
+    fn improve_topology_reference(tree: &mut Tree, sites: &Sites, q: &Matrix, freqs: &[f64; 4]) {
+        let mut best = tree.ln_likelihood(sites, q, freqs);
+        for _ in 0..NNI_MOVES {
+            let mut moved = false;
+            'edges: for (u, v) in tree.edges() {
+                if u < tree.tips || v < tree.tips {
+                    continue;
+                }
+                for which in 0..2 {
+                    let mut candidate = tree.clone();
+                    if !candidate.swap_across(u, v, which) {
+                        continue;
+                    }
+                    let local = candidate.around(u, v);
+                    optimize_edges_reference(&mut candidate, &local, 1, sites, q, freqs);
+                    let l = candidate.ln_likelihood(sites, q, freqs);
+                    if l > best + sites.smallest_gain(best) {
+                        (*tree, best, moved) = (candidate, l, true);
+                        break 'edges;
+                    }
+                }
+            }
+            if !moved {
+                break;
+            }
+        }
+    }
+
+    /// A random unrooted tree over `tips` tips (each tip added in the middle of a random branch) with random branch lengths, and an
+    /// alignment of `columns` columns evolved along it under JC69, with a few gaps and ambiguity codes in it.
+    fn random_case(tips: usize, columns: usize, seed: u64) -> (Tree, Msa) {
+        let mut rng = Rng::new(seed);
+        let mut edges: Vec<(usize, usize, f64)> = vec![
+            (0, tips, 0.05 + 0.2 * rng.unit()),
+            (1, tips, 0.05 + 0.2 * rng.unit()),
+            (2, tips, 0.05 + 0.2 * rng.unit()),
+        ];
+        for k in 3..tips {
+            let at = rng.below(edges.len());
+            let (a, b, l) = edges[at];
+            let middle = tips + k - 2;
+            edges[at] = (a, middle, l / 2.0);
+            edges.push((middle, b, l / 2.0));
+            edges.push((k, middle, 0.02 + 0.2 * rng.unit()));
+        }
+        let tree = tree_of(tips, &edges);
+        let mut rows: Vec<Vec<u8>> = vec![Vec::new(); tips];
+        let root: Vec<u8> = (0..columns).map(|_| b"ACGT"[rng.below(4)]).collect();
+        // walk out from tip 0, evolving the sequence along each branch
+        let mut stack = vec![(0usize, usize::MAX, root)];
+        while let Some((node, from, seq)) = stack.pop() {
+            if node < tips {
+                rows[node] = seq.clone();
+            }
+            for &(next, length) in tree.adj[node].iter().filter(|e| e.0 != from) {
+                let change = 0.75 * (1.0 - (-4.0 * length / 3.0).exp());
+                let evolved = seq
+                    .iter()
+                    .map(|&c| {
+                        if rng.unit() < change {
+                            let others: Vec<u8> =
+                                b"ACGT".iter().copied().filter(|&b| b != c).collect();
+                            others[rng.below(3)]
+                        } else {
+                            c
+                        }
+                    })
+                    .collect();
+                stack.push((next, node, evolved));
+            }
+        }
+        for row in rows.iter_mut().skip(1) {
+            for c in row.iter_mut() {
+                match rng.below(60) {
+                    0 => *c = b'N',
+                    1 => *c = b'-',
+                    2 => *c = b'R',
+                    _ => {}
+                }
+            }
+        }
+        let names = (0..tips).map(|k| format!("t{k}")).collect();
+        (tree, Msa { names, rows })
+    }
+
+    /// A tree whose inner nodes form a chain, the tips hung on it in order, every branch 0.1: a start that the search must change.
+    fn caterpillar(tips: usize) -> Tree {
+        let mut edges = vec![(0, tips, 0.1), (1, tips, 0.1)];
+        for k in 2..tips - 1 {
+            edges.push((tips + k - 2, tips + k - 1, 0.1));
+            edges.push((k, tips + k - 1, 0.1));
+        }
+        edges.push((tips - 2, 2 * tips - 3, 0.1));
+        edges.push((tips - 1, 2 * tips - 3, 0.1));
+        tree_of(tips, &edges)
+    }
+
+    #[test]
+    fn the_scan_of_one_branch_gives_the_likelihood_of_the_whole_tree_for_every_length() {
+        for (tips, columns, seed) in [
+            (3usize, 120usize, 1u64),
+            (4, 200, 2),
+            (7, 300, 3),
+            (12, 150, 4),
+        ] {
+            let (tree, msa) = random_case(tips, columns, seed);
+            let sites = sites(&msa).unwrap();
+            let q = rate_matrix(2.3, &sites.freqs);
+            for (a, b) in tree.edges() {
+                let scan = EdgeScan::new(&tree, a, b, &sites, &q, &sites.freqs);
+                for length in [MIN_BRANCH, 0.01, 0.1, 0.7, MAX_BRANCH] {
+                    let mut set = tree.clone();
+                    set.set_length(a, b, length);
+                    let whole = set.ln_likelihood(&sites, &q, &sites.freqs);
+                    let one = scan.ln_likelihood(&sites, &q, length);
+                    assert!(
+                        (one - whole).abs() <= 1e-9 * whole.abs().max(1.0),
+                        "{tips} tips, branch {a}-{b} at {length}: {one} against {whole}"
+                    );
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn setting_the_branches_by_the_scan_reaches_the_likelihood_that_trying_the_whole_tree_does() {
+        for (tips, columns, seed) in [(4usize, 300usize, 5u64), (8, 400, 6), (13, 250, 7)] {
+            let (truth, msa) = random_case(tips, columns, seed);
+            let sites = sites(&msa).unwrap();
+            let q = rate_matrix(2.0, &sites.freqs);
+            // from branches that are all wrong, as the search's candidates are
+            let flat = tree_of(
+                tips,
+                &truth
+                    .edges()
+                    .iter()
+                    .map(|&(a, b)| (a, b, 0.1))
+                    .collect::<Vec<_>>(),
+            );
+            let edges = flat.edges();
+            let (mut by_scan, mut whole) = (flat.clone(), flat);
+            optimize_edges(&mut by_scan, &edges, 2, &sites, &q, &sites.freqs);
+            optimize_edges_reference(&mut whole, &edges, 2, &sites, &q, &sites.freqs);
+            let (x, y) = (
+                by_scan.ln_likelihood(&sites, &q, &sites.freqs),
+                whole.ln_likelihood(&sites, &q, &sites.freqs),
+            );
+            assert!((x - y).abs() < 1e-6, "{tips} tips: {x} against {y}");
+        }
+    }
+
+    #[test]
+    fn from_a_tree_one_swap_off_the_search_with_the_scan_puts_it_right_as_the_search_without_it_does(
+    ) {
+        // (A greedy search takes the first change that helps, so two ways of working out a likelihood that differ by 1e-4 can take
+        // different paths from a bad start, and end on trees that are equally good by luck: over 40 caterpillar starts the final
+        // likelihoods were the same in 21, higher with the scan in 11 and lower in 8, on average 12.8 higher. From one swap off the
+        // truth there is one way back.)
+        for (tips, columns, seed) in [
+            (7usize, 600usize, 21u64),
+            (8, 700, 22),
+            (9, 700, 23),
+            (10, 800, 24),
+        ] {
+            let (truth, msa) = random_case(tips, columns, seed);
+            let sites = sites(&msa).unwrap();
+            let q = rate_matrix(1.5, &sites.freqs);
+            let names = msa.names.clone();
+            let edges = truth.edges();
+            let mut right = truth.clone();
+            optimize_edges_reference(&mut right, &edges, 6, &sites, &q, &sites.freqs);
+            // one swap across the first inner branch that has one
+            let mut start = truth.clone();
+            let swapped = edges
+                .iter()
+                .filter(|&&(u, v)| u >= tips && v >= tips)
+                .any(|&(u, v)| start.swap_across(u, v, 0));
+            assert!(swapped);
+            let (mut fast, mut slow) = (start.clone(), start);
+            optimize_edges(&mut fast, &edges, 2, &sites, &q, &sites.freqs);
+            optimize_edges_reference(&mut slow, &edges, 2, &sites, &q, &sites.freqs);
+            improve_topology(&mut fast, &sites, &q, &sites.freqs);
+            improve_topology_reference(&mut slow, &sites, &q, &sites.freqs);
+            assert_eq!(
+                splits(&fast.to_node(&names), &names),
+                splits(&slow.to_node(&names), &names),
+                "{tips} tips"
+            );
+            let edges = fast.edges();
+            optimize_edges_reference(&mut fast, &edges, 8, &sites, &q, &sites.freqs);
+            optimize_edges_reference(&mut slow, &edges, 8, &sites, &q, &sites.freqs);
+            let (x, y) = (
+                fast.ln_likelihood(&sites, &q, &sites.freqs),
+                slow.ln_likelihood(&sites, &q, &sites.freqs),
+            );
+            assert!(
+                (x - y).abs() < 1e-6,
+                "{tips} tips, converged: {x} against {y}"
+            );
+            // and the search got somewhere: at least as high as the truth, which the data need not favour
+            assert!(
+                x >= right.ln_likelihood(&sites, &q, &sites.freqs) - 0.5,
+                "{tips} tips"
+            );
+        }
+    }
+
+    #[test]
+    #[ignore = "timing: cargo test --release timing_of_the_topology_search -- --ignored --nocapture"]
+    fn timing_of_the_topology_search() {
+        for (tips, columns) in [(10usize, 600usize), (20, 1000), (40, 1500)] {
+            let (_, msa) = random_case(tips, columns, 99);
+            let sites = sites(&msa).unwrap();
+            let q = rate_matrix(2.0, &sites.freqs);
+            let start = caterpillar(tips);
+            let time = |reference: bool| {
+                let mut tree = start.clone();
+                let begin = std::time::Instant::now();
+                if reference {
+                    improve_topology_reference(&mut tree, &sites, &q, &sites.freqs);
+                } else {
+                    improve_topology(&mut tree, &sites, &q, &sites.freqs);
+                }
+                (
+                    begin.elapsed().as_secs_f64(),
+                    tree.ln_likelihood(&sites, &q, &sites.freqs),
+                )
+            };
+            let (slow, slow_l) = time(true);
+            let (fast, fast_l) = time(false);
+            println!(
+                "{tips} tips x {columns} columns: {slow:.2} s before, {fast:.2} s now ({:.1} times), ln L {slow_l:.3} and {fast_l:.3}",
+                slow / fast
+            );
+        }
     }
 }

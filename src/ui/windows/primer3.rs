@@ -3,6 +3,7 @@
 use crate::seq::features::Feature;
 use crate::seq::primer3::{design, Pair, Settings};
 use crate::ui::app::App;
+use crate::ui::fonts::FontWeight;
 use eframe::egui::{self, RichText};
 
 #[derive(Default)]
@@ -87,7 +88,9 @@ impl App {
                         ui.add(egui::DragValue::new(&mut s.max_tm).range(30.0..=90.0));
                         ui.label("Pairs");
                         ui.add(egui::DragValue::new(&mut s.num_return).range(1..=20));
-                        pick = ui.button(RichText::new("Pick primers").strong()).clicked();
+                        pick = ui
+                            .button(RichText::new("Pick primers").semibold())
+                            .clicked();
                         ui.end_row();
                     });
                 ui.label(RichText::new("min / optimum / max for size and Tm").small());
@@ -105,7 +108,7 @@ impl App {
                         "Penalty",
                         "",
                     ] {
-                        ui.label(RichText::new(h).strong());
+                        ui.label(RichText::new(h).semibold());
                     }
                     ui.end_row();
                     for (k, p) in self.p3_win.pairs.iter().enumerate() {

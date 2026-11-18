@@ -28,6 +28,20 @@ pub const PHYLOCNN: Group = Group {
     extras: &["ZurichHIV-tree.nwk"],
 };
 
+/// The Pfam-A profile HMMs (Pfam is CC0), pressed by HMMER's `hmmpress` into the four binary files that `hmmscan` reads beside the
+/// text file. Not part of this repository (a download of some gigabytes): `docs/DOMAINS.md` says where to get it.
+pub const PFAM: Group = Group {
+    folder: "pfam",
+    files: &[
+        "Pfam-A.hmm",
+        "Pfam-A.hmm.h3f",
+        "Pfam-A.hmm.h3i",
+        "Pfam-A.hmm.h3m",
+        "Pfam-A.hmm.h3p",
+    ],
+    extras: &[],
+};
+
 /// The folder that holds the model files the person installed: `models` inside the program's settings folder.
 pub fn install_dir() -> Option<PathBuf> {
     crate::remote::settings::dir().map(|d| d.join("models"))
@@ -62,6 +76,14 @@ fn find(dirs: &[PathBuf], group: &Group, file: &str) -> Option<PathBuf> {
     dirs.iter()
         .map(|dir| dir.join(group.folder).join(file))
         .find(|path| std::fs::metadata(path).is_ok_and(|m| m.is_file() && m.len() > 0))
+}
+
+/// Where `file` of `group` is, in the folders the program looks in (a browser has none).
+pub fn path_of(group: &Group, file: &str) -> Option<PathBuf> {
+    if cfg!(target_arch = "wasm32") {
+        return None;
+    }
+    find(&search_dirs(), group, file)
 }
 
 /// The bytes of `file` of `group`, from the first of `dirs` that has it.

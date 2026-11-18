@@ -266,13 +266,19 @@ fn a_list_longer_than_the_window_draws_stays_quick() {
         .len();
     assert!(total > ROWS_DRAWN, "{total} places");
     frame(&mut app, &ctx, 0, vec![]);
-    let started = Instant::now();
-    for n in 1..6 {
+    // the quickest of several frames: a frame that the machine happened to stall (the tests run side by side) does not say how long
+    // drawing takes, but if every frame were slow, so would the quickest be
+    let mut quickest = std::time::Duration::MAX;
+    for n in 1..11 {
+        let started = Instant::now();
         frame(&mut app, &ctx, n, vec![]);
+        quickest = quickest.min(started.elapsed());
     }
-    let each = started.elapsed() / 5;
-    eprintln!("{total} places; a frame with {ROWS_DRAWN} rows takes {each:?}");
-    assert!(each.as_millis() < 500, "a frame took {each:?}");
+    eprintln!("{total} places; a frame with {ROWS_DRAWN} rows takes {quickest:?} at best");
+    assert!(
+        quickest.as_millis() < 500,
+        "the quickest frame took {quickest:?}"
+    );
 }
 
 #[test]

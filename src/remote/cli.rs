@@ -7,14 +7,17 @@ use super::gpus;
 use super::jobs::Config;
 use super::run::{execute, Env};
 use super::server;
+use super::site::Site;
 use super::tasks::{Kind, Request};
 use super::wire::{meta, Container};
 use super::DEFAULT_PORT;
+use crate::pipeline::install;
 use crate::pipeline::tools::{self, short_version};
 use std::collections::hash_map::RandomState;
 use std::hash::{BuildHasher, Hasher};
 use std::net::{IpAddr, Ipv4Addr, SocketAddr, ToSocketAddrs};
 use std::path::{Path, PathBuf};
+use std::sync::Arc;
 
 pub const USAGE: &str = "\
 HelixLoom workstation server
@@ -24,6 +27,14 @@ HelixLoom workstation server
   helixloom status --server HOST:PORT --token-file FILE
                                   ask a server how it is
   helixloom astral -i GENE_TREES   the species tree of a set of gene trees, with no server (`astral --help`)
+  helixloom motif -i SEQUENCES     motifs that DNA sequences share, in MEME's text format, with no server (`motif --help`)
+  helixloom pipeline run FILE DIR  run a pipeline file on a folder, keeping what was done so a stopped run resumes (`pipeline --help`)
+  helixloom checks [WORDS…]        how each analysis was checked: what it was compared with, how close it came, what was not checked
+  helixloom tools                  the programs HelixLoom can call (MAFFT, IQ-TREE, HMMER, …): which are found, their licences, how to install them
+  helixloom tools install NAME [--with brew|micromamba|mamba|conda] [--yes]
+                                  install one of them with the package manager that is on this computer: the command is shown
+                                  first and nothing runs without a yes (--yes answers it)
+  helixloom gpu-check [--bench]    try the GPUs against the processor, and say from what size they pay (`gpu-check --help`)
 
 Options of `serve`:
   --listen ADDR         where to listen (default 127.0.0.1:7878; use 0.0.0.0:7878 for other computers)
@@ -37,6 +48,10 @@ Options of `serve`:
   --fold-command CMD    program that folds a protein on a GPU, run as CMD input.fasta output.pdb
   --fold-gpus N         GPUs that program uses for one structure, given to it at once (default 1)
   --name NAME           the name shown to clients (default: this computer's)
+  --web-dir DIR         also serve the web version found in DIR (what `trunk build --release` makes, docs/WEB.md): open
+                        http://HOST:PORT/ in a browser and use the Workstation page. Read once, at the start
+  --allow-origin ORIGIN let the web version hosted at ORIGIN (https://host or http://host:port) call this server from
+                        another address; may be given more than once. Not needed for the page --web-dir serves
 
 The server does not encrypt anything: reach it over an SSH tunnel or a private network (see DEPLOY.md).
 ";
@@ -136,6 +151,8 @@ struct Typed {
     fold: Option<Vec<String>>,
     fold_gpus: usize,
     name: Option<String>,
+    web_dir: Option<PathBuf>,
+    origins: Vec<String>,
 }
 
 impl Default for Typed {
@@ -152,6 +169,8 @@ impl Default for Typed {
             fold: None,
             fold_gpus: 1,
             name: None,
+            web_dir: None,
+            origins: Vec::new(),
         }
     }
 }
@@ -186,6 +205,10 @@ fn read_flags(args: &[String]) -> Result<Typed, String> {
             }
             "--fold-gpus" => typed.fold_gpus = number(v()?, flag)?,
             "--name" => typed.name = Some(super::one_line(v()?)),
+            "--web-dir" => typed.web_dir = Some(PathBuf::from(v()?)),
+            "--allow-origin" => typed.origins.push(
+                super::site::parse_origin(v()?).map_err(|why| format!("--allow-origin: {why}"))?,
+            ),
             other => return Err(format!("Unknown option {other}.")),
         }
         i += 2;
@@ -225,6 +248,53 @@ fn check_numbers(t: &Typed) -> Result<(), String> {
     }
 }
 
+/// `path` as the file system really has it, as far as it exists (a folder that is not made yet is its nearest existing
+/// folder, really, and the rest).
+fn resolved(path: &Path) -> PathBuf {
+    let mut rest = PathBuf::new();
+    let mut head = path.to_path_buf();
+    loop {
+        if let Ok(real) = std::fs::canonicalize(&head) {
+            return real.join(rest);
+        }
+        match (head.parent(), head.file_name()) {
+            (Some(parent), Some(name)) => {
+                rest = Path::new(name).join(rest);
+                head = parent.to_path_buf();
+            }
+            _ => return path.to_path_buf(),
+        }
+    }
+}
+
+/// The page is handed to anyone, so the folder it is read from must hold the web build and nothing the server keeps: not a file
+/// with the token in it, not the token's own file, not the folder of the jobs and their results.
+fn check_web_dir(
+    dir: &Path,
+    site: &Site,
+    token: &str,
+    data_dir: &Path,
+    token_file: Option<&Path>,
+) -> Result<(), String> {
+    let public = format!(
+        "{} is handed to anyone who asks, so it must hold only the web build",
+        dir.display()
+    );
+    if let Some(path) = site.file_containing(token.as_bytes()) {
+        return Err(format!("{public}, but {path} has the token in it."));
+    }
+    let root = resolved(dir);
+    if resolved(data_dir).starts_with(&root) {
+        return Err(format!(
+            "{public}, but the folder of the jobs (--data-dir) is inside it."
+        ));
+    }
+    if token_file.is_some_and(|file| resolved(file).starts_with(&root)) {
+        return Err(format!("{public}, but the token's file is inside it."));
+    }
+    Ok(())
+}
+
 /// The programs of the analyses that are on this computer, with their versions, for the status page.
 fn found_tools() -> Vec<(String, String)> {
     tools::ALL
@@ -257,6 +327,20 @@ pub fn serve_options(
     }
     config.gpus = gpus::select(&typed.gpus)?;
     config.tools = found_tools();
+    config.site = Arc::new(match &typed.web_dir {
+        Some(dir) => {
+            let site = Site::load(dir, &typed.origins)?;
+            check_web_dir(
+                dir,
+                &site,
+                &config.token,
+                &config.data_dir,
+                typed.token_file.as_deref(),
+            )?;
+            site
+        }
+        None => Site::with_origins(&typed.origins),
+    });
     Ok(ServeOptions {
         config,
         listen: typed.listen,
@@ -275,6 +359,23 @@ fn announce(server: &server::Server) {
         println!("GPU {}: {}", g.id, g.name);
     }
     println!("Data folder: {}", config.data_dir.display());
+    if config.site.has_page() {
+        // a server that listens everywhere has no one address to open: HOST is the computer's own
+        let at = if server.addr.ip().is_unspecified() {
+            format!(
+                "HOST:{} (HOST: this computer's address)",
+                server.addr.port()
+            )
+        } else {
+            server.addr.to_string()
+        };
+        println!(
+            "Web version: open http://{at}/ in a browser, then Workstation, and type the token."
+        );
+    }
+    for origin in config.site.origins() {
+        println!("Pages of {origin} may call this server.");
+    }
     println!(
         "A job may run {} hours; results are kept {} days.",
         config.job_limit.as_secs() / 3600,
@@ -435,7 +536,7 @@ fn server_pid(args: &[String]) -> Option<u32> {
 /// The process a job runs in: read the request in the job's folder, run it, write the result beside it.
 fn run_job(args: &[String]) -> i32 {
     let Some(dir) = args.first().map(PathBuf::from) else {
-        eprintln!("Usage: helixloom run-job FOLDER [--fold-seconds N] [-- fold command words]");
+        eprintln!("Usage: helixloom run-job FOLDER [--fold-seconds N] [--flow-cache DIR] [-- fold command words]");
         return 2;
     };
     let mut env = Env::default();
@@ -445,6 +546,7 @@ fn run_job(args: &[String]) -> i32 {
             "--fold-seconds" => {
                 env.fold_seconds = rest.next().and_then(|s| s.parse().ok()).unwrap_or(0)
             }
+            "--flow-cache" => env.flow_cache = rest.next().map(PathBuf::from),
             // read by `dispatch` before the job starts
             "--server-pid" => {
                 rest.next();
@@ -484,6 +586,180 @@ fn run_in(dir: &Path, env: &Env) -> Result<(), String> {
 }
 
 /// Run the command if `args` (the program's arguments, the first being its name) ask for one of the server's;
+/// `helixloom gpu-check`: try the GPUs against the processor (`accel::check`).
+fn gpu_check(args: &[String]) -> i32 {
+    #[cfg(all(feature = "gpu", not(target_arch = "wasm32")))]
+    {
+        crate::accel::check::run(args)
+    }
+    #[cfg(not(all(feature = "gpu", not(target_arch = "wasm32"))))]
+    {
+        let _ = args;
+        eprintln!("This program was built without GPU support (`--no-default-features`): build it with the default features, or with `--features cuda`.");
+        2
+    }
+}
+
+/// `helixloom icon FILE.png [SIZE]`: the program's mark as the picture of the app, for the script that makes the Mac app
+/// (`scripts/bundle-macos.sh`).
+fn icon_command(args: &[String]) -> i32 {
+    let (least, most) = crate::ui::brand::ICON_SIZES;
+    let (Some(path), size) = (args.first(), args.get(1)) else {
+        eprintln!("Usage: helixloom icon FILE.png [SIZE]   (SIZE in pixels each way, {least} to {most}; 1024 when left out)");
+        return 1;
+    };
+    let size = match size.map(|s| s.parse::<u32>()) {
+        None => 1024,
+        Some(Ok(size)) if (least..=most).contains(&size) => size,
+        Some(_) => {
+            eprintln!("The size of an icon is a whole number of pixels from {least} to {most}.");
+            return 1;
+        }
+    };
+    let written = crate::ui::headless::png_bytes(&crate::ui::brand::icon(size))
+        .and_then(|bytes| std::fs::write(path, bytes).map_err(|e| e.to_string()));
+    match written {
+        Ok(()) => 0,
+        Err(why) => {
+            eprintln!("Could not write {path}: {why}");
+            1
+        }
+    }
+}
+
+/// `helixloom checks [WORDS…]`: how each analysis was checked, as the page of the Help menu says it; the words leave the checks that
+/// hold them all.
+fn checks_report(args: &[String]) -> i32 {
+    let words = args.join(" ");
+    let found = crate::checks::matching(&words);
+    if found.is_empty() {
+        eprintln!("No analysis matches {words}.");
+        return 1;
+    }
+    print!("{}", crate::checks::to_text(&found));
+    0
+}
+
+/// What `helixloom tools install` was asked: the program, the package manager if one was named, and whether the yes was given.
+struct InstallAsk {
+    program: &'static tools::Program,
+    with: Option<install::Manager>,
+    yes: bool,
+}
+
+fn install_ask(args: &[String]) -> Result<InstallAsk, String> {
+    let called: Vec<&str> = tools::ALL.iter().map(|p| p.label).collect();
+    let (mut name, mut with, mut yes) = (None, None, false);
+    let mut words = args.iter();
+    while let Some(word) = words.next() {
+        match word.as_str() {
+            "--yes" | "-y" => yes = true,
+            "--with" => {
+                let manager = words
+                    .next()
+                    .ok_or("--with needs a package manager: brew, micromamba, mamba or conda.")?;
+                with = Some(install::Manager::parse(manager).ok_or_else(|| {
+                    format!("{manager} is no package manager HelixLoom knows: brew, micromamba, mamba or conda.")
+                })?);
+            }
+            option if option.starts_with('-') => {
+                return Err(format!(
+                    "The option {option} is not known; `tools install` takes --with and --yes."
+                ))
+            }
+            program if name.is_none() => name = Some(program),
+            extra => {
+                return Err(format!(
+                    "{extra} is one argument too many: one program is installed at a time."
+                ))
+            }
+        }
+    }
+    let name =
+        name.ok_or_else(|| format!("Which program? HelixLoom calls: {}.", called.join(", ")))?;
+    let program = tools::by_name(name).ok_or_else(|| {
+        format!(
+            "{name} is not a program HelixLoom calls; it calls: {}.",
+            called.join(", ")
+        )
+    })?;
+    Ok(InstallAsk { program, with, yes })
+}
+
+/// `helixloom tools install NAME`: install one of the programs HelixLoom calls with a package manager that is on this computer.
+/// The command is printed first, and nothing runs without a yes.
+fn tools_install(args: &[String]) -> i32 {
+    let ask = match install_ask(args) {
+        Ok(ask) => ask,
+        Err(why) => {
+            eprintln!("{why}");
+            return 1;
+        }
+    };
+    let program = ask.program;
+    if let Some(found) = tools::detect(program) {
+        println!(
+            "{} is installed already: {}",
+            program.label,
+            found.path.display()
+        );
+        return 0;
+    }
+    let active = std::env::var("CONDA_PREFIX").ok();
+    let plan = match install::plan(program, &install::managers(), ask.with, active.as_deref()) {
+        Ok(plan) => plan,
+        Err(why) => {
+            eprintln!("{why}");
+            return 1;
+        }
+    };
+    println!("{}\n", plan.notice(program));
+    if !ask.yes {
+        use std::io::Write;
+        print!("Run it? [y/N] ");
+        let _ = std::io::stdout().flush();
+        let mut answer = String::new();
+        let _ = std::io::stdin().read_line(&mut answer);
+        if !install::agreed(&answer) {
+            println!("Nothing was installed.");
+            return 1;
+        }
+    }
+    if let Err(why) = install::run(&plan, |line| println!("{line}")) {
+        eprintln!("{why}");
+        return 1;
+    }
+    match tools::detect(program) {
+        Some(found) => {
+            println!("{} is installed: {}", program.label, found.path.display());
+            0
+        }
+        None => {
+            eprintln!(
+                "{} ended well, but {} is still not found on the PATH or in Homebrew's folders.",
+                plan.line(),
+                program.label
+            );
+            1
+        }
+    }
+}
+
+/// `helixloom tools`: the programs HelixLoom can call, whether each is found, its licence and how to install it. Runs each program
+/// that is found once, to ask its version; installs nothing.
+fn tools_report(args: &[String]) -> i32 {
+    if args.first().map(String::as_str) == Some("install") {
+        return tools_install(&args[1..]);
+    }
+    if let Some(extra) = args.first() {
+        eprintln!("`tools` takes no argument but `install NAME`, not {extra}.");
+        return 1;
+    }
+    let found: Vec<_> = tools::ALL.iter().map(|p| (*p, tools::detect(p))).collect();
+    print!("{}", tools::report(&found));
+    0
+}
+
 /// `None` when the app should open its window instead.
 pub fn dispatch(args: &[String]) -> Option<i32> {
     let rest = args.get(2..).unwrap_or(&[]);
@@ -495,6 +771,12 @@ pub fn dispatch(args: &[String]) -> Option<i32> {
         }
         "status" => status(rest),
         "astral" | "species-tree" => crate::seq::astral::cli::run(rest),
+        "motif" | "motifs" => crate::seq::motif::cli::run(rest),
+        "pipeline" => crate::pipeline::flow::cli::main(rest),
+        "tools" => tools_report(rest),
+        "checks" => checks_report(rest),
+        "icon" => icon_command(rest),
+        "gpu-check" => gpu_check(rest),
         "run-job" => {
             #[cfg(unix)]
             end_with_the_server(server_pid(rest));

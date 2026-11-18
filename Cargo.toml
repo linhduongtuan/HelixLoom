@@ -2,6 +2,7 @@
 name = "helixloom"
 version = "0.2.0"
 edition = "2021"
+license = "MIT"
 description = "A bioinformatics platform: plasmid editor, sequencing signals, alignment, phylogeny, trees, structure, pipelines, and a workstation server for the heavy jobs"
 
 [features]
@@ -27,16 +28,22 @@ candle-core = { version = "0.9", optional = true, features = ["metal"] }
 [target.'cfg(not(any(target_os = "macos", target_arch = "wasm32")))'.dependencies]
 candle-core = { version = "0.9", optional = true }
 
-# The web build (docs/WEB.md): only for talking to the page, and all of them are in eframe's dependency tree already.
+# The web build (docs/WEB.md): only for talking to the page and to the workstation (`fetch`), and all of them are in eframe's
+# dependency tree already.
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 js-sys = "0.3"
 log = "0.4"
 wasm-bindgen = "0.2"
 wasm-bindgen-futures = "0.4"
-web-sys = { version = "0.3", features = ["Blob", "BlobPropertyBag", "Document", "Element", "HtmlAnchorElement", "HtmlCanvasElement", "HtmlElement", "Location", "Node", "Url", "Window"] }
+web-sys = { version = "0.3", features = ["AbortController", "AbortSignal", "Blob", "BlobPropertyBag", "Document", "DomException", "Element", "Event", "EventTarget", "Headers", "HtmlAnchorElement", "HtmlCanvasElement", "HtmlElement", "IdbDatabase", "IdbFactory", "IdbObjectStore", "IdbOpenDbRequest", "IdbRequest", "IdbTransaction", "IdbTransactionMode", "Location", "Node", "Request", "RequestInit", "RequestMode", "Response", "Storage", "Url", "Window"] }
 
 [profile.dev]
 opt-level = 1
 
 [profile.dev.package."*"]
+opt-level = 2
+
+# The program itself at opt-level 2 too (roadmap question 9, answered yes): at 1 the compiler makes no vector instructions, so
+# the aligner's lock-step lanes run as scalar code. The price is slower compiles of this crate.
+[profile.dev.package.helixloom]
 opt-level = 2

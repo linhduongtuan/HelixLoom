@@ -77,6 +77,7 @@ mod fold_program {
             &Env {
                 fold_command: Some(command),
                 fold_seconds: seconds,
+                ..Env::default()
             },
         )
     }

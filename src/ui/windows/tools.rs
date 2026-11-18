@@ -7,6 +7,7 @@ use crate::seq::features::Feature;
 use crate::seq::pcr::{pcr_products, PcrPrimer, PcrScan, Product};
 use crate::seq::primers::{find_primers, self_scores, Primer};
 use crate::ui::app::App;
+use crate::ui::fonts::FontWeight;
 use crate::ui::map::commify;
 use eframe::egui::{self, text::LayoutJob, Color32, FontId, RichText, ScrollArea, TextFormat, Ui};
 
@@ -250,27 +251,27 @@ impl App {
                     ui.label("Scores: mismatch");
                     ui.add(
                         egui::DragValue::new(&mut w.scoring.mismatch)
-                            .speed(0.05)
-                            .range(-5.0..=0.0),
+                            .speed(0.5)
+                            .range(-50.0..=0.0),
                     );
                     ui.label("gap");
                     ui.add(
                         egui::DragValue::new(&mut w.scoring.gap_open)
-                            .speed(0.05)
-                            .range(-20.0..=0.0),
+                            .speed(0.5)
+                            .range(-200.0..=0.0),
                     );
                     ui.label("further gap");
                     ui.add(
                         egui::DragValue::new(&mut w.scoring.gap_extend)
-                            .speed(0.05)
-                            .range(-10.0..=0.0),
+                            .speed(0.5)
+                            .range(-100.0..=0.0),
                     );
-                    if ui.button("Original defaults").clicked() {
+                    if ui.button("Defaults").clicked() {
                         w.scoring = Scoring::default();
                     }
                 });
                 ui.horizontal(|ui| {
-                    run = ui.button(RichText::new("  Align  ").strong()).clicked();
+                    run = ui.button(RichText::new("  Align  ").semibold()).clicked();
                     ui.label(RichText::new(&w.message).small());
                 });
                 ui.separator();
@@ -463,7 +464,7 @@ impl App {
             .open(&mut open)
             .default_size([700.0, 560.0])
             .show(ctx, |ui| {
-                ui.label(RichText::new("PCR product").strong());
+                ui.label(RichText::new("PCR product").semibold());
                 ui.label("Forward primer (5' to 3')");
                 ui.add(
                     egui::TextEdit::singleline(&mut self.pcr_win.fwd)
@@ -502,11 +503,17 @@ impl App {
                     );
                     ui.label("mismatches allowed");
                     ui.add(egui::DragValue::new(&mut scan.max_mismatch).range(0..=10));
-                    ui.add_enabled_ui(scan.max_mismatch > 0, |ui| {
-                        ui.label("exact 3' bases");
-                        ui.add(egui::DragValue::new(&mut scan.min_3_match).range(0..=4));
-                    });
-                    find = ui.button(RichText::new("Find products").strong()).clicked();
+                    // each a widget of the row, not a room of its own in it: the row wraps, and a room does not go to
+                    // the next row with the rest (`platform::structure::choice` says what that did)
+                    let with_mismatches = scan.max_mismatch > 0;
+                    ui.add_enabled(with_mismatches, egui::Label::new("exact 3' bases"));
+                    ui.add_enabled(
+                        with_mismatches,
+                        egui::DragValue::new(&mut scan.min_3_match).range(0..=4),
+                    );
+                    find = ui
+                        .button(RichText::new("Find products").semibold())
+                        .clicked();
                 });
                 for (k, r) in self.pcr_win.products.iter().enumerate() {
                     let p = &r.product;
@@ -514,7 +521,7 @@ impl App {
                         ui.label(
                             RichText::new(format!("{} bp", commify(p.length())))
                                 .monospace()
-                                .strong(),
+                                .semibold(),
                         );
                         ui.label(format!(
                             "forward at {}–{}, reverse at {}–{}",
@@ -539,7 +546,7 @@ impl App {
                     }
                 }
                 ui.separator();
-                ui.label(RichText::new("Find PCR primers inside the selection").strong());
+                ui.label(RichText::new("Find PCR primers inside the selection").semibold());
                 ui.collapsing("Limits (the original's defaults)", |ui| {
                     let p = &mut self.prefs.primer;
                     ui.horizontal_wrapped(|ui| {
@@ -575,13 +582,13 @@ impl App {
                         if cands.is_empty() {
                             continue;
                         }
-                        ui.label(RichText::new(title).strong());
+                        ui.label(RichText::new(title).semibold());
                         egui::Grid::new(("cands", is_fwd))
                             .striped(true)
                             .spacing([10.0, 2.0])
                             .show(ui, |ui| {
                                 for h in ["Tm", "GC %", "3' GC", "Length", "Sequence", ""] {
-                                    ui.label(RichText::new(h).small().strong());
+                                    ui.label(RichText::new(h).small().semibold());
                                 }
                                 ui.end_row();
                                 for c in cands.iter().take(MAX_CANDIDATES) {

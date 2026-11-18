@@ -6,6 +6,7 @@ use super::infobar;
 use super::map::{self, MapData, MapSite};
 use super::theme::{self, Palette};
 use crate::seq::dna::GENETIC_CODES;
+use crate::ui::fonts::FontWeight;
 use eframe::egui::{self, RichText, ScrollArea, Ui};
 
 impl App {
@@ -26,12 +27,28 @@ impl App {
                 .default_size(130.0)
                 .show(ui, |ui| self.feature_table(ui, i));
         }
-        if self.prefs.show_map {
+        if self.prefs.show_map || self.prefs.show_inspector {
             egui::Panel::right("map")
                 .resizable(true)
                 .default_size(480.0)
                 .min_size(260.0)
-                .show(ui, |ui| self.map_panel(ui, i, &pal));
+                .show(ui, |ui| {
+                    match (self.prefs.show_map, self.prefs.show_inspector) {
+                        (true, true) => {
+                            // tall enough, at the start, for the table, the protein and a few overlaps; it can be dragged
+                            let tall = (ui.available_height() * 0.45).clamp(170.0, 300.0);
+                            egui::Panel::bottom("inspector")
+                                .resizable(true)
+                                .default_size(tall)
+                                .min_size(80.0)
+                                .show(ui, |ui| self.inspector(ui, i));
+                            self.map_panel(ui, i, &pal);
+                        }
+                        (true, false) => self.map_panel(ui, i, &pal),
+                        // without the map the inspector has the whole column
+                        (false, _) => self.inspector(ui, i),
+                    }
+                });
         }
         egui::CentralPanel::default()
             .frame(egui::Frame::new().fill(pal.window_bg))
@@ -96,6 +113,7 @@ impl App {
             if ui.small_button("Enzymes…").clicked() {
                 self.enzyme_win.open = true;
             }
+            super::figure::button(ui);
         });
         let shown = self.shown_enzymes(i);
         let enzymes = &self.enzymes;
@@ -115,23 +133,45 @@ impl App {
             })
             .collect();
         let selection = dv.selection();
+        let selected_feature = dv.current_feature();
         let size = ui.available_size();
+        let linear = self.map_linear || !dv.doc.circular;
+        let mut saved = String::new();
         let clicked = {
             let data = MapData {
                 doc: &dv.doc,
                 sites,
                 selection,
+                selected_feature,
                 pal,
             };
-            if self.map_linear || !dv.doc.circular {
-                map::linear(ui, &data, size)
-            } else {
-                map::circular(ui, &data, size)
+            let draw = |ui: &mut Ui| {
+                if linear {
+                    map::linear(ui, &data, size)
+                } else {
+                    map::circular(ui, &data, size)
+                }
+            };
+            if let Some(format) = super::figure::wanted() {
+                let room = size.max(super::figure::MAP_ROOM);
+                let draw_in = |ui: &mut Ui| {
+                    if linear {
+                        map::linear(ui, &data, room)
+                    } else {
+                        map::circular(ui, &data, room)
+                    }
+                };
+                saved = super::figure::save(format, "map", room, |ui| {
+                    draw_in(ui);
+                });
             }
+            draw(ui)
         };
-        if let Some(pos) = clicked {
-            dv.place_caret(pos);
-            dv.scroll_to = Some(pos);
+        if let Some(hit) = clicked {
+            dv.map_click(hit);
+        }
+        if !saved.is_empty() {
+            self.say(saved);
         }
     }
 
@@ -146,7 +186,7 @@ impl App {
                     .spacing([14.0, 2.0])
                     .show(ui, |ui| {
                         for h in ["", "Name", "Type", "Start", "End", "Length", "Strand"] {
-                            ui.label(RichText::new(h).strong());
+                            ui.label(RichText::new(h).semibold());
                         }
                         ui.end_row();
                         for (fi, f) in dv.doc.features.iter().enumerate() {
@@ -173,10 +213,7 @@ impl App {
                     });
             });
         if let Some(fi) = pick {
-            let (a, b) = (dv.doc.features[fi].start(), dv.doc.features[fi].end());
-            dv.selected_feature = Some(fi);
-            dv.select(a, b);
-            dv.scroll_to = Some(a);
+            dv.select_feature(fi);
         }
     }
 }

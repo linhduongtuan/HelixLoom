@@ -15,6 +15,8 @@ const MAX_METHOD: usize = 8;
 pub const CONNECT_TIMEOUT: Duration = Duration::from_secs(10);
 /// How long one read or write may wait.
 pub const IO_TIMEOUT: Duration = Duration::from_secs(60);
+/// The slowest upload that is waited for, in bytes a second (the largest upload, at this rate, takes about three hours).
+pub const MIN_UPLOAD_RATE: usize = 50 * 1024;
 /// The most a client reads back in one reply: as much as the largest upload, since a result is not much larger than what
 /// made it.
 pub const MAX_RESPONSE: usize = 512 << 20;
@@ -252,6 +254,7 @@ pub fn reason(status: u16) -> &'static str {
         200 => "OK",
         201 => "Created",
         204 => "No Content",
+        304 => "Not Modified",
         400 => "Bad Request",
         401 => "Unauthorized",
         404 => "Not Found",
@@ -272,17 +275,48 @@ pub fn respond<W: Write>(
     content_type: &str,
     body: &[u8],
 ) -> std::io::Result<()> {
+    respond_with(out, status, content_type, &[], body)
+}
+
+/// The same with more headers. One that has the name of a usual header (`Cache-Control`) takes its place. A header that
+/// holds a line break is left out: a value must never be able to end the header and start another reply.
+pub fn respond_with<W: Write>(
+    out: &mut W,
+    status: u16,
+    content_type: &str,
+    extra: &[(&str, String)],
+    body: &[u8],
+) -> std::io::Result<()> {
+    let extra: Vec<&(&str, String)> = extra
+        .iter()
+        .filter(|(n, v)| !n.contains(['\r', '\n']) && !v.contains(['\r', '\n']))
+        .collect();
     write!(
         out,
-        "HTTP/1.1 {status} {}\r\nContent-Type: {content_type}\r\nContent-Length: {}\r\nConnection: close\r\nCache-Control: no-store\r\nX-Content-Type-Options: nosniff\r\n\r\n",
-        reason(status),
-        body.len()
+        "HTTP/1.1 {status} {}\r\nContent-Type: {content_type}\r\n",
+        reason(status)
     )?;
+    // a "not modified" ends with its header, and has no length
+    if status != 304 {
+        write!(out, "Content-Length: {}\r\n", body.len())?;
+    }
+    out.write_all(b"Connection: close\r\n")?;
+    if !extra
+        .iter()
+        .any(|(n, _)| n.eq_ignore_ascii_case("cache-control"))
+    {
+        out.write_all(b"Cache-Control: no-store\r\n")?;
+    }
+    out.write_all(b"X-Content-Type-Options: nosniff\r\n")?;
+    for (name, value) in extra {
+        write!(out, "{name}: {value}\r\n")?;
+    }
+    out.write_all(b"\r\n")?;
     out.write_all(body)?;
     out.flush()
 }
 
-/// A connection that can be read only until a deadline. A timeout on each read is not enough: a sender that gives one
+/// A connection that can be read or written only until a deadline. A timeout on each read is not enough: a sender that gives one
 /// byte just before every timeout would hold the connection, and the thread and place it takes, for hours.
 pub struct Within<'a> {
     stream: &'a TcpStream,
@@ -341,8 +375,23 @@ pub fn turn_away(stream: &mut TcpStream, status: u16, message: &str) {
 }
 
 impl Write for Within<'_> {
+    /// Written within the same deadline: a receiver that takes a few bytes before every timeout would otherwise hold the
+    /// connection, and the place it takes, for as long as the reply is long.
     fn write(&mut self, bytes: &[u8]) -> std::io::Result<usize> {
-        (&*self.stream).write(bytes)
+        let left = self.until.saturating_duration_since(Instant::now());
+        if left.is_zero() {
+            return Err(std::io::Error::new(
+                ErrorKind::TimedOut,
+                "The receiver took too long.",
+            ));
+        }
+        let _ = self.stream.set_write_timeout(Some(left.min(self.idle)));
+        match (&*self.stream).write(bytes) {
+            Err(e) if matches!(e.kind(), ErrorKind::WouldBlock | ErrorKind::TimedOut) => Err(
+                std::io::Error::new(ErrorKind::TimedOut, "The receiver took too long."),
+            ),
+            other => other,
+        }
     }
 
     fn flush(&mut self) -> std::io::Result<()> {
@@ -397,9 +446,11 @@ pub fn parse_reply(bytes: &[u8]) -> Result<Reply, String> {
 
 /// A connection to `address` (`host:port`): to the first of its addresses that answers.
 fn connect(address: &str) -> Result<TcpStream, String> {
-    // a page cannot open a TCP connection; the roadmap reaches a workstation through the browser's fetch (docs/WEB.md)
+    // a page cannot open a TCP connection; it reaches the workstation through the browser's fetch (`fetch.rs`)
     if cfg!(target_arch = "wasm32") {
-        return Err("Connecting to a workstation is not available in the browser yet.".into());
+        return Err(
+            "A page reaches the workstation through fetch, not through a TCP connection.".into(),
+        );
     }
     let addrs = address
         .to_socket_addrs()
@@ -461,6 +512,70 @@ pub fn call(
 mod tests {
     use super::*;
     use std::io::Cursor;
+
+    /// The text of a reply written by `respond_with`.
+    fn written(status: u16, extra: &[(&str, String)], body: &[u8]) -> String {
+        let mut out = Vec::new();
+        respond_with(&mut out, status, "text/plain", extra, body).expect("written");
+        String::from_utf8(out).expect("text")
+    }
+
+    #[test]
+    fn extra_headers_are_added_and_one_that_ends_the_header_is_left_out() {
+        let plain = written(200, &[], b"hi");
+        assert!(plain
+            .starts_with("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 2\r\n"));
+        assert!(plain.contains("Cache-Control: no-store\r\n") && plain.ends_with("\r\n\r\nhi"));
+        let extra = written(200, &[("ETag", "\"abc\"".into())], b"hi");
+        assert!(extra.contains("ETag: \"abc\"\r\n"));
+        // a value or a name that holds a line break would end the header and start another reply
+        for (name, value) in [
+            ("X-A", "1\r\nSet-Cookie: stolen=1"),
+            ("X-A", "1\nX-B: 2"),
+            ("X-A\r\nX-B", "2"),
+        ] {
+            let split = written(200, &[(name, value.to_string())], b"hi");
+            assert!(
+                !split.contains("Set-Cookie") && !split.contains("X-B"),
+                "{split:?}"
+            );
+            assert_eq!(split.matches("\r\n\r\n").count(), 1, "{split:?}");
+        }
+    }
+
+    #[test]
+    fn a_reply_that_the_other_side_does_not_take_is_given_up_when_its_time_is_up() {
+        // a reader that connects and then reads nothing: each write alone would wait its whole timeout, for ever
+        let listener = std::net::TcpListener::bind("127.0.0.1:0").expect("a port");
+        let _silent =
+            TcpStream::connect(listener.local_addr().expect("an address")).expect("a connection");
+        let (stream, _) = listener.accept().expect("a connection");
+        // the stream's own timeout is long, so that a test that fails does not hang
+        stream
+            .set_write_timeout(Some(Duration::from_secs(5)))
+            .expect("a timeout");
+        let started = Instant::now();
+        let mut out =
+            Within::new(&stream, Duration::from_millis(300)).idle(Duration::from_secs(60));
+        let big = vec![0u8; 256 << 20];
+        let why = out.write_all(&big).expect_err("given up");
+        assert_eq!(why.kind(), ErrorKind::TimedOut);
+        assert!(
+            started.elapsed() < Duration::from_secs(3),
+            "took {:?}",
+            started.elapsed()
+        );
+    }
+
+    #[test]
+    fn a_header_that_names_a_usual_one_takes_its_place_and_a_not_modified_has_no_length() {
+        let kept = written(200, &[("cache-control", "no-cache".into())], b"hi");
+        assert!(kept.contains("cache-control: no-cache\r\n"));
+        assert!(!kept.contains("no-store"), "{kept}");
+        let unchanged = written(304, &[], b"");
+        assert!(unchanged.starts_with("HTTP/1.1 304 Not Modified\r\n"));
+        assert!(!unchanged.contains("Content-Length"), "{unchanged}");
+    }
 
     /// A connection made of bytes: what is read, and what was written.
     struct Duplex {

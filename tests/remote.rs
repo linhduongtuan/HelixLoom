@@ -408,6 +408,54 @@ fn long_tree_job() -> Vec<u8> {
     ])
 }
 
+/// A maximum-likelihood job over a small alignment.
+fn likelihood_job() -> Vec<u8> {
+    let alignment = alignment();
+    container(&[
+        (
+            "meta",
+            b"analysis=ml\nmodel=p\nbootstrap=0\ngenerations=100\n",
+        ),
+        ("alignment", alignment.as_bytes()),
+        ("job", b"kind=tree\nlabel=a likelihood\n"),
+    ])
+}
+
+/// Needs a Python with PyTorch (`HELIXLOOM_TORCH_PYTHON`, as for the unit tests); says so and passes without one. The workers run on
+/// the CPU device and the GPU switch is forced, so that a small job takes the whole path a big one takes on a workstation.
+#[test]
+fn a_likelihood_job_runs_on_pytorch_workers_when_the_server_is_told_which_python_to_use() {
+    let Some(python) = std::env::var("HELIXLOOM_TORCH_PYTHON")
+        .ok()
+        .filter(|p| !p.trim().is_empty())
+    else {
+        eprintln!("skipped: HELIXLOOM_TORCH_PYTHON names no Python with PyTorch");
+        return;
+    };
+    let folder = Folder::new("pytorch-job");
+    let token = folder.file("token.txt", TOKEN);
+    let mut command = serve_command(&folder, &[]);
+    command
+        .arg("--token-file")
+        .arg(&token)
+        .env("HELIXLOOM_TORCH_PYTHON", python)
+        .env("HELIXLOOM_TORCH_DEVICES", "cpu")
+        .env("HELIXLOOM_ACCEL", "force")
+        .env_remove("HELIXLOOM_ACCEL_BACKEND");
+    let server = launch(command);
+    let at = server.address.as_str();
+    let id = submit(at, &likelihood_job());
+    let line = wait_over(at, &id);
+    assert_eq!(line[2], "done", "{line:?}");
+    let reply = parse(&result(at, &id));
+    let details = section(&reply, "details");
+    assert!(
+        details.contains("Likelihood computed on PyTorch: cpu "),
+        "{details}"
+    );
+    assert!(section(&reply, "newick").contains(';'));
+}
+
 /// The job processes of this folder that are alive, from the list of processes.
 #[cfg(unix)]
 fn job_processes(folder: &Folder) -> usize {
@@ -921,4 +969,181 @@ fn the_token_in_the_environment_is_taken_out_before_any_program_is_run() {
         pdb.contains("REMARK TOKEN=none ORDER=PCI_BUS_ID GPU=0"),
         "{pdb}"
     );
+}
+
+#[test]
+fn the_server_hands_out_the_web_page_to_anyone_and_still_wants_the_token_for_everything_else() {
+    let folder = Folder::new("web-page");
+    let page = folder.join("dist");
+    std::fs::create_dir_all(&page).expect("a folder");
+    std::fs::write(page.join("index.html"), "<html>HelixLoom on the web</html>").expect("index");
+    std::fs::write(page.join("app_bg.wasm"), b"\0asm\x01\0\0\0").expect("a program");
+    // a file next to the page, which is not part of it
+    folder.file("private.txt", "not for the web");
+    let token = folder.file("token.txt", TOKEN);
+    let server = start(
+        &folder,
+        &token,
+        &[
+            "--web-dir",
+            page.to_str().expect("a path"),
+            "--allow-origin",
+            "https://lab.example.org",
+        ],
+    );
+    let at = server.address.as_str();
+    // the page: no token
+    let (status, body) = call(at, "GET", "/", None, b"");
+    assert_eq!(
+        (status, body.as_slice()),
+        (200, &b"<html>HelixLoom on the web</html>"[..])
+    );
+    let (status, body) = call(at, "GET", "/app_bg.wasm", None, b"");
+    assert_eq!((status, body.as_slice()), (200, &b"\0asm\x01\0\0\0"[..]));
+    // everything else: the token, as ever
+    assert_eq!(call(at, "GET", "/v1/status", None, b"").0, 401);
+    assert_eq!(call(at, "GET", "/v1/status", Some(TOKEN), b"").0, 200);
+    assert_eq!(call(at, "GET", "/private.txt", None, b"").0, 401);
+    assert_eq!(call(at, "GET", "/../private.txt", None, b"").0, 401);
+    assert_eq!(call(at, "GET", "/%2e%2e/private.txt", None, b"").0, 401);
+    // and the browser's question before a call from the page of another address is answered without one, for that address
+    // only
+    let preflight = |origin: &str| {
+        let mut stream = TcpStream::connect(at).expect("a connection");
+        stream.set_read_timeout(Some(WAIT)).expect("a timeout");
+        let request = format!(
+            "OPTIONS /v1/jobs HTTP/1.1\r\nHost: {at}\r\nOrigin: {origin}\r\nAccess-Control-Request-Method: POST\r\nConnection: close\r\n\r\n"
+        );
+        stream.write_all(request.as_bytes()).expect("sent");
+        let mut reply = String::new();
+        stream.read_to_string(&mut reply).expect("a reply");
+        reply
+    };
+    let allowed = preflight("https://lab.example.org");
+    assert!(allowed.starts_with("HTTP/1.1 204"), "{allowed}");
+    assert!(
+        allowed.contains("Access-Control-Allow-Origin: https://lab.example.org\r\n"),
+        "{allowed}"
+    );
+    let refused = preflight("https://evil.example.org");
+    assert!(refused.starts_with("HTTP/1.1 401"), "{refused}");
+    assert!(
+        !refused
+            .to_ascii_lowercase()
+            .contains("access-control-allow-origin"),
+        "{refused}"
+    );
+}
+
+#[test]
+fn a_web_folder_without_a_page_stops_the_server_from_starting() {
+    let folder = Folder::new("web-empty");
+    let token = folder.file("token.txt", TOKEN);
+    let empty = folder.join("empty");
+    std::fs::create_dir_all(&empty).expect("a folder");
+    let output = serve_command(&folder, &["--web-dir", empty.to_str().expect("a path")])
+        .arg("--token-file")
+        .arg(&token)
+        .output()
+        .expect("the program runs");
+    assert!(!output.status.success());
+    assert!(String::from_utf8_lossy(&output.stderr).contains("index.html"));
+}
+
+/// Four loci of six taxa each, as the text of FASTA files: two groups of three taxa that differ from each other in some
+/// columns, and each taxon in a few of its own, differently for each locus.
+fn loci_files() -> Vec<(String, String)> {
+    (1..=4)
+        .map(|k| {
+            let root: Vec<u8> = (0..60).map(|j| b"ACGT"[(j * 7 + k * 3) % 4]).collect();
+            let text: String = (0..6)
+                .map(|i| {
+                    let seq: String = root
+                        .iter()
+                        .enumerate()
+                        .map(|(j, &b)| {
+                            let group = j % 5 == 0 && i >= 3;
+                            let own = (j + k) % 6 == i && j % 2 == 0;
+                            let base = if group || own {
+                                b"ACGT"[(b as usize + 1) % 4]
+                            } else {
+                                b
+                            };
+                            base as char
+                        })
+                        .collect();
+                    format!(">taxon{}\n{seq}\n", i + 1)
+                })
+                .collect();
+            (format!("locus{k}"), text)
+        })
+        .collect()
+}
+
+/// A pipeline-file job over the loci: gene trees with the built-in search, then the species tree.
+fn flow_job(label: &str) -> Vec<u8> {
+    let files = loci_files();
+    let names = files
+        .iter()
+        .map(|f| f.0.as_str())
+        .collect::<Vec<_>>()
+        .join("\n");
+    let sizes = files
+        .iter()
+        .map(|f| f.1.len().to_string())
+        .collect::<Vec<_>>()
+        .join("\n");
+    let body: String = files.iter().map(|f| f.1.as_str()).collect();
+    let pipeline = "helixloom-pipeline 1\nname: loci\ninput: alignment\nstep tree\nstep species\n";
+    let job = format!("kind=flow\nlabel={label}\n");
+    container(&[
+        ("meta", b"files=4\n"),
+        ("pipeline", pipeline.as_bytes()),
+        ("names", names.as_bytes()),
+        ("sizes", sizes.as_bytes()),
+        ("loci", body.as_bytes()),
+        ("job", job.as_bytes()),
+    ])
+}
+
+#[test]
+fn a_pipeline_file_runs_in_a_job_and_a_second_run_finds_the_answers_the_first_kept() {
+    let folder = Folder::new("flow");
+    let token = folder.file("token.txt", TOKEN);
+    let server = start(&folder, &token, &[]);
+    let at = server.address.as_str();
+
+    let count = |report: &str, word: &str| report.matches(&format!("\t{word}\t")).count();
+    let first = submit(at, &flow_job("loci, first"));
+    assert_eq!(wait_over(at, &first)[2], "done");
+    let reply = parse(&result(at, &first));
+    let report = section(&reply, "report");
+    // four gene trees and the species tree, all done now
+    assert_eq!(
+        (count(&report, "ran"), count(&report, "cached")),
+        (5, 0),
+        "{report}"
+    );
+    assert!(section(&reply, "output").starts_with('('), "{reply:?}");
+    assert!(section(&reply, "meta").starts_with("seconds="));
+
+    // the answers are kept in the server's own folder, not in one that the request named
+    let kept = std::fs::read_dir(folder.join("data").join("flow-cache"))
+        .expect("the cache folder")
+        .flatten()
+        .filter(|e| e.path().extension().is_some_and(|x| x == "value"))
+        .count();
+    assert_eq!(kept, 5);
+
+    // the same run sent again finds them all, and gives the same species tree
+    let second = submit(at, &flow_job("loci, second"));
+    assert_eq!(wait_over(at, &second)[2], "done");
+    let again = parse(&result(at, &second));
+    let report = section(&again, "report");
+    assert_eq!(
+        (count(&report, "ran"), count(&report, "cached")),
+        (0, 5),
+        "{report}"
+    );
+    assert_eq!(section(&again, "output"), section(&reply, "output"));
 }

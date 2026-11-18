@@ -30,6 +30,8 @@ impl App {
             }
             None => (false, false, false, false),
         };
+        let recent = self.recent_items();
+        let mut toggle_keeping = false;
         egui::MenuBar::new().ui(ui, |ui| {
             let mut item = |ui: &mut Ui, label: &str, key: &str, enabled: bool, action: Action| {
                 // the bundled font has no ⌘ or ⇧, so shortcuts are spelled out as the original does ("Cmd+S")
@@ -46,6 +48,25 @@ impl App {
             ui.menu_button("File", |ui| {
                 item(ui, "New", "⌘N", true, Action::New);
                 item(ui, "Open…", "⌘O", true, Action::Open);
+                ui.menu_button("Open Recent", |ui| {
+                    if recent.is_empty() {
+                        ui.add_enabled(false, egui::Button::new("No recent files"));
+                    }
+                    for (label, action) in &recent {
+                        item(ui, label, "", true, action.clone());
+                    }
+                    if !recent.is_empty() {
+                        ui.separator();
+                        item(ui, "Clear Menu", "", true, Action::ClearRecent);
+                    }
+                });
+                item(
+                    ui,
+                    "Fetch from a Database…",
+                    "",
+                    !super::dialog::IN_BROWSER,
+                    Action::Fetch,
+                );
                 item(
                     ui,
                     "Duplicate Selection",
@@ -65,6 +86,42 @@ impl App {
                 item(ui, "Save", "⌘S", true, Action::Save);
                 item(ui, "Save As…", "⇧⌘S", true, Action::SaveAs);
                 item(ui, "Export as FASTA…", "", true, Action::ExportFasta);
+                item(
+                    ui,
+                    "Save a Report of the Results…",
+                    "",
+                    true,
+                    Action::Report,
+                );
+                // not where there is nothing to choose: nothing can be kept, or another copy keeps the session
+                if let Some(mut kept) = self.keeper.keeps_work() {
+                    ui.separator();
+                    let in_a_browser = self.keeper.kept_in_a_browser();
+                    let whose = if in_a_browser {
+                        "The open sequences, and what the Alignment, Trees, Structure and Pipelines pages show, are kept \
+                         by this browser, for this site, and offered at the next visit."
+                    } else {
+                        "The open sequences, what the Alignment, Trees, Structure and Pipelines pages show, and the list \
+                         of recent files are kept in the settings folder of this computer; the sequences and the pages \
+                         are offered when the program starts again."
+                    };
+                    let told = format!(
+                        "{whose}\n\nTurn this off on a computer that others use: what was kept of them is removed, and \
+                         no more is kept.\n\nNot covered: files you saved yourself, records fetched from a database, \
+                         the workstation's address and token{} (the Forget button of the Workstation page removes them), and how \
+                         the window looks.",
+                        if in_a_browser {
+                            ", which this tab keeps"
+                        } else {
+                            ""
+                        }
+                    );
+                    let switch = ui.checkbox(&mut kept, super::autosave::KEEP_SWITCH);
+                    if switch.on_hover_text(told).clicked() {
+                        toggle_keeping = true;
+                        ui.close();
+                    }
+                }
             });
             ui.menu_button("Edit", |ui| {
                 item(ui, "Undo", "⌘Z", can_undo, Action::Undo);
@@ -384,6 +441,8 @@ impl App {
                     true,
                     Action::SpeciesTree,
                 );
+                item(ui, "Motif Finder…", "", true, Action::Motifs);
+                item(ui, "Protein Domains (HMMER)…", "", true, Action::Domains);
                 item(ui, "Tree Tools (Newick)…", "", true, Action::TreeTools);
                 item(
                     ui,
@@ -392,6 +451,8 @@ impl App {
                     true,
                     Action::Workflow,
                 );
+                ui.separator();
+                item(ui, "Programs HelixLoom Calls…", "", true, Action::Programs);
             });
             ui.menu_button("Assembly", |ui| {
                 item(ui, "Contig Assembler…", "", true, Action::OpenAssembler);
@@ -422,6 +483,7 @@ impl App {
             ui.menu_button("View", |ui| {
                 item(ui, "Show Map", "", true, Action::ToggleMap);
                 item(ui, "Show Feature Table", "", true, Action::ToggleFeatures);
+                item(ui, "Show Inspector", "", true, Action::ToggleInspector);
                 item(
                     ui,
                     "Show Complement Strand",
@@ -456,14 +518,38 @@ impl App {
                         ui.radio_value(&mut self.prefs.theme, mode, mode.label());
                     }
                 });
+                ui.separator();
+                item(ui, "Appearance…", "", true, Action::Appearance);
+                item(ui, "Zoom In", "⌘=", true, Action::Zoom(1));
+                item(ui, "Zoom Out", "⌘-", true, Action::Zoom(-1));
+                item(ui, "Actual Size", "⌘0", true, Action::Zoom(0));
             });
             ui.menu_button("Help", |ui| {
                 item(ui, "Command Palette…", "⌘K", true, Action::Palette);
                 item(ui, "Keyboard Shortcuts", "", true, Action::Shortcuts);
+                item(
+                    ui,
+                    "How Each Analysis Was Checked",
+                    "",
+                    true,
+                    Action::Checks,
+                );
+                item(ui, "Copy Diagnostics", "", true, Action::Diagnostics);
+                item(ui, "Show the Tour", "", true, Action::Tour);
+                item(
+                    ui,
+                    "Open the Sample Project",
+                    "",
+                    true,
+                    Action::SampleProject,
+                );
                 ui.separator();
                 item(ui, "About HelixLoom", "", true, Action::About);
             });
         });
+        if toggle_keeping {
+            out.push(Action::ToggleKeeping);
+        }
     }
 
     pub(super) fn toolbar(&mut self, ui: &mut Ui, out: &mut Vec<Action>) {

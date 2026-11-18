@@ -2,8 +2,10 @@
 
 use crate::remote::gpus::Gpu;
 use crate::remote::one_line;
+use crate::remote::site::Site;
 use std::path::PathBuf;
 use std::process::Command;
+use std::sync::Arc;
 use std::time::Duration;
 
 #[derive(Clone)]
@@ -32,6 +34,8 @@ pub struct Config {
     pub fold_gpus: usize,
     /// The programs found on this machine and their versions, for the status page.
     pub tools: Vec<(String, String)>,
+    /// The page the server hands to a browser, and the origins that may call it from a page of their own.
+    pub site: Arc<Site>,
 }
 
 /// Everything but the token, which a log or a failed test must never print.
@@ -51,6 +55,8 @@ impl std::fmt::Debug for Config {
             .field("fold_command", &self.fold_command)
             .field("fold_gpus", &self.fold_gpus)
             .field("tools", &self.tools)
+            .field("web_page", &self.site.has_page())
+            .field("allowed_origins", &self.site.origins())
             .finish()
     }
 }
@@ -71,6 +77,7 @@ impl Config {
             fold_command: None,
             fold_gpus: 1,
             tools: Vec::new(),
+            site: Arc::new(Site::default()),
         }
     }
 }

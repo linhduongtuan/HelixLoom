@@ -6,6 +6,7 @@ use crate::pipeline::tools::{short_version, Installed};
 use crate::remote::settings::Compute;
 use crate::ui::app::{Action, App};
 use crate::ui::design::{self, Look, Tone, PAGE_MARGIN};
+use crate::ui::fonts::FontWeight;
 use crate::ui::{brand, topbar};
 use eframe::egui::{
     self, pos2, vec2, Frame, Margin, Rect, RichText, ScrollArea, Sense, Shape, Stroke, Ui,
@@ -19,6 +20,8 @@ const ICON_TILE: f32 = 40.0;
 /// Room kept for the buttons at the bottom of a card.
 const BUTTONS_HEIGHT: f32 = 34.0;
 /// The mark on the hero, and the widest the search box of the hero is.
+/// The most recent files the card of Home lists.
+const MOST_RECENT_SHOWN: usize = 5;
 const HERO_MARK: f32 = 132.0;
 const HERO_SEARCH_WIDTH: f32 = 560.0;
 
@@ -141,7 +144,7 @@ pub(super) fn program_chip(
 
 impl App {
     pub(super) fn home_page(&mut self, ui: &mut Ui, out: &mut Vec<Action>) {
-        let look = design::look(self.prefs.dark);
+        let look = self.prefs.look();
         self.detect_programs(ui.ctx());
         ScrollArea::vertical()
             .auto_shrink([false, false])
@@ -157,6 +160,7 @@ impl App {
                     })
                     .show(ui, |ui| {
                         hero(ui, &look, out);
+                        self.recent_card(ui, &look, out);
                         ui.add_space(22.0);
                         heading(ui, &look, "Start with an analysis");
                         ui.add_space(8.0);
@@ -169,13 +173,34 @@ impl App {
             });
     }
 
+    /// The files opened or saved last, to open again with a click; nothing when there are none.
+    fn recent_card(&self, ui: &mut Ui, look: &Look, out: &mut Vec<Action>) {
+        let items = self.recent_items();
+        if items.is_empty() {
+            return;
+        }
+        ui.add_space(22.0);
+        heading(ui, look, "Pick up where you left off");
+        ui.add_space(8.0);
+        design::card(ui, look, |ui| {
+            ui.set_width(ui.available_width());
+            ui.horizontal_wrapped(|ui| {
+                for (label, action) in items.into_iter().take(MOST_RECENT_SHOWN) {
+                    if design::ghost_button(ui, look, &label).clicked() {
+                        out.push(action);
+                    }
+                }
+            });
+        });
+    }
+
     /// Which programs were found here, and where the heavy jobs go.
     fn this_computer(&self, ui: &mut Ui, look: &Look) {
         design::card(ui, look, |ui| {
             ui.label(
                 RichText::new("On this computer")
                     .size(15.0)
-                    .strong()
+                    .semibold()
                     .color(look.text),
             );
             ui.add_space(4.0);
@@ -215,7 +240,7 @@ impl App {
 
 /// A heading above a group of cards.
 fn heading(ui: &mut Ui, look: &Look, text: &str) {
-    ui.label(RichText::new(text).size(19.0).strong().color(look.text));
+    ui.label(RichText::new(text).size(19.0).semibold().color(look.text));
 }
 
 /// The top of the page: what the program is for, the search box that opens the command palette, and what people do most.
@@ -232,13 +257,13 @@ fn hero(ui: &mut Ui, look: &Look, out: &mut Vec<Action>) {
         ui.label(
             RichText::new("A WORKBENCH FOR SEQUENCES, SIGNALS AND STRUCTURES")
                 .size(11.5)
-                .strong()
+                .semibold()
                 .color(look.accent),
         );
         ui.label(
             RichText::new("What will you work on today?")
                 .size(32.0)
-                .strong()
+                .semibold()
                 .color(look.text),
         );
         ui.label(
@@ -300,9 +325,9 @@ fn card(
 ) {
     ui.horizontal(|ui| {
         design::icon_tile(ui, look, ICON_TILE, |painter, rect| {
-            icons::paint(painter, ws, rect, look.text, look.accent, look.dark);
+            icons::paint(painter, ws, rect, look.text, look.accent, look);
         });
-        ui.label(RichText::new(title).size(16.5).strong().color(look.text));
+        ui.label(RichText::new(title).size(16.5).semibold().color(look.text));
     });
     ui.add_space(2.0);
     ui.label(RichText::new(text).size(13.0).color(look.dim));
@@ -325,7 +350,7 @@ fn routes(ui: &mut Ui, look: &Look, out: &mut Vec<Action>) {
         ui.label(
             RichText::new("Follow a project")
                 .size(16.5)
-                .strong()
+                .semibold()
                 .color(look.text),
         );
         for (name, steps) in ROUTES {
@@ -338,7 +363,7 @@ fn routes(ui: &mut Ui, look: &Look, out: &mut Vec<Action>) {
                         chevron(ui, look);
                     }
                     let step =
-                        egui::Button::new(RichText::new(ws.label()).strong().color(look.accent))
+                        egui::Button::new(RichText::new(ws.label()).semibold().color(look.accent))
                             .fill(look.accent_soft)
                             .stroke(Stroke::NONE)
                             .corner_radius(design::BUTTON_RADIUS);
@@ -374,6 +399,83 @@ fn chevron(ui: &mut Ui, look: &Look) {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::seq::doc::Doc;
+    use crate::seq::io;
+    use crate::ui::app::Startup;
+    use crate::ui::testing::Screen;
+
+    /// An app with recent files `names` (real files in a folder of their own), drawn at Home.
+    fn app_with_recent(names: &[&str]) -> (App, Screen, std::path::PathBuf) {
+        let dir = crate::pipeline::tools::work_folder("home-recent").expect("a folder");
+        // the recent files are kept in the settings folder: without one nothing is remembered
+        let settings = crate::pipeline::tools::work_folder("home-settings").expect("a folder");
+        let mut app = App::new(Startup {
+            settings_dir: Some(settings),
+            ..Startup::default()
+        });
+        for name in names {
+            let path = dir.join(name);
+            std::fs::write(
+                &path,
+                io::to_genbank(&Doc::new(*name, b"ACGTACGT".to_vec())),
+            )
+            .expect("a file");
+            app.keeper.remember(&path);
+        }
+        app.workspace = Workspace::Home;
+        let mut screen = Screen::new();
+        screen.settle(&mut app);
+        (app, screen, dir)
+    }
+
+    #[test]
+    fn the_recent_files_are_listed_on_home_and_a_click_on_one_opens_it() {
+        let (mut app, mut screen, dir) = app_with_recent(&["first.gb", "second.gb", "third.gb"]);
+        let text = screen.text();
+        assert!(text.contains("Pick up where you left off"), "{text}");
+        // the latest first, each with its folder
+        let (a, b) = (
+            text.find("third.gb").expect("listed"),
+            text.find("first.gb").expect("listed"),
+        );
+        assert!(a < b, "the file opened last is listed first");
+        assert!(
+            text.contains(
+                &dir.file_name()
+                    .expect("a name")
+                    .to_string_lossy()
+                    .into_owned()
+            ),
+            "{text}"
+        );
+        let before = app.docs.len();
+        let label = crate::ui::autosave::recent_label(&dir.join("second.gb"));
+        screen.click(&mut app, &label);
+        assert_eq!(app.docs.len(), before + 1, "the file was opened");
+        // (a GenBank locus name has no dot: the name the file was written with comes back with an underscore)
+        assert_eq!(
+            app.docs.last().map(|d| d.doc.name.as_str()),
+            Some("second_gb")
+        );
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn home_with_no_recent_file_has_no_such_card_and_shows_no_more_than_five() {
+        let (_, screen, dir) = app_with_recent(&[]);
+        assert!(!screen.text().contains("Pick up where you left off"));
+        let _ = std::fs::remove_dir_all(&dir);
+        let names: Vec<String> = (0..8).map(|k| format!("file{k}.gb")).collect();
+        let refs: Vec<&str> = names.iter().map(String::as_str).collect();
+        let (_, screen, dir) = app_with_recent(&refs);
+        let text = screen.text();
+        assert_eq!(
+            names.iter().filter(|n| text.contains(n.as_str())).count(),
+            MOST_RECENT_SHOWN,
+            "{text}"
+        );
+        let _ = std::fs::remove_dir_all(&dir);
+    }
 
     #[test]
     fn every_workspace_but_home_is_offered_once() {

@@ -6,6 +6,7 @@ use super::brand;
 use super::design::{self, Look, BUTTON_RADIUS};
 use super::platform::Workspace;
 use super::state::ThemeMode;
+use super::tour::Target;
 use crate::remote::settings::Compute;
 use eframe::egui::{
     self, text::LayoutJob, vec2, Align, Align2, Color32, CornerRadius, FontId, Layout, Painter,
@@ -26,7 +27,7 @@ const NARROW: f32 = 880.0;
 
 impl App {
     pub(super) fn top_bar(&mut self, ui: &mut Ui, out: &mut Vec<Action>) {
-        let look = design::look(self.prefs.dark);
+        let look = self.prefs.look();
         let width = ui.available_width();
         ui.horizontal_centered(|ui| {
             self.wordmark(ui, &look, out);
@@ -44,7 +45,7 @@ impl App {
                 {
                     out.push(Action::Shortcuts);
                 }
-                self.jobs_pill(ui, &look, width < NARROW);
+                self.jobs_pill(ui, &look, width < NARROW, out);
                 self.compute_pill(ui, &look, out, width < NARROW);
                 self.search_box(ui, &look, width >= WIDE);
             });
@@ -83,6 +84,7 @@ impl App {
             vec2(BUTTON, BUTTON)
         };
         let field = search_field(ui, look, size, wide);
+        self.tour.aim(Target::Search, field.rect);
         if field
             .on_hover_text("Search every command and tool")
             .clicked()
@@ -92,7 +94,7 @@ impl App {
     }
 
     /// Where the heavy jobs go, with a dot that shows whether a workstation is connected; a click opens its page.
-    fn compute_pill(&self, ui: &mut Ui, look: &Look, out: &mut Vec<Action>, short: bool) {
+    fn compute_pill(&mut self, ui: &mut Ui, look: &Look, out: &mut Vec<Action>, short: bool) {
         let ws = &self.platform.workstation;
         let (text, dot) = match ws.compute {
             Compute::Local => ("This computer", look.dim),
@@ -110,27 +112,36 @@ impl App {
             _ if ws.answering() => "The workstation is answering. Click to see it.",
             _ => "The saved workstation has not answered. Click to see why.",
         };
-        if pill(ui, look, if short { "" } else { text }, Some(dot), None)
-            .on_hover_text(hover)
-            .clicked()
-        {
+        let response = pill(ui, look, if short { "" } else { text }, Some(dot), None);
+        self.tour.aim(Target::Jobs, response.rect);
+        if response.on_hover_text(hover).clicked() {
             out.push(Action::Go(Workspace::Workstation));
         }
     }
 
     /// A spinner and a count while analyses are going on; nothing when none is.
-    fn jobs_pill(&self, ui: &mut Ui, look: &Look, short: bool) {
+    fn jobs_pill(&self, ui: &mut Ui, look: &Look, short: bool, out: &mut Vec<Action>) {
         let running = self.running_analyses();
-        if running == 0 {
+        // while something runs, a spinner and a count; afterwards, for as long as the tray remembers what ended, a plain "Jobs"
+        if running == 0 && self.tray.history().is_empty() && !self.tray.open {
             return;
         }
-        let text = if short {
-            String::new()
-        } else {
-            format!("{running} running")
+        let text = match (running, short) {
+            (_, true) => String::new(),
+            (0, false) => "Jobs".to_string(),
+            (n, false) => format!("{n} running"),
         };
-        let response = pill(ui, look, &text, None, Some(look.accent));
-        response.on_hover_text("Analyses are running; the window stays free while they do");
+        let spinner = (running > 0).then_some(look.accent);
+        let dot = (running == 0).then_some(look.good);
+        let response = pill(ui, look, &text, dot, spinner);
+        let hover = if running > 0 {
+            "Analyses are running; the window stays free while they do. Click to see them."
+        } else {
+            "Click to see the analyses that ended lately."
+        };
+        if response.on_hover_text(hover).clicked() {
+            out.push(Action::JobTray);
+        }
     }
 
     /// Cycle the theme: the system's, light, dark.

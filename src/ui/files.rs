@@ -138,6 +138,9 @@ impl App {
                         dv.doc.name = stem.to_string();
                     }
                 }
+                if !fasta {
+                    self.keeper.remember(&path);
+                }
                 self.say(format!("Saved {}", path.display()));
             }
             Err(e) => self.say(format!("Couldn't save {}: {e}", path.display())),

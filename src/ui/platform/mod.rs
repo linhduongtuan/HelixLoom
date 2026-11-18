@@ -4,12 +4,23 @@
 pub mod alignment;
 mod alnview;
 mod chromatogram;
+#[cfg(test)]
+mod empty_states;
 mod home;
 mod icons;
+mod linked;
 pub mod phylogeny;
 pub mod pipelines;
 mod rail;
+mod report;
+/// The texts of a report that other parts of the window check.
+#[cfg(test)]
+pub mod report_texts {
+    pub use super::report::NOT_DRAWN;
+}
 pub mod route;
+#[cfg(test)]
+mod same_look;
 pub mod signals;
 pub mod structure;
 pub mod trees;
@@ -110,6 +121,8 @@ type Detected = Vec<(&'static str, Option<Installed>)>;
 pub struct Platform {
     programs: Option<Detected>,
     detecting: Option<Job<Detected>>,
+    /// The programs were asked to be looked for again while a search was going: what that search finds is from before.
+    stale: bool,
     pub alignment: alignment::AlignmentPage,
     pub phylogeny: phylogeny::PhylogenyPage,
     pub trees: trees::TreesPage,
@@ -172,11 +185,34 @@ impl Platform {
     }
 
     /// The program called `label` at `place`, if it was found.
+    /// For a test: the search for programs on this computer is over, and it found none.
+    #[cfg(test)]
+    pub(in crate::ui) fn no_programs_here(&mut self) {
+        (self.programs, self.detecting) = (Some(Vec::new()), None);
+    }
+
     pub fn installed_at(&self, label: &str, place: &Place) -> Option<Installed> {
         self.programs_at(place)?
             .into_iter()
             .find(|(l, _)| *l == label)
             .and_then(|(_, found)| found)
+    }
+
+    /// Forget what was found on this computer, so that the programs are looked for again (one was installed).
+    pub fn look_again(&mut self) {
+        // a search that is going began before the install: its answer is thrown away, and another search made
+        self.stale = self.detecting.is_some();
+        self.programs = None;
+    }
+
+    /// Take the answer of a search for the programs: kept, unless the programs were asked for again while it went.
+    fn found_programs(&mut self, found: Detected) {
+        self.detecting = None;
+        self.programs = if std::mem::take(&mut self.stale) {
+            None
+        } else {
+            Some(found)
+        };
     }
 
     /// The program called `label` on this computer, if it was found.
@@ -197,6 +233,8 @@ impl App {
         self.platform.busy_count()
             + usize::from(self.phylocnn_win.is_running())
             + usize::from(self.species_win.is_running())
+            + usize::from(self.motif_win.running())
+            + usize::from(self.domains_win.running())
     }
 
     /// Look for the programs the platform can call, once, without making the window wait.
@@ -212,7 +250,7 @@ impl App {
         }
         if let Some(job) = &p.detecting {
             match job.poll() {
-                Poll::Done(found) => (p.programs, p.detecting) = (Some(found), None),
+                Poll::Done(found) => p.found_programs(found),
                 Poll::Died => (p.programs, p.detecting) = (Some(Vec::new()), None),
                 Poll::Running => ctx.request_repaint_after(std::time::Duration::from_millis(200)),
             }
@@ -271,10 +309,35 @@ impl App {
     /// The six demo isolates, ticked and set to be aligned as soon as the page shows.
     fn load_alignment_example(&mut self) {
         let page = &mut self.platform.alignment;
-        page.inputs.clear();
+        page.clear_inputs();
         for doc in crate::sample::tree_demo() {
             page.add(&doc.name, &doc.seq);
         }
         page.run_when_shown = true;
+    }
+}
+
+#[cfg(test)]
+mod look_again_tests {
+    use super::*;
+
+    #[test]
+    fn a_search_that_was_going_when_a_program_was_installed_is_not_believed() {
+        let mut p = Platform::default();
+        let before: Detected = vec![("MAFFT", None)];
+        // no search is going: what was found is forgotten, and the next frame searches
+        p.programs = Some(before.clone());
+        p.look_again();
+        assert!(p.programs.is_none() && !p.stale);
+        // a search is going (it began before the install): its answer is from before, so it is thrown away
+        let ctx = egui::Context::default();
+        p.detecting = Some(Job::spawn(&ctx, Vec::new));
+        p.look_again();
+        assert!(p.stale);
+        p.found_programs(before.clone());
+        assert!(p.programs.is_none() && p.detecting.is_none() && !p.stale);
+        // and the search after it is believed
+        p.found_programs(before.clone());
+        assert_eq!(p.programs, Some(before));
     }
 }

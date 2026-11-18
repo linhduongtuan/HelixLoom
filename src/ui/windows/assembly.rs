@@ -8,6 +8,7 @@ use crate::seq::features::{Feature, Rgb};
 use crate::seq::io;
 use crate::ui::app::App;
 use crate::ui::dialog::{self, Wanted};
+use crate::ui::fonts::FontWeight;
 use crate::ui::map::commify;
 use crate::ui::platform::route::Source;
 use crate::ui::theme::Palette;
@@ -486,7 +487,7 @@ impl App {
         ui.horizontal(|ui| {
             if ui
                 .add(
-                    egui::Button::new(RichText::new("  Assemble  ").strong())
+                    egui::Button::new(RichText::new("  Assemble  ").semibold())
                         .fill(pal.accent.gamma_multiply(0.35)),
                 )
                 .clicked()
@@ -524,7 +525,7 @@ impl App {
                     "Shape",
                     "Disagreements",
                 ] {
-                    ui.label(RichText::new(h).strong());
+                    ui.label(RichText::new(h).semibold());
                 }
                 ui.end_row();
                 for (i, c) in outcome.asm.contigs.iter().enumerate() {
@@ -580,7 +581,7 @@ impl App {
                     contig.name,
                     commify(contig.consensus.len())
                 ))
-                .strong(),
+                .semibold(),
             );
             ui.add_space(12.0);
             ui.label("Zoom");

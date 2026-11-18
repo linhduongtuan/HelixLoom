@@ -14,6 +14,9 @@ pub const HEAVY_TREES: usize = 100;
 /// (a busy machine) the search took 0.2 s at 5,000 of them (25 species), 1.8 s at 16,000 (40), 7.9 s at 36,000 (60), and
 /// about 2 s at 15,000 (150 species) and at 40,000 (20 species).
 pub const HEAVY_LEAVES: usize = 50_000;
+/// Bases in all the sequences of a motif search: what the Motif Finder window takes on this computer. Past it the search is for the
+/// workstation (the search itself is cut down to about five seconds of work, so it is memory that a bigger set needs).
+pub const HEAVY_MOTIF_BASES: usize = 300_000;
 
 /// How big a job is: the things that make it slow, counted from what a page has set up (before there is a request to
 /// count). A new kind of analysis adds the counts that make it slow.
@@ -29,6 +32,8 @@ pub struct Weight {
     pub trees: usize,
     /// Leaves in all the gene trees of a species-tree search.
     pub leaves: usize,
+    /// Bases in all the sequences of a motif search.
+    pub motif_bases: usize,
     /// The job would run on a GPU of the workstation, whatever its size.
     pub gpu: bool,
 }
@@ -90,6 +95,30 @@ impl Weight {
         }
     }
 
+    /// A domain search of `count` protein sequences of `residues` residues in all: HMMER reads the whole of Pfam for each sequence.
+    pub fn of_domains(count: usize, residues: usize) -> Weight {
+        Weight::of_sequences(count, residues)
+    }
+
+    /// A motif search over sequences of `bases` bases in all.
+    pub fn of_motifs(bases: usize) -> Weight {
+        Weight {
+            motif_bases: bases,
+            ..Weight::default()
+        }
+    }
+
+    /// A pipeline file over a folder of `files` files that hold `letters` bytes in all, whose steps ask for `bootstrap` replicates
+    /// at most: a tree is made for each file, and the bytes are counted as the letters (a name and a line end for every few
+    /// hundred letters make them a few per cent more).
+    pub fn of_flow(files: usize, letters: usize, bootstrap: usize) -> Weight {
+        Weight {
+            trees: files,
+            replicates: bootstrap,
+            ..Weight::of_sequences(0, letters)
+        }
+    }
+
     /// A job that would run on a GPU of the workstation, whatever its size (a structure the workstation folds itself).
     pub fn on_gpu() -> Weight {
         Weight {
@@ -107,6 +136,7 @@ impl Weight {
             || self.generations > HEAVY_GENERATIONS
             || self.trees > HEAVY_TREES
             || self.leaves > HEAVY_LEAVES
+            || self.motif_bases > HEAVY_MOTIF_BASES
     }
 }
 
@@ -137,6 +167,10 @@ mod tests {
         };
         assert!(!bayes(1_000_000, HEAVY_GENERATIONS).is_heavy());
         assert!(bayes(0, HEAVY_GENERATIONS + 1).is_heavy());
+        // a motif search is big once it passes what the Motif Finder takes on this computer, and counts nothing else
+        assert!(!Weight::of_motifs(HEAVY_MOTIF_BASES).is_heavy());
+        assert!(Weight::of_motifs(HEAVY_MOTIF_BASES + 1).is_heavy());
+        assert_eq!(Weight::of_motifs(7).motif_bases, 7);
         // a pipeline bootstraps only when it builds a tree
         let mut choice = Choice {
             align: true,
@@ -153,6 +187,15 @@ mod tests {
         assert!(!Weight::of_trees(&";".repeat(HEAVY_TREES), false).is_heavy());
         assert!(Weight::of_trees(&";".repeat(HEAVY_TREES + 1), false).is_heavy());
         assert!(Weight::of_trees("(A,B);", true).is_heavy() && Weight::on_gpu().is_heavy());
+    }
+
+    #[test]
+    fn a_pipeline_file_is_big_by_its_files_its_bytes_and_the_replicates_its_steps_ask_for() {
+        assert!(!Weight::of_flow(HEAVY_TREES, HEAVY_LETTERS, HEAVY_REPLICATES).is_heavy());
+        assert!(Weight::of_flow(HEAVY_TREES + 1, 0, 0).is_heavy());
+        assert!(Weight::of_flow(1, HEAVY_LETTERS + 1, 0).is_heavy());
+        assert!(Weight::of_flow(1, 0, HEAVY_REPLICATES + 1).is_heavy());
+        assert!(!Weight::of_flow(0, 0, 0).is_heavy());
     }
 
     #[test]

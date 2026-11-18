@@ -3,25 +3,35 @@
 //! and a Nextflow workflow, for running anywhere those programs are.
 
 use super::home::program_chip;
-use super::workstation::{compute_picker, ComputeView, Place};
+use super::workstation::{run_button, ComputeView, Place};
 use super::Workspace;
 use crate::pipeline::export::{write_folder, Plan, PrimerSpec};
 use crate::pipeline::steps::{fasta_text, Named, PrimerPair};
 use crate::pipeline::tools::Installed;
 use crate::pipeline::{self, Available, Choice, Outcome};
+use crate::provenance::{self, Asked, Provenance};
 use crate::remote::tasks::{Request, Response};
 use crate::remote::weight::Weight;
 use crate::seq::newick::NwTree;
 use crate::ui::app::{Action, App};
 use crate::ui::design::{self, Look, Tone};
 use crate::ui::dialog;
+use crate::ui::fonts::FontWeight;
 use crate::ui::job::{Job, Poll};
+use crate::ui::provenance as made_ui;
 use crate::ui::windows::tree::open_sequences;
 use eframe::egui::{self, RichText, ScrollArea, Ui};
 use std::time::Duration;
 
-const OPTIONS_WIDTH: f32 = 330.0;
-const RESULT_GAP: f32 = 10.0;
+pub mod flow;
+mod kept;
+mod record;
+use record::made_by;
+pub use record::{described, Kept};
+
+/// What the button that runs a pipeline says, in both modes of the page.
+const RUN: &str = "Run pipeline";
+
 /// IQ-TREE's smallest number of ultrafast bootstrap replicates.
 const BOOTSTRAP_REPLICATES: usize = 1000;
 const WORKING_REDRAW: Duration = Duration::from_millis(200);
@@ -50,6 +60,9 @@ pub enum Source {
 }
 
 pub struct PipelinesPage {
+    /// The fixed route, or a pipeline file run on a folder.
+    pub mode: flow::Mode,
+    pub flow: flow::FlowPage,
     pub source: Source,
     pub align: bool,
     pub tree: bool,
@@ -60,12 +73,20 @@ pub struct PipelinesPage {
     pub run_requested: bool,
     job: Option<Job<Result<Outcome, String>>>,
     pub outcome: Option<Outcome>,
+    /// Counted up whenever `outcome` is set (`set_outcome`): the session keeps the run, and tells by this that it is another one.
+    shown: u64,
     pub message: String,
+    /// What the run that is going was asked, with what was ticked to bring back for *Run again*.
+    asked: Option<(Asked, Kept)>,
+    /// The record of what made `outcome`.
+    pub made: Option<(Provenance, Kept)>,
 }
 
 impl Default for PipelinesPage {
     fn default() -> Self {
         PipelinesPage {
+            mode: flow::Mode::default(),
+            flow: flow::FlowPage::default(),
             source: Source::default(),
             align: true,
             tree: true,
@@ -75,14 +96,54 @@ impl Default for PipelinesPage {
             run_requested: false,
             job: None,
             outcome: None,
+            shown: 0,
             message: String::new(),
+            asked: None,
+            made: None,
         }
     }
 }
 
 impl PipelinesPage {
     pub fn is_running(&self) -> bool {
-        self.job.is_some()
+        self.job.is_some() || self.flow.is_running()
+    }
+
+    fn kept(&self) -> Kept {
+        (
+            self.source,
+            [
+                self.align,
+                self.tree,
+                self.primers,
+                self.use_installed,
+                self.bootstrap,
+            ],
+        )
+    }
+
+    fn restore(&mut self, (source, ticked): Kept) {
+        self.source = source;
+        [
+            self.align,
+            self.tree,
+            self.primers,
+            self.use_installed,
+            self.bootstrap,
+        ] = ticked;
+    }
+
+    /// Show what a run on the workstation gave, fetched from its list: what it was made from is not known here, so the
+    /// record of the run that was on the page goes.
+    pub fn show_fetched(&mut self, outcome: Outcome, note: String) {
+        self.set_outcome(Some(outcome));
+        (self.message, self.made) = (note, None);
+    }
+
+    /// Show `outcome`, or none. Every change of the run that is shown goes through here, so that it is counted.
+    fn set_outcome(&mut self, outcome: Option<Outcome>) {
+        self.outcome = outcome;
+        self.shown += 1;
     }
 
     /// The steps to run. A tree needs an alignment, so choosing a tree aligns too.
@@ -119,11 +180,15 @@ fn target_text(target: Option<(usize, usize)>) -> String {
 #[derive(Default)]
 struct Clicks {
     run: bool,
+    example: bool,
     export: bool,
+    open_sequence: bool,
     to_alignment: bool,
     to_trees: bool,
     copy_alignment: bool,
     copy_newick: bool,
+    /// What was pressed under the record of the run.
+    made: made_ui::Asks,
 }
 
 impl App {
@@ -199,6 +264,7 @@ impl App {
 
     /// Start a requested run once the programs have been looked for, and collect a finished one.
     pub(super) fn pipelines_tick(&mut self, ctx: &egui::Context) {
+        self.flow_tick(ctx);
         let p = &self.platform;
         // wait until the programs are known where the run would go
         let ready = p.pipelines.run_requested
@@ -215,8 +281,16 @@ impl App {
             Poll::Running => ctx.request_repaint_after(WORKING_REDRAW),
             Poll::Done(done) => {
                 page.job = None;
+                let asked = page.asked.take();
                 match done {
-                    Ok(outcome) => (page.message, page.outcome) = ("Done.".into(), Some(outcome)),
+                    Ok(outcome) => {
+                        page.made = asked.map(|(asked, kept)| {
+                            let (programs, seconds) = made_by(&outcome);
+                            (asked.made(programs, seconds), kept)
+                        });
+                        page.message = "Done.".into();
+                        page.set_outcome(Some(outcome));
+                    }
                     Err(why) => page.message = why,
                 }
             }
@@ -238,7 +312,8 @@ impl App {
             .place(&Weight::of_pipeline(seqs.len(), letters, &choice));
         let page = &mut self.platform.pipelines;
         page.run_requested = false;
-        page.outcome = None;
+        page.set_outcome(None);
+        page.made = None;
         if seqs.is_empty() {
             page.message =
                 "There is no sequence: open one in Sequences, or use the example.".into();
@@ -248,6 +323,17 @@ impl App {
             page.message = "Aligning needs at least two sequences.".into();
             return;
         }
+        let (inputs, parameters) = described(&seqs, target, &settings, &choice);
+        let asked = Asked {
+            analysis: "Pipeline",
+            inputs,
+            parameters,
+            ran_on: match place {
+                Place::There(_) => "the workstation",
+                Place::Here => "this computer",
+            },
+        };
+        page.asked = Some((asked, page.kept()));
         let Place::There(remote) = place else {
             page.message = "Working…".into();
             page.job = Some(Job::spawn(ctx, move || {
@@ -263,9 +349,10 @@ impl App {
             settings,
             choice,
         };
-        page.job = Some(Job::spawn(ctx, move || {
+        page.job = Some(Job::spawn_async(ctx, async move {
             remote
-                .run(&request, &label)
+                .run_async(&request, &label)
+                .await
                 .and_then(Response::into_pipeline)
         }));
     }
@@ -314,14 +401,33 @@ impl App {
     }
 
     pub(super) fn pipelines_page(&mut self, ui: &mut Ui, out: &mut Vec<Action>) {
-        let look = design::look(self.prefs.dark);
+        let look = self.prefs.look();
         let listing = self.pipeline_listing();
         let (open, target) = (self.docs.len(), self.pipeline_target());
         // where a run with the steps as ticked would go, and so whose programs it would use
         let weight = self.pipeline_weight(&listing);
         let programs = self.platform.programs_at(&self.platform.place(&weight));
         let view = self.platform.workstation.view(&weight);
+        let flow_view = self
+            .platform
+            .workstation
+            .view(&self.platform.pipelines.flow.weight());
         let mut c = Clicks::default();
+        let mut flow_clicks = flow::FlowClicks::default();
+        // the sequences and the settings as they are, for the record of the run to say what has changed since: asked only
+        // while the record is open
+        let (docs, primer_settings) = (&self.docs, &self.p3_win.settings);
+        let (source, choice) = (
+            self.platform.pipelines.source,
+            self.platform.pipelines.choice(),
+        );
+        let now = move || {
+            let seqs = match source {
+                Source::Open => open_sequences(docs),
+                Source::Example => example_sequences(),
+            };
+            described(&seqs, target, primer_settings, &choice)
+        };
         let page = &mut self.platform.pipelines;
         let input = Input {
             listing: &listing,
@@ -337,38 +443,54 @@ impl App {
                 &look,
                 "Pipelines",
                 "Align, build a tree and pick primers in one run, or export the same steps as a workflow",
-                |_| {},
+                |ui| {
+                    // a browser has no folders, so there the page has only its fixed route. The header is filled from
+                    // the right: the mode that is named last is the first that is read
+                    if !dialog::IN_BROWSER {
+                        ui.selectable_value(&mut page.mode, flow::Mode::File, "Pipeline file");
+                        ui.selectable_value(&mut page.mode, flow::Mode::Route, "Fixed route");
+                    }
+                },
             );
-            egui::Panel::left("pipelines_options")
-                .exact_size(OPTIONS_WIDTH)
-                .resizable(false)
-                .frame(egui::Frame::new())
-                .show(ui, |ui| {
-                    ScrollArea::vertical()
-                        .auto_shrink([false, false])
-                        .show(ui, |ui| {
-                            design::card(ui, &look, |ui| {
-                                options_panel(ui, &look, page, &input, &mut c);
-                            });
-                        });
-                });
-            egui::CentralPanel::default()
-                .frame(egui::Frame::new().inner_margin(egui::Margin {
-                    left: design::PAGE_MARGIN,
-                    ..egui::Margin::ZERO
-                }))
-                .show(ui, |ui| results(ui, &look, page, &mut c));
+            design::controls_panel(ui, &look, "pipelines_options", |ui| match page.mode {
+                flow::Mode::Route => options_panel(ui, &look, page, &input, &mut c),
+                flow::Mode::File => {
+                    flow::options(ui, &look, &mut page.flow, flow_view, &mut flow_clicks);
+                }
+            });
+            design::results_area(ui, |ui| match page.mode {
+                flow::Mode::Route => results(ui, &look, page, now, &mut c),
+                flow::Mode::File => flow::results(ui, &look, &page.flow, &mut flow_clicks),
+            });
         });
+        self.apply_flow_clicks(flow_clicks, ui.ctx(), out);
         self.apply_pipeline_clicks(c, ui.ctx(), out);
     }
 
     fn apply_pipeline_clicks(&mut self, c: Clicks, ctx: &egui::Context, out: &mut Vec<Action>) {
+        if c.example {
+            out.push(Action::Example(Workspace::Pipelines));
+        }
+        if c.open_sequence {
+            out.push(Action::Go(Workspace::Sequences));
+        }
         if c.run {
             self.platform.pipelines.run_requested = true;
         }
         if c.export {
             self.export_pipeline();
         }
+        let page = &mut self.platform.pipelines;
+        if let (true, Some((made, _))) = (c.made.copy, &page.made) {
+            ctx.copy_text(made.to_text());
+            page.message = "Copied the record of the run.".into();
+        }
+        if let (true, Some(kept)) = (c.made.again, page.made.as_ref().map(|(_, kept)| *kept)) {
+            // with what the run that is shown was ticked with, on the sequences as they are now
+            page.restore(kept);
+            page.run_requested = true;
+        }
+        self.checks_win.open |= c.made.checks;
         let Some(done) = &self.platform.pipelines.outcome else {
             return;
         };
@@ -398,8 +520,9 @@ impl App {
                 .and_then(|t| NwTree::parse_all(&t.newick).ok())
                 .and_then(|trees| trees.first().map(NwTree::to_node));
             if let Some(node) = parsed {
-                self.tree_win.details = done.log.clone();
+                let log = done.log.clone();
                 self.show_tree(node, "The tree of the Pipelines run.");
+                self.tree_win.details = log;
                 out.push(Action::Go(Workspace::Trees));
             }
         }
@@ -486,7 +609,6 @@ fn options_panel(
     }
 
     design::section(ui, look, "Programs");
-    compute_picker(ui, look, input.view);
     ui.horizontal_wrapped(|ui| {
         if !input.known {
             design::chip(ui, look, "Looking for installed programs…", Tone::Neutral);
@@ -500,17 +622,8 @@ fn options_panel(
         .on_hover_text("When off, the built-in methods are used even where a program is installed");
     ui.checkbox(&mut page.bootstrap, "Ultrafast bootstrap (IQ-TREE)");
 
-    ui.add_space(8.0);
-    ui.horizontal(|ui| {
-        let ready = input.known && !page.is_running();
-        c.run = ui
-            .add_enabled_ui(ready, |ui| design::primary_button(ui, look, "Run pipeline"))
-            .inner
-            .clicked();
-        if page.is_running() {
-            ui.spinner();
-        }
-    });
+    let state = (input.known, page.is_running());
+    c.run = run_button(ui, look, input.view, RUN, state);
     // right under the button, where a failure (the workstation cannot be reached, say) is seen
     if !page.message.is_empty() {
         ui.label(RichText::new(&page.message).size(12.0).color(look.dim));
@@ -535,32 +648,31 @@ fn options_panel(
 
 /// A result's card: a title, and what the step made.
 fn result_card(ui: &mut Ui, look: &Look, title: &str, add: impl FnOnce(&mut Ui)) {
-    design::card(ui, look, |ui| {
-        ui.set_min_width(ui.available_width());
-        ui.label(RichText::new(title).size(15.0).strong().color(look.text));
-        ui.add_space(4.0);
-        add(ui);
-    });
-    ui.add_space(RESULT_GAP);
+    design::titled_card(ui, look, title, add);
+    ui.add_space(design::CARD_GAP);
 }
 
-fn results(ui: &mut Ui, look: &Look, page: &PipelinesPage, c: &mut Clicks) {
+fn results(
+    ui: &mut Ui,
+    look: &Look,
+    page: &PipelinesPage,
+    now: impl FnOnce() -> (Vec<provenance::Input>, Vec<(String, String)>),
+    c: &mut Clicks,
+) {
     let Some(done) = &page.outcome else {
-        design::card(ui, look, |ui| {
-            ui.label(
-                RichText::new("No run yet")
-                    .size(17.0)
-                    .strong()
-                    .color(look.text),
-            );
-            ui.label(
-                RichText::new(
-                    "Choose the sequences and the steps on the left and press Run pipeline. The alignment, the tree and the \
-                     primer pairs appear here, each with a button that opens it in its own workspace.",
-                )
-                .color(look.dim),
-            );
-        });
+        let pick = design::empty_state(
+            ui,
+            look,
+            "No run yet",
+            "Choose the sequences and the steps on the left and press Run pipeline. The alignment, the tree and the \
+             primer pairs appear here, each with a button that opens it in its own workspace.",
+            &["Try the example", "Open a sequence"],
+        );
+        match pick {
+            Some(0) => c.example = true,
+            Some(1) => c.open_sequence = true,
+            _ => {}
+        }
         return;
     };
     ScrollArea::vertical()
@@ -569,6 +681,9 @@ fn results(ui: &mut Ui, look: &Look, page: &PipelinesPage, c: &mut Clicks) {
             result_card(ui, look, "What ran", |ui| {
                 for line in &done.log {
                     ui.label(RichText::new(line).color(look.dim));
+                }
+                if let Some((made, _)) = &page.made {
+                    c.made = made_ui::section(ui, look, made, now, !page.is_running());
                 }
             });
             if let Some(a) = &done.aligned {
@@ -661,7 +776,7 @@ fn primer_rows(ui: &mut Ui, look: &Look, pairs: &[PrimerPair]) {
                 "Product",
                 "Penalty",
             ] {
-                ui.label(RichText::new(h).size(11.5).strong().color(look.dim));
+                ui.label(RichText::new(h).size(11.5).semibold().color(look.dim));
             }
             ui.end_row();
             for (k, p) in pairs.iter().enumerate() {
@@ -678,59 +793,4 @@ fn primer_rows(ui: &mut Ui, look: &Look, pairs: &[PrimerPair]) {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn choosing_a_tree_aligns_first_and_the_bootstrap_has_its_minimum_size() {
-        let mut page = PipelinesPage {
-            align: false,
-            ..PipelinesPage::default()
-        };
-        let c = page.choice();
-        assert!(c.align && c.tree && c.primers && c.use_installed);
-        assert_eq!(c.bootstrap, 0);
-        page.tree = false;
-        page.bootstrap = true;
-        let c = page.choice();
-        assert!(!c.align && !c.tree);
-        assert_eq!(c.bootstrap, BOOTSTRAP_REPLICATES);
-    }
-
-    #[test]
-    fn the_target_reads_in_one_based_bases() {
-        assert_eq!(target_text(None), "anywhere along it");
-        assert_eq!(target_text(Some((200, 60))), "around bases 201 to 260");
-    }
-
-    #[test]
-    fn the_example_has_six_isolates_longer_than_the_primers_target() {
-        let seqs = example_sequences();
-        assert_eq!(seqs.len(), 6);
-        let (start, length) = EXAMPLE_TARGET;
-        assert!(seqs.iter().all(|(_, bases)| bases.len() >= start + length));
-    }
-
-    #[test]
-    fn the_example_runs_through_all_three_steps_with_the_built_in_methods() {
-        let page = PipelinesPage {
-            use_installed: false,
-            ..PipelinesPage::default()
-        };
-        let seqs = example_sequences();
-        let settings = crate::seq::primer3::Settings::default();
-        let done = pipeline::run(
-            &seqs,
-            Some(EXAMPLE_TARGET),
-            &settings,
-            &page.choice(),
-            &Available::default(),
-        )
-        .expect("a run");
-        assert_eq!(done.log.len(), 3);
-        assert_eq!(done.aligned.as_ref().expect("an alignment").rows.len(), 6);
-        let newick = &done.tree.as_ref().expect("a tree").newick;
-        assert_eq!(NwTree::parse_all(newick).expect("a tree").len(), 1);
-        assert!(!done.primers.as_ref().expect("primers").pairs.is_empty());
-    }
-}
+mod tests;

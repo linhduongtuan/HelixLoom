@@ -5,10 +5,15 @@
 
 use super::bits::Bits;
 use super::complete::{self, Space};
+use super::family::Families;
 use super::genes::Genes;
+use super::pscore;
 use super::species::Sp;
 use super::weight::tripartition;
+use super::wgenes::Weights;
+use super::wscore;
 use crate::seq::par::par_map;
+use std::ops::Add;
 
 /// The most taxa the exact search takes: it looks at every group of taxa, which doubles with each taxon.
 pub const EXACT_LIMIT: usize = 12;
@@ -16,7 +21,35 @@ pub const EXACT_LIMIT: usize = 12;
 const POLISH_SWEEPS: usize = 30;
 const POLISH_BUDGET: u64 = 20_000_000_000;
 
+/// What the programme adds up: the quartets that a split agrees on (whole numbers, exactly) or their weights.
+pub trait Total: Copy + PartialOrd + Add<Output = Self> + Send {
+    const ZERO: Self;
+    /// Half of a sum in which every quartet was counted from both of its nodes.
+    fn half(self) -> Self;
+}
+
+impl Total for u64 {
+    const ZERO: u64 = 0;
+    fn half(self) -> u64 {
+        self / 2
+    }
+}
+
+impl Total for f64 {
+    const ZERO: f64 = 0.0;
+    fn half(self) -> f64 {
+        self / 2.0
+    }
+}
+
+/// How many times as much work one weighted count is as an unweighted one: it walks every branch of the gene tree in both
+/// directions for each of the three clusters. Measured at 2.2 on random binary gene trees of 25 species in 200, 40 in 400 and
+/// 60 in 600 (`weighted_count_cost` in `wtests.rs`), taken as 3.
+pub const WEIGHTED_WORDS: u64 = 3;
+
 pub struct Options {
+    /// How the gene trees' quartets are weighted.
+    pub weights: Weights,
     /// Look at every group of taxa, not only the ones in the enriched set of the gene trees' splits.
     pub exact: bool,
     /// 0: the gene trees' (completed) splits alone; 1: with the ways to resolve polytomies.
@@ -30,7 +63,10 @@ pub struct Options {
 
 pub struct Found {
     pub sp: Sp,
+    /// The quartets of the tree that the gene trees share, each counted one, whatever the weights.
     pub score: u64,
+    /// The weights of those quartets, when the run was weighted.
+    pub weighted: Option<f64>,
     /// How many clusters the programme could choose from.
     pub clusters: usize,
     /// Whether the gene trees that lack taxa were completed (not without a guide tree, nor in the exact search, which looks at
@@ -65,12 +101,65 @@ pub fn search(genes: &Genes, o: &Options) -> Result<Found, String> {
     } else {
         complete::build(genes, o.root, o.extra, o.polylimit)?
     };
-    let sp = best_tree(genes, &space, o.root)?;
-    let sp = if o.polish { polish(sp, genes) } else { sp };
+    let (sp, weighted) = if o.weights == Weights::None {
+        let sp = solve(genes, &space, o, |a, b| tripartition(&genes.genes, a, b), 1)?;
+        (sp, None)
+    } else {
+        let w = o.weights;
+        let sp = solve(
+            genes,
+            &space,
+            o,
+            |a, b| wscore::tripartition(&genes.wtrees, a, b, w),
+            WEIGHTED_WORDS,
+        )?;
+        let score = sp.score_with(|a, b| wscore::tripartition(&genes.wtrees, a, b, w));
+        (sp, Some(score))
+    };
     let score = sp.score(genes);
     Ok(Found {
         sp,
         score,
+        weighted,
+        clusters: space.sets.len(),
+        completed,
+    })
+}
+
+/// The best tree of the space and, after it, the polish, with `tri` counting what a split agrees on; `words` is how much
+/// work one count is (see `WEIGHTED_WORDS`).
+fn solve<T: Total>(
+    genes: &Genes,
+    space: &Space,
+    o: &Options,
+    tri: impl Fn(&Bits, &Bits) -> T + Sync,
+    words: u64,
+) -> Result<Sp, String> {
+    let sp = best_tree(genes, space, o.root, &tri)?;
+    Ok(if o.polish {
+        polish_with(sp, genes, &tri, words)
+    } else {
+        sp
+    })
+}
+
+/// The search for gene family trees (`family.rs`): the same programme over the groups of species of the single-copy trees
+/// sampled from the families, with the ASTRAL-Pro score of the families.
+pub fn search_families(f: &Families, o: &Options) -> Result<Found, String> {
+    let n = f.taxa.len();
+    let (space, completed) = if o.exact {
+        (exact_space(n, o.root)?, true)
+    } else {
+        complete::build(&f.sample, o.root, o.extra, o.polylimit)?
+    };
+    let tri = |a: &Bits, b: &Bits| pscore::tripartition(&f.nodes, a, b);
+    let sp = solve(&f.sample, &space, o, tri, 1)?;
+    // a class is counted once, at one of the two nodes of the species tree that see it: no half
+    let score = sp.sum_with(tri);
+    Ok(Found {
+        sp,
+        score,
+        weighted: None,
         clusters: space.sets.len(),
         completed,
     })
@@ -102,17 +191,20 @@ fn splits(space: &Space) -> Vec<(usize, usize, usize)> {
     out
 }
 
-fn best_tree(genes: &Genes, space: &Space, root: usize) -> Result<Sp, String> {
+fn best_tree<T: Total>(
+    genes: &Genes,
+    space: &Space,
+    root: usize,
+    tri: &(impl Fn(&Bits, &Bits) -> T + Sync),
+) -> Result<Sp, String> {
     let n = genes.taxa.len();
     let triples = splits(space);
-    let weights = par_map(&triples, |&(_, a, b)| {
-        tripartition(&genes.genes, &space.sets[a], &space.sets[b])
-    });
+    let weights = par_map(&triples, |&(_, a, b)| tri(&space.sets[a], &space.sets[b]));
     // best[v]: the highest sum of weights below the cluster, and the split that gives it
-    let mut best: Vec<Option<(u64, usize, usize)>> = space
+    let mut best: Vec<Option<(T, usize, usize)>> = space
         .sets
         .iter()
-        .map(|s| (s.count() == 1).then_some((0, 0, 0)))
+        .map(|s| (s.count() == 1).then_some((T::ZERO, 0, 0)))
         .collect();
     for (&(v, a, b), &w) in triples.iter().zip(&weights) {
         let (Some((x, _, _)), Some((y, _, _))) = (best[a], best[b]) else {
@@ -132,9 +224,9 @@ fn best_tree(genes: &Genes, space: &Space, root: usize) -> Result<Sp, String> {
 }
 
 /// The tree that the programme's choices describe, from the cluster `top` down.
-fn rebuild(
+fn rebuild<T: Total>(
     space: &Space,
-    best: &[Option<(u64, usize, usize)>],
+    best: &[Option<(T, usize, usize)>],
     top: usize,
     n: usize,
     root: usize,
@@ -160,12 +252,27 @@ fn rebuild(
 
 /// Swap neighbouring groups while the score rises: at a branch with the groups `l r | s o`, the other two ways to pair them
 /// change only the weights of the two nodes at its ends.
-pub fn polish(mut sp: Sp, genes: &Genes) -> Sp {
-    let weight = |a: &Bits, b: &Bits| tripartition(&genes.genes, a, b);
-    for _ in 0..sweeps_within_budget(&sp, genes) {
+#[cfg(test)]
+pub fn polish(sp: Sp, genes: &Genes) -> Sp {
+    polish_with(
+        sp,
+        genes,
+        &|a: &Bits, b: &Bits| tripartition(&genes.genes, a, b),
+        1,
+    )
+}
+
+/// `polish` with the weights of splits that `weight` gives; `words` is how much work one is (see `WEIGHTED_WORDS`).
+fn polish_with<T: Total>(
+    mut sp: Sp,
+    genes: &Genes,
+    weight: &impl Fn(&Bits, &Bits) -> T,
+    words: u64,
+) -> Sp {
+    for _ in 0..sweeps_within_budget(&sp, genes, words) {
         let mut changed = false;
         for v in 0..sp.nodes.len() {
-            if let Some(swap) = better_swap(&sp, v, &weight) {
+            if let Some(swap) = better_swap(&sp, v, weight) {
                 apply(&mut sp, &swap);
                 changed = true;
             }
@@ -180,9 +287,13 @@ pub fn polish(mut sp: Sp, genes: &Genes) -> Sp {
 /// How many sweeps of the polish its budget allows: every node is looked at with six weights, and each weight goes over every
 /// node of every gene tree, so a sweep over thousands of species and many genes takes minutes for what is a small gain (the
 /// programme alone reaches ASTRAL's scores). Small inputs get all `POLISH_SWEEPS`; very large ones get fewer, or none.
-fn sweeps_within_budget(sp: &Sp, genes: &Genes) -> usize {
+fn sweeps_within_budget(sp: &Sp, genes: &Genes, words: u64) -> usize {
     let gene_nodes: u64 = genes.genes.iter().map(|g| g.nodes.len() as u64).sum();
-    sweeps_for(sp.nodes.len() as u64, gene_nodes, sp.n.div_ceil(64) as u64)
+    sweeps_for(
+        sp.nodes.len() as u64,
+        gene_nodes,
+        sp.n.div_ceil(64) as u64 * words,
+    )
 }
 
 /// The sweeps the budget allows for a tree of `nodes` nodes, genes with `gene_nodes` nodes that join three branches or more
@@ -204,7 +315,7 @@ struct Swap {
 }
 
 /// The swap at the branch above `v` that raises the score most, if any does.
-fn better_swap(sp: &Sp, v: usize, weight: &impl Fn(&Bits, &Bits) -> u64) -> Option<Swap> {
+fn better_swap<T: Total>(sp: &Sp, v: usize, weight: &impl Fn(&Bits, &Bits) -> T) -> Option<Swap> {
     let (l, r) = sp.nodes[v].kids?;
     let u = sp.nodes[v].parent?;
     let (x, y) = sp.nodes[u].kids?;
@@ -216,9 +327,10 @@ fn better_swap(sp: &Sp, v: usize, weight: &impl Fn(&Bits, &Bits) -> u64) -> Opti
         let joined = set(b).union(set(s));
         (weight(set(b), set(s)) + weight(&joined, set(a)), a, b)
     };
+    // (`max_by` takes the later one when they are as good as each other, as `max_by_key` did)
     let (gain, out, stay) = [try_swap(l, r), try_swap(r, l)]
         .into_iter()
-        .max_by_key(|t| t.0)?;
+        .max_by(|x, y| x.0.partial_cmp(&y.0).unwrap_or(std::cmp::Ordering::Equal))?;
     (gain > now).then_some(Swap { v, u, s, stay, out })
 }
 

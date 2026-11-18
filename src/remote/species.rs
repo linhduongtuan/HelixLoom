@@ -5,7 +5,9 @@
 use super::tasks::{bit, flag, lines, number, MAX_TREES};
 use super::wire::{meta, Container};
 use super::{clean_line, one_line, MAX_TEXT};
-use crate::seq::astral::{self, BranchOut, Options};
+use crate::seq::astral::bootstrap::{DEFAULT_SEED, MAX_REPLICATES};
+use crate::seq::astral::polytomy::MIN_GENES;
+use crate::seq::astral::{self, BootInfo, BranchOut, Options, Polytomy, Resample, Weights};
 use std::collections::HashMap;
 use web_time::Instant;
 
@@ -21,6 +23,20 @@ pub struct SpeciesJob {
     pub genes: String,
     /// A binary species tree to score and annotate; empty to search.
     pub score_tree: String,
+    /// How the quartets of the gene trees are weighted. A server from before the weights ignores it, which is why the result
+    /// says how it was weighted.
+    pub weights: Weights,
+    /// The gene trees are gene family trees (ASTRAL-Pro); a server from before them ignores this too, and says in the result.
+    pub families: bool,
+    /// Bootstrap replicates (none when 0), the seed that draws them, and what they resample; a server from before the bootstrap
+    /// ignores them too, and says in the result.
+    pub replicates: usize,
+    pub seed: u64,
+    pub resample: Resample,
+    /// For resampling the sites: the bootstrap trees of each gene tree of the input, one text for each, in its order.
+    pub site_trees: Vec<String>,
+    /// Test every branch for being a polytomy; a server from before the test ignores this, and says in the result.
+    pub polytomy: bool,
     pub exact: bool,
     pub extra: u8,
     pub polish: bool,
@@ -37,6 +53,13 @@ impl SpeciesJob {
         SpeciesJob {
             genes: genes.to_string(),
             score_tree: String::new(),
+            weights: o.weights,
+            families: o.families,
+            replicates: o.bootstrap.replicates,
+            seed: o.bootstrap.seed,
+            resample: o.bootstrap.resample,
+            site_trees: Vec::new(),
+            polytomy: o.polytomy,
             exact: o.exact,
             extra: o.extra,
             polish: o.polish,
@@ -48,6 +71,15 @@ impl SpeciesJob {
 
     pub fn options(&self) -> Options {
         Options {
+            bootstrap: astral::Boot {
+                replicates: self.replicates,
+                seed: self.seed,
+                resample: self.resample,
+            },
+            site_trees: self.site_trees.clone(),
+            families: self.families,
+            weights: self.weights,
+            polytomy: self.polytomy,
             exact: self.exact,
             extra: self.extra,
             polish: self.polish,
@@ -63,6 +95,12 @@ impl SpeciesJob {
             .with(
                 "meta",
                 lines(&[
+                    ("weights", self.weights.name().to_string()),
+                    ("families", bit(self.families)),
+                    ("replicates", self.replicates.to_string()),
+                    ("seed", self.seed.to_string()),
+                    ("resample", self.resample.name().to_string()),
+                    ("polytomy", bit(self.polytomy)),
                     ("exact", bit(self.exact)),
                     ("extra", self.extra.to_string()),
                     ("polish", bit(self.polish)),
@@ -73,6 +111,24 @@ impl SpeciesJob {
             )
             .with("genes", self.genes.clone())
             .with("species", self.score_tree.clone())
+            .with(
+                "site_sizes",
+                self.site_trees
+                    .iter()
+                    .map(|t| format!("{}\n", t.len()))
+                    .collect::<String>(),
+            )
+            .with("site_trees", self.site_trees.concat())
+    }
+
+    /// What this job asks of the server beyond the search itself, to check that the answer did it.
+    pub fn asked(&self) -> Asked {
+        Asked {
+            weights: self.weights,
+            families: self.families,
+            bootstrap: (self.replicates > 0).then_some((self.resample, self.replicates)),
+            polytomy: self.polytomy,
+        }
     }
 
     /// A request comes from the network: the gene trees are counted by their semicolons and their leaves by their commas (no
@@ -91,19 +147,63 @@ impl SpeciesJob {
                 "A job may hold at most {MAX_LEAVES} leaves in all its gene trees; this one has about {leaves}."
             ));
         }
+        let site_trees = site_trees(c)?;
+        let leaves = leaves
+            + site_trees
+                .iter()
+                .map(|t| t.matches([',', ';']).count())
+                .sum::<usize>();
+        if leaves > MAX_LEAVES {
+            return Err(format!(
+                "A job may hold at most {MAX_LEAVES} leaves in all its trees, the bootstrap trees too; this one has about {leaves}."
+            ));
+        }
         let score_tree = c.text("species").unwrap_or_default();
         if score_tree.matches(',').count() > MAX_TAXA {
             return Err(format!(
                 "The tree to score may have at most {MAX_TAXA} species."
             ));
         }
+        // a message that says nothing of the weights (from a program from before them) asks for none
+        let weights = match m.get("weights") {
+            None => Weights::None,
+            Some(w) => Weights::parse(w)
+                .ok_or("The message's weights are not none, support, length or hybrid.")?,
+        };
         let (extra, lambda): (u8, f64) = (number(m, "extra")?, number(m, "lambda")?);
         if extra > 1 || !(lambda >= 0.0 && lambda.is_finite()) {
             return Err("The message's search settings are out of range.".into());
         }
+        // a message that says nothing of the bootstrap (from a program from before it) asks for none
+        let replicates: usize = match m.get("replicates") {
+            None => 0,
+            Some(_) => number(m, "replicates")?,
+        };
+        if replicates > MAX_REPLICATES {
+            return Err(format!(
+                "A job may ask for at most {MAX_REPLICATES} bootstrap replicates; this one asks for {replicates}."
+            ));
+        }
+        let seed: u64 = match m.get("seed") {
+            None => DEFAULT_SEED,
+            Some(_) => number(m, "seed")?,
+        };
+        let resample = match m.get("resample") {
+            None => Resample::Genes,
+            Some(r) => {
+                Resample::parse(r).ok_or("The message's resampling is not genes, sites or both.")?
+            }
+        };
         Ok(SpeciesJob {
             genes: genes.to_string(),
             score_tree: score_tree.to_string(),
+            weights,
+            families: flag(m, "families"),
+            replicates,
+            seed,
+            resample,
+            site_trees,
+            polytomy: flag(m, "polytomy"),
             exact: flag(m, "exact"),
             extra,
             polish: flag(m, "polish"),
@@ -114,11 +214,106 @@ impl SpeciesJob {
     }
 }
 
+/// The most bytes of bootstrap trees a request may carry.
+const MAX_SITE_BYTES: usize = 256 << 20;
+
+/// The bootstrap trees of a request: the texts of the genes, cut out by their sizes.
+fn site_trees(c: &Container) -> Result<Vec<String>, String> {
+    let (sizes, body) = (
+        c.text("site_sizes").unwrap_or_default(),
+        c.text("site_trees").unwrap_or_default(),
+    );
+    let bad = |why: &str| format!("The bootstrap trees in the message do not add up: {why}.");
+    if body.len() > MAX_SITE_BYTES {
+        return Err(format!(
+            "A job may carry at most {} MB of bootstrap trees.",
+            MAX_SITE_BYTES >> 20
+        ));
+    }
+    let sizes: Vec<&str> = sizes.lines().collect();
+    if sizes.len() > MAX_TREES {
+        return Err(format!(
+            "A job may hold the bootstrap trees of at most {MAX_TREES} genes; this one has {}.",
+            sizes.len()
+        ));
+    }
+    let mut start = 0usize;
+    let mut texts = Vec::with_capacity(sizes.len());
+    for size in sizes {
+        let size: usize = size.parse().map_err(|_| bad("a size is not a number"))?;
+        let end = start
+            .checked_add(size)
+            .ok_or_else(|| bad("a size is too large"))?;
+        let text = body
+            .get(start..end)
+            .ok_or_else(|| bad("a size runs past the end or cuts a character"))?;
+        texts.push(text.to_string());
+        start = end;
+    }
+    if start != body.len() {
+        return Err(bad("bytes are left over"));
+    }
+    Ok(texts)
+}
+
+/// What a job asked of the server beyond the search itself.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Asked {
+    pub weights: Weights,
+    pub families: bool,
+    pub bootstrap: Option<(Resample, usize)>,
+    pub polytomy: bool,
+}
+
+/// The result of a job that asked for these things, or why it cannot be used: a server from before the weights, the gene
+/// families, the bootstrap and the polytomy test ignores what it does not know and says nothing of it, so its answer was not
+/// weighted, not read as gene families, not bootstrapped and not tested, whatever was asked, and must not be shown as if it
+/// were.
+pub fn as_asked(asked: Asked, result: SpeciesResult) -> Result<SpeciesResult, String> {
+    let Asked {
+        weights,
+        families,
+        bootstrap,
+        polytomy,
+    } = asked;
+    if result.polytomy != polytomy {
+        return Err("The workstation did not test the branches for polytomies as asked: it is probably running an older version of the program.".into());
+    }
+    if result.bootstrap.map(|b| (b.resample, b.asked)) != bootstrap {
+        return Err("The workstation did not do the bootstrap as asked: it is probably running an older version of the program.".into());
+    }
+    if result.weights != weights {
+        return Err(format!(
+            "The workstation answered without the weights that were asked for (\"{}\", not \"{}\"): it is probably running an older version of the program.",
+            result.weights.name(),
+            weights.name()
+        ));
+    }
+    if result.families != families {
+        return Err(format!(
+            "The workstation did not read the trees as {} as asked: it is probably running an older version of the program.",
+            if families { "gene families" } else { "single-copy trees" }
+        ));
+    }
+    Ok(result)
+}
+
 /// What a run found.
 #[derive(Clone, Debug, PartialEq)]
 pub struct SpeciesResult {
     pub newick: String,
+    /// The quartets of the tree that the gene trees share, each counted one.
     pub score: u64,
+    /// How the quartets were weighted, and the weights of those that the tree shares added up (when they were).
+    pub weights: Weights,
+    pub weighted_score: Option<f64>,
+    /// The trees were read as gene families (ASTRAL-Pro): the score counts classes of quartets and no branch has a support.
+    pub families: bool,
+    /// What the bootstrap did, when one was asked for.
+    pub bootstrap: Option<BootInfo>,
+    /// The branches were tested for being polytomies (those with enough gene trees have the result in their row).
+    pub polytomy: bool,
+    /// The score (the weighted one in a weighted run) as a share of the quartets the gene trees resolve.
     pub normalized: f64,
     pub taxa: Vec<String>,
     pub genes: usize,
@@ -177,6 +372,11 @@ pub fn run(job: &SpeciesJob) -> Result<SpeciesResult, String> {
     Ok(SpeciesResult {
         newick: out.newick,
         score: out.score,
+        weights: out.weights,
+        weighted_score: out.weighted_score,
+        families: out.families,
+        bootstrap: out.bootstrap,
+        polytomy: out.polytomy,
         normalized: out.normalized,
         taxa: out.taxa,
         genes: out.genes,
@@ -221,7 +421,17 @@ impl SpeciesResult {
                     let values = [b.f, b.q, b.pp].concat();
                     let all = [values, vec![b.en, b.length]].concat();
                     let ids: Vec<String> = side.iter().map(usize::to_string).collect();
-                    format!("{}\t{}\t{}\n", ids.join(","), b.quartets, numbers(&all))
+                    let boot = b.bootstrap.map(|x| x.to_string()).unwrap_or_default();
+                    let test = b
+                        .polytomy
+                        .map(|t| format!("{},{},{}", t.genes, t.chi2, t.p))
+                        .unwrap_or_default();
+                    format!(
+                        "{}\t{}\t{}\t{boot}\t{test}\n",
+                        ids.join(","),
+                        b.quartets,
+                        numbers(&all)
+                    )
                 })
             })
             .collect()
@@ -235,7 +445,40 @@ impl SpeciesResult {
                 "meta",
                 lines(&[
                     ("score", self.score.to_string()),
+                    ("weights", self.weights.name().to_string()),
+                    ("families", bit(self.families)),
+                    ("polytomy", bit(self.polytomy)),
+                    (
+                        "weighted_score",
+                        self.weighted_score
+                            .map(|w| w.to_string())
+                            .unwrap_or_default(),
+                    ),
                     ("normalized", self.normalized.to_string()),
+                    (
+                        "boot_resample",
+                        self.bootstrap
+                            .map(|b| b.resample.name().to_string())
+                            .unwrap_or_default(),
+                    ),
+                    (
+                        "boot_asked",
+                        self.bootstrap
+                            .map(|b| b.asked.to_string())
+                            .unwrap_or_default(),
+                    ),
+                    (
+                        "boot_done",
+                        self.bootstrap
+                            .map(|b| b.done.to_string())
+                            .unwrap_or_default(),
+                    ),
+                    (
+                        "boot_failed",
+                        self.bootstrap
+                            .map(|b| b.failed.to_string())
+                            .unwrap_or_default(),
+                    ),
                     ("genes", self.genes.to_string()),
                     ("skipped", self.skipped.to_string()),
                     (
@@ -273,11 +516,70 @@ impl SpeciesResult {
         if branch_count < branches.len() || branch_count > taxa.len() {
             return Err("The result counts its branches wrongly.".into());
         }
+        // a result that says nothing of the test (from a program from before it) did none, and a test cannot have counted
+        // more gene trees than the result has
+        let genes: usize = number(&m, "genes")?;
+        let polytomy = flag(&m, "polytomy");
+        if branches
+            .iter()
+            .any(|b| b.polytomy.is_some_and(|t| !polytomy || t.genes > genes))
+        {
+            return Err(
+                "The result's polytomy tests do not agree with what it says it did.".into(),
+            );
+        }
+        // a result that says nothing of the weights (from a program from before them) was not weighted
+        let weights = match m.get("weights") {
+            None => Weights::None,
+            Some(w) => Weights::parse(w)
+                .ok_or("The result's weights are not none, support, length or hybrid.")?,
+        };
+        let weighted_score = match (weights, m.get("weighted_score").filter(|v| !v.is_empty())) {
+            (Weights::None, None) => None,
+            (w, Some(v)) if w != Weights::None => Some(
+                v.parse::<f64>()
+                    .ok()
+                    .filter(|x| x.is_finite() && *x >= 0.0)
+                    .ok_or("The result's weighted score is not a number.")?,
+            ),
+            _ => return Err("The result's weights and its weighted score do not agree.".into()),
+        };
+        // a result that says nothing of a bootstrap (from a program from before it) had none
+        let bootstrap = match m.get("boot_asked").filter(|v| !v.is_empty()) {
+            None => None,
+            Some(_) => {
+                let (asked, done, failed): (usize, usize, usize) = (
+                    number(&m, "boot_asked")?,
+                    number(&m, "boot_done")?,
+                    number(&m, "boot_failed")?,
+                );
+                let resample = Resample::parse(m.get("boot_resample").copied().unwrap_or_default())
+                    .ok_or("The result's resampling is not genes, sites or both.")?;
+                if asked == 0
+                    || asked > MAX_REPLICATES
+                    || done == 0
+                    || done.checked_add(failed) != Some(asked)
+                {
+                    return Err("The result counts its bootstrap replicates wrongly.".into());
+                }
+                Some(BootInfo {
+                    resample,
+                    asked,
+                    done,
+                    failed,
+                })
+            }
+        };
         Ok(SpeciesResult {
             newick: c.require("newick")?.to_string(),
             score: number(&m, "score")?,
+            weights,
+            weighted_score,
+            families: flag(&m, "families"),
+            bootstrap,
+            polytomy,
             normalized: number(&m, "normalized")?,
-            genes: number(&m, "genes")?,
+            genes,
             skipped: number(&m, "skipped")?,
             clusters: m.get("clusters").and_then(|v| v.parse().ok()),
             seconds: number(&m, "seconds")?,
@@ -289,11 +591,12 @@ impl SpeciesResult {
 }
 
 /// One line of the branch table: the taxa on one side (numbers, each once and in order), the number of quartets, and eleven
-/// numbers.
+/// numbers; then the bootstrap support and the test for a polytomy (`genes,chi2,p`) when the branch has them.
 fn branch(row: &str, taxa: &[String], allowance: &mut Budget) -> Result<BranchOut, String> {
     let bad = || "A branch in the result is damaged.".to_string();
     let fields: Vec<&str> = row.split('\t').collect();
-    if fields.len() != 13 {
+    // thirteen fields, a fourteenth that holds the bootstrap support (from a program that has it) and a fifteenth with the test
+    if !(13..=15).contains(&fields.len()) {
         return Err(bad());
     }
     let ids: Vec<usize> = fields[0]
@@ -309,7 +612,7 @@ fn branch(row: &str, taxa: &[String], allowance: &mut Budget) -> Result<BranchOu
         return Err("The result's table of branches is too large to take.".into());
     }
     let side: Vec<String> = ids.iter().map(|&i| taxa[i].clone()).collect();
-    let v: Vec<f64> = fields[2..]
+    let v: Vec<f64> = fields[2..13]
         .iter()
         .map(|x| x.parse().map_err(|_| bad()))
         .collect::<Result<_, _>>()?;
@@ -321,7 +624,34 @@ fn branch(row: &str, taxa: &[String], allowance: &mut Budget) -> Result<BranchOu
         pp: [v[6], v[7], v[8]],
         en: v[9],
         length: v[10],
+        bootstrap: match fields.get(13).filter(|x| !x.is_empty()) {
+            None => None,
+            Some(x) => Some(
+                x.parse::<f64>()
+                    .ok()
+                    .filter(|s| (0.0..=100.0).contains(s))
+                    .ok_or_else(bad)?,
+            ),
+        },
+        polytomy: match fields.get(14).filter(|x| !x.is_empty()) {
+            None => None,
+            Some(x) => Some(polytomy_test(x).ok_or_else(bad)?),
+        },
     })
+}
+
+/// The test for a polytomy in a row: `genes,chi2,p`, from at least `MIN_GENES` gene trees, a statistic that is not negative
+/// and a p-value that is a probability.
+fn polytomy_test(text: &str) -> Option<Polytomy> {
+    let mut part = text.split(',');
+    let (genes, chi2, p) = (part.next()?, part.next()?, part.next()?);
+    if part.next().is_some() {
+        return None;
+    }
+    let (genes, chi2, p): (usize, f64, f64) =
+        (genes.parse().ok()?, chi2.parse().ok()?, p.parse().ok()?);
+    (genes >= MIN_GENES && chi2.is_finite() && chi2 >= 0.0 && (0.0..=1.0).contains(&p))
+        .then_some(Polytomy { genes, chi2, p })
 }
 
 #[cfg(test)]
@@ -342,6 +672,398 @@ mod tests {
         let c = Container::decode(&bytes).expect("a container");
         let m = meta(c.require("meta").expect("meta"));
         assert_eq!(SpeciesJob::decode(&c, &m).expect("a job"), job);
+    }
+
+    /// The same sections with the lines of `meta` that `edit` changes.
+    fn meta_edited(c: &Container, edit: impl Fn(&str) -> String) -> Container {
+        let meta = edit(c.text("meta").expect("meta"));
+        ["genes", "species", "newick", "taxa", "branches"]
+            .into_iter()
+            .filter_map(|name| c.bytes(name).map(|b| (name, b.to_vec())))
+            .fold(Container::new().with("meta", meta), |c, (n, b)| {
+                c.with(n, b)
+            })
+    }
+
+    fn without_line(text: &str, key: &str) -> String {
+        text.lines()
+            .filter(|l| !l.starts_with(&format!("{key}=")))
+            .map(|l| format!("{l}\n"))
+            .collect()
+    }
+
+    #[test]
+    fn the_weights_of_a_job_travel_and_a_message_that_says_nothing_of_them_asks_for_none() {
+        for weights in Weights::ALL {
+            let mut job = SpeciesJob::search(GENES);
+            job.weights = weights;
+            let c = Container::decode(&job.encode().encode()).expect("a container");
+            let m = meta(c.require("meta").expect("meta"));
+            assert_eq!(SpeciesJob::decode(&c, &m).expect("a job").weights, weights);
+        }
+        let mut job = SpeciesJob::search(GENES);
+        job.weights = Weights::Hybrid;
+        // a program from before the weights sends no such line: the job is unweighted
+        let old = meta_edited(&job.encode(), |t| without_line(t, "weights"));
+        let m = meta(old.require("meta").expect("meta"));
+        assert_eq!(
+            SpeciesJob::decode(&old, &m).expect("a job").weights,
+            Weights::None
+        );
+        let odd = meta_edited(&job.encode(), |t| {
+            t.replace("weights=hybrid", "weights=heavy")
+        });
+        let m = meta(odd.require("meta").expect("meta"));
+        assert!(SpeciesJob::decode(&odd, &m)
+            .unwrap_err()
+            .contains("not none, support"));
+    }
+
+    #[test]
+    fn a_weighted_result_goes_through_bytes_and_its_weights_and_score_must_agree() {
+        let weighted = {
+            let mut job =
+                SpeciesJob::search("(A:1,B:1,(C:1,D:1)0.9:1);\n(A:1,B:1,(C:1,D:1)0.8:1);");
+            job.weights = Weights::Support;
+            run(&job).expect("a result")
+        };
+        assert_eq!(
+            (weighted.weights, weighted.weighted_score.is_some()),
+            (Weights::Support, true)
+        );
+        let c = weighted.encode();
+        assert_eq!(SpeciesResult::decode(&c).expect("a result"), weighted);
+        // an unweighted result has no weighted score
+        let plain = run(&SpeciesJob::search(GENES)).expect("a result");
+        assert_eq!(
+            SpeciesResult::decode(&plain.encode()).expect("a result"),
+            plain
+        );
+        assert_eq!((plain.weights, plain.weighted_score), (Weights::None, None));
+        // a result from before the weights says nothing of them: it was not weighted
+        let old = meta_edited(&plain.encode(), |t| {
+            without_line(&without_line(t, "weights"), "weighted_score")
+        });
+        assert_eq!(
+            SpeciesResult::decode(&old).expect("a result").weights,
+            Weights::None
+        );
+        // the two must agree, and the score must be a number
+        let say = |weights: &str, score: &str| {
+            let c = meta_edited(&weighted.encode(), |t| {
+                without_line(&without_line(t, "weights"), "weighted_score")
+                    + &format!("weights={weights}\nweighted_score={score}\n")
+            });
+            SpeciesResult::decode(&c)
+        };
+        assert!(say("support", "1.5").is_ok());
+        for (weights, score) in [
+            ("support", ""),
+            ("none", "1.5"),
+            ("support", "NaN"),
+            ("support", "-1"),
+            ("support", "inf"),
+            ("support", "x"),
+            ("heavy", "1"),
+        ] {
+            assert!(say(weights, score).is_err(), "{weights} {score}");
+        }
+    }
+
+    const FAMILIES: &str =
+        "(((A,B),(C,(D,E))),((A,B),(C,(D,E))));\n(((A,B),(C,(D,E))),((A,B),(D,E)));\n";
+
+    #[test]
+    fn the_families_flag_travels_and_a_result_says_whether_it_was_read_as_families() {
+        let mut job = SpeciesJob::search(FAMILIES);
+        assert!(!job.families);
+        job.families = true;
+        let c = Container::decode(&job.encode().encode()).expect("a container");
+        let m = meta(c.require("meta").expect("meta"));
+        assert!(SpeciesJob::decode(&c, &m).expect("a job").families);
+        // a program from before them sends no such line: single-copy trees
+        let old = meta_edited(&job.encode(), |t| without_line(t, "families"));
+        let m = meta(old.require("meta").expect("meta"));
+        assert!(!SpeciesJob::decode(&old, &m).expect("a job").families);
+        // the result says it, and goes through bytes
+        let found = run(&job).expect("a result");
+        assert!(found.families && found.branches.is_empty());
+        assert_eq!(
+            SpeciesResult::decode(&found.encode()).expect("a result"),
+            found
+        );
+        let plain = run(&SpeciesJob::search(GENES)).expect("a result");
+        assert!(!plain.families);
+        // a result is taken only as it was asked for
+        let asked = |weights, families| Asked {
+            weights,
+            families,
+            bootstrap: None,
+            polytomy: false,
+        };
+        assert!(as_asked(asked(Weights::None, true), found.clone()).is_ok());
+        let why = as_asked(asked(Weights::None, true), plain).unwrap_err();
+        assert!(
+            why.contains("gene families") && why.contains("older version"),
+            "{why}"
+        );
+        let why = as_asked(asked(Weights::None, false), found).unwrap_err();
+        assert!(why.contains("single-copy"), "{why}");
+    }
+
+    #[test]
+    fn the_bootstrap_of_a_job_travels_with_the_trees_of_the_sites_and_old_messages_ask_for_none() {
+        let mut job = SpeciesJob::search(GENES);
+        job.replicates = 12;
+        job.seed = 5;
+        job.resample = Resample::Both;
+        job.site_trees = vec![
+            "((A,B),(C,D));\n".into(),
+            "((A,C),(B,D));\n((é,B),(C,D));\n".into(),
+            String::new(),
+        ];
+        let c = Container::decode(&job.encode().encode()).expect("a container");
+        let m = meta(c.require("meta").expect("meta"));
+        assert_eq!(SpeciesJob::decode(&c, &m).expect("a job"), job);
+        // a program from before the bootstrap sends none of it: none is asked for
+        let old = meta_edited(&SpeciesJob::search(GENES).encode(), |t| {
+            without_line(
+                &without_line(&without_line(t, "replicates"), "seed"),
+                "resample",
+            )
+        });
+        let m = meta(old.require("meta").expect("meta"));
+        let asked = SpeciesJob::decode(&old, &m).expect("a job");
+        assert_eq!(
+            (asked.replicates, asked.seed, asked.resample),
+            (0, 692, Resample::Genes)
+        );
+        assert!(asked.site_trees.is_empty());
+        // what is out of range or does not add up is refused
+        let with = |edit: &dyn Fn(&str) -> String| {
+            let c = meta_edited(&job.encode(), edit);
+            SpeciesJob::decode(&c, &meta(c.require("meta").expect("meta")))
+        };
+        assert!(with(&|t| t.replace("replicates=12", "replicates=1001"))
+            .unwrap_err()
+            .contains("at most 1000"));
+        assert!(with(&|t| t.replace("resample=both", "resample=some"))
+            .unwrap_err()
+            .contains("not genes, sites or both"));
+        assert!(with(&|t| t.replace("seed=5", "seed=x")).is_err());
+        let sized = |sizes: &str| {
+            let c = Container::new()
+                .with("meta", job.encode().text("meta").expect("meta").to_string())
+                .with("genes", GENES)
+                .with("site_sizes", sizes.to_string())
+                .with("site_trees", "abcdef");
+            SpeciesJob::decode(&c, &meta(c.require("meta").expect("meta")))
+        };
+        assert!(sized("3\n3\n").is_ok());
+        for bad in ["3\n2\n", "3\n9\n", "x\n", "3\n3\n1\n"] {
+            assert!(sized(bad).unwrap_err().contains("do not add up"), "{bad}");
+        }
+    }
+
+    #[test]
+    fn a_result_with_a_bootstrap_goes_through_bytes_and_one_that_counts_wrongly_is_refused() {
+        let mut job = SpeciesJob::search("((A,B),(C,D));\n".repeat(6).as_str());
+        job.replicates = 8;
+        let found = run(&job).expect("a result");
+        let info = found.bootstrap.expect("what the bootstrap did");
+        assert_eq!((info.asked, info.done, info.failed), (8, 8, 0));
+        assert_eq!(found.branches[0].bootstrap, Some(100.0));
+        assert_eq!(
+            SpeciesResult::decode(&found.encode()).expect("a result"),
+            found
+        );
+        let say = |done: &str, failed: &str, resample: &str| {
+            let c = meta_edited(&found.encode(), |t| {
+                ["boot_asked", "boot_done", "boot_failed", "boot_resample"]
+                    .iter()
+                    .fold(t.to_string(), |t, k| without_line(&t, k))
+                    + &format!("boot_asked=8\nboot_done={done}\nboot_failed={failed}\nboot_resample={resample}\n")
+            });
+            SpeciesResult::decode(&c)
+        };
+        assert!(say("6", "2", "genes").is_ok());
+        for (done, failed, resample) in [
+            ("5", "2", "genes"),
+            ("0", "8", "genes"),
+            ("9", "0", "genes"),
+            ("8", "0", "most"),
+        ] {
+            assert!(
+                say(done, failed, resample).is_err(),
+                "{done} {failed} {resample}"
+            );
+        }
+        // a branch row from a program from before it has thirteen fields, and a support must be a share
+        let row = |extra: &str| {
+            let t = found.table(&found.taxa.iter().map(|t| one_line(t)).collect::<Vec<_>>());
+            let line = t.lines().next().expect("a row");
+            let thirteen = line.split('\t').take(13).collect::<Vec<_>>().join("\t");
+            branch(
+                &format!("{thirteen}{extra}"),
+                &found.taxa,
+                &mut Budget::new(),
+            )
+        };
+        assert_eq!(row("").expect("thirteen fields").bootstrap, None);
+        assert_eq!(row("\t87.5").expect("fourteen").bootstrap, Some(87.5));
+        assert!(row("\t101").is_err() && row("\t-1").is_err() && row("\tx").is_err());
+    }
+
+    /// Ten gene trees of one topology, ten of another and ten of the third, repeated so that every branch has enough to be tested.
+    const MANY: &str = "((A,B),(C,(D,E)));\n((A,C),(B,(D,E)));\n(((A,B),C),(D,E));\n";
+
+    fn many() -> String {
+        MANY.repeat(10)
+    }
+
+    #[test]
+    fn the_polytomy_test_of_a_job_travels_and_an_old_message_asks_for_none() {
+        let mut job = SpeciesJob::search(GENES);
+        assert!(!job.polytomy && !job.options().polytomy);
+        job.polytomy = true;
+        assert!(job.options().polytomy && job.asked().polytomy);
+        let c = Container::decode(&job.encode().encode()).expect("a container");
+        let m = meta(c.require("meta").expect("meta"));
+        assert_eq!(SpeciesJob::decode(&c, &m).expect("a job"), job);
+        // a message from a program from before the test says nothing of it
+        let old = meta_edited(&job.encode(), |t| without_line(t, "polytomy"));
+        let m = meta(old.require("meta").expect("meta"));
+        assert!(!SpeciesJob::decode(&old, &m).expect("a job").polytomy);
+    }
+
+    #[test]
+    fn a_result_with_the_test_goes_through_bytes_and_one_that_disagrees_with_itself_is_refused() {
+        let mut job = SpeciesJob::search(&many());
+        job.polytomy = true;
+        let found = run(&job).expect("a result");
+        assert!(found.polytomy && !found.branches.is_empty());
+        assert!(
+            found.branches.iter().all(|b| b.polytomy.is_some()),
+            "thirty gene trees are enough for every branch"
+        );
+        let back = SpeciesResult::decode(&found.encode()).expect("a result that decodes");
+        assert!(back.polytomy);
+        assert_eq!(back.branches, found.branches);
+        // the job that did not ask for the test gets rows with nothing in the last field
+        let plain = run(&SpeciesJob::search(&many())).expect("a result");
+        assert!(!plain.polytomy && plain.branches.iter().all(|b| b.polytomy.is_none()));
+        let plain_back = SpeciesResult::decode(&plain.encode()).expect("a result");
+        assert!(!plain_back.polytomy);
+        // a test in a row of a result that says it did none, or from more gene trees than the result has, cannot be right
+        let said = |edit: &dyn Fn(&str) -> String| {
+            let bytes = found.encode();
+            let c = meta_edited(&bytes, |t| edit(t));
+            let c = c.clone().with(
+                "branches",
+                bytes.text("branches").expect("rows").to_string(),
+            );
+            SpeciesResult::decode(&c)
+        };
+        assert!(said(&|t| t.to_string()).is_ok());
+        assert!(said(&|t| t.replace("polytomy=1", "polytomy=0")).is_err());
+        assert!(said(&|t| t.replace(&format!("genes={}", found.genes), "genes=5")).is_err());
+    }
+
+    #[test]
+    fn a_row_of_the_table_takes_a_polytomy_test_only_if_it_is_one() {
+        let found = run(&SpeciesJob::search(GENES)).expect("a result");
+        let row = |last: &str| {
+            let t = found.table(&found.taxa.iter().map(|t| one_line(t)).collect::<Vec<_>>());
+            let line = t.lines().next().expect("a row");
+            let thirteen = line.split('\t').take(13).collect::<Vec<_>>().join("\t");
+            branch(
+                &format!("{thirteen}\t\t{last}"),
+                &found.taxa,
+                &mut Budget::new(),
+            )
+        };
+        let ok = row("30,15,0.0005530843701478336").expect("a test");
+        let t = ok.polytomy.expect("the test");
+        assert_eq!((t.genes, t.chi2, t.p), (30, 15.0, 0.0005530843701478336));
+        assert_eq!(row("").expect("none").polytomy, None);
+        for bad in [
+            "9,15,0.0005", // fewer gene trees than the test is made for
+            "30,-1,0.5",   // a statistic is not negative
+            "30,15,1.5",   // a p-value is a probability
+            "30,15,-0.1",
+            "30,NaN,0.5",
+            "30,inf,0.5",
+            "30,15",       // a field short
+            "30,15,0.5,1", // a field over
+            "x,15,0.5",
+            "30.5,15,0.5",
+        ] {
+            assert!(row(bad).is_err(), "{bad}");
+        }
+    }
+
+    #[test]
+    fn an_answer_that_did_not_test_the_branches_as_asked_is_refused() {
+        let plain = run(&SpeciesJob::search(&many())).expect("a result");
+        let mut job = SpeciesJob::search(&many());
+        job.polytomy = true;
+        let why = as_asked(job.asked(), plain.clone()).unwrap_err();
+        assert!(
+            why.contains("polytomies") && why.contains("older version"),
+            "{why}"
+        );
+        let tested = run(&job).expect("a result");
+        assert!(as_asked(job.asked(), tested.clone()).is_ok());
+        // and the other way: a test that was not asked for is not shown as if it were
+        assert!(as_asked(SpeciesJob::search(&many()).asked(), tested).is_err());
+        assert!(as_asked(SpeciesJob::search(&many()).asked(), plain).is_ok());
+    }
+
+    #[test]
+    fn an_answer_with_no_bootstrap_to_a_job_that_asked_for_one_is_refused() {
+        let plain = run(&SpeciesJob::search(GENES)).expect("a result");
+        let mut job = SpeciesJob::search(GENES);
+        job.replicates = 5;
+        let why = as_asked(job.asked(), plain.clone()).unwrap_err();
+        assert!(
+            why.contains("bootstrap") && why.contains("older version"),
+            "{why}"
+        );
+        assert!(as_asked(SpeciesJob::search(GENES).asked(), plain).is_ok());
+        let found = run(&{
+            let mut j = SpeciesJob::search("((A,B),(C,D));\n".repeat(5).as_str());
+            j.replicates = 5;
+            j
+        })
+        .expect("a result");
+        assert!(as_asked(job.asked(), found.clone()).is_ok());
+        // asked for another way of resampling: not what was asked
+        job.resample = Resample::Both;
+        assert!(as_asked(job.asked(), found).is_err());
+    }
+
+    #[test]
+    fn a_result_not_weighted_as_asked_is_not_taken_for_one_that_was() {
+        let plain = run(&SpeciesJob::search(GENES)).expect("a result");
+        let none = Asked {
+            weights: Weights::None,
+            families: false,
+            bootstrap: None,
+            polytomy: false,
+        };
+        assert!(as_asked(none, plain.clone()).is_ok());
+        let why = as_asked(
+            Asked {
+                weights: Weights::Support,
+                ..none
+            },
+            plain,
+        )
+        .unwrap_err();
+        assert!(
+            why.contains("\"none\", not \"support\"") && why.contains("older version"),
+            "{why}"
+        );
     }
 
     #[test]
@@ -502,10 +1224,17 @@ mod tests {
             en: 1.0,
             quartets: k as u64,
             length: 1.0,
+            bootstrap: None,
+            polytomy: None,
         };
         let big = SpeciesResult {
             newick: "(s0,s1,s2);".into(),
             score: 1,
+            weights: Weights::None,
+            weighted_score: None,
+            families: false,
+            bootstrap: None,
+            polytomy: false,
             normalized: 1.0,
             taxa: taxa.clone(),
             genes: 1,

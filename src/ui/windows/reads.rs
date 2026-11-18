@@ -4,6 +4,7 @@
 use crate::seq::fastq::{clean, parse_fastq, stats, to_fastq, Cleaning, FastqRead, Report, Stats};
 use crate::ui::app::{App, Tab};
 use crate::ui::dialog::{self, Wanted};
+use crate::ui::fonts::FontWeight;
 use crate::ui::platform::route::Source;
 use eframe::egui::{self, pos2, vec2, Color32, RichText, Sense, Shape, Stroke, Ui};
 
@@ -180,7 +181,7 @@ impl App {
             return clicks;
         }
         ui.separator();
-        ui.label(RichText::new(format!("{}: before", w.source)).strong());
+        ui.label(RichText::new(format!("{}: before", w.source)).semibold());
         ui.label(summary(&w.before));
         let blue = Color32::from_rgb(60, 110, 200);
         let green = Color32::from_rgb(40, 160, 80);
@@ -197,7 +198,7 @@ impl App {
             .small(),
         );
         ui.separator();
-        ui.label(RichText::new("Cleaning (fastp's defaults)").strong());
+        ui.label(RichText::new("Cleaning (fastp's defaults)").semibold());
         let c = &mut w.cleaning;
         ui.horizontal(|ui| {
             ui.label("Adapter");
@@ -239,14 +240,14 @@ impl App {
             ui.add(egui::DragValue::new(&mut c.min_length).range(1..=10_000));
         });
         ui.horizontal(|ui| {
-            clicks.run = ui.button(RichText::new("Clean reads").strong()).clicked();
+            clicks.run = ui.button(RichText::new("Clean reads").semibold()).clicked();
             if ui.button("fastp defaults").clicked() {
                 *c = Cleaning::default();
             }
         });
         if let Some((s, r)) = &w.after {
             ui.separator();
-            ui.label(RichText::new("After cleaning").strong());
+            ui.label(RichText::new("After cleaning").semibold());
             ui.label(summary(s));
             ui.label(format!(
                 "Dropped: {} low quality, {} too many N, {} too short. Adapter found in {} reads.",

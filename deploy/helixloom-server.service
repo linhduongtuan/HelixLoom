@@ -23,6 +23,8 @@ ExecStart=/opt/helixloom/helixloom serve \
     --token-file /etc/helixloom/token \
     --data-dir /var/lib/helixloom/data \
     --gpus auto
+# the web version, handed out by this server (docs/UBUNTU.md has the drop-in file that adds it): add this line to ExecStart above
+#     --web-dir /opt/helixloom/web
 # a folding program on the GPUs (see DEPLOY.md): add a line like this to ExecStart above
 #     --fold-command "/opt/helixloom/esmfold-env/bin/python /opt/helixloom/esmfold_predict.py"
 Restart=on-failure
@@ -32,6 +34,9 @@ KillMode=control-group
 TimeoutStopSec=30
 # the model weights of a folding program are kept in the user's folder
 Environment=HF_HOME=/var/lib/helixloom/huggingface
+# PyTorch for the big tree jobs (DEPLOY.md steps 1.2 and 1.7): remove the # to use it. The Python must be where this service's user can read
+# it: not under /home, which ProtectHome below hides.
+#Environment=HELIXLOOM_TORCH_PYTHON=/opt/helixloom/torch-env/bin/python
 
 # no more of the machine than this for the server and all its jobs together: a job that asks for far more memory than there
 # is gets stopped, instead of making everything on the workstation crawl. Lower MemoryMax if other people use the machine

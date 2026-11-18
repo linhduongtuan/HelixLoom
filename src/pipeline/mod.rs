@@ -2,7 +2,10 @@
 //! primer3 when they are there and with the built-in engines when they are not, and exported as Snakemake and
 //! Nextflow files for running elsewhere.
 
+pub mod domains;
 pub mod export;
+pub mod flow;
+pub mod install;
 pub mod predict;
 pub mod steps;
 pub mod tools;
@@ -47,7 +50,7 @@ pub fn run(
     choice: &Choice,
     available: &Available,
 ) -> Result<Outcome, String> {
-    let dir = tools::work_folder("workflow")?;
+    let dir = tools::WorkFolder::new("workflow")?;
     let pick = |found: &Option<Installed>| found.clone().filter(|_| choice.use_installed);
     let mut out = Outcome::default();
     if choice.align || choice.tree {

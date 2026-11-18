@@ -3,21 +3,26 @@
 //! choice says: on this computer, or as a job of the workstation.
 
 use super::treetools::{newick_text, read_newick_file};
-use crate::remote::species::{self, SpeciesJob, SpeciesResult};
+use crate::provenance::{Asked, Input, Provenance};
+use crate::remote::species::{self, as_asked, SpeciesJob, SpeciesResult};
 use crate::remote::tasks::{Request, Response};
 use crate::remote::weight::Weight;
 use crate::sample::{SPECIES_GENE_TREES, SPECIES_TRUTH};
-use crate::seq::astral::search::EXACT_LIMIT;
-use crate::seq::astral::Options;
+use crate::seq::astral::bootstrap::{read_list, MAX_REPLICATES};
+use crate::seq::astral::search::{EXACT_LIMIT, WEIGHTED_WORDS};
+use crate::seq::astral::{polytomy, BranchOut};
+use crate::seq::astral::{Options, Resample, Weights};
 use crate::seq::newick::NwTree;
 use crate::ui::app::App;
 use crate::ui::design::{self, Look};
-use crate::ui::dialog::Wanted;
+use crate::ui::dialog::{self, Wanted};
+use crate::ui::fonts::FontWeight;
 use crate::ui::job::{Job, Poll};
 use crate::ui::platform::route::Source;
 use crate::ui::platform::trees::save_text;
 use crate::ui::platform::workstation::{compute_picker, ComputeView, Place};
 use crate::ui::platform::Workspace;
+use crate::ui::provenance as made_ui;
 use eframe::egui::{self, RichText, ScrollArea, Ui};
 use std::sync::Arc;
 use std::time::Duration;
@@ -55,6 +60,18 @@ pub struct SpeciesWin {
     /// Score the tree in `given` instead of searching.
     pub score_given: bool,
     pub given: String,
+    /// How the quartets of the gene trees are weighted.
+    pub weights: Weights,
+    /// The gene trees are gene family trees (ASTRAL-Pro): a species may occur in a tree several times.
+    pub families: bool,
+    /// Bootstrap replicates (none when 0), what they resample, and the seed that draws them.
+    pub replicates: usize,
+    pub resample: Resample,
+    pub seed: u64,
+    /// Test every branch for being a polytomy (Sayyari and Mirarab 2018).
+    pub polytomy: bool,
+    /// The bootstrap trees of the genes, from a list of files: its name, and the text of each gene's file.
+    site_trees: Option<(String, Vec<String>)>,
     /// Look at every group of species instead of the groups the gene trees suggest.
     pub exact: bool,
     /// Also try the ways to resolve the polytomies of the gene trees.
@@ -69,7 +86,71 @@ pub struct SpeciesWin {
     /// Where the running job goes, for the message that says where it ran.
     ran_on: &'static str,
     pub result: Option<Arc<SpeciesResult>>,
+    /// What the run that is going was asked, with its settings; and, for the result that is shown, the record of what made it
+    /// (none for a result that was fetched from the workstation's list).
+    asked: Option<(Asked, Kept)>,
+    pub made: Option<(Provenance, Kept)>,
     pub message: String,
+}
+
+/// The settings of a run, to put back when it is run again.
+#[derive(Clone, Debug, PartialEq)]
+pub struct Kept {
+    score_given: bool,
+    weights: Weights,
+    families: bool,
+    replicates: usize,
+    resample: Resample,
+    seed: u64,
+    polytomy: bool,
+    exact: bool,
+    extra: bool,
+    lambda: f64,
+    root: String,
+}
+
+/// The inputs and the settings of a species-tree job, as a record names them. Settings that the run does not use (those of a
+/// bootstrap that is not asked for) are left out.
+pub fn described(job: &SpeciesJob) -> (Vec<Input>, Vec<(String, String)>) {
+    let mut inputs = vec![Input::of("gene trees", job.genes.as_bytes())];
+    if !job.score_tree.trim().is_empty() {
+        inputs.push(Input::of(
+            "species tree to score",
+            job.score_tree.as_bytes(),
+        ));
+    }
+    if !job.site_trees.is_empty() {
+        inputs.push(Input::of(
+            "bootstrap trees of the genes",
+            job.site_trees.concat().as_bytes(),
+        ));
+    }
+    let yes_no = |b: bool| if b { "yes" } else { "no" }.to_string();
+    let mut settings = vec![
+        ("weights".to_string(), job.weights.name().to_string()),
+        ("gene families".to_string(), yes_no(job.families)),
+        ("polytomy test".to_string(), yes_no(job.polytomy)),
+        ("exact search".to_string(), yes_no(job.exact)),
+        ("polytomy resolutions".to_string(), yes_no(job.extra > 0)),
+        ("branch length prior".to_string(), job.lambda.to_string()),
+        (
+            "hung from".to_string(),
+            if job.root.is_empty() {
+                "the first species".to_string()
+            } else {
+                job.root.clone()
+            },
+        ),
+        (
+            "bootstrap replicates".to_string(),
+            job.replicates.to_string(),
+        ),
+    ];
+    if job.replicates > 0 {
+        settings.push(("resampling".to_string(), job.resample.name().to_string()));
+        settings.push(("seed".to_string(), job.seed.to_string()));
+    }
+    (inputs, settings)
 }
 
 impl Default for SpeciesWin {
@@ -81,6 +162,13 @@ impl Default for SpeciesWin {
             loaded: None,
             score_given: false,
             given: String::new(),
+            weights: o.weights,
+            families: o.families,
+            replicates: o.bootstrap.replicates,
+            resample: o.bootstrap.resample,
+            seed: o.bootstrap.seed,
+            polytomy: o.polytomy,
+            site_trees: None,
             exact: o.exact,
             extra: o.extra > 0,
             lambda: o.lambda,
@@ -90,12 +178,51 @@ impl Default for SpeciesWin {
             discard: false,
             ran_on: "this computer",
             result: None,
+            asked: None,
+            made: None,
             message: String::new(),
         }
     }
 }
 
 impl SpeciesWin {
+    /// The settings as they are, to keep with a run.
+    fn kept(&self) -> Kept {
+        Kept {
+            score_given: self.score_given,
+            weights: self.weights,
+            families: self.families,
+            replicates: self.replicates,
+            resample: self.resample,
+            seed: self.seed,
+            polytomy: self.polytomy,
+            exact: self.exact,
+            extra: self.extra,
+            lambda: self.lambda,
+            root: self.root.clone(),
+        }
+    }
+
+    /// Put the settings of a run back.
+    fn restore(&mut self, k: &Kept) {
+        self.score_given = k.score_given;
+        self.weights = k.weights;
+        self.families = k.families;
+        self.replicates = k.replicates;
+        self.resample = k.resample;
+        self.seed = k.seed;
+        self.polytomy = k.polytomy;
+        self.exact = k.exact;
+        self.extra = k.extra;
+        self.lambda = k.lambda;
+        self.root = k.root.clone();
+    }
+
+    /// The inputs and the settings of a run as they are now.
+    pub fn as_it_is(&self) -> (Vec<Input>, Vec<(String, String)>) {
+        described(&self.request())
+    }
+
     pub fn is_running(&self) -> bool {
         self.job.is_some()
     }
@@ -107,15 +234,39 @@ impl SpeciesWin {
 
     /// How big the run would be, counted once for a file.
     pub fn weight(&self) -> Weight {
-        match &self.loaded {
+        let plain = match &self.loaded {
             Some(l) => l.weight,
             None => Weight::of_species(&self.genes),
+        };
+        // a weighted count is dearer, and every replicate of a bootstrap is a search of its own: the same trees are a bigger job
+        let times = match self.weights {
+            Weights::None => 1,
+            _ => WEIGHTED_WORDS as usize,
+        } * (1 + self.replicates);
+        Weight {
+            leaves: plain.leaves.saturating_mul(times),
+            ..plain
         }
     }
 
     /// The job the settings ask for.
     fn request(&self) -> SpeciesJob {
         SpeciesJob {
+            weights: if self.families {
+                Weights::None
+            } else {
+                self.weights
+            },
+            families: self.families,
+            replicates: self.replicates,
+            seed: self.seed,
+            resample: self.resample,
+            // gene families have no table of quartet counts to test
+            polytomy: self.polytomy && !self.families,
+            site_trees: match (&self.site_trees, self.resample.uses_site_trees()) {
+                (Some((_, texts)), true) if self.replicates > 0 => texts.clone(),
+                _ => Vec::new(),
+            },
             exact: self.exact,
             extra: u8::from(self.extra),
             lambda: self.lambda,
@@ -136,6 +287,7 @@ impl SpeciesWin {
         self.genes.clear();
         self.loaded = None;
         self.result = None;
+        self.made = None;
         self.message.clear();
         self.run_requested = false;
         self.discard = self.job.is_some();
@@ -157,11 +309,44 @@ fn summary(r: &SpeciesResult, ran_on: &str) -> String {
     if r.skipped > 0 {
         notes.push(format!("{} with fewer than 4 species left out.", r.skipped));
     }
-    notes.push(format!(
-        "Quartet score {} ({:.1} % of the quartets the gene trees resolve).",
-        r.score,
-        r.normalized * 100.0
-    ));
+    notes.push(match r.weighted_score {
+        _ if r.families => format!(
+            "Quartet score {} ({:.1} % of the quartet classes the gene family trees have).",
+            r.score,
+            r.normalized * 100.0
+        ),
+        Some(w) => format!(
+            "Quartet score {} (weighted by {}: {w:.2}, {:.1} % of the quartets the gene trees resolve).",
+            r.score,
+            weights_phrase(r.weights),
+            r.normalized * 100.0
+        ),
+        None => format!(
+            "Quartet score {} ({:.1} % of the quartets the gene trees resolve).",
+            r.score,
+            r.normalized * 100.0
+        ),
+    });
+    if let Some(b) = r.bootstrap {
+        notes.push(format!(
+            "Bootstrap support from {} of {} replicates resampling {}{}.",
+            b.done,
+            b.asked,
+            match b.resample {
+                Resample::Genes => "the genes",
+                Resample::Sites => "the sites",
+                Resample::Both => "the genes and their sites",
+            },
+            if b.failed > 0 {
+                format!(" ({} gave no tree)", b.failed)
+            } else {
+                String::new()
+            }
+        ));
+    }
+    if r.polytomy {
+        notes.push(polytomy_phrase(&r.branches));
+    }
     notes.push(match r.clusters {
         Some(n) => format!(
             "Chose among {n} groups of species in {:.2} s on {ran_on}.",
@@ -173,6 +358,29 @@ fn summary(r: &SpeciesResult, ran_on: &str) -> String {
         ),
     });
     notes.join(" ")
+}
+
+/// What the test for a polytomy found, in a sentence: the branches tested, and those that it cannot tell from a polytomy.
+fn polytomy_phrase(branches: &[BranchOut]) -> String {
+    let tested: Vec<_> = branches.iter().filter_map(|b| b.polytomy).collect();
+    let kept = tested.iter().filter(|t| !t.rejected()).count();
+    format!(
+        "Polytomy test: {} of {} branches tested ({} or more gene trees needed), {kept} not rejected as polytomies at p of {} or more.",
+        tested.len(),
+        branches.len(),
+        polytomy::MIN_GENES,
+        polytomy::ALPHA
+    )
+}
+
+/// What a way of weighting the quartets is called in a sentence.
+fn weights_phrase(w: Weights) -> &'static str {
+    match w {
+        Weights::None => "nothing",
+        Weights::Support => "the support of the gene trees' branches",
+        Weights::Length => "the lengths of the gene trees' branches",
+        Weights::Hybrid => "both the support and the lengths of the gene trees' branches",
+    }
 }
 
 /// The species on one side of a branch, as many as fit in a table cell.
@@ -202,6 +410,8 @@ fn length_text(length: f64) -> String {
 
 #[derive(Default)]
 struct Clicks {
+    made: made_ui::Asks,
+    boot_list: bool,
     open: bool,
     example: bool,
     clear: bool,
@@ -214,6 +424,8 @@ struct Clicks {
 impl App {
     /// Show what the workstation made, and open the window to show it.
     pub fn show_species_result(&mut self, result: SpeciesResult) {
+        // fetched from the workstation's list: what it was made from is not known here
+        self.species_win.made = None;
         self.species_win.open = true;
         self.species_win.take(result, "the workstation");
     }
@@ -272,6 +484,7 @@ impl App {
         let w = &mut self.species_win;
         w.run_requested = false;
         w.result = None;
+        (w.made, w.asked) = (None, None);
         if job.genes.trim().is_empty() {
             w.message = "Paste the gene trees or open a file of them first.".into();
             return;
@@ -280,6 +493,21 @@ impl App {
             w.message = "Paste the species tree to score, or untick the box in Settings.".into();
             return;
         }
+        let (inputs, parameters) = described(&job);
+        let ran_on = if matches!(place, Place::There(_)) {
+            "the workstation"
+        } else {
+            "this computer"
+        };
+        w.asked = Some((
+            Asked {
+                analysis: "Species tree",
+                inputs,
+                parameters,
+                ran_on,
+            },
+            w.kept(),
+        ));
         let Place::There(remote) = place else {
             (w.ran_on, w.message) = ("this computer", "Working…".into());
             w.job = Some(Job::spawn(ctx, move || species::run(&job)));
@@ -290,11 +518,14 @@ impl App {
             "Species tree from {} gene trees",
             job.genes.matches(';').count()
         );
+        let asked = job.asked();
         let request = Request::Species(job);
-        w.job = Some(Job::spawn(ctx, move || {
+        w.job = Some(Job::spawn_async(ctx, async move {
             remote
-                .run(&request, &label)
+                .run_async(&request, &label)
+                .await
                 .and_then(Response::into_species)
+                .and_then(|result| as_asked(asked, result))
         }));
     }
 
@@ -312,15 +543,21 @@ impl App {
             Poll::Done(outcome) => {
                 w.job = None;
                 let discarded = std::mem::take(&mut w.discard);
+                let asked = w.asked.take();
                 match outcome {
                     // the trees it was for are gone: nothing of it is kept
                     _ if discarded => {}
-                    Ok(result) => w.take(result, w.ran_on),
+                    Ok(result) => {
+                        // the search is this program's own, so it is the only program named
+                        w.made = asked.map(|(a, k)| (a.made(Vec::new(), result.seconds), k));
+                        w.take(result, w.ran_on);
+                    }
                     Err(why) => w.message = why,
                 }
             }
             Poll::Died => {
                 w.job = None;
+                w.asked = None;
                 if !std::mem::take(&mut w.discard) {
                     w.message = "The run stopped without an answer.".into();
                 }
@@ -350,7 +587,35 @@ impl App {
         }
     }
 
+    /// Ask for the list of the files of bootstrap trees, and read the files it names.
+    fn load_bootstrap_list(&mut self) {
+        let ask = dialog::FileDialog::new().set_title(
+            "A list of the files of bootstrap trees (one path to a line, one file for each gene)",
+        );
+        let Some(path) = dialog::pick_one(Wanted::Anything, ask) else {
+            return;
+        };
+        let name = path.file_name().map_or_else(
+            || path.display().to_string(),
+            |n| n.to_string_lossy().into_owned(),
+        );
+        let w = &mut self.species_win;
+        match read_list(&path) {
+            Ok(texts) => {
+                w.message = format!(
+                    "Read the bootstrap trees of {} genes from {name}.",
+                    texts.len()
+                );
+                w.site_trees = Some((name, texts));
+            }
+            Err(why) => w.message = why,
+        }
+    }
+
     fn apply_species_clicks(&mut self, c: Clicks, ctx: &egui::Context) {
+        if c.boot_list {
+            self.load_bootstrap_list();
+        }
         if c.open {
             self.open_species_file();
         }
@@ -360,8 +625,19 @@ impl App {
         if c.clear {
             self.species_win.clear();
         }
-        if c.run {
+        if c.made.again {
+            // with the settings the result that is shown was made with
+            if let Some((_, kept)) = self.species_win.made.clone() {
+                self.species_win.restore(&kept);
+            }
+        }
+        self.checks_win.open |= c.made.checks;
+        if c.run || c.made.again {
             self.run_species();
+        }
+        if let (true, Some((made, _))) = (c.made.copy, &self.species_win.made) {
+            ctx.copy_text(made.to_text());
+            self.species_win.message = "Copied the record of how the species tree was made.".into();
         }
         let Some(result) = self.species_win.result.clone() else {
             return;
@@ -388,7 +664,7 @@ impl App {
         }
         let (mut open, mut c) = (true, Clicks::default());
         let view = self.platform.workstation.view(&self.species_win.weight());
-        let look = design::look(self.prefs.dark);
+        let look = self.prefs.look();
         // a scrolling window keeps the height it first has, so it opens tall enough for a result and no taller than the screen
         let height =
             (ctx.content_rect().height() - WINDOW_ROOM).clamp(MIN_WINDOW_HEIGHT, MAX_WINDOW_HEIGHT);
@@ -412,7 +688,7 @@ fn draw(ui: &mut Ui, look: &Look, view: ComputeView, w: &mut SpeciesWin, c: &mut
          other; a gene may lack species.",
     );
     inputs(ui, w, c);
-    ui.collapsing("Settings", |ui| settings(ui, w));
+    ui.collapsing("Settings", |ui| settings(ui, w, c));
     compute_picker(ui, look, view);
     ui.horizontal(|ui| {
         let label = if w.score_given {
@@ -423,7 +699,7 @@ fn draw(ui: &mut Ui, look: &Look, view: ComputeView, w: &mut SpeciesWin, c: &mut
         c.run = ui
             .add_enabled(
                 !w.is_running(),
-                egui::Button::new(RichText::new(label).strong()),
+                egui::Button::new(RichText::new(label).semibold()),
             )
             .clicked();
         if w.is_running() {
@@ -434,6 +710,9 @@ fn draw(ui: &mut Ui, look: &Look, view: ComputeView, w: &mut SpeciesWin, c: &mut
         ui.label(&w.message);
     }
     if let Some(result) = w.result.clone() {
+        if let Some((made, _)) = &w.made {
+            c.made = made_ui::section(ui, look, made, || w.as_it_is(), !w.is_running());
+        }
         results(ui, &result, c);
     }
 }
@@ -449,7 +728,7 @@ fn inputs(ui: &mut Ui, w: &mut SpeciesWin, c: &mut Clicks) {
     });
     match &w.loaded {
         Some(l) => {
-            ui.label(RichText::new(format!("{}: {} gene trees", l.name, l.trees)).strong());
+            ui.label(RichText::new(format!("{}: {} gene trees", l.name, l.trees)).semibold());
         }
         None => {
             ScrollArea::vertical()
@@ -467,10 +746,36 @@ fn inputs(ui: &mut Ui, w: &mut SpeciesWin, c: &mut Clicks) {
     }
 }
 
-fn settings(ui: &mut Ui, w: &mut SpeciesWin) {
+fn weights_label(w: Weights) -> &'static str {
+    match w {
+        Weights::None => "None: every quartet counts one",
+        Weights::Support => "By support",
+        Weights::Length => "By length",
+        Weights::Hybrid => "By support and length",
+    }
+}
+
+fn resample_label(r: Resample) -> &'static str {
+    match r {
+        Resample::Genes => "The genes",
+        Resample::Sites => "The sites (a bootstrap tree of each gene)",
+        Resample::Both => "The genes and their sites",
+    }
+}
+
+fn settings(ui: &mut Ui, w: &mut SpeciesWin, c: &mut Clicks) {
     ui.checkbox(
         &mut w.score_given,
         "Score a species tree that I give, instead of searching",
+    );
+    ui.checkbox(
+        &mut w.families,
+        "The gene trees are gene families: a species may be in a tree several times",
+    )
+    .on_hover_text(
+        "ASTRAL-Pro (Zhang et al. 2020). The leaf names are the species names, repeated for each copy. A tree with a root of \
+         two branches is rooted as written; one with three is rooted where duplications and losses cost least. Binary trees \
+         only. The species tree has no branch support or length, and the weights are not used.",
     );
     if w.score_given {
         ui.add(
@@ -511,7 +816,84 @@ fn settings(ui: &mut Ui, w: &mut SpeciesWin) {
                     .desired_width(160.0),
             );
             ui.end_row();
+            ui.label("Weights");
+            ui.add_enabled_ui(!w.families, |ui| {
+                egui::ComboBox::from_id_salt("species_weights")
+                    .selected_text(weights_label(w.weights))
+                    .show_ui(ui, |ui| {
+                        for choice in Weights::ALL {
+                            ui.selectable_value(&mut w.weights, choice, weights_label(choice));
+                        }
+                    })
+                    .response
+            })
+            .inner
+                .on_hover_text(
+                    "Weighted ASTRAL (Zhang and Mirarab 2022): a gene tree sure of its quartets counts more than one that is not. \
+                     By support: the labels of the gene trees' inner branches are read as supports (0 to 1, or percentages). \
+                     By length: the branch lengths are used. Branches that the gene trees give no support or length for are \
+                     taken as fully supported, or of length 0.",
+                );
+            ui.end_row();
+            ui.label("Polytomy test");
+            ui.add_enabled(
+                !w.families,
+                egui::Checkbox::new(&mut w.polytomy, "Test each branch"),
+            )
+            .on_hover_text(
+                "Sayyari and Mirarab 2018: a chi-squared test of whether the gene trees show the three ways to resolve a branch \
+                 equally often, which they would if the branch had no length. A small p-value says the branch is real; a large \
+                 one does not say it is not. Only for a branch that at least 10 gene trees resolve a quartet around. Not with the \
+                 gene families.",
+            );
+            ui.end_row();
+            ui.label("Bootstrap replicates");
+            ui.add(
+                egui::DragValue::new(&mut w.replicates)
+                    .range(0..=MAX_REPLICATES)
+                    .speed(1),
+            )
+            .on_hover_text(
+                "0: none. Otherwise the search is run again on this many resamplings, and the number on each branch is the \
+                 share of those trees (in percent) that have it. Not with the gene families; with the weights only when the genes are resampled.",
+            );
+            ui.end_row();
+            if w.replicates > 0 {
+                ui.label("Resample");
+                egui::ComboBox::from_id_salt("species_resample")
+                    .selected_text(resample_label(w.resample))
+                    .show_ui(ui, |ui| {
+                        for choice in Resample::ALL {
+                            ui.selectable_value(&mut w.resample, choice, resample_label(choice));
+                        }
+                    });
+                ui.end_row();
+                ui.label("Seed");
+                ui.add(egui::DragValue::new(&mut w.seed))
+                    .on_hover_text("The same seed gives the same support");
+                ui.end_row();
+            }
         });
+    // the sites are resampled from the bootstrap trees of the genes, from files that a list names (a browser has no files)
+    if w.replicates > 0 && w.resample.uses_site_trees() && !dialog::IN_BROWSER {
+        ui.horizontal_wrapped(|ui| {
+            c.boot_list = ui
+                .button("Bootstrap trees of the genes…")
+                .on_hover_text(
+                    "A text file that lists, one path to a line, the files of bootstrap trees of the genes, in the order of the \
+                     gene trees (a relative path is taken from the folder of the list)",
+                )
+                .clicked();
+            match &w.site_trees {
+                Some((name, texts)) => {
+                    ui.label(format!("{name}: {} genes", texts.len()));
+                }
+                None => {
+                    ui.label("none chosen yet");
+                }
+            }
+        });
+    }
 }
 
 fn results(ui: &mut Ui, r: &SpeciesResult, c: &mut Clicks) {
@@ -521,20 +903,49 @@ fn results(ui: &mut Ui, r: &SpeciesResult, c: &mut Clicks) {
         c.copy = ui.button("Copy Newick").clicked();
         c.save = ui.button("Save…").clicked();
     });
-    ScrollArea::vertical()
-        .id_salt("species_branches_scroll")
-        .max_height(BRANCHES_MAX_HEIGHT)
-        .show(ui, |ui| branch_table(ui, r));
-    if let Some(note) = cut_note(r.branch_count) {
-        ui.label(note);
+    if r.families {
+        ui.label(
+            RichText::new(
+                "Gene families: the species tree has no branch support or length (ASTRAL-Pro's are not built), \
+                 so there is no table of branches.",
+            )
+            .small(),
+        );
+    } else {
+        ScrollArea::vertical()
+            .id_salt("species_branches_scroll")
+            .max_height(BRANCHES_MAX_HEIGHT)
+            .show(ui, |ui| branch_table(ui, r));
+        if let Some(note) = cut_note(r.branch_count) {
+            ui.label(note);
+        }
+        ui.label(
+            RichText::new(
+                "Posterior: the local posterior probability that the branch is right. Quartet support: the share \
+                 of the gene trees' quartets around the branch that agree with it. Lengths are in coalescent units.",
+            )
+            .small(),
+        );
+        if r.polytomy {
+            ui.label(
+                RichText::new(
+                    "Polytomy p: the p-value of the test that the branch has no length (under 0.05 in bold: the branch is \
+                     real). A dash: fewer than 10 gene trees resolve a quartet around the branch. The branches are \
+                     tested one by one, with no correction for how many there are.",
+                )
+                .small(),
+            );
+        }
+        if r.weights != Weights::None {
+            ui.label(
+                RichText::new(
+                    "These supports and lengths are ASTRAL's, counted on the quartets without their weights: the \
+                     weighted support of wastral is not built.",
+                )
+                .small(),
+            );
+        }
     }
-    ui.label(
-        RichText::new(
-            "Posterior: the local posterior probability that the branch is right. Quartet support: the share \
-             of the gene trees' quartets around the branch that agree with it. Lengths are in coalescent units.",
-        )
-        .small(),
-    );
     let mut newick = r.newick.as_str();
     ScrollArea::vertical()
         .id_salt("species_newick_scroll")
@@ -550,6 +961,8 @@ fn results(ui: &mut Ui, r: &SpeciesResult, c: &mut Clicks) {
 }
 
 fn branch_table(ui: &mut Ui, r: &SpeciesResult) {
+    let boot = r.branches.iter().any(|b| b.bootstrap.is_some());
+    let test = r.polytomy;
     egui::Grid::new("species_branches")
         .striped(true)
         .show(ui, |ui| {
@@ -558,8 +971,12 @@ fn branch_table(ui: &mut Ui, r: &SpeciesResult) {
                 "Posterior",
                 "Quartet support",
                 "Length",
-            ] {
-                ui.label(RichText::new(h).strong());
+            ]
+            .into_iter()
+            .chain(boot.then_some("Bootstrap"))
+            .chain(test.then_some("Polytomy p"))
+            {
+                ui.label(RichText::new(h).semibold());
             }
             ui.end_row();
             for b in r.branches.iter().take(MAX_LISTED) {
@@ -570,10 +987,29 @@ fn branch_table(ui: &mut Ui, r: &SpeciesResult) {
                 ui.label(
                     RichText::new(format!("{:.2}", b.pp[0]))
                         .monospace()
-                        .strong(),
+                        .semibold(),
                 );
                 ui.label(RichText::new(format!("{:.0} %", b.q[0] * 100.0)).monospace());
                 ui.label(RichText::new(length_text(b.length)).monospace());
+                if boot {
+                    let text = b.bootstrap.map_or("–".to_string(), |s| format!("{s:.0} %"));
+                    ui.label(RichText::new(text).monospace().semibold());
+                }
+                if test {
+                    match b.polytomy {
+                        Some(t) => {
+                            let p = RichText::new(polytomy::p_text(t.p)).monospace();
+                            ui.label(if t.rejected() { p.semibold() } else { p })
+                                .on_hover_text(format!(
+                                    "chi-squared {:.2} from {} gene trees",
+                                    t.chi2, t.genes
+                                ));
+                        }
+                        None => {
+                            ui.label(RichText::new("–").monospace());
+                        }
+                    }
+                }
                 ui.end_row();
             }
         });

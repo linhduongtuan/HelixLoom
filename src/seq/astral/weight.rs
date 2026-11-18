@@ -79,6 +79,37 @@ pub fn around_branch(genes: &[Gene], l: &Bits, r: &Bits, s: &Bits, o: &Bits) -> 
     }
 }
 
+/// What the polytomy test counts around a branch (Sayyari and Mirarab 2018): every gene tree that resolves some quartet of the
+/// four clusters gives one in all, split among the three pairings by the shares of its resolved quartets.
+pub struct Resolved {
+    pub n: [f64; 3],
+    /// The gene trees that resolve a quartet around the branch (the three counts add up to this).
+    pub genes: usize,
+}
+
+/// The same quartets as `around_branch`, divided by the quartets the gene tree resolves instead of by all it has: a polytomy of
+/// the gene tree leaves the quartets it does not resolve out, rather than counting them for none of the pairings.
+pub fn resolved_around(genes: &[Gene], l: &Bits, r: &Bits, s: &Bits, o: &Bits) -> Resolved {
+    let mut n = [0.0; 3];
+    let mut used = 0;
+    let mut scratch: Vec<[u64; 4]> = Vec::with_capacity(8);
+    for g in genes {
+        if [l, r, s, o].iter().any(|c| c.and_count(&g.present) == 0) {
+            continue;
+        }
+        let found = gene_counts(g, [l, r, s, o], &mut scratch);
+        let resolved: u64 = found.iter().sum();
+        if resolved == 0 {
+            continue;
+        }
+        used += 1;
+        for (total, x) in n.iter_mut().zip(found) {
+            *total += x as f64 / resolved as f64;
+        }
+    }
+    Resolved { n, genes: used }
+}
+
 /// For one gene tree, the quartets (one taxon from each of `l r s o`) it resolves as `lr|so`, `rs|lo` and `ro|ls`.
 fn gene_counts(g: &Gene, sets: [&Bits; 4], scratch: &mut Vec<[u64; 4]>) -> [u64; 3] {
     let mut n = [0u64; 3];

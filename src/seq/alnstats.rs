@@ -12,7 +12,7 @@ pub struct Column {
     pub gaps: usize,
 }
 
-fn is_gap(c: u8) -> bool {
+pub(crate) fn is_gap(c: u8) -> bool {
     matches!(c, b'-' | b'.')
 }
 
@@ -49,6 +49,24 @@ pub fn columns(rows: &[Vec<u8>]) -> Vec<Column> {
             }
         })
         .collect()
+}
+
+/// The symbols of column `k` (in upper case) with how many rows carry each: the commonest first, and those in as many rows
+/// in the order of the alphabet. Gaps, and rows too short to have the column, are not among them (`Column::gaps` counts those).
+pub fn symbols_of(rows: impl IntoIterator<Item = impl AsRef<[u8]>>, k: usize) -> Vec<(u8, usize)> {
+    let mut counts = [0usize; 256];
+    for row in rows {
+        if let Some(&c) = row.as_ref().get(k).filter(|&&c| !is_gap(c)) {
+            counts[usize::from(c.to_ascii_uppercase())] += 1;
+        }
+    }
+    let mut found: Vec<(u8, usize)> = (0..=u8::MAX)
+        .map(|c| (c, counts[usize::from(c)]))
+        .filter(|&(_, n)| n > 0)
+        .collect();
+    // a stable sort keeps the order of the alphabet among those in as many rows
+    found.sort_by_key(|&(_, n)| std::cmp::Reverse(n));
+    found
 }
 
 /// Whether the rows hold amino acids rather than nucleotides: more than a tenth of the letters are not
@@ -116,6 +134,21 @@ mod tests {
 
     fn rows(text: &[&str]) -> Vec<Vec<u8>> {
         text.iter().map(|r| r.as_bytes().to_vec()).collect()
+    }
+
+    #[test]
+    fn the_symbols_of_a_column_are_counted_the_commonest_first_without_its_gaps() {
+        // the column is c, C, T, a gap, a dot, G, T and a row too short to have it
+        let a = rows(&["Ac", "AC", "AT", "A-", "A.", "AG", "AT", "A"]);
+        // C and T are in two rows each and come in the order of the alphabet; G is in one
+        assert_eq!(symbols_of(&a, 1), [(b'C', 2), (b'T', 2), (b'G', 1)]);
+        assert_eq!(symbols_of(&a, 0), [(b'A', 8)]);
+        // what is counted here and the gaps that `columns` counts are all the rows
+        let counted: usize = symbols_of(&a, 1).iter().map(|(_, n)| n).sum();
+        assert_eq!(counted + columns(&a)[1].gaps, a.len());
+        // a column that no row has, and no rows at all
+        assert!(symbols_of(&a, 2).is_empty());
+        assert!(symbols_of(Vec::<Vec<u8>>::new(), 0).is_empty());
     }
 
     #[test]

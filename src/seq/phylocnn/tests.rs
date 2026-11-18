@@ -187,7 +187,7 @@ fn every_network_matches_keras_on_the_same_input() {
 // 0.12139099. Equal-age tips can be ordered in more than one way, and the two channels are paired row by
 // row, so a different order moves the answer by about a tenth of a percent.
 #[test]
-fn the_estimate_agrees_with_the_authors_pipeline_within_a_quarter_percent() {
+fn the_estimate_agrees_with_the_authors_pipeline_within_three_parts_in_a_thousand() {
     if crate::models::phylocnn_missing() {
         return;
     }

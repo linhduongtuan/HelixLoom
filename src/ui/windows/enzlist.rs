@@ -231,7 +231,7 @@ impl App {
         if !self.enz_list.dialog_open {
             return;
         }
-        let look = design::look(self.prefs.dark);
+        let look = self.prefs.look();
         let (mut open, mut ok, mut cancel) = (true, false, false);
         design::window("List Enzymes")
             .open(&mut open)
@@ -308,7 +308,7 @@ impl App {
             self.enz_list.result_open = false;
             return;
         };
-        let look = design::look(self.prefs.dark);
+        let look = self.prefs.look();
         let live = self.current_doc().is_some_and(|i| {
             Basis::of(&self.docs[i], run.choice.which, &self.selected) == run.basis
         });

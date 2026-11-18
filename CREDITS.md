@@ -48,11 +48,50 @@ none of them are used here. Every rule, default and number that came from ApE is
   Nielsen and Mirarab (2025). It was written from those papers and from the programs' published tutorials, **not from their
   code**: ASTRAL (github.com/smirarab/ASTRAL, Apache-2.0, © Siavash Mirarab and contributors) was only *run*, as a black box,
   to compare answers, and ASTER (github.com/chaoszhang/ASTER, **AGPL-3.0**, © Chao Zhang and contributors) was not read at all,
-  so that its licence does not reach this program; its other programs (wASTRAL, ASTRAL-Pro3, CASTER, WASTER) are not built.
-  The example gene trees (`assets/species/`) were simulated by a small program written for this project.
+  so that its licence does not reach this program; its other programs (ASTRAL-Pro 2 and 3, CASTER, WASTER) are not built. The
+  **weights** of the quartets (support, length, hybrid) follow the paper of Zhang and Mirarab (2022), *Weighting by gene tree
+  uncertainty improves accuracy of quartet-based species trees*, *Molecular Biology and Evolution* 39(12):msac215, as the
+  open-access copy on PubMed Central gives its method; wASTRAL's program was not run and its code was not read, and the weighted
+  branch support of the paper is not built. The **gene family** score follows Zhang, Scornavacca, Molloy and Mirarab (2020), *ASTRAL-Pro: quartet-based species-tree inference despite paralogy*, *Molecular Biology and Evolution* 37:3292, as the open-access copy on PubMed Central gives its definitions; the count at a node was derived from the definitions here, ASTRAL-Pro's program was not run and its code was not read. The **bootstrap support** follows the procedure of ASTRAL's bootstrapping as its tutorial (github.com/smirarab/ASTRAL) describes it, and the multilocus bootstrap of Seo (2008), *Molecular Biology and Evolution* 25:1049; ASTRAL was not run for it. The **polytomy test** is the one of Sayyari and Mirarab (2018), *Testing for polytomies in phylogenetic species trees using quartet frequencies*, *Genes* 9:132, as the open-access copy gives it (the counts around a branch, a chi-squared on 2 degrees of freedom, a minimum of 10 gene trees); ASTRAL's `-t 10` was not run and its code was not read. The example gene trees (`assets/species/`) were simulated by a small program written for this project.
 
+* **Conservation** (Alignment page, Structure page): the Jensen-Shannon divergence of a column from the background, after
+  Capra and Singh (2007), *Bioinformatics* 23:1875, with the position-based sequence weights of Henikoff and Henikoff (1994),
+  *J. Mol. Biol.* 243:574, a gap penalty and a window of the neighbouring columns as the first paper describes them; and the
+  Shannon entropy as a normalised score. Written from the papers: no code of their program (`score_conservation.py`) was used,
+  copied or run. The background frequencies of the amino acids are those of the BLOSUM62 matrix (Henikoff and Henikoff 1992,
+  *PNAS* 89:10915), **written from memory of the table that the authors' program ships with (not checked against the matrix
+  itself, of which there is no copy here)**. What is the same as the published method (as far as the paper and the author's
+  recollection of the program go): the weights, the Jensen-Shannon divergence against that background, the gap penalty by weight
+  and the cut-off at 30 % of the rows with a gap, the window of 3 columns on each side with weight 0.5, a tiny pseudocount.
+  **What is not the same**: at the first and last 3 columns of an alignment the window uses the columns that exist, where the
+  authors' program leaves those scores as they are; the **Shannon entropy** here is one minus the entropy over the logarithm of
+  the alphabet's size (0 to 1, the same scale for any number of sequences), which is not the form of the authors' program, so
+  its values must not be compared with theirs; **DNA** is scored by the same method against an even background and U is read as T,
+  which is this program's extension (the method is published for proteins); letters that are not residues (X, B, Z...) count as
+  gaps. Checks: hand-worked cases, the closed form of the score of a column of a single residue (written by residue name, in the
+  tests, with no reference to the program's table), and a separate plain Python implementation of the same formulas written for
+  this project (`src/seq/conservation/reference.py`), which makes the numbers of the other tests. **That implementation shares the
+  program's constants, so it checks the arithmetic and not the data**: it once agreed with a program that had three residues'
+  background frequencies swapped, which an independent review found and the closed-form test now catches. **The authors' program
+  was not run, and the accuracy that the paper reports for finding functional residues was not reproduced.** The
+  turquoise-white-maroon colours of a conserved structure follow the convention of the ConSurf server (Ashkenazy et al. 2016,
+  *Nucleic Acids Res.* 44:W344); none of its code is used. They are hard to tell apart for red-green colour blindness (the
+  ramp is dark at both ends), so a residue's score is also written beside it when it is clicked. A structure's chains are lined
+  up with the rows of the alignment by this program's own pairwise aligner.
 * **GPU**: the PhyloCNN networks can run through candle (github.com/huggingface/candle, Apache-2.0 or MIT) on the
   Apple GPU (Metal) or the CPU. candle is a library the program links; nothing of it is copied.
+  The distances between sequences, the bootstrap and the likelihood of a tree can run on the GPUs through candle or through
+  **PyTorch** (pytorch.org, BSD-3-Clause) with NumPy (BSD-3-Clause): PyTorch and NumPy are **installed by the owner of the
+  workstation**, run as separate programs (`src/accel/torch/worker.py`, which is this project's own code), and none of them is included.
+  The likelihood is Felsenstein's pruning algorithm (Felsenstein 1981, *J. Mol. Evol.* 17:368); the distances are counted
+  with matrix products as in the program's own processor code.
+* **Motif Finder** (`src/seq/motif.rs`, Tools menu): written from the papers: expectation-maximisation for motifs after Bailey and Elkan
+  1994 (*Proc. ISMB* 2:28; the MEME method, in its simplest form), exact p-values of position-weight-matrix scores by the dynamic programming of FIMO
+  (Grant, Bailey and Noble 2011, *Bioinformatics* 27:1017), and comparison of motifs by the correlation of their columns as Tomtom does (Gupta et al.
+  2007, *Genome Biol.* 8:R24). None of the MEME Suite's code is used (the command `helixloom motif` and the workstation job run the same search); its text format for a motif is written so that its programs can read the result.
+* **Protein Domains** (Tools menu, the `domains` job): runs HMMER 3's `hmmscan` (Eddy; hmmer.org; BSD-3-Clause) against the Pfam-A profile
+  database (Pfam, EMBL-EBI; released as CC0 — check the licence file of the download) as separate programs and data that are not part of
+  HelixLoom, and reads the domain table (`--domtblout`) in the format of the HMMER 3.4 User's Guide. None of HMMER's code is used.
 * **Pipelines** (Tools menu and the Pipelines workspace): MAFFT (Katoh & Standley), IQ-TREE (Minh et al.), primer3,
   Snakemake (Mölder et al.) and Nextflow (Di Tommaso et al.) are **other programs the user installs**; this program only
   runs them and writes files for them. None of their code or binaries is included.
@@ -74,7 +113,10 @@ none of them are used here. Every rule, default and number that came from ApE is
   (esmatlas.com, Meta): when Predict is pressed the sequence is sent to that service with the `curl` program, and none of
   ESMFold's code or weights is included. The confidence colours follow the bands of the AlphaFold Protein Structure
   Database. The example structure, `assets/structure/1ubq.pdb`, is ubiquitin, PDB entry 1UBQ (Vijay-Kumar, Bugg & Cook
-  1987, *J. Mol. Biol.* 194:531), from the Protein Data Bank (wwPDB, free of copyright restrictions).
+  1987, *J. Mol. Biol.* 194:531), from the Protein Data Bank (wwPDB, free of copyright restrictions). The second example, `assets/structure/1vfb.pdb`, is PDB entry 1VFB, the
+  Fv fragment of the antibody D1.3 bound to hen egg-white lysozyme (Bhat et al. 1994, *Proc. Natl. Acad. Sci. USA* 91:1089,
+  doi 10.1073/pnas.91.3.1089), kept as the PDB gives it (CC0 1.0), for trying the Interface section and for its test; it was
+  fetched through the program's own connector on 11 November 2026.
 
 * **Workstation** (`helixloom serve`, the Workstation page, `DEPLOY.md`, `deploy/`): new work for this project, asked for by
   the person; the original has nothing like it. The server, the messages and the scheduling of GPUs were written for this
@@ -85,5 +127,12 @@ none of them are used here. Every rule, default and number that came from ApE is
 
 Libraries (see `Cargo.toml`): `eframe` / `egui` (MIT or Apache-2.0), `png` (MIT or Apache-2.0), `rfd` (MIT),
 `candle-core` (Apache-2.0 or MIT).
-The fonts come from egui's default set: Hack (MIT), Ubuntu-Light (Ubuntu Font License), NotoEmoji and
-emoji-icon-font (SIL OFL).
+The text is set in **Inter** 4.1 (© The Inter Project Authors, github.com/rsms/inter) and the sequences and code in
+**JetBrains Mono** 2.304 (© The JetBrains Mono Project Authors, github.com/JetBrains/JetBrainsMono), both under the SIL Open
+Font License 1.1. Each is one unchanged variable font file in `assets/fonts` (with its licence text, the address and the
+checksum of the file it came from), so headings and labels have a real semibold. egui's default fonts stay behind them for the
+signs that these two do not have: Hack (MIT), Ubuntu-Light (Ubuntu Font License), NotoEmoji and emoji-icon-font (SIL OFL).
+The colour-blind-safe colours of bases and trace letters are taken from the palette of **Masataka Okabe and Kei Ito** (2008, "Color
+Universal Design", jfly.uni-koeln.de/color), softened; the colours of the amino-acid groups were found by a search of ours. The
+tests simulate colour blindness with the matrices of Machado, Oliveira and Fernandes (2009, IEEE Transactions on Visualization and
+Computer Graphics 15(6), doi 10.1109/TVCG.2009.113); neither is included in the program as data beyond the colours.

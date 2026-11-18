@@ -1,4 +1,6 @@
 use super::*;
+use crate::pipeline::flow::{Pipeline, Value};
+use crate::remote::flow::{self, FlowJob};
 use crate::remote::run::{execute, Env};
 use crate::remote::species::{self, SpeciesJob};
 
@@ -78,12 +80,50 @@ fn requests() -> Vec<Request> {
         Request::Species(SpeciesJob {
             genes: "((A,B),(C,D));\n((A,C),(B,D));".into(),
             score_tree: "((A,B),(C,D));".into(),
+            weights: crate::seq::astral::Weights::Hybrid,
+            families: true,
+            replicates: 12,
+            seed: 5,
+            resample: crate::seq::astral::Resample::Both,
+            site_trees: vec![
+                "((A,B),(C,D));\n".into(),
+                "((A,C),(B,D));\n((A,B),(C,D));\n".into(),
+            ],
+            polytomy: true,
             exact: true,
             extra: 0,
             polish: false,
             lambda: 0.25,
             root: "B".into(),
             min_leaves: 4,
+        }),
+        Request::Flow(FlowJob {
+            pipeline: Pipeline::loci_to_species(),
+            loci: vec![(
+                "locus 1".into(),
+                Value::Alignment(vec![
+                    ("x".into(), b"ACGT".to_vec()),
+                    ("y".into(), b"AC-T".to_vec()),
+                ]),
+            )],
+        }),
+        Request::Domains(crate::remote::domains::DomainsJob {
+            queries: vec![
+                ("sp|P1|NAME_HUMAN".to_string(), b"MKVLLEGA".to_vec()),
+                ("second".to_string(), b"ACDEFGHIK".to_vec()),
+            ],
+            cutoff: crate::pipeline::domains::Cutoff::Evalue(0.001),
+        }),
+        Request::Motif(crate::remote::motif::MotifJob {
+            seqs: vec![b"ACGTACGTAC".to_vec(), b"TTGACCAGGT".to_vec()],
+            settings: crate::seq::motif::Settings {
+                width: 6,
+                motifs: 2,
+                both_strands: false,
+                seeds: 3,
+                iterations: 9,
+                effort: 0.5,
+            },
         }),
     ]
 }
@@ -99,7 +139,7 @@ fn every_kind_of_request_comes_back_as_it_went() {
     }
     assert_eq!(
         Kind::ALL.map(Kind::name),
-        ["align", "tree", "pipeline", "phylocnn", "fold", "species"]
+        ["align", "tree", "pipeline", "phylocnn", "fold", "species", "flow", "motif", "domains"]
     );
     for k in Kind::ALL {
         assert_eq!(Kind::parse(k.name()), Some(k));
@@ -114,7 +154,17 @@ fn only_a_gpu_job_says_it_needs_a_gpu() {
     // processor cores only
     assert_eq!(
         needs,
-        [false, false, false, cfg!(feature = "gpu"), true, false]
+        [
+            false,
+            false,
+            false,
+            cfg!(feature = "gpu"),
+            true,
+            false,
+            false,
+            false,
+            false
+        ]
     );
     let cnn = |newick: &str, gpu: bool| Request::PhyloCnn {
         newick: newick.into(),
@@ -293,6 +343,9 @@ fn through_bytes(response: &Response) -> Response {
         Response::PhyloCnn(_) => Kind::PhyloCnn,
         Response::Fold(_) => Kind::Fold,
         Response::Species(_) => Kind::Species,
+        Response::Flow(_) => Kind::Flow,
+        Response::Motif(_) => Kind::Motif,
+        Response::Domains(_) => Kind::Domains,
     };
     let bytes = response.encode().encode();
     let back = Response::decode(kind, &Container::decode(&bytes).expect("a container"))
@@ -303,6 +356,62 @@ fn through_bytes(response: &Response) -> Response {
         "{kind:?} encodes the same after a round trip"
     );
     back
+}
+
+#[cfg(unix)]
+#[test]
+fn a_domain_search_comes_back_whole_and_a_computer_without_the_tools_says_what_is_missing() {
+    use crate::pipeline::domains::testing::{pressed_db, stand_in, Folder, TABLE};
+    let folder = Folder::new("tasks-domains");
+    let (db, program) = (pressed_db(&folder), stand_in(&folder, TABLE, "ok"));
+    let job = crate::remote::domains::DomainsJob {
+        queries: vec![
+            ("first".to_string(), vec![b'M'; 60]),
+            ("second".to_string(), vec![b'G'; 30]),
+        ],
+        cutoff: crate::pipeline::domains::Cutoff::Curated,
+    };
+    let found = crate::remote::domains::run_with(&job, &program, &db).expect("domains");
+    let Response::Domains(back) = through_bytes(&Response::Domains(found.clone())) else {
+        panic!("domains");
+    };
+    assert_eq!(back, found);
+    assert_eq!(back.hits.len(), 2);
+    assert!(Response::Domains(found).into_motif().is_err());
+    // a job on a computer that has neither HMMER nor Pfam (or has them: then it answers) is never a panic
+    match execute(Request::Domains(job), &Env::default()) {
+        Ok(Response::Domains(r)) => assert_eq!(r.names.len(), 2),
+        Ok(_) => panic!("domains were asked for"),
+        Err(why) => assert!(why.contains("hmmscan") || why.contains("Pfam"), "{why}"),
+    }
+}
+
+#[test]
+fn a_motif_search_is_made_by_the_same_function_whoever_asks_and_comes_back_whole() {
+    let seqs: Vec<Vec<u8>> =
+        crate::ui::windows::motifs::read_sequences(&crate::sample::motif_demo())
+            .expect("the example")
+            .1;
+    let job = crate::remote::motif::MotifJob {
+        seqs,
+        settings: crate::seq::motif::Settings {
+            width: 10,
+            ..crate::seq::motif::Settings::default()
+        },
+    };
+    let here = crate::remote::motif::run(&job).expect("motifs");
+    let Response::Motif(there) = execute(Request::Motif(job), &Env::default()).expect("motifs")
+    else {
+        panic!("motifs were asked for");
+    };
+    // everything but the time it took
+    assert_eq!(there.found, here.found);
+    assert_eq!(there.found.len(), 1);
+    let Response::Motif(back) = through_bytes(&Response::Motif(there.clone())) else {
+        panic!("motifs");
+    };
+    assert_eq!(back.found, there.found);
+    assert!(Response::Motif(there).into_species().is_err());
 }
 
 #[test]
@@ -330,6 +439,53 @@ fn a_species_tree_is_made_by_the_same_function_whoever_asks_and_comes_back_whole
     };
     assert!(Response::Fold(fold).into_species().is_err());
     assert_eq!(Response::Species(there.clone()).into_species(), Ok(there));
+}
+
+#[test]
+fn a_pipeline_file_is_run_by_the_same_function_whoever_asks_and_comes_back_whole() {
+    let job = FlowJob {
+        pipeline: Pipeline::loci_to_species(),
+        loci: crate::pipeline::flow::tests::loci(4),
+    };
+    let here = flow::run(job.clone(), None).expect("a result");
+    let Response::Flow(there) = execute(Request::Flow(job), &Env::default()).expect("a result")
+    else {
+        panic!("a pipeline file was asked for");
+    };
+    // everything but the time it took
+    assert_eq!(there.report.output, here.report.output);
+    assert_eq!(
+        (
+            there.report.cached(),
+            there.report.failed(),
+            &there.report.left_out
+        ),
+        (
+            here.report.cached(),
+            here.report.failed(),
+            &here.report.left_out
+        )
+    );
+    let outputs = |r: &flow::FlowResult| {
+        r.report
+            .items
+            .iter()
+            .map(|i| i.output.clone())
+            .collect::<Vec<_>>()
+    };
+    assert_eq!(outputs(&there), outputs(&here));
+    let Response::Flow(back) = through_bytes(&Response::Flow(there.clone())) else {
+        panic!("a pipeline result");
+    };
+    assert_eq!(back, there);
+    assert!(Response::Fold(Folded {
+        pdb: String::new(),
+        engine: String::new(),
+        seconds: 0.0,
+    })
+    .into_flow()
+    .is_err());
+    assert_eq!(Response::Flow(there.clone()).into_flow(), Ok(there));
 }
 
 #[test]
@@ -627,4 +783,58 @@ fn a_tree_comes_back_exactly_whatever_its_names_lengths_and_supports() {
     assert_eq!(back.tree, tree);
     // the text for a file is still plain and short
     assert_eq!(leaf("a b", 1.0).newick(), "a_b;");
+}
+
+#[cfg(all(feature = "gpu", not(target_arch = "wasm32")))]
+#[test]
+fn a_tree_job_is_given_gpus_only_when_it_is_big_enough_to_be_worth_them_and_then_all_of_them() {
+    // the person's own setting of `HELIXLOOM_ACCEL` decides, whatever the size: not what this checks
+    if std::env::var(crate::accel::pool::MODE_VARIABLE).is_ok() {
+        return;
+    }
+    let rows = |tips: usize, columns: usize| -> Vec<(String, Vec<u8>)> {
+        (0..tips)
+            .map(|k| (format!("s{k}"), vec![b'A'; columns]))
+            .collect()
+    };
+    let tree = |tips, columns, analysis, bootstrap| Request::Tree {
+        alignment: rows(tips, columns),
+        analysis,
+        model: crate::seq::tree::DistanceModel::P,
+        bootstrap,
+        generations: 100,
+    };
+    // the usual size here (a handful of sequences, hundreds of columns): the processor is faster
+    assert!(!tree(8, 600, Analysis::Likelihood, 0).needs_gpu());
+    assert!(!tree(8, 600, Analysis::Bayesian, 0).needs_gpu());
+    assert!(!tree(30, 2000, Analysis::NeighborJoining, 0).needs_gpu());
+    assert!(!tree(30, 2000, Analysis::Upgma, 20).needs_gpu());
+    // a likelihood over 200 sequences and 100 000 columns, and a bootstrap of 200 resamples of 100 sequences by 20 000 columns (big
+    // enough for either backend: PyTorch asks for more than candle before it starts its workers)
+    assert!(tree(200, 100_000, Analysis::Likelihood, 0).needs_gpu());
+    assert!(tree(100, 200_000, Analysis::Bayesian, 0).needs_gpu());
+    assert!(tree(100, 20_000, Analysis::NeighborJoining, 200).needs_gpu());
+    assert!(tree(100, 20_000, Analysis::Upgma, 200).needs_gpu());
+    // neighbour-joining of three thousand sequences (a few columns each: the distances are small), which only PyTorch does on a GPU, and
+    // which its distances (candle's threshold) also take
+    assert!(tree(3_000, 100, Analysis::NeighborJoining, 0).needs_gpu());
+    // neighbour-joining is made on one card: a job whose distances are too small to share out asks for one, and one whose distances are
+    // big enough asks for all
+    let torch = crate::accel::backend() == crate::accel::Backend::Torch;
+    assert_eq!(
+        tree(3_000, 100, Analysis::NeighborJoining, 0).most_gpus(1),
+        if torch { 1 } else { 64 }
+    );
+    assert!(tree(100, 20_000, Analysis::NeighborJoining, 200).most_gpus(1) >= 8);
+    // one matrix of distances of 30 by 20 000 is not worth sending: only the many resamples of a bootstrap are
+    assert!(!tree(30, 20_000, Analysis::NeighborJoining, 0).needs_gpu());
+    // a tree job given GPUs may use as many as the workstation has (the app's "GPUs for one job" says how many it is given)
+    assert!(tree(200, 100_000, Analysis::Likelihood, 0).most_gpus(1) >= 8);
+    // and nothing else changed: an alignment still needs none (the aligner's one pass over the k-mers is not GPU work)
+    let align = Request::Align {
+        seqs: rows(200, 100_000),
+        mafft: false,
+    };
+    assert!(!align.needs_gpu());
+    assert_eq!(align.most_gpus(1), 1);
 }

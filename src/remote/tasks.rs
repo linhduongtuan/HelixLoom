@@ -3,6 +3,9 @@
 //! Newick, settings and numbers as `key=value` lines, tables as tab-separated lines. Numbers are written the way Rust
 //! prints them, which reads back as exactly the same number.
 
+use super::domains::{DomainsJob, DomainsResult};
+use super::flow::{FlowJob, FlowResult};
+use super::motif::{MotifJob, MotifResult};
 use super::species::{SpeciesJob, SpeciesResult};
 use super::wire::{meta, Container};
 use super::{clean_line, one_line};
@@ -35,16 +38,22 @@ pub enum Kind {
     PhyloCnn,
     Fold,
     Species,
+    Flow,
+    Motif,
+    Domains,
 }
 
 impl Kind {
-    pub const ALL: [Kind; 6] = [
+    pub const ALL: [Kind; 9] = [
         Kind::Align,
         Kind::Tree,
         Kind::Pipeline,
         Kind::PhyloCnn,
         Kind::Fold,
         Kind::Species,
+        Kind::Flow,
+        Kind::Motif,
+        Kind::Domains,
     ];
 
     /// The name used in messages and in the list of jobs.
@@ -56,6 +65,9 @@ impl Kind {
             Kind::PhyloCnn => "phylocnn",
             Kind::Fold => "fold",
             Kind::Species => "species",
+            Kind::Flow => "flow",
+            Kind::Motif => "motif",
+            Kind::Domains => "domains",
         }
     }
 
@@ -72,6 +84,9 @@ impl Kind {
             Kind::PhyloCnn => "PhyloCNN estimates",
             Kind::Fold => "Structure prediction",
             Kind::Species => "Species tree",
+            Kind::Flow => "Pipeline file",
+            Kind::Motif => "Motif search",
+            Kind::Domains => "Domain search",
         }
     }
 }
@@ -109,6 +124,12 @@ pub enum Request {
         local: bool,
     },
     Species(SpeciesJob),
+    /// A pipeline file run on the files of a folder.
+    Flow(FlowJob),
+    /// A search for the motifs that DNA sequences share.
+    Motif(MotifJob),
+    /// A search of protein sequences for domains (HMMER's hmmscan against Pfam, on the computer that runs the job).
+    Domains(DomainsJob),
 }
 
 fn model_name(m: DistanceModel) -> &'static str {
@@ -138,7 +159,7 @@ fn priors_name(p: Priors) -> &'static str {
 macro_rules! settings_codec {
     ($($field:ident),* $(,)?) => {
         /// The primer settings as `key=value` lines.
-        fn settings_text(s: &Settings) -> String {
+        pub(crate) fn settings_text(s: &Settings) -> String {
             let mut out = String::new();
             $( out.push_str(&format!("{}={}\n", stringify!($field), s.$field)); )*
             out
@@ -371,6 +392,41 @@ fn decode_phylocnn_request(c: &Container, m: &HashMap<&str, &str>) -> Result<Req
     })
 }
 
+/// The most cards a tree job is offered: all that the workstation has (`gpus_for` cuts it to what there is).
+const MOST_CARDS_FOR_A_TREE: usize = 64;
+
+/// Whether a tree job is big enough to be given GPUs (see `accel::tree_job_is_big`), by its size alone. Only the likelihood methods
+/// and the distances with a bootstrap use them; a build without GPU support never asks.
+fn tree_wants_gpus(alignment: &[Named], analysis: Analysis, bootstrap: usize) -> bool {
+    #[cfg(all(feature = "gpu", not(target_arch = "wasm32")))]
+    {
+        let tips = alignment.len();
+        let columns = alignment.first().map_or(0, |r| r.1.len());
+        let likelihood = matches!(analysis, Analysis::Likelihood | Analysis::Bayesian);
+        let joins = matches!(analysis, Analysis::NeighborJoining);
+        crate::accel::tree_job_is_big(tips, columns, likelihood, joins, bootstrap.max(1))
+    }
+    #[cfg(not(all(feature = "gpu", not(target_arch = "wasm32"))))]
+    {
+        let _ = (alignment, analysis, bootstrap);
+        false
+    }
+}
+
+/// Whether the distances of a tree job are big enough to be shared out among GPUs (see `accel::distances_are_big`).
+fn tree_distances_big(alignment: &[Named], bootstrap: usize) -> bool {
+    #[cfg(all(feature = "gpu", not(target_arch = "wasm32")))]
+    {
+        let columns = alignment.first().map_or(0, |r| r.1.len());
+        crate::accel::distances_are_big(alignment.len(), columns, bootstrap.max(1))
+    }
+    #[cfg(not(all(feature = "gpu", not(target_arch = "wasm32"))))]
+    {
+        let _ = (alignment, bootstrap);
+        false
+    }
+}
+
 impl Request {
     pub fn kind(&self) -> Kind {
         match self {
@@ -380,6 +436,9 @@ impl Request {
             Request::PhyloCnn { .. } => Kind::PhyloCnn,
             Request::Fold { .. } => Kind::Fold,
             Request::Species(_) => Kind::Species,
+            Request::Flow(_) => Kind::Flow,
+            Request::Motif(_) => Kind::Motif,
+            Request::Domains(_) => Kind::Domains,
         }
     }
 
@@ -392,8 +451,20 @@ impl Request {
                 gpu: true, newick, ..
             } => cfg!(feature = "gpu") && newick.matches(';').count() > 1,
             Request::Fold { local, .. } => *local,
+            Request::Tree {
+                alignment,
+                analysis,
+                bootstrap,
+                ..
+            } => tree_wants_gpus(alignment, *analysis, *bootstrap),
             _ => false,
         }
+    }
+
+    /// Whether the job runs, slower, on the processor where there is no GPU: a tree job only uses GPUs when it can, and is
+    /// not refused for want of them; a PhyloCNN job that asked for one, and a fold by the workstation's own program, are.
+    pub fn can_do_without_gpu(&self) -> bool {
+        matches!(self, Request::Tree { .. })
     }
 
     /// The most GPUs the job can put to use at once. A PhyloCNN job shares its trees out over the GPUs it is given, so one for
@@ -403,6 +474,23 @@ impl Request {
         match self {
             Request::PhyloCnn { newick, .. } => newick.matches(';').count().max(1),
             Request::Fold { .. } => fold_gpus.max(1),
+            // a tree of the size that is given GPUs uses all it is given: the cards share the columns of one likelihood, or the
+            // models and chains of a search, and the rows of the distances
+            Request::Tree {
+                alignment,
+                analysis,
+                bootstrap,
+                ..
+            } => {
+                // neighbour-joining itself is made on one card: with distances too small to be shared out, it asks for one
+                if matches!(analysis, Analysis::NeighborJoining)
+                    && !tree_distances_big(alignment, *bootstrap)
+                {
+                    1
+                } else {
+                    MOST_CARDS_FOR_A_TREE
+                }
+            }
             _ => 1,
         }
     }
@@ -449,6 +537,9 @@ impl Request {
                 .with("meta", lines(&[("local", bit(*local))]))
                 .with("sequence", sequence.clone()),
             Request::Species(job) => job.encode(),
+            Request::Flow(job) => job.encode(),
+            Request::Motif(job) => job.encode(),
+            Request::Domains(job) => job.encode(),
         }
     }
 
@@ -468,6 +559,9 @@ impl Request {
                 local: flag(&m, "local"),
             }),
             Kind::Species => SpeciesJob::decode(c, &m).map(Request::Species),
+            Kind::Flow => FlowJob::decode(c).map(Request::Flow),
+            Kind::Motif => MotifJob::decode(c, &m).map(Request::Motif),
+            Kind::Domains => DomainsJob::decode(c, &m).map(Request::Domains),
         }
     }
 }
@@ -500,6 +594,9 @@ pub enum Response {
     PhyloCnn(CnnResult),
     Fold(Folded),
     Species(SpeciesResult),
+    Flow(FlowResult),
+    Motif(MotifResult),
+    Domains(DomainsResult),
 }
 
 fn primer_rows(p: &Primers) -> String {
@@ -563,7 +660,7 @@ fn engine_of(m: &HashMap<&str, &str>) -> String {
     m.get("engine").unwrap_or(&"").to_string()
 }
 
-fn encode_pipeline_response(o: &Outcome) -> Container {
+pub(crate) fn encode_pipeline_response(o: &Outcome) -> Container {
     let mut c = Container::new().with("log", o.log.join("\n"));
     if let Some(a) = &o.aligned {
         c = c
@@ -594,7 +691,7 @@ fn encode_pipeline_response(o: &Outcome) -> Container {
     c
 }
 
-fn decode_pipeline_response(c: &Container) -> Result<Outcome, String> {
+pub(crate) fn decode_pipeline_response(c: &Container) -> Result<Outcome, String> {
     let mut out = Outcome {
         log: c.require("log")?.lines().map(str::to_string).collect(),
         ..Outcome::default()
@@ -724,6 +821,9 @@ impl Response {
         into_phylocnn, PhyloCnn, CnnResult, "PhyloCNN estimates";
         into_fold, Fold, Folded, "a structure";
         into_species, Species, SpeciesResult, "a species tree";
+        into_flow, Flow, FlowResult, "the result of a pipeline file";
+        into_motif, Motif, MotifResult, "motifs";
+        into_domains, Domains, DomainsResult, "domains";
     }
 
     pub fn encode(&self) -> Container {
@@ -741,6 +841,9 @@ impl Response {
                 .with("meta", timing(&f.engine, f.seconds))
                 .with("pdb", f.pdb.clone()),
             Response::Species(r) => r.encode(),
+            Response::Flow(r) => r.encode(),
+            Response::Motif(r) => r.encode(),
+            Response::Domains(r) => r.encode(),
         }
     }
 
@@ -769,6 +872,9 @@ impl Response {
                 }))
             }
             Kind::Species => SpeciesResult::decode(c).map(Response::Species),
+            Kind::Flow => FlowResult::decode(c).map(Response::Flow),
+            Kind::Motif => MotifResult::decode(c).map(Response::Motif),
+            Kind::Domains => DomainsResult::decode(c).map(Response::Domains),
         }
     }
 }

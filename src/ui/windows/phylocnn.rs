@@ -4,6 +4,7 @@
 
 use super::treetools::{newick_text, read_newick_file};
 use crate::models;
+use crate::provenance::{Asked, Input, Provenance};
 use crate::remote::run::run_phylocnn;
 use crate::remote::settings::Compute;
 use crate::remote::tasks::{CnnResult, Request, Response};
@@ -12,11 +13,13 @@ use crate::seq::phylocnn::{
     example_tree, summarize, Estimate, Priors, Spread, Task, MAX_TIPS, MIN_TRAINED_TIPS,
 };
 use crate::ui::app::App;
-use crate::ui::design;
+use crate::ui::design::Tone;
 use crate::ui::dialog::{self, Wanted};
+use crate::ui::fonts::FontWeight;
 use crate::ui::job::{Job, Poll};
 use crate::ui::platform::route::Source;
 use crate::ui::platform::workstation::{compute_picker, Place};
+use crate::ui::provenance as made_ui;
 use eframe::egui::{self, RichText, ScrollArea};
 use std::time::Duration;
 
@@ -43,6 +46,28 @@ struct Report {
     spread: Vec<Spread>,
     seconds: f64,
     engine: String,
+}
+
+/// The settings of a run as the window holds them: the sampling probability, the priors and what is estimated.
+pub type Kept = (f64, Priors, Task);
+
+/// The inputs and the settings of a run, as its record says them: the trees as they were given, and what was asked of the networks.
+pub fn described(
+    newick: &str,
+    (sampling, priors, task): Kept,
+) -> (Vec<Input>, Vec<(String, String)>) {
+    let settings = [
+        ("estimate", task.label().to_string()),
+        ("trained with", priors.label().to_string()),
+        ("sampling probability", sampling.to_string()),
+    ];
+    (
+        vec![Input::of("trees", newick.as_bytes())],
+        settings
+            .into_iter()
+            .map(|(k, v)| (k.to_string(), v))
+            .collect(),
+    )
 }
 
 /// What the window shows of a run, wherever it ran.
@@ -89,6 +114,11 @@ pub struct PhyloCnnWin {
     /// program; they may be copied in by hand while the window is open).
     models: Option<bool>,
     models_checked: f64,
+    /// What the run that is going was asked, with the settings to bring back for *Run again*.
+    asked: Option<(Asked, Kept)>,
+    /// The record of what made the estimates that are shown; none for an answer from the workstation's list, whose trees
+    /// and settings are not known here.
+    pub made: Option<(Provenance, Kept)>,
 }
 
 impl Default for PhyloCnnWin {
@@ -108,6 +138,8 @@ impl Default for PhyloCnnWin {
             message: String::new(),
             models: None,
             models_checked: 0.0,
+            asked: None,
+            made: None,
         }
     }
 }
@@ -135,7 +167,13 @@ impl PhyloCnnWin {
     fn set_tree(&mut self, text: String, message: String) {
         self.newick = text;
         self.table.clear();
+        self.made = None;
         self.message = message;
+    }
+
+    /// The trees and the settings as they are in the window now, to say what has changed since the estimates were made.
+    pub fn as_it_is(&self) -> (Vec<Input>, Vec<(String, String)>) {
+        described(&self.newick, (self.sampling, self.priors, self.task))
     }
 
     /// The GPU's name, looked for the first time it is asked.
@@ -154,7 +192,9 @@ impl PhyloCnnWin {
         }
     }
 
-    fn take(&mut self, report: Report) {
+    /// Show what the networks found. `asked` is what they were asked, when that is known here: the record of the estimates
+    /// is made from it.
+    fn take(&mut self, report: Report, asked: Option<(Asked, Kept)>) {
         let task = report.task;
         if report.one.is_empty() {
             self.header = vec!["", "mean", "median", "95 % interval"];
@@ -210,6 +250,16 @@ impl PhyloCnnWin {
             ));
         }
         self.message = notes.join(" ");
+        self.made = asked.map(|(asked, kept)| {
+            // an answer of an older workstation does not say what the networks ran on
+            let on = if report.engine.is_empty() {
+                String::new()
+            } else {
+                format!(", on the {}", report.engine)
+            };
+            let networks = format!("PhyloCNN networks of Perez & Gascuel (2025){on}");
+            (asked.made(vec![networks], report.seconds), kept)
+        });
     }
 }
 
@@ -217,7 +267,8 @@ impl App {
     /// Show what the networks found on the workstation, and open the window to show it.
     pub fn show_phylocnn_result(&mut self, result: CnnResult) {
         self.phylocnn_win.open = true;
-        self.phylocnn_win.take(report(result));
+        // fetched from the workstation's list: the trees and the settings it was made with are not known here
+        self.phylocnn_win.take(report(result), None);
     }
 
     /// The Zurich HIV tree with the settings the authors use for it; where that file is not installed, a made-up tree of
@@ -293,6 +344,18 @@ impl App {
         w.run_requested = false;
         w.table.clear();
         let (newick, sampling, task, priors) = (w.newick.clone(), w.sampling, w.task, w.priors);
+        let kept = (sampling, priors, task);
+        let (inputs, parameters) = described(&newick, kept);
+        let asked = Asked {
+            analysis: "PhyloCNN estimates",
+            inputs,
+            parameters,
+            ran_on: match place {
+                Place::There(_) => "the workstation",
+                Place::Here => "this computer",
+            },
+        };
+        (w.made, w.asked) = (None, Some((asked, kept)));
         let Place::There(remote) = place else {
             let gpu = w.use_gpu && w.gpu_name().is_some();
             w.message = "Working…".into();
@@ -309,9 +372,10 @@ impl App {
             priors,
             gpu: w.use_gpu && remote_gpu,
         };
-        w.job = Some(Job::spawn(ctx, move || {
+        w.job = Some(Job::spawn_async(ctx, async move {
             remote
-                .run(&request, "PhyloCNN estimates")
+                .run_async(&request, "PhyloCNN estimates")
+                .await
                 .and_then(Response::into_phylocnn)
                 .map(report)
         }));
@@ -328,8 +392,9 @@ impl App {
                 Poll::Running => ctx.request_repaint_after(WORKING_REDRAW),
                 Poll::Done(outcome) => {
                     self.phylocnn_win.job = None;
+                    let asked = self.phylocnn_win.asked.take();
                     match outcome {
-                        Ok(report) => self.phylocnn_win.take(report),
+                        Ok(report) => self.phylocnn_win.take(report, asked),
                         Err(why) => self.phylocnn_win.message = why,
                     }
                 }
@@ -348,6 +413,7 @@ impl App {
         }
         let (mut open, mut run, mut load, mut example, mut install) =
             (true, false, false, false, false);
+        let mut asks = made_ui::Asks::default();
         let models_ready = self.phylocnn_win.models_ready(ctx);
         // where the run would go with the GPU as ticked: it is the workstation's GPU that is on offer when jobs may go there
         let there_gpu = self.platform.workstation.gpu_name().map(str::to_string);
@@ -356,7 +422,7 @@ impl App {
             self.phylocnn_win.use_gpu && there_gpu.is_some(),
         );
         let view = self.platform.workstation.view(&weight);
-        let look = design::look(self.prefs.dark);
+        let look = self.prefs.look();
         crate::ui::design::window("PhyloCNN Epidemic Estimates")
             .open(&mut open)
             .default_width(560.0)
@@ -452,7 +518,7 @@ impl App {
                     run = ui
                         .add_enabled(
                             w.job.is_none(),
-                            egui::Button::new(RichText::new("Estimate").strong()),
+                            egui::Button::new(RichText::new("Estimate").semibold()),
                         )
                         .clicked();
                     if w.job.is_some() {
@@ -463,12 +529,16 @@ impl App {
                 if !w.message.is_empty() {
                     ui.label(&w.message);
                 }
+                // above the estimates: opened under them it would be off a small screen, and this window does not scroll
+                if let (false, Some((made, _))) = (w.table.is_empty(), &w.made) {
+                    asks = made_ui::section(ui, &look, made, || w.as_it_is(), w.job.is_none());
+                }
                 if !w.table.is_empty() {
                     egui::Grid::new("phylocnn_results")
                         .striped(true)
                         .show(ui, |ui| {
                             for h in &w.header {
-                                ui.label(RichText::new(*h).strong());
+                                ui.label(RichText::new(*h).semibold());
                             }
                             ui.end_row();
                             for row in &w.table {
@@ -476,7 +546,7 @@ impl App {
                                     if k == 0 {
                                         ui.label(cell);
                                     } else {
-                                        ui.label(RichText::new(cell).monospace().strong());
+                                        ui.label(RichText::new(cell).monospace().semibold());
                                     }
                                 }
                                 ui.end_row();
@@ -488,6 +558,22 @@ impl App {
                     );
                 }
             });
+        if let (true, Some((made, _))) = (asks.copy, &self.phylocnn_win.made) {
+            ctx.copy_text(made.to_text());
+            // not in the window's message: that holds what to know of the estimates
+            self.toasts.push(
+                "Copied the record of how the estimates were made.",
+                Tone::Good,
+            );
+        }
+        self.checks_win.open |= asks.checks;
+        let kept = self.phylocnn_win.made.as_ref().map(|(_, kept)| *kept);
+        if let (true, Some(kept)) = (asks.again, kept) {
+            // with the settings the estimates that are shown were made with
+            let w = &mut self.phylocnn_win;
+            (w.sampling, w.priors, w.task) = kept;
+            run = true;
+        }
         if load {
             self.open_phylocnn_tree();
         }
@@ -503,3 +589,6 @@ impl App {
         self.phylocnn_win.open = open;
     }
 }
+
+#[cfg(test)]
+mod tests;

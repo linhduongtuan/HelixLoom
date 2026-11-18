@@ -6,14 +6,24 @@
 //!
 //! Nothing here is in the original program; it is all new work for the person's workstation.
 
+#[cfg(not(target_arch = "wasm32"))]
+pub mod block;
+// the command line (serve, token, status) is for a program; a page has none
+#[cfg(not(target_arch = "wasm32"))]
 pub mod cli;
 pub mod client;
+pub mod domains;
+#[cfg(target_arch = "wasm32")]
+pub mod fetch;
+pub mod flow;
 pub mod gpus;
 pub mod http;
 pub mod jobs;
+pub mod motif;
 pub mod run;
 pub mod server;
 pub mod settings;
+pub mod site;
 pub mod species;
 pub mod tasks;
 pub mod weight;

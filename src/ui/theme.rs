@@ -1,6 +1,7 @@
 //! Colours and fonts. Values come from the original's defaults (ApE_Defaults.txt and
 //! the colour settings in AppMain.tcl); light mode is the default, dark mode follows its dark set.
 
+use super::appearance::Appearance;
 use crate::seq::features::Rgb;
 use eframe::egui::{self, Color32, FontFamily, FontId, TextStyle};
 
@@ -18,6 +19,9 @@ pub struct Palette {
     pub enzyme: Color32,
     pub line: Color32,
     pub accent: Color32,
+    /// Whether the letters of bases are drawn in colours that stay apart for people who see colour differently (the setting of
+    /// `appearance`; `theme::palette` has it off).
+    pub safe_colours: bool,
 }
 
 pub fn palette(dark: bool) -> Palette {
@@ -36,6 +40,7 @@ pub fn palette(dark: bool) -> Palette {
             enzyme: Color32::from_rgb(255, 90, 90),
             line: Color32::from_gray(90),
             accent: Color32::from_rgb(90, 150, 255),
+            safe_colours: false,
         }
     } else {
         Palette {
@@ -54,6 +59,7 @@ pub fn palette(dark: bool) -> Palette {
             enzyme: Color32::from_rgb(255, 0, 0),
             line: Color32::from_gray(190),
             accent: Color32::from_rgb(20, 100, 240),
+            safe_colours: false,
         }
     }
 }
@@ -79,8 +85,8 @@ pub fn mix(a: Color32, b: Color32, pct: f32) -> Color32 {
     Color32::from_rgb(f(a.r(), b.r()), f(a.g(), b.g()), f(a.b(), b.b()))
 }
 
-/// The visuals of one of the two themes: the platform's colours on egui's own light or dark base.
-fn visuals_for(dark: bool) -> egui::Visuals {
+/// The visuals of one of the two themes: the platform's colours, with the person's settings on them, on egui's own light or dark base.
+fn visuals_for(dark: bool, appearance: Appearance) -> egui::Visuals {
     let pal = palette(dark);
     let mut visuals = if dark {
         egui::Visuals::dark()
@@ -92,16 +98,21 @@ fn visuals_for(dark: bool) -> egui::Visuals {
     visuals.extreme_bg_color = pal.text_bg;
     visuals.selection.bg_fill = pal.accent.gamma_multiply(0.6);
     visuals.window_corner_radius = 6.0.into();
-    super::design::decorate(&mut visuals, &super::design::look(dark));
+    super::design::decorate(&mut visuals, &appearance.look(dark));
     visuals
 }
 
-/// Put the colours on the window. Both themes are set, and when `follow_system` the window is left to follow the system's own
-/// setting: pinning it to light or dark would also pin the window's title bar, and on a Mac the system would then stop
+/// Put the colours, the spacing and the size on the window. Both themes are set, and when `follow_system` the window is left to follow
+/// the system's own setting: pinning it to light or dark would also pin the window's title bar, and on a Mac the system would then stop
 /// telling the program when it changes. Where the system says nothing, the light colours are used.
-pub fn apply(ctx: &egui::Context, dark: bool, follow_system: bool) {
-    ctx.set_visuals_of(egui::Theme::Dark, visuals_for(true));
-    ctx.set_visuals_of(egui::Theme::Light, visuals_for(false));
+///
+/// The size is the context's zoom factor. The keys that egui zooms with (Cmd +, - and 0) are turned off here: the program takes them
+/// itself, to move between the sizes of `appearance::SCALES` and to keep the one chosen.
+pub fn apply(ctx: &egui::Context, dark: bool, follow_system: bool, appearance: Appearance) {
+    ctx.set_visuals_of(egui::Theme::Dark, visuals_for(true, appearance));
+    ctx.set_visuals_of(egui::Theme::Light, visuals_for(false, appearance));
+    ctx.options_mut(|options| options.zoom_with_keyboard = false);
+    ctx.set_zoom_factor(appearance.zoom());
     ctx.options_mut(|options| options.fallback_theme = egui::Theme::Light);
     ctx.set_theme(match (follow_system, dark) {
         (true, _) => egui::ThemePreference::System,
@@ -130,7 +141,7 @@ pub fn apply(ctx: &egui::Context, dark: bool, follow_system: bool) {
         ]
         .into();
     });
-    super::design::space(ctx);
+    super::design::space(ctx, appearance.density);
 }
 
 #[cfg(test)]

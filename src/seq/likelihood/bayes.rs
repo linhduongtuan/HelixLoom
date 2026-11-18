@@ -57,6 +57,8 @@ impl Default for Settings {
 }
 
 pub struct BayesResult {
+    /// Where the likelihood was computed when it was not on the processor: the GPUs, with the share of each.
+    pub accelerator: Option<String>,
     /// The majority-rule consensus tree: support is the posterior probability in percent, branch
     /// lengths are means over the sampled trees that have the branch.
     pub tree: Node,
@@ -331,13 +333,22 @@ fn run_chain(model: &Model, start: &Tree, s: &Settings, run: usize) -> Tally {
 
 /// Sample trees from the posterior of an alignment of 3 to 127 sequences.
 pub fn bayes_tree(msa: &Msa, settings: &Settings) -> Result<BayesResult, String> {
+    bayes_tree_using(msa, settings, Sites::accelerate)
+}
+
+/// The same, with the putting of the columns on the GPUs (or not) done by `accelerate` (what the tests use to try a pool of their own).
+pub(super) fn bayes_tree_using(
+    msa: &Msa,
+    settings: &Settings,
+    accelerate: impl FnOnce(&mut Sites) -> Option<String>,
+) -> Result<BayesResult, String> {
     let n = msa.rows.len();
     if !(3..=MAX_TAXA).contains(&n) {
         return Err(format!(
             "A Bayesian tree needs between 3 and {MAX_TAXA} sequences."
         ));
     }
-    let data = sites(msa).ok_or("No column of the alignment holds a base.")?;
+    let mut data = sites(msa).ok_or("No column of the alignment holds a base.")?;
     let distances = [
         DistanceModel::Kimura2,
         DistanceModel::JukesCantor,
@@ -349,6 +360,8 @@ pub fn bayes_tree(msa: &Msa, settings: &Settings) -> Result<BayesResult, String>
     let start = neighbor_joining(&msa.names, &distances)
         .and_then(|t| Tree::from_node(&t, &msa.names))
         .ok_or("The starting tree could not be built.")?;
+    // the columns go to the GPUs after the starting tree's distances, which have had theirs and let them go
+    let placed = accelerate(&mut data);
     let model = Model { sites: &data };
     let runs: Vec<usize> = (0..settings.runs.max(1)).collect();
     let tallies = par_map(&runs, |&r| run_chain(&model, &start, settings, r));
@@ -357,6 +370,7 @@ pub fn bayes_tree(msa: &Msa, settings: &Settings) -> Result<BayesResult, String>
         return Err("No tree was sampled: use more generations or a shorter burn-in.".into());
     }
     Ok(BayesResult {
+        accelerator: data.accelerator(placed),
         tree: consensus(&msa.names, &all),
         asdsf: asdsf(&tallies),
         samples: all.samples as usize,
@@ -396,6 +410,7 @@ mod tests {
             counts: vec![1.0],
             total: 1.0,
             freqs: [0.25; 4],
+            accel: Default::default(),
         };
         let model = Model { sites: &data };
         let mut chain = Chain::new(&four_tips(), &model, 7, 0);

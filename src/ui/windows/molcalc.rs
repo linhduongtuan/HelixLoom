@@ -8,6 +8,7 @@ mod molarity;
 
 use crate::seq::molcalc::format::number;
 use crate::ui::app::App;
+use crate::ui::fonts::FontWeight;
 use eframe::egui::{self, Ui};
 
 #[derive(Clone, Copy, Default, PartialEq, Eq)]
@@ -125,7 +126,7 @@ fn combo<T: Copy + PartialEq>(
 
 /// A bold result, or a dash while there is none.
 fn result(ui: &mut Ui, text: &str) {
-    ui.label(egui::RichText::new(if text.is_empty() { "-" } else { text }).strong());
+    ui.label(egui::RichText::new(if text.is_empty() { "-" } else { text }).semibold());
 }
 
 #[cfg(test)]

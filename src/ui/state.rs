@@ -1,7 +1,10 @@
 //! State shared by the windows: open documents (with selection, undo and cached enzyme sites)
 //! and preferences.
 
+use super::appearance::Appearance;
 use super::clipboard::PasteJob;
+use super::design::Look;
+use super::map::MapHit;
 use crate::seq::dna::{Hit, StartRule, Strand};
 use crate::seq::doc::Doc;
 use crate::seq::enzymes::{all_sites, Enzyme, Site};
@@ -95,6 +98,37 @@ impl DocView {
         let n = self.doc.len();
         self.anchor = Some(a.min(n));
         self.caret = b.min(n);
+    }
+
+    /// Select feature `fi` the way a click on it does: its bases selected and the view taken to it.
+    pub fn select_feature(&mut self, fi: usize) {
+        let Some(f) = self.doc.features.get(fi) else {
+            return;
+        };
+        let (a, b) = (f.start(), f.end());
+        self.selected_feature = Some(fi);
+        self.select(a, b);
+        self.scroll_to = Some(a);
+    }
+
+    /// A click on a map: on a feature's arrow it selects the feature; anywhere else it puts the caret on that base.
+    pub fn map_click(&mut self, hit: MapHit) {
+        match hit {
+            MapHit::Feature(fi) => self.select_feature(fi),
+            MapHit::Base(pos) => {
+                self.selected_feature = None;
+                self.place_caret(pos);
+                self.scroll_to = Some(pos);
+            }
+        }
+    }
+
+    /// The selected feature, for as long as the selection is still exactly its bases: once the selection is moved
+    /// off it (a drag, an arrow key) it is no longer what the person is looking at.
+    pub fn current_feature(&self) -> Option<usize> {
+        let fi = self.selected_feature?;
+        let f = self.doc.features.get(fi)?;
+        (self.selection() == Some((f.start(), f.end()))).then_some(fi)
     }
 
     pub fn place_caret(&mut self, pos: usize) {
@@ -191,6 +225,8 @@ pub struct Prefs {
     /// Whether the dark colours are in use right now: what `theme` comes to.
     pub dark: bool,
     pub theme: ThemeMode,
+    /// The size, roominess, accent, contrast and colours that the person chose (see `appearance`).
+    pub appearance: Appearance,
     pub font_size: f32,
     pub second_strand: bool,
     pub orf_min: usize,
@@ -203,6 +239,8 @@ pub struct Prefs {
     pub primer: PrimerParams,
     pub show_map: bool,
     pub show_features: bool,
+    /// The inspector under the map: what the selected feature, or the selected bases, are.
+    pub show_inspector: bool,
     /// The original's "Selection Only" switch (`info(analyze_selection)`, Enzymes menu): the digest, the lists of enzymes and the
     /// ORF list look at the selected bases only, when there are some, instead of all of the sequence.
     pub selection_only: bool,
@@ -237,6 +275,19 @@ impl ThemeMode {
         }
     }
 
+    /// The word it is written as in `appearance.txt`.
+    pub fn key(self) -> &'static str {
+        match self {
+            ThemeMode::System => "system",
+            ThemeMode::Light => "light",
+            ThemeMode::Dark => "dark",
+        }
+    }
+
+    pub fn from_key(key: &str) -> Option<ThemeMode> {
+        Self::ALL.into_iter().find(|mode| mode.key() == key)
+    }
+
     /// The next one in the order System, Light, Dark.
     pub fn next(self) -> ThemeMode {
         match self {
@@ -247,11 +298,19 @@ impl ThemeMode {
     }
 }
 
+impl Prefs {
+    /// The colours of the chrome now: the theme that is in use, with the person's settings on it.
+    pub fn look(&self) -> Look {
+        self.appearance.look(self.dark)
+    }
+}
+
 impl Default for Prefs {
     fn default() -> Self {
         Prefs {
             dark: false,
             theme: ThemeMode::System,
+            appearance: Appearance::default(),
             font_size: 12.0, // dnafontsize in ApE_Defaults.txt
             second_strand: true,
             orf_min: 90,
@@ -264,6 +323,7 @@ impl Default for Prefs {
             primer: PrimerParams::default(),
             show_map: true,
             show_features: true,
+            show_inspector: true,
             selection_only: false,
         }
     }
@@ -342,5 +402,66 @@ mod tests {
             v.edit(|d| d.insert(0, b"A"));
         }
         assert_eq!(v.undo.len(), UNDO_LIMIT);
+    }
+
+    fn view_with_feature() -> DocView {
+        let mut v = view();
+        v.doc
+            .features
+            .push(crate::seq::features::Feature::new("g", "CDS", 2, 8, false));
+        v
+    }
+
+    #[test]
+    fn selecting_a_feature_selects_its_bases_and_goes_to_it() {
+        let mut v = view_with_feature();
+        v.select_feature(0);
+        assert_eq!(v.selection(), Some((2, 8)));
+        assert_eq!(v.selected_feature, Some(0));
+        assert_eq!(v.scroll_to, Some(2));
+        assert_eq!(v.current_feature(), Some(0));
+    }
+
+    #[test]
+    fn a_click_on_a_feature_of_the_map_selects_it_and_a_click_on_the_map_leaves_it() {
+        let mut v = view_with_feature();
+        v.map_click(MapHit::Feature(0));
+        assert_eq!(v.current_feature(), Some(0));
+        assert_eq!(v.selection(), Some((2, 8)));
+        v.map_click(MapHit::Base(11));
+        assert_eq!(v.selected_feature, None);
+        assert_eq!(v.selection(), None);
+        assert_eq!(v.caret, 11);
+        assert_eq!(v.scroll_to, Some(11));
+    }
+
+    #[test]
+    fn selecting_a_feature_that_is_not_there_does_nothing() {
+        let mut v = view_with_feature();
+        v.select_feature(3);
+        assert_eq!(
+            (v.selection(), v.selected_feature, v.scroll_to),
+            (None, None, None)
+        );
+    }
+
+    #[test]
+    fn the_feature_stops_being_current_once_the_selection_moves_off_it() {
+        let mut v = view_with_feature();
+        v.select_feature(0);
+        v.select(2, 9);
+        assert_eq!(v.current_feature(), None);
+        v.select(2, 8);
+        assert_eq!(v.current_feature(), Some(0));
+        v.place_caret(4);
+        assert_eq!(v.current_feature(), None);
+    }
+
+    #[test]
+    fn a_feature_that_an_edit_removed_is_no_longer_current() {
+        let mut v = view_with_feature();
+        v.select_feature(0);
+        v.doc.features.clear();
+        assert_eq!(v.current_feature(), None);
     }
 }

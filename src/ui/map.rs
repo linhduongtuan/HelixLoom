@@ -20,7 +20,75 @@ pub struct MapData<'a> {
     pub doc: &'a Doc,
     pub sites: Vec<MapSite>,
     pub selection: Option<(usize, usize)>,
+    /// The feature the inspector is showing: drawn with a heavy outline so it can be found on the map.
+    pub selected_feature: Option<usize>,
     pub pal: &'a Palette,
+}
+
+/// What a click on the map landed on.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum MapHit {
+    /// Empty map: this base (0-based, 0..=len).
+    Base(usize),
+    /// A feature's arrow.
+    Feature(usize),
+}
+
+/// Outline of a feature: a thin dark edge, or a heavy one in the text colour when it is the selected one.
+fn feature_edge(fill: Color32, selected: bool, pal: &Palette) -> Stroke {
+    if selected {
+        Stroke::new(2.5, pal.fg)
+    } else {
+        Stroke::new(1.0, theme::mix(Color32::BLACK, fill, 35.0))
+    }
+}
+
+/// Distance from the circle's line to the near and far edge of lane `lane`'s ring of features.
+fn ring_band(lane: usize) -> (f32, f32) {
+    let near = 3.0 + lane as f32 * 13.0;
+    (near, near + 10.0)
+}
+
+/// The least angle, in radians, that an arrow of a feature is drawn over on the circular map: a feature of one base is still seen.
+const MIN_ARC: f32 = 0.01;
+
+/// The feature under a click on the circular map: `out` is how far the click is beyond the circle's line, `base` the
+/// base at its angle. A feature too short to be seen is hit over the width that it is drawn with.
+fn ring_hit(doc: &Doc, lanes: &[usize], out: f32, base: usize) -> Option<usize> {
+    let drawn = (MIN_ARC / TAU * doc.len() as f32).ceil() as usize;
+    doc.features.iter().enumerate().find_map(|(fi, f)| {
+        let (near, far) = ring_band(lanes[fi]);
+        let over = f
+            .spans
+            .iter()
+            .any(|&(s, e)| base >= s && base < e.max(s + drawn));
+        (out >= near - 1.0 && out <= far + 1.0 && over).then_some(fi)
+    })
+}
+
+/// Height of a feature's bar on the linear map, and the distance from one lane's bars to the next.
+const BAR_HEIGHT: f32 = 14.0;
+const LANE_PITCH: f32 = 17.0;
+
+/// The feature under a click on the linear map: `x_of` gives the x of a base, `top` is where lane 0's bars start.
+fn bar_hit(
+    doc: &Doc,
+    lanes: &[usize],
+    x_of: &dyn Fn(usize) -> f32,
+    top: f32,
+    at: Pos2,
+) -> Option<usize> {
+    doc.features.iter().enumerate().find_map(|(fi, f)| {
+        let y = top + lanes[fi] as f32 * LANE_PITCH;
+        if at.y < y || at.y > y + BAR_HEIGHT {
+            return None;
+        }
+        let on = f.spans.iter().any(|&(s, e)| {
+            let (xa, xb) = (x_of(s), x_of(e).max(x_of(s) + 2.0));
+            at.x >= xa - 1.0 && at.x <= xb + 1.0
+        });
+        on.then_some(fi)
+    })
 }
 
 /// "1,000" style numbers.
@@ -144,12 +212,12 @@ fn arc_arrow(
     p.add(Shape::closed_line(outline, edge));
 }
 
-pub fn circular(ui: &mut Ui, data: &MapData, size: Vec2) -> Option<usize> {
+pub fn circular(ui: &mut Ui, data: &MapData, size: Vec2) -> Option<MapHit> {
     let (rect, resp) = ui.allocate_exact_size(size, Sense::click());
     let p = ui.painter_at(rect);
     let (doc, pal) = (data.doc, data.pal);
     let n = doc.len().max(1);
-    let lane_count = feature_lanes(doc).1;
+    let (lanes, lane_count) = feature_lanes(doc);
     let r = ((rect.height() * 0.5 - 28.0)
         .min(rect.width() * 0.5 - 105.0 - lane_count as f32 * 10.0))
     .max(50.0);
@@ -181,7 +249,7 @@ pub fn circular(ui: &mut Ui, data: &MapData, size: Vec2) -> Option<usize> {
         Rect::from_center_size(circ.c - vec2(0.0, 10.0), title.size()).expand(3.0),
         Rect::from_center_size(circ.c + vec2(0.0, 10.0), size_text.size()).expand(3.0),
     ];
-    feature_arcs(&p, &circ, r, doc, pal, keep_clear);
+    feature_arcs(&p, &circ, r, data, &lanes, keep_clear);
     enzyme_labels(&p, &circ, r + 8.0 + lane_count as f32 * 13.0, data, rect);
 
     p.galley(circ.c - vec2(0.0, 10.0) - title.size() / 2.0, title, pal.fg);
@@ -196,7 +264,11 @@ pub fn circular(ui: &mut Ui, data: &MapData, size: Vec2) -> Option<usize> {
         .map(|pos| {
             let v = pos - circ.c;
             let turn = (v.y.atan2(v.x) + FRAC_PI_2).rem_euclid(TAU) / TAU;
-            ((turn * n as f32) as usize).min(n)
+            let base = ((turn * n as f32) as usize).min(n);
+            match ring_hit(doc, &lanes, v.length() - r, base) {
+                Some(fi) => MapHit::Feature(fi),
+                None => MapHit::Base(base),
+            }
         })
 }
 
@@ -244,23 +316,23 @@ fn feature_arcs(
     p: &egui::Painter,
     c: &Circle,
     r: f32,
-    doc: &Doc,
-    pal: &Palette,
+    data: &MapData,
+    lanes: &[usize],
     keep_clear: Vec<Rect>,
 ) {
-    let (lanes, _) = feature_lanes(doc);
+    let (doc, pal) = (data.doc, data.pal);
     let n = doc.len();
     let mut labelled: Vec<Rect> = keep_clear;
     for (fi, f) in doc.features.iter().enumerate() {
-        let r0 = r + 3.0 + lanes[fi] as f32 * 13.0;
-        let r1 = r0 + 10.0;
+        let (near, far) = ring_band(lanes[fi]);
+        let (r0, r1) = (r + near, r + far);
         let fill = theme::rgb(f.color());
-        let edge = Stroke::new(1.0, theme::mix(Color32::BLACK, fill, 35.0));
+        let edge = feature_edge(fill, data.selected_feature == Some(fi), pal);
         let (head_span, head_right) = head_of(f, n);
         for (si, &(s, e)) in f.spans.iter().enumerate() {
             let (a0, a1) = (c.angle(s as f32), c.angle(e as f32));
             let head = (si == head_span).then_some(head_right);
-            arc_arrow(p, c.c, r0, r1, a0, a1.max(a0 + 0.01), head, fill, edge);
+            arc_arrow(p, c.c, r0, r1, a0, a1.max(a0 + MIN_ARC), head, fill, edge);
         }
         // name inside the circle at the middle of the largest span: one line first, then two,
         // at the first radius where it stays inside the ring and clear of other text
@@ -353,7 +425,7 @@ fn enzyme_labels(p: &egui::Painter, c: &Circle, r_label: f32, data: &MapData, ar
 // Linear
 // ---------------------------------------------------------------------------
 
-pub fn linear(ui: &mut Ui, data: &MapData, size: Vec2) -> Option<usize> {
+pub fn linear(ui: &mut Ui, data: &MapData, size: Vec2) -> Option<MapHit> {
     let (rect, resp) = ui.allocate_exact_size(size, Sense::click());
     let p = ui.painter_at(rect);
     let (doc, pal) = (data.doc, data.pal);
@@ -438,7 +510,9 @@ pub fn linear(ui: &mut Ui, data: &MapData, size: Vec2) -> Option<usize> {
             pal.select_bg,
         );
     }
-    feature_bars(&p, doc, axis_y + 26.0, &x_of, pal);
+    let (lanes, _) = feature_lanes(doc);
+    let bars_top = axis_y + 26.0;
+    feature_bars(&p, data, &lanes, bars_top, &x_of);
     p.text(
         pos2(rect.center().x, rect.bottom() - 4.0),
         Align2::CENTER_BOTTOM,
@@ -449,25 +523,30 @@ pub fn linear(ui: &mut Ui, data: &MapData, size: Vec2) -> Option<usize> {
 
     resp.interact_pointer_pos()
         .filter(|_| resp.clicked())
-        .map(|pos| (((pos.x - left) / (right - left)).clamp(0.0, 1.0) * n as f32) as usize)
+        .map(|pos| match bar_hit(doc, &lanes, &x_of, bars_top, pos) {
+            Some(fi) => MapHit::Feature(fi),
+            None => MapHit::Base(
+                (((pos.x - left) / (right - left)).clamp(0.0, 1.0) * n as f32) as usize,
+            ),
+        })
 }
 
 fn feature_bars(
     p: &egui::Painter,
-    doc: &Doc,
+    data: &MapData,
+    lanes: &[usize],
     top: f32,
     x_of: &dyn Fn(usize) -> f32,
-    pal: &Palette,
 ) {
-    let (lanes, _) = feature_lanes(doc);
+    let (doc, pal) = (data.doc, data.pal);
     let n = doc.len();
     for (fi, f) in doc.features.iter().enumerate() {
-        let y = top + lanes[fi] as f32 * 17.0;
+        let y = top + lanes[fi] as f32 * LANE_PITCH;
         let fill = theme::rgb(f.color());
         let (head_span, head_right) = head_of(f, n);
         for (si, &(s, e)) in f.spans.iter().enumerate() {
             let (xa, xb) = (x_of(s), x_of(e).max(x_of(s) + 2.0));
-            let (t, b) = (y, y + 14.0);
+            let (t, b) = (y, y + BAR_HEIGHT);
             let hw = 7.0f32.min(xb - xa);
             let has_head = si == head_span;
             let pts = match (has_head, head_right) {
@@ -490,7 +569,7 @@ fn feature_bars(
             p.add(Shape::convex_polygon(
                 pts,
                 fill,
-                Stroke::new(1.0, theme::mix(Color32::BLACK, fill, 35.0)),
+                feature_edge(fill, data.selected_feature == Some(fi), pal),
             ));
             if si == 0 {
                 let clip = Rect::from_min_max(pos2(xa + 1.0, t), pos2(xb - 1.0, b));
@@ -504,7 +583,6 @@ fn feature_bars(
             }
         }
     }
-    let _ = pal;
 }
 
 #[cfg(test)]
@@ -527,5 +605,90 @@ mod tests {
         assert_eq!(nice_step(120, 10), 20);
         assert_eq!(nice_step(5, 10), 1);
         assert_eq!(nice_step(0, 10), 1);
+    }
+
+    fn two_features() -> (Doc, Vec<usize>) {
+        use crate::seq::features::Feature;
+        let mut d = Doc::new("t", vec![b'A'; 100]);
+        d.features.push(Feature::new("a", "CDS", 10, 40, false));
+        d.features
+            .push(Feature::new("b", "promoter", 30, 60, false));
+        let (lanes, _) = feature_lanes(&d);
+        (d, lanes)
+    }
+
+    #[test]
+    fn a_click_on_the_ring_picks_the_feature_in_that_lane_at_that_base() {
+        let (d, lanes) = two_features();
+        assert_ne!(lanes[0], lanes[1], "overlapping features are stacked");
+        let mid = |lane: usize| (ring_band(lane).0 + ring_band(lane).1) / 2.0;
+        assert_eq!(ring_hit(&d, &lanes, mid(lanes[0]), 20), Some(0));
+        assert_eq!(ring_hit(&d, &lanes, mid(lanes[1]), 50), Some(1));
+        // in the overlap, the lane decides
+        assert_eq!(ring_hit(&d, &lanes, mid(lanes[0]), 35), Some(0));
+        assert_eq!(ring_hit(&d, &lanes, mid(lanes[1]), 35), Some(1));
+    }
+
+    #[test]
+    fn a_feature_of_one_base_is_hit_over_the_width_it_is_drawn_with() {
+        use crate::seq::features::Feature;
+        let mut d = Doc::new("t", vec![b'A'; 10_000]);
+        d.features
+            .push(Feature::new("tiny", "misc", 5_000, 5_001, false));
+        let (lanes, _) = feature_lanes(&d);
+        let mid = (ring_band(lanes[0]).0 + ring_band(lanes[0]).1) / 2.0;
+        // drawn about 16 bases wide: its own base and the next few are the arrow, a hundred bases on is not
+        assert_eq!(ring_hit(&d, &lanes, mid, 5_000), Some(0));
+        assert_eq!(ring_hit(&d, &lanes, mid, 5_010), Some(0));
+        assert_eq!(ring_hit(&d, &lanes, mid, 5_100), None);
+        assert_eq!(ring_hit(&d, &lanes, mid, 4_999), None);
+    }
+
+    #[test]
+    fn a_click_off_the_features_picks_none() {
+        let (d, lanes) = two_features();
+        let mid = (ring_band(lanes[0]).0 + ring_band(lanes[0]).1) / 2.0;
+        assert_eq!(
+            ring_hit(&d, &lanes, mid, 70),
+            None,
+            "no feature at that base"
+        );
+        assert_eq!(ring_hit(&d, &lanes, -5.0, 20), None, "inside the circle");
+        assert_eq!(ring_hit(&d, &lanes, 80.0, 20), None, "far outside it");
+    }
+
+    #[test]
+    fn a_click_on_a_bar_picks_the_feature_in_that_lane_at_that_x() {
+        let (d, lanes) = two_features();
+        let x_of = |pos: usize| 10.0 + pos as f32 * 5.0;
+        let top = 100.0;
+        let y = |lane: usize| top + lane as f32 * LANE_PITCH + BAR_HEIGHT / 2.0;
+        assert_eq!(
+            bar_hit(&d, &lanes, &x_of, top, pos2(x_of(20), y(lanes[0]))),
+            Some(0)
+        );
+        assert_eq!(
+            bar_hit(&d, &lanes, &x_of, top, pos2(x_of(50), y(lanes[1]))),
+            Some(1)
+        );
+        // beside the bar, and between the lanes
+        assert_eq!(
+            bar_hit(&d, &lanes, &x_of, top, pos2(x_of(70), y(lanes[0]))),
+            None
+        );
+        let gap = top + BAR_HEIGHT + 1.5;
+        assert_eq!(bar_hit(&d, &lanes, &x_of, top, pos2(x_of(20), gap)), None);
+    }
+
+    #[test]
+    fn a_feature_thinner_than_two_pixels_can_still_be_hit() {
+        use crate::seq::features::Feature;
+        let mut d = Doc::new("t", vec![b'A'; 10_000]);
+        d.features
+            .push(Feature::new("tiny", "misc", 5_000, 5_001, false));
+        let (lanes, _) = feature_lanes(&d);
+        let x_of = |pos: usize| 10.0 + pos as f32 * 0.05;
+        let at = pos2(x_of(5_000) + 1.0, 100.0 + BAR_HEIGHT / 2.0);
+        assert_eq!(bar_hit(&d, &lanes, &x_of, 100.0, at), Some(0));
     }
 }

@@ -355,7 +355,7 @@ appendix at the end; `mechanics.json` carries the same sources.
 
 ## 4. Alignment and primers
 
-* Align Sequences: affine-gap Needleman–Wunsch, match +1, mismatch −0.1, first gap −1, further gap −0.2 (`mm_penalty`, `gap_penalty`, `gap_extension_penalty`); line width 100; block size 15. `NW_affine_align` @0x231136, defaults L67040–67045.
+* Align Sequences: affine-gap Needleman–Wunsch. The original scores match +1, mismatch −0.1, first gap −1, further gap −0.2 (`mm_penalty`, `gap_penalty`, `gap_extension_penalty`); **here the same scores are ten times as large, in whole numbers (match +10, mismatch −1, first gap −10, further gap −2)** — the owner's decision (roadmap question 10, November 2026), so that every sum is exact in a 32-bit float and the processor, the lock-step lanes and the PyTorch workers find the same alignment by construction. The alignments are the original's except where the rounding of 0.1 and 0.2 broke a tie (on 600 random DNA pairs aligned end to end, about a quarter of the alignments differ, and every differing pair scores the optimum exactly with both: a choice among equally good alignments; measured with a throwaway script), and the scores shown are ten times the original's (`Align` window: *Score 69.0*, not 6.9). Line width 100; block size 15. `NW_affine_align` @0x231136, defaults L67040–67045.
 * Self-complementarity of a primer: align the primer to its own reverse complement (+1 / −1 / −2); report (score at the 3' end, best score). Limits 10 and 3. `align` @0x2132e9. Ported exactly and tested against 8 primers.
 * Primer search defaults: length 20–25, Tm 55–60 (unrounded Tm accepted in (min−0.5, max+0.5)), GC 45–60 %, GC clamp 1–2 (consecutive G/C at the 3' end), salt 50 mM, DNA 250 nM. `primer_scan` @0x210b1d, `ApE_Defaults.txt`.
 * *Estimated:* the original's primer Tm is computed incrementally with a slightly different end correction; HelixLoom uses the `Tm` proc for every candidate.
@@ -412,7 +412,7 @@ appendix at the end; `mechanics.json` carries the same sources.
 ## 5. Assembly
 
 * The original has **no read assembler or contig builder** (searched for contig/assemble/consensus). Its assemblers simulate cloning: Gibson (`gibson_find_ends` @0x2629bd, `gibson_find_chains` @0x263188), Golden Gate, restriction–ligation, recombination.
-* Gibson rules reused as the "Gibson-style" preset: exact end overlaps of 12–100 bases (`gib_min_overlap 12`, `gib_max_overlap 100`), 0 non-homologous bases, at most 10 fragments, circular product required, fragments used in either orientation. L67101–67106.
+* Gibson rules reused as the "Gibson-style" preset: exact end overlaps of 12–100 bases (`gib_min_overlap 12`, `gib_max_overlap 100`), 0 non-homologous bases, circular product required (the original's limit of 10 fragments is not applied here: nothing counts them), fragments used in either orientation. L67101–67106.
 * The read assembler is new (the request): overlap detection by shared 12-mers, ungapped verification (length and identity), both strands, containment, greedy best-overlap-first joining, optional circular closure, majority-vote consensus (ties → IUPAC code), coverage. Defaults for reads (**estimated**, no original value): min overlap 20, min identity 90 %, no maximum.
 
 ## 6. Look and feel
@@ -423,13 +423,13 @@ appendix at the end; `mechanics.json` carries the same sources.
 * Toolbar icons: two-tone line icons (black + blue); HelixLoom draws its own.
 * Info strip: Mouse, Sequence, Start / insert@, Length, End, ORF, Tm, %GC, circular/linear, Dam/Dcm. Built inside `create_window` @0xc840 (L1562–1692).
 * Circular map: radius 100, 0 at the top running clockwise, title at (0,−10), length at (0,+10), ticks inside, labels outside. `info(graphic_map_properties)` L67476 @0x314248.
-* Default file format GenBank (`default_file_format`), extension `.gbk`.
-* **Platform shell (added; deliberate difference).** The window is now a rail of eight workspaces (Home, Sequences, Signals, Alignment, Phylogeny, Trees, Structure, Pipelines; Go menu, ⌥⌘1 to ⌥⌘8) beside one page (`src/ui/platform/`). **Sequences is the original editor** with its menus, tabs, toolbar and info strip as described above; the other pages share `src/ui/design.rs`. A file opened from File → Open, dropped on the window or named on the command line goes where its name says (`src/ui/platform/route.rs`): `.ab1`/`.abi` to Signals, `.pdb`/`.ent` to Structure, `.nwk`/`.newick`/`.tre`/`.tree`/`.treefile` to Trees, anything else to Sequences, or into the sequence list when Alignment or Phylogeny is showing. Work that was started (an alignment, an estimation, a prediction, a pipeline run) goes on and finishes whichever page is showing.
+* Default file format GenBank (`default_file_format`), extension `.gbk` in the original; HelixLoom's Save proposes `.gb` and opens both.
+* **Platform shell (added; deliberate difference).** The window is now a rail of nine workspaces (Home, Sequences, Signals, Alignment, Phylogeny, Trees, Structure, Pipelines, Workstation; Go menu, ⌥⌘1 to ⌥⌘9) beside one page (`src/ui/platform/`). **Sequences is the original editor** with its menus, tabs, toolbar and info strip as described above; the other pages share `src/ui/design.rs`. A file opened from File → Open, dropped on the window or named on the command line goes where its name says (`src/ui/platform/route.rs`): `.ab1`/`.abi`/`.scf` to Signals, `.pdb`/`.ent` to Structure, `.nwk`/`.newick`/`.tre`/`.tree`/`.treefile` to Trees, anything else to Sequences, or into the sequence list when Alignment or Phylogeny is showing. Work that was started (an alignment, an estimation, a prediction, a pipeline run) goes on and finishes whichever page is showing.
 
 ## 7. Not built in this version
 
 The trace window's editing and linking (change or add a base, link a trace to a sequence window, search a trace, print or
-save as EPS; the rest of the window is built, section 8), the Molecular Reaction Calculator's lookup of a compound's weight by name and its recipe multiplier (both ask PubChem), NCBI BLAST / Entrez download, LabArchives, printing / PDF export, protein-feature search, Golden Gate / recombination / restriction–ligation wizards, partial digests (the original's menu entry is commented out, L1180, so nothing reaches its dialog), text map, RNA documents (the original converts U↔T on paste), per-feature arrow shapes (`arrow_data`, width, offset — HelixLoom draws one arrow shape), multi-range selections, the regions of the Graphic Map and of Text Map and BLAST under the Selection Only switch (section 8), Insert Piece.
+save as EPS; the rest of the window is built, section 8), the Molecular Reaction Calculator's lookup of a compound's weight by name and its recipe multiplier (both ask PubChem), NCBI BLAST and the Entrez query (a record comes by its accession with File ▸ Fetch from a Database…; searching is not built), LabArchives, printing / PDF export, protein-feature search, Golden Gate / recombination / restriction–ligation wizards, partial digests (the original's menu entry is commented out, L1180, so nothing reaches its dialog), RNA documents (the original converts U↔T on paste), per-feature arrow shapes (`arrow_data`, width, offset — HelixLoom draws one arrow shape), multi-range selections, the region of the Graphic Map under the Selection Only switch (section 8; Text Map reads the switch, BLAST is not built at all), Insert Piece.
 
 ## 8. Editing rules read in the deep pass (all built)
 
@@ -846,7 +846,7 @@ the sequence (`enz_digest` L17107 @0xbfeb4, `orf_map` L36205 @0x1a5554, `enz_gra
   switch over, and its picture gets a frame round the middle while the switch is on (the original's `enzymes_sonly`); the command
   palette has "Selection only: digest, lists and ORFs look at the selected bases (on or off)". Turning it over says so in the
   status line, and works from any page. It is read by **the Digest window** (its check box *is* the switch; `digest_now`),
-  **List Enzymes** (the dialog's DNA starts from it) and the **Quick Lists**, and by **the ORF list**. `--view selection-only`
+  **List Enzymes** and **Text Map** (the DNA choice of each dialog starts from it) and the **Quick Lists**, and by **the ORF list**. `--view selection-only`
   shows it.
   * **The digest of a piece** takes the sites that *start* in it whose two cuts fall in it too (`enz_digest` L17126-17133:
     `site >= start`, below `end`, then both cuts inside); the earlier build tested the cuts only, so a Type IIS site that begins
@@ -860,7 +860,7 @@ the sequence (`enz_digest` L17107 @0xbfeb4, `orf_map` L36205 @0x1a5554, `enz_gra
 * **Differences kept.** The original says nothing when the switch turns; HelixLoom also says it in the status line (the toolbar
   picture is small). The Digest window shows the switch as a check box, which the original's dialog does not. The ORF list is
   one window with a map and a table, where the original's `orf_map` is a picture of its own. **Not built:** the Graphic Map's
-  region (HelixLoom's map always shows the whole sequence), Text Map and BLAST (not built at all), and a region that crosses
+  region (HelixLoom's map always shows the whole sequence), BLAST (not built at all; Text Map is built and reads the switch), and a region that crosses
   the origin of a circular sequence (a selection never does here).
 * **Checked.** By reading the original's text, and with tests of the switch's key (and that ⌘E alone still opens the selector,
   and that a held key turns it over once), of the toolbar button's choice of picture and action, of the Digest window's check
@@ -1299,7 +1299,7 @@ clean-room re-implementation is acceptable under each project's licence).
   and writes numbers as ASTRAL does (two decimals, or Java's shortest form for the full annotation); the root branch of a
   tree hung from a species is annotated once.
   **Reading.** Trees are unrooted; a tree with fewer than max(4, `-m`) leaves is left out and counted; a species twice in a tree
-  is refused (gene families need ASTRAL-Pro, not built); at least four species must occur; a binary tree to score may be
+  is refused unless the trees are read as gene families (`--families`, the score of ASTRAL-Pro, below); at least four species must occur; a binary tree to score may be
   rooted or not and must have exactly the species of the gene trees; the Newick reader refuses trees nested more than 2,000
   levels deep, and the search, the counting and the Newick writer do not recurse, so a species tree as deep as it is wide
   (100,000 species in a ladder is tested) cannot run a thread out of stack.
@@ -1330,10 +1330,121 @@ clean-room re-implementation is acceptable under each project's licence).
   hold a space, a bracket, a comma, a colon, a semicolon or a quote, so that the text reads back as the same names; a branch
   length that is infinite or not a number (a prior of 0 makes them) is written as ASTRAL writes it and is left off when the
   tree is drawn on the Trees page.
-  **Not built:** weighted ASTRAL (gene trees with lengths or supports as weights), ASTRAL-Pro3 (several copies per species),
+  **Weighted ASTRAL (`-w none|support|length|hybrid`, the Weights setting of the window, the `weights` line of the job;
+  `src/seq/astral/wgenes.rs` and `wscore.rs`; November 2026, the next of the species-tree extras in the order the person chose).**
+  Written from the method section of Zhang and Mirarab (2022), *Molecular Biology and Evolution* 39(12):msac215, as its
+  open-access copy on PubMed Central gives it (read through a tool that summarises a page, in two separate readings that agreed;
+  the bioRxiv copy refused access and was not read, and the PDF was not read), **not from ASTER's code** (AGPL-3.0, not read).
+  A quartet `ab|cd` that a gene tree resolves has a weight, and one that it resolves another way, or not at all (a polytomy),
+  has none. By **support**: `1 − Π (1 − s(e))` over the branches `e` on the path between the two nodes where the pairs meet
+  (the chance that at least one is right, taking each support as a probability and the branches as independent). By **length**:
+  `exp(−(l(a,b) + l(c,d)))`, `l` the whole length of the path between two leaves (the pendant and the inner branches on it).
+  **Hybrid**: the product. The quartet score of a species tree is the sum of the weights of the gene quartets it shares; the
+  search is the same dynamic programme over the same groups of species, with this score (it is not ASTER's own search, a greedy
+  one over rounds with a divide and conquer, so the tree can differ from wastral's on sets where the score has ties or the
+  groups differ). **What the trees must give:** supports are the labels of the inner branches, 0 to 1, or percentages when any
+  label of the input is above 1 (all are then divided by 100; above 100 is refused); a label with a slash, or that is not a
+  number, is refused (IQ-TREE's `aLRT/UFBoot` pairs need one number kept); a branch without a label is taken as fully
+  supported, and a tree with no supports at all is refused, for support and hybrid. A length that is not written is 0, and a
+  tree with none is refused, for length and hybrid; the reader of the rest of the program reads a missing length as 1 (as ETE
+  does), so gene trees are read here by `NwTree::parse_all_raw`, which keeps it missing. Both counts of what was taken as given
+  are in the log. The root of a rooted gene tree and a node with one child are taken out: their two branches become one, with the
+  lengths added and the larger of the supports that are written (a choice made here: the text does not say). **How it is counted
+  without listing quartets:** the weight is a product of a part for each of the two nodes where the pairs meet and a product of
+  `1 − s` along the path between them, so for a node `u` of the gene tree and a branch `k` leaving it, the pairs of species of
+  one cluster on two other branches (each species counted `exp(−distance to u)`) are multiplied by what lies behind `k`: the sum,
+  over the nodes `m` behind it, of the pairs of the other two clusters that meet at `m` (each pair `exp(−d(y,m) − d(z,m))`),
+  with and without the product of `1 − s` from `u` to `m`; what lies behind every branch in both directions comes from two passes
+  over the tree, nine numbers a branch. One weighted count of a node of the species tree costs about 2.2 times a plain one
+  (measured on random binary gene trees of 25 species in 200, 40 in 400 and 60 in 600; the polish budget and the size at which
+  Automatic sends a run to the workstation take it as 3). **Checked:** against the definition: for small random trees (4 to 9
+  species, some missing, polytomies, random supports and lengths) the weight of every quartet found one at a time by walking the
+  tree (the topology by the four-point rule, the path and its lengths) summed over the clusters equals the fast count to 1e-9,
+  for each of the three weights; a quartet with known supports and lengths has the weight of the formulas; with every support 1
+  and no lengths the weighted counts, the tree and the score are ASTRAL's exactly, and the comparisons with ASTRAL 5.7.8 are
+  untouched (the unweighted path is the same code); a rooted tree and the same tree unrooted weigh alike; three gene trees that
+  are sure of a quartet outweigh four that are hardly sure of the other, and short paths outweigh long ones. **Not checked
+  against wastral**: its program was not run (that needs a download that was not asked for), so the weights' conventions above
+  are this program's reading of the paper, and its trees and scores are not confirmed to equal wastral's. **Not built:** the
+  weighted *branch support* of the paper (its local posterior from the weighted counts, whose normalisation the fetched text did
+  not give legibly, so it was not guessed): the branches carry ASTRAL's support counted on the quartets without their weights, and
+  the log and the window say so; wastral's other modes. (wastral resolves the polytomies of the gene trees at random, with a
+  support and a length of 0, so the quartets those branches decide have no weight: the same as a polytomy gives them here.)
+  A workstation that is from before the weights ignores the line, so a result says how it was weighted, and the app refuses an
+  answer that was not weighted as asked.
+  **Gene families (`-f`/`--families`, the gene families setting of the window, the `families` line of the job; `family.rs`
+  and `pscore.rs`; November 2026, the last of the species-tree extras in the order the person chose).** The score of ASTRAL-Pro
+  (Zhang, Scornavacca, Molloy and Mirarab 2020, *Molecular Biology and Evolution* 37:3292), written from the open-access text
+  on PubMed Central (read through a tool that summarises a page; its formula for the count at a node was garbled and was not
+  used), **not from the code** of A-pro or ASTER. The definitions that were used: a family tree is rooted and binary; a node is a
+  speciation when the species below its two branches are disjoint and a duplication otherwise; a quartet is *speciation-driven*
+  when its four leaves are of four species and the last common ancestor of every three of them is a speciation; two such
+  quartets are one *class* when they have the same species and the same node where the pairs of the quartet meet (the last common
+  ancestor of its two anchors); the score of a species tree is the number of classes whose topology it has. **The count at a node
+  was derived from these**: at a speciation with the species `M1`, `M2` below its two branches and `M3` outside it that meet it at a
+  speciation (found from the top down: a node adds the species of its sibling when the parent is a speciation), the classes that
+  meet there are two species of `M1` against two of `M2`, or two species of one branch with one of the other and one of `M3`;
+  each is seen from two nodes of the species tree and is counted at the one where the two species of the same branch are
+  together in a cluster (so that a class is counted once: no half). With `I[m][j]` the species of `M(m)` in cluster `j` of the three
+  clusters around a node of the species tree, the count is `Σ_i C(I[1][i],2)·I[2][j]·I[2][k]` (the other two clusters) plus, over
+  the permutations `(i,j,k)` of the clusters, `C(I[1][i],2)·I[2][j]·I[3][k] + C(I[2][j],2)·I[1][i]·I[3][k]`; the classes of all the
+  trees whatever the species tree are `C(|M1|,2)·C(|M2|,2) + (C(|M1|,2)·|M2| + |M1|·C(|M2|,2))·|M3|` for each speciation, and the
+  normalized score is the score over them. **Rooting** (the paper's Algorithm 1 as it was read): a tree whose top joins two
+  branches is rooted as written, one whose top joins three is rooted on the branch that costs least, one for each duplication
+  and each loss that the species of the two branches ask for (0, 1 or 2 losses for the same, nested or other sets), the first
+  of the equal ones; trees must otherwise be binary. **The search** is the dynamic programme over the groups of species that the
+  gene trees suggest, taken from eight single-copy trees sampled from each family (at each duplication one of the two branches is
+  dropped, by a source of choices that is the same on every run, the trees completed and the polytomies resolved as for gene
+  trees), with this score. **Checked** against the definitions (not against a program): for random trees of 5 to 7 species with
+  several copies of some of them (and duplications, in more than a third of the sets) and random species trees, the classes
+  counted one four-leaf set at a time by the definition are as many as the formula gives, and the classes of the trees are as many
+  as their total says; with one copy per species the score, the normalized score and the tree are ASTRAL's; the species tree is
+  found from families with duplications and losses; an unrooted tree is rooted where the cost is least; the single-copy trees
+  hold each species once. **Not checked against ASTRAL-Pro**: its program was not run, so its trees and scores are not confirmed
+  to equal this program's, and the rooting rule is this program's reading of the paper's. **Not built:** the species tree's branch
+  support and lengths for families (the paper's local posterior for them, whose formulas were garbled in the text that was read),
+  weights together with families, polytomies in family trees, a mapping from gene names to species (the labels are the species),
+  and the placement algorithm of ASTRAL-Pro 2 and the changes of ASTRAL-Pro3. A workstation from before this ignores the line,
+  so the result says whether it read the trees as families, and the app refuses one that did not as asked.
+  **Bootstrap support (`-r`, `-b`, `-g`, `--gene-only`, `-s`, the Bootstrap settings of the window, the `replicates`, `seed` and
+  `resample` lines and the `site_trees` sections of the job; `bootstrap.rs`; November 2026).** The procedure of ASTRAL's
+  bootstrapping as its tutorial describes it (read as documentation; the program was not run and its code not read), with the
+  multilocus bootstrap of Seo (2008) for genes and sites together. A replicate is one search, with the same options as the main
+  one, on a set of gene trees made from the input: **genes** (the genes drawn with replacement, as many as there are), **sites**
+  (replicate `r` takes the `r`-th bootstrap tree of every gene, so each gene needs at least as many as the replicates) or
+  **both** (genes drawn with replacement, and for each a bootstrap tree drawn). The support of a branch of the main tree is the
+  share, in percent, of the replicates that gave a tree that have the same split (the taxa on the side without the root taxon);
+  it is the label of the branch in the Newick, in place of the posterior (nothing for `-t 0`), written with at most one decimal.
+  The random draws come from a source seeded with the seed (default 692, ASTRAL's), so a run is repeatable. The taxa are those of
+  the input, so every replicate is on the same species; a replicate that gives no tree (what the genes drawn leave a species
+  without) is counted as failed and left out, and none at all is an error. The bootstrap trees of a gene must have species that the
+  gene trees have; a gene tree that is left out as too small keeps its place in the list. At most 1,000 replicates; at most 20,000
+  genes and 256 MB of bootstrap trees in a job. Refused with the gene families, with `-q`, and with the weights when the sites are resampled (a gene that is drawn takes its supports and lengths with it, so resampling the genes works with weights). **Checked** against cases
+  with known answers (see `docs/SPECIES.md`), the real command and the window; **not compared with ASTRAL's bootstrap**: the way
+  it picks a gene's tree for the sites alone and what it does with a species the genes drawn lack are not in its tutorial, so
+  those two choices (the `r`-th tree; the replicate failed) are this program's. **Also built (`--replicate-trees`, `--consensus`; `consensus.rs`; November 2026):** the species tree of
+  each replicate, and their greedy consensus (splits taken by how many replicates have them, ties by the split's taxa, each kept if it fits the ones kept before; labels are
+  the shares in percent), in files of their own on the command line; checked against a plain version on random trees, not compared with ASTRAL's. **Not built:** the replicate trees in the window and the job. A workstation from before this ignores the lines, so the result says what the
+  bootstrap did, and the app refuses an answer that did not do it as asked. The branch table has a fourteenth field for the support,
+  which a result from before it lacks.
+  **Polytomy test (`-t 10`, `--polytomy`, *Polytomy test* in the window, the `polytomy` line of the job and the result, a fifteenth
+  field of each branch row; `polytomy.rs`, `weight::resolved_around`; November 2026).** Sayyari and Mirarab (2018) as the paper
+  states it (read as an open-access text; ASTRAL's program was not run and its code not read). For an inner branch with the groups
+  `l r | s o` around it, every gene tree that resolves some quartet of one species from each group gives one count, divided among
+  the three arrangements by the shares of its resolved quartets (quartets with a species missing, or left as a polytomy, are
+  left out); `n_i` is the sum over the gene trees. `chi2 = sum (n_i - n/3)^2 / (n/3)`, `n = n1 + n2 + n3`, on 2 degrees of
+  freedom, so `p = exp(-chi2 / 2)` (exact for 2 degrees). Not applied under **10** gene trees that count (the paper's rule): the
+  branch has no p-value. 0.05 is the level of the paper, used for the bold in the window and the count in the log; there is no
+  correction for the number of branches. The p-value is the Newick label with `-t 10` (a bootstrap support, if asked for, stays
+  the label; `-t 0` writes none). With weights it is counted without them; refused with the gene families. A workstation from
+  before this ignores the line, so the result says whether the test was done and the app refuses one that did not do it as asked.
+  **Checked** against counting every quartet one by one, hand-worked statistics, the 5 % point of the chi-squared, the real
+  command against the `f1 f2 f3` of `-t 2`, the job and the window; **not compared with ASTRAL's `-t 10`**. For gene trees that are
+  complete and binary this program's counts equal the frequencies `f` of `-t 2`; with polytomies or missing species they differ
+  (`f` divides by all the quartets with the four species present, the test by the resolved ones, as the paper says).
+  **Not built:**
   ASTRAL-IV's placement heuristic and CASTLES-II lengths in substitution units, CASTER-site and CASTER-pair (from alignments),
-  WASTER (from reads), SISTER and the D* test, `-a` (several individuals to one species), bootstrapping over gene trees and
-  the polytomy test (`-t 10`), the csv outputs.
+  WASTER (from reads), SISTER and the D* test, `-a` (several individuals to one species), the csv outputs.
 
 ### Not built
 
@@ -1342,13 +1453,15 @@ models and partitions (IQ-TREE itself does them when called), mapping and varian
 ETE / DendroPy beyond rooting, sorting, measuring and comparing trees, OpenFold and a locally run ESMFold inside the app
 (the prediction asks the ESM Atlas service over the internet, or a folding program that the owner of a workstation names
 with `--fold-command`; `deploy/esmfold_predict.py` is an example of one, not run here), NGLView's drawing styles beyond
-ribbon, backbone and bonds, fastp as an external step, and a workflow editor (Pipelines runs one fixed chain). The
+ribbon, backbone and bonds, fastp as an external step, and a workflow editor on a canvas (Pipelines runs its fixed route, or a
+pipeline file of typed steps: `docs/PIPELINES.md`). The
 workstation is not used for the contig assembler, read cleaning, the primer3 window, chromatograms or tree drawing.
 
 **Licences:** primer3, IQ-TREE and MrBayes are GPL, BEAST2 is LGPL. No code from them was copied or ported; primer3's
 numbers, formulas and rules were read from its source and re-written, and its behaviour was checked by running it. ASTRAL
 (Apache-2.0) was only run, to compare answers; ASTER (AGPL-3.0, which would reach anything copied from it) was not read, and
-its programs other than the ASTRAL core are listed above as not built. Any engine added later is re-implemented the same way
+its programs are listed above as not built, apart from the ASTRAL core, the weights of weighted ASTRAL and the gene family score
+of ASTRAL-Pro, each written from its paper. Any engine added later is re-implemented the same way
 and credited in `CREDITS.md`.
 
 ## Appendix: settings and inner lines cited in `mechanics.json` (line = byte address)

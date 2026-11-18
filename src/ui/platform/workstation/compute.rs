@@ -125,6 +125,36 @@ pub(super) fn choice_id() -> egui::Id {
     egui::Id::new("workstation_compute_choice")
 }
 
+/// The room above the line that says where an analysis runs: the same on every page.
+const RUN_GAP: f32 = 8.0;
+
+/// The end of what a page asks before it runs its analysis, the same on every page so that the two are always found
+/// together: where it will run (`compute_picker`), and right under it the button that runs it, filled, with a wheel beside
+/// it while it runs. `ready` is whether it may be pressed; whether it was.
+pub(in crate::ui) fn run_button(
+    ui: &mut Ui,
+    look: &Look,
+    view: ComputeView,
+    label: &str,
+    (ready, running): (bool, bool),
+) -> bool {
+    ui.add_space(RUN_GAP);
+    compute_picker(ui, look, view);
+    ui.horizontal(|ui| {
+        let pressed = ui
+            .add_enabled_ui(ready && !running, |ui| {
+                design::primary_button(ui, look, label)
+            })
+            .inner
+            .clicked();
+        if running {
+            ui.spinner();
+        }
+        pressed
+    })
+    .inner
+}
+
 /// The choice of where jobs run, drawn where a page starts its work, with where this job would run. A click is applied at
 /// the start of the next frame. With no workstation connected there is nothing to choose, and the line says how to get one.
 pub(in crate::ui) fn compute_picker(ui: &mut Ui, look: &Look, view: ComputeView) {

@@ -5,6 +5,7 @@ use crate::seq::features::Feature;
 use crate::seq::nextorf::{find_next, NoStopCodon, Settings};
 use crate::seq::translation::{build, DnaLine, Letters, Numbers, Options, Source};
 use crate::ui::app::App;
+use crate::ui::fonts::FontWeight;
 use crate::ui::map::commify;
 use crate::ui::theme::{self, Palette};
 use eframe::egui::{
@@ -16,6 +17,8 @@ use std::borrow::Cow;
 pub const ORF_MIN_CHOICES: [usize; 10] = [0, 30, 60, 90, 180, 300, 600, 900, 1200, 1500];
 /// Most residues per line the width box takes.
 const MAX_TRANSLATION_WIDTH: usize = 1000;
+/// How heavy the line round the bar of a selected ORF is.
+const MARKED_LINE: f32 = 2.0;
 
 /// What the Translate window translates: the original's "Translate:" menu.
 #[derive(Clone, Copy, PartialEq, Eq, Default, Debug)]
@@ -44,6 +47,10 @@ pub struct OrfWin {
     pub translate_open: bool,
     pub translate: Options,
     pub source: TranslateSource,
+    /// The ORF the list last scrolled to, as the sequence it is of and its bases: the list scrolls to the selected ORF when
+    /// it becomes the selected one (or the list is opened on it), and not again while it stays so, so that the list can be
+    /// scrolled away from it.
+    scrolled_to: Option<(u64, (usize, usize))>,
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -88,6 +95,8 @@ impl App {
         });
         self.orf_win.region = region;
         self.orf_win.list_open = true;
+        // a list that is opened anew shows the selected ORF, though it showed it before it was closed
+        self.orf_win.scrolled_to = None;
     }
 
     /// The stretch of sequence `i` that the list was opened on, if it was opened on one and the sequence is the same and still
@@ -123,15 +132,10 @@ impl App {
     }
 
     pub fn select_orf(&mut self, i: usize, o: &Orf) {
-        let n = self.docs[i].doc.len();
-        let end = if o.start + o.length > n {
-            n
-        } else {
-            o.start + o.length
-        };
+        let (start, end) = orf_bases(o, self.docs[i].doc.len());
         let dv = &mut self.docs[i];
-        dv.select(o.start, end);
-        dv.scroll_to = Some(o.start);
+        dv.select(start, end);
+        dv.scroll_to = Some(start);
     }
 
     /// Select the next / previous ORF exactly as the original's Find Next / Find Previous does
@@ -195,11 +199,32 @@ impl App {
                     let orfs = self.orfs_of(i, false);
                     let n = self.docs[i].doc.len();
                     let region = self.orf_region(i);
-                    ui.label(RichText::new(orf_heading(orfs.len(), region, n)).small());
-                    let mut pick = draw_orf_map(ui, &orfs, n, region.unwrap_or((0, n)), &pal);
+                    // one selection, here too: the ORF whose bases are exactly the selected ones is marked, wherever
+                    // they were selected (a row or a bar here, Find Next ORF, a feature on the map, a drag)
+                    let selection = self.docs[i].selection();
+                    let marked: Vec<bool> = orfs
+                        .iter()
+                        .map(|o| selection == Some(orf_bases(o, n)))
+                        .collect();
+                    let now = selection
+                        .filter(|_| marked.contains(&true))
+                        .map(|bases| (self.docs[i].id, bases));
+                    let mut moved = now.is_some() && now != self.orf_win.scrolled_to;
+                    self.orf_win.scrolled_to = now;
+                    let mut heading = orf_heading(orfs.len(), region, n);
+                    if let Some(words) = selected_words(&orfs, n, selection) {
+                        heading = format!("{heading} · {words}");
+                    }
+                    ui.label(RichText::new(heading).small());
+                    let span = region.unwrap_or((0, n));
+                    let mut pick = draw_orf_map(ui, &orfs, &marked, n, span, &pal);
                     ui.separator();
+                    // the list takes the room that is left but for the button under it: taking all of it made the
+                    // window a button taller in every frame, until it was as tall as the screen
+                    let button = ui.spacing().interact_size.y + ui.spacing().item_spacing.y;
                     ScrollArea::vertical()
                         .auto_shrink([false, false])
+                        .max_height((ui.available_height() - button).max(0.0))
                         .show(ui, |ui| {
                             egui::Grid::new("orf_grid")
                                 .striped(true)
@@ -208,22 +233,24 @@ impl App {
                                     for h in
                                         ["Strand", "Start", "End", "Length", "Amino acids", "Frame"]
                                     {
-                                        ui.label(RichText::new(h).strong());
+                                        ui.label(RichText::new(h).semibold());
                                     }
                                     ui.end_row();
                                     for (k, o) in orfs.iter().enumerate() {
                                         let label = if o.reverse { "reverse" } else { "forward" };
-                                        if ui.selectable_label(false, label).clicked() {
+                                        let row = ui.selectable_label(marked[k], label);
+                                        if marked[k] && moved {
+                                            // as far as it takes to see it, and no further: a row that was clicked
+                                            // stays where it is
+                                            row.scroll_to_me(None);
+                                            moved = false;
+                                        }
+                                        if row.clicked() {
                                             pick = Some(k);
                                         }
                                         ui.label(RichText::new(commify(o.start + 1)).monospace());
                                         ui.label(
-                                            RichText::new(commify(if o.end(n) == 0 {
-                                                n
-                                            } else {
-                                                o.end(n)
-                                            }))
-                                            .monospace(),
+                                            RichText::new(commify(end_shown(o, n))).monospace(),
                                         );
                                         ui.label(RichText::new(length_text(o)).monospace());
                                         ui.label(
@@ -454,6 +481,51 @@ fn orf_feature(o: &Orf, n: usize, number: usize) -> Feature {
     f
 }
 
+/// The last base of an ORF as the list and the map write it: the last of the sequence for an ORF that ends there (its end,
+/// counted round a circle, is 0 then).
+fn end_shown(o: &Orf, n: usize) -> usize {
+    match o.end(n) {
+        0 => n,
+        end => end,
+    }
+}
+
+/// The bases that selecting an ORF selects: all of it, or, of one that runs past the end of a circular sequence, the part
+/// before the end.
+fn orf_bases(o: &Orf, n: usize) -> (usize, usize) {
+    (o.start, (o.start + o.length).min(n))
+}
+
+/// What the heading says when the selected bases are exactly those of an ORF of the list (of more than one: an ORF on each
+/// strand can hold the same bases); nothing when they are those of none.
+fn selected_words(orfs: &[Orf], n: usize, selection: Option<(usize, usize)>) -> Option<String> {
+    let (from, to) = selection?;
+    let which: Vec<&Orf> = orfs
+        .iter()
+        .filter(|o| orf_bases(o, n) == (from, to))
+        .collect();
+    let place = format!("{}–{}", commify(from + 1), commify(to));
+    match which.as_slice() {
+        [] => None,
+        [one] => {
+            let strand = if one.reverse { "reverse" } else { "forward" };
+            // of an ORF that runs past the end of a circular sequence a click selects the part before the end
+            let part = if one.start + one.length > n {
+                " (its part before the end of the sequence)"
+            } else {
+                ""
+            };
+            Some(format!(
+                "the selection is the {strand} ORF at {place}{part}"
+            ))
+        }
+        more => Some(format!(
+            "the selection is {} of these ORFs, at {place}",
+            more.len()
+        )),
+    }
+}
+
 /// "3 ORFs in 2,724 bp", or "in bases 51–300" when the list was opened on a selected stretch.
 fn orf_heading(count: usize, region: Option<(usize, usize)>, n: usize) -> String {
     let place = match region {
@@ -479,11 +551,13 @@ fn length_text(o: &Orf) -> String {
     format!("{}{}", commify(o.length), if o.open_end { "+" } else { "" })
 }
 
-/// Six rows (three frames on each strand) with every ORF as a bar; returns the clicked ORF. `span` is the stretch the map
-/// covers, all of the sequence or the selected stretch the list was opened on.
+/// Six rows (three frames on each strand) with every ORF as a bar, those of `marked` (the selected ones) with a heavy
+/// line round them; returns the clicked ORF. `span` is the stretch the map covers, all of the sequence or the selected
+/// stretch the list was opened on.
 fn draw_orf_map(
     ui: &mut Ui,
     orfs: &[Orf],
+    marked: &[bool],
     n: usize,
     span: (usize, usize),
     pal: &Palette,
@@ -534,7 +608,7 @@ fn draw_orf_map(
         } else {
             vec![(o.start, o.start + o.length)]
         };
-        for (s, e) in segments {
+        for (piece, (s, e)) in segments.into_iter().enumerate() {
             let bar = egui::Rect::from_min_max(
                 pos2(x_of(s), y + 2.0),
                 pos2(x_of(e).max(x_of(s) + 2.0), y + row_h - 3.0),
@@ -557,11 +631,15 @@ fn draw_orf_map(
                     pos2(bar.left(), bar.bottom()),
                 ]
             };
+            // the first piece is what is selected of an ORF that runs past the end, so that is the piece with the line
+            let outline = (piece == 0 && marked.get(k).is_some_and(|&m| m))
+                .then(|| Shape::closed_line(pts.clone(), Stroke::new(MARKED_LINE, pal.fg)));
             p.add(Shape::convex_polygon(
                 pts,
                 fill,
                 Stroke::new(1.0, theme::mix(Color32::BLACK, fill, 30.0)),
             ));
+            p.extend(outline);
             if hover.is_some_and(|h| bar.expand(1.0).contains(h)) {
                 hit = Some(k);
             }
@@ -586,7 +664,7 @@ fn draw_orf_map(
         let tip = format!(
             "{}–{} • {} bp • {} aa • frame {}{}",
             commify(o.start + 1),
-            commify(o.end(n).max(1)),
+            commify(end_shown(o, n)),
             length_text(o),
             amino_acids(o),
             if o.reverse { "−" } else { "+" },

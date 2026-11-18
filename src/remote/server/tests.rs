@@ -121,7 +121,7 @@ fn a_finished_jobs_result_is_handed_over_as_stored() {
     std::fs::write(shared.job_dir(&id).join("result.bin"), b"@meta 0\n\n").expect("a result");
     shared.replace_for_tests(job);
     let r = route(&shared, "GET", &format!("/v1/jobs/{id}/result"), b"");
-    assert_eq!((r.status, r.body.as_slice()), (200, &b"@meta 0\n\n"[..]));
+    assert_eq!((r.status, &*r.body), (200, &b"@meta 0\n\n"[..]));
     assert_eq!(r.content_type, "application/x-helixloom");
 }
 
@@ -335,6 +335,87 @@ fn a_phylocnn_job_is_given_no_more_gpus_than_it_has_trees() {
             given,
             "asked for {asked}"
         );
+    }
+}
+
+/// A tree job big enough to be given GPUs, with either backend (a bootstrap of 200 resamples of 100 sequences by 20 000 columns), which
+/// is cheap enough to send.
+#[cfg(all(feature = "gpu", not(target_arch = "wasm32")))]
+fn big_tree_job() -> Request {
+    Request::Tree {
+        alignment: (0..100)
+            .map(|k| (format!("s{k}"), vec![b'A'; 20_000]))
+            .collect(),
+        analysis: crate::seq::estimate::Analysis::NeighborJoining,
+        model: crate::seq::tree::DistanceModel::P,
+        bootstrap: 200,
+        generations: 100,
+    }
+}
+
+#[cfg(all(feature = "gpu", not(target_arch = "wasm32")))]
+#[test]
+fn a_big_tree_job_is_taken_by_a_workstation_without_gpus_and_runs_on_its_processor() {
+    // the person's own setting of `HELIXLOOM_ACCEL` decides the size that counts: not what this checks
+    if std::env::var(crate::accel::pool::MODE_VARIABLE).is_ok() {
+        return;
+    }
+    let mut c = config("server-tree-no-gpu");
+    c.gpus = Vec::new();
+    let shared = Shared::open(c, false).expect("a store");
+    let sent = route(
+        &shared,
+        "POST",
+        "/v1/jobs",
+        &request_with_gpus(&big_tree_job(), "0"),
+    );
+    assert_eq!(sent.status, 201, "{}", text(&sent));
+    let id = Container::decode(&sent.body)
+        .expect("a container")
+        .require("id")
+        .expect("an id")
+        .to_string();
+    assert_eq!(shared.get(&id).expect("a job").gpus_wanted, 0);
+    // a job that cannot do without a GPU is still refused where there is none
+    let cnn = Request::PhyloCnn {
+        newick: "((A:1,B:1):1,C:2);\n((A:1,B:2):1,C:2);".into(),
+        sampling: 0.5,
+        task: crate::seq::phylocnn::Task::Bd,
+        priors: crate::seq::phylocnn::Priors::Simulated,
+        gpu: true,
+    };
+    let refused = route(&shared, "POST", "/v1/jobs", &request_with_gpus(&cnn, "1"));
+    assert_eq!(refused.status, 400, "{}", text(&refused));
+}
+
+#[cfg(all(feature = "gpu", not(target_arch = "wasm32")))]
+#[test]
+fn a_big_tree_job_is_given_the_gpus_a_workstation_has() {
+    if std::env::var(crate::accel::pool::MODE_VARIABLE).is_ok() {
+        return;
+    }
+    let mut c = config("server-tree-gpus");
+    c.gpus = (0..2)
+        .map(|id| Gpu {
+            id,
+            name: format!("GPU {id}"),
+        })
+        .collect();
+    let shared = Shared::open(c, false).expect("a store");
+    for (asked, given) in [("1", 1), ("0", 2)] {
+        let sent = route(
+            &shared,
+            "POST",
+            "/v1/jobs",
+            &request_with_gpus(&big_tree_job(), asked),
+        );
+        assert_eq!(sent.status, 201, "{}", text(&sent));
+        let id = Container::decode(&sent.body)
+            .expect("a container")
+            .require("id")
+            .expect("an id")
+            .to_string();
+        assert_eq!(shared.get(&id).expect("a job").gpus_wanted, given);
     }
 }
 
@@ -625,11 +706,11 @@ fn one_computer_cannot_keep_the_server_from_everybody_else() {
 
 #[test]
 fn an_upload_may_take_as_long_as_its_size_needs_at_the_slowest_rate_that_is_waited_for() {
-    assert_eq!(upload_time(0), Duration::from_secs(60));
+    assert_eq!(transfer_time(0), Duration::from_secs(60));
     // 50 KiB a second: a megabyte takes 20 seconds more
-    assert_eq!(upload_time(1 << 20), Duration::from_secs(60 + 20));
+    assert_eq!(transfer_time(1 << 20), Duration::from_secs(60 + 20));
     // the largest default upload is given hours, a slow link is not turned away, but not for ever
-    let largest = upload_time(512 << 20);
+    let largest = transfer_time(512 << 20);
     assert!(
         largest > Duration::from_secs(2 * 3600) && largest < Duration::from_secs(4 * 3600),
         "{largest:?}"
@@ -660,5 +741,219 @@ fn a_job_that_is_removed_while_it_is_waited_for_ends_the_waiting_at_once() {
         started.elapsed() < Duration::from_secs(10),
         "{:?}",
         started.elapsed()
+    );
+}
+
+// ---- the page, and calls from a page of another origin (docs/WEB.md)
+
+/// A server that hands out a page (an index and a program) and lets `origins` call it, on a free port of this computer.
+fn serving_a_page(label: &str, origins: &[&str]) -> Server {
+    let dir = work_folder(&format!("{label}-page")).expect("a folder");
+    std::fs::write(dir.join("index.html"), "<html>HelixLoom</html>").expect("index");
+    std::fs::write(dir.join("app_bg.wasm"), b"\0asm").expect("wasm");
+    let origins: Vec<String> = origins.iter().map(|o| (*o).to_string()).collect();
+    let mut c = config(label);
+    c.site = Arc::new(crate::remote::site::Site::load(&dir, &origins).expect("a site"));
+    start(c, "127.0.0.1:0".parse().expect("an address"), false).expect("a server")
+}
+
+/// One header of a raw reply (the first with that name, compared without regard to case).
+fn reply_header(reply: &str, name: &str) -> Option<String> {
+    reply
+        .split("\r\n\r\n")
+        .next()?
+        .lines()
+        .filter_map(|l| l.split_once(':'))
+        .find(|(n, _)| n.eq_ignore_ascii_case(name))
+        .map(|(_, v)| v.trim().to_string())
+}
+
+fn get(server: &Server, target: &str, headers: &str) -> String {
+    raw(server, &format!("GET {target} HTTP/1.1\r\n{headers}\r\n"))
+}
+
+#[test]
+fn the_page_is_sent_to_anyone_but_the_jobs_still_need_the_token() {
+    let server = serving_a_page("server-page", &[]);
+    let index = get(&server, "/", "");
+    assert!(index.starts_with("HTTP/1.1 200"), "{index}");
+    assert!(index.ends_with("<html>HelixLoom</html>"), "{index}");
+    assert!(reply_header(&index, "Content-Type").is_some_and(|t| t.starts_with("text/html")));
+    assert_eq!(
+        reply_header(&index, "Cache-Control").as_deref(),
+        Some("no-cache")
+    );
+    assert!(reply_header(&index, "ETag").is_some());
+    assert_eq!(
+        reply_header(&index, "X-Content-Type-Options").as_deref(),
+        Some("nosniff")
+    );
+    let program = get(&server, "/app_bg.wasm", "");
+    assert!(program.starts_with("HTTP/1.1 200"), "{program}");
+    assert_eq!(
+        reply_header(&program, "Content-Type").as_deref(),
+        Some("application/wasm")
+    );
+    // the page does not open the API
+    for target in ["/v1/status", "/v1/jobs", "/v1/jobs/j1-1/result"] {
+        let reply = get(&server, target, "");
+        assert!(reply.starts_with("HTTP/1.1 401"), "{target}: {reply}");
+    }
+    let post = raw(
+        &server,
+        "POST /v1/jobs HTTP/1.1\r\nContent-Length: 0\r\n\r\n",
+    );
+    assert!(post.starts_with("HTTP/1.1 401"), "{post}");
+    // what is not in the page is refused as it was before there was a page: a stranger learns nothing
+    let nothing = get(&server, "/nope", "");
+    assert!(nothing.starts_with("HTTP/1.1 401"), "{nothing}");
+    let signed = format!("Authorization: Bearer {TOKEN}\r\n");
+    assert!(get(&server, "/nope", &signed).starts_with("HTTP/1.1 404"));
+    assert!(get(&server, "/index.html", &signed).starts_with("HTTP/1.1 200"));
+    assert!(get(&server, "/v1/status", &signed).starts_with("HTTP/1.1 200"));
+}
+
+#[test]
+fn a_request_cannot_name_a_file_that_is_not_in_the_page() {
+    let server = serving_a_page("server-traversal", &[]);
+    for target in [
+        "/../Cargo.toml",
+        "/..%2fCargo.toml",
+        "/%2e%2e/Cargo.toml",
+        "/assets/../index.html",
+        "//etc/passwd",
+        "/etc/passwd",
+        "/index.html/..",
+        "/.secret",
+        "/helixloom-data/token.txt",
+    ] {
+        let reply = get(&server, target, "");
+        assert!(reply.starts_with("HTTP/1.1 401"), "{target}: {reply}");
+    }
+    // and only a read gets the page
+    for method in ["POST", "PUT", "DELETE", "PATCH"] {
+        let reply = raw(
+            &server,
+            &format!("{method} /index.html HTTP/1.1\r\nContent-Length: 0\r\n\r\n"),
+        );
+        assert!(reply.starts_with("HTTP/1.1 401"), "{method}: {reply}");
+    }
+}
+
+#[test]
+fn a_server_with_no_page_refuses_a_stranger_who_asks_for_one() {
+    let server = serving("server-no-page");
+    for target in ["/", "/index.html", "/v1/status"] {
+        let reply = get(&server, target, "");
+        assert!(reply.starts_with("HTTP/1.1 401"), "{target}: {reply}");
+    }
+}
+
+#[test]
+fn a_file_the_browser_already_has_is_not_sent_again() {
+    let server = serving_a_page("server-etag", &[]);
+    let first = get(&server, "/app_bg.wasm", "");
+    let etag = reply_header(&first, "ETag").expect("a tag");
+    let again = get(
+        &server,
+        "/app_bg.wasm",
+        &format!("If-None-Match: {etag}\r\n"),
+    );
+    assert!(again.starts_with("HTTP/1.1 304"), "{again}");
+    assert!(again.ends_with("\r\n\r\n"), "a 304 has no body: {again:?}");
+    assert_eq!(reply_header(&again, "ETag"), Some(etag));
+    let changed = get(&server, "/app_bg.wasm", "If-None-Match: \"another\"\r\n");
+    assert!(changed.starts_with("HTTP/1.1 200"), "{changed}");
+}
+
+#[test]
+fn a_page_of_an_allowed_origin_may_ask_and_read_the_answer() {
+    let origin = "https://lab.example.org";
+    let server = serving_a_page("server-cors", &[origin]);
+    // the question a browser asks first carries no token, and is answered without one
+    let preflight = raw(
+        &server,
+        &format!("OPTIONS /v1/jobs HTTP/1.1\r\nOrigin: {origin}\r\nAccess-Control-Request-Method: POST\r\nAccess-Control-Request-Headers: authorization,content-type\r\n\r\n"),
+    );
+    assert!(preflight.starts_with("HTTP/1.1 204"), "{preflight}");
+    assert_eq!(
+        reply_header(&preflight, "Access-Control-Allow-Origin").as_deref(),
+        Some(origin)
+    );
+    assert!(reply_header(&preflight, "Access-Control-Allow-Headers")
+        .is_some_and(|h| h.contains("authorization")));
+    assert_eq!(reply_header(&preflight, "Vary").as_deref(), Some("Origin"));
+    // the answer to the call itself can be read, whether it worked or not (else the page sees only "network error")
+    let signed = format!("Origin: {origin}\r\nAuthorization: Bearer {TOKEN}\r\n");
+    let worked = get(&server, "/v1/status", &signed);
+    assert!(worked.starts_with("HTTP/1.1 200"), "{worked}");
+    assert_eq!(
+        reply_header(&worked, "Access-Control-Allow-Origin").as_deref(),
+        Some(origin)
+    );
+    let refused = get(&server, "/v1/status", &format!("Origin: {origin}\r\n"));
+    assert!(refused.starts_with("HTTP/1.1 401"), "{refused}");
+    assert_eq!(
+        reply_header(&refused, "Access-Control-Allow-Origin").as_deref(),
+        Some(origin)
+    );
+    // the page's own files can be read from there too
+    let page = get(&server, "/", &format!("Origin: {origin}\r\n"));
+    assert!(reply_header(&page, "Access-Control-Allow-Origin").is_some());
+}
+
+#[test]
+fn an_origin_that_was_not_named_is_given_no_permission() {
+    let named = "https://lab.example.org";
+    let server = serving_a_page("server-cors-no", &[named]);
+    let stranger = "https://evil.example.org";
+    let preflight = raw(
+        &server,
+        &format!("OPTIONS /v1/jobs HTTP/1.1\r\nOrigin: {stranger}\r\nAccess-Control-Request-Method: POST\r\n\r\n"),
+    );
+    // not a permission: the browser stops the page there
+    assert!(!preflight.starts_with("HTTP/1.1 204"), "{preflight}");
+    let signed = format!("Origin: {stranger}\r\nAuthorization: Bearer {TOKEN}\r\n");
+    for reply in [
+        preflight,
+        get(&server, "/v1/status", &signed),
+        get(&server, "/", &signed),
+    ] {
+        assert_eq!(
+            reply_header(&reply, "Access-Control-Allow-Origin"),
+            None,
+            "{reply}"
+        );
+    }
+    // naming no origin allows none, and a call that carries no origin (the app, a script) is answered as ever
+    let closed = serving_a_page("server-cors-none", &[]);
+    let signed = format!("Origin: {named}\r\nAuthorization: Bearer {TOKEN}\r\n");
+    let reply = get(&closed, "/v1/status", &signed);
+    assert!(reply.starts_with("HTTP/1.1 200"), "{reply}");
+    assert_eq!(reply_header(&reply, "Access-Control-Allow-Origin"), None);
+    let plain = get(
+        &server,
+        "/v1/status",
+        &format!("Authorization: Bearer {TOKEN}\r\n"),
+    );
+    assert_eq!(reply_header(&plain, "Access-Control-Allow-Origin"), None);
+}
+
+#[test]
+fn a_request_from_an_origin_that_was_not_named_gets_no_permission_but_the_page_is_not_for_framing()
+{
+    let server = serving_a_page("server-vary", &["https://lab.example.org"]);
+    let stranger = get(&server, "/", "Origin: https://evil.example.org\r\n");
+    assert!(stranger.starts_with("HTTP/1.1 200"), "{stranger}");
+    assert_eq!(reply_header(&stranger, "Access-Control-Allow-Origin"), None);
+    // the answer depends on who asked: a cache in front must not hand it to the origin that was named
+    assert_eq!(reply_header(&stranger, "Vary").as_deref(), Some("Origin"));
+    assert_eq!(
+        reply_header(&stranger, "X-Frame-Options").as_deref(),
+        Some("DENY")
+    );
+    assert_eq!(
+        reply_header(&stranger, "Referrer-Policy").as_deref(),
+        Some("no-referrer")
     );
 }

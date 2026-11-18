@@ -88,10 +88,10 @@
   {"name": "Shortcut: Translate", "group": "controls", "value": "Cmd+T", "source": "AppMain.tcl:1220 menubar"},
   {"name": "Shortcut: Align", "group": "controls", "value": "Cmd+L", "source": "AppMain.tcl:1273 menubar"},
 
-  {"name": "Match score", "group": "alignment", "value": 1, "source": "AppMain.tcl:48167 proc NW_affine_align @0x231136"},
-  {"name": "Mismatch score", "group": "alignment", "value": -0.1, "source": "AppMain.tcl:67040 set info(mm_penalty)"},
-  {"name": "First gap position score", "group": "alignment", "value": -1, "source": "AppMain.tcl:67041 set info(gap_penalty)"},
-  {"name": "Further gap position score", "group": "alignment", "value": -0.2, "source": "AppMain.tcl:67042 set info(gap_extension_penalty)"},
+  {"name": "Match score (here ten times the original's +1, in whole numbers: roadmap question 10)", "group": "alignment", "value": 10, "source": "AppMain.tcl:48167 proc NW_affine_align @0x231136, times 10"},
+  {"name": "Mismatch score (here ten times the original's -0.1)", "group": "alignment", "value": -1, "source": "AppMain.tcl:67040 set info(mm_penalty), times 10"},
+  {"name": "First gap position score (here ten times the original's -1)", "group": "alignment", "value": -10, "source": "AppMain.tcl:67041 set info(gap_penalty), times 10"},
+  {"name": "Further gap position score (here ten times the original's -0.2)", "group": "alignment", "value": -2, "source": "AppMain.tcl:67042 set info(gap_extension_penalty), times 10"},
   {"name": "Alignment line width", "group": "alignment", "value": 100, "unit": "columns", "source": "AppMain.tcl:67036 set info(align_linewidth)"},
   {"name": "Alignment block size", "group": "alignment", "value": 15, "source": "AppMain.tcl:67045 set info(align_blocksize)"},
   {"name": "Original alignment size limit", "group": "alignment", "value": 5000, "source": "AppMain.tcl:67043 set info(NWmax)"},
@@ -452,6 +452,17 @@
   {"name": "Species tree: most groups of species the search may choose from, more is refused (not in the original)", "group": "species", "value": 1000000, "unit": "groups", "estimated": true},
   {"name": "Species tree: most entries (a species named on one side of a branch) in a branch table that a reply may carry (not in the original)", "group": "species", "value": 1000000, "unit": "entries", "estimated": true},
   {"name": "Species tree window: most branches the table lists, the tree has them all (not in the original)", "group": "species", "value": 300, "unit": "rows", "estimated": true},
-  {"name": "Species tree window: most species named for a branch in the table (not in the original)", "group": "species", "value": 4, "unit": "species", "estimated": true}
+  {"name": "Species tree window: most species named for a branch in the table (not in the original)", "group": "species", "value": 4, "unit": "species", "estimated": true},
+  {"name": "Species tree polytomy test: fewest gene trees that resolve a quartet around a branch for it to be tested (not in the original)", "group": "species", "value": 10, "unit": "gene trees", "source": "Sayyari and Mirarab 2018, assumption A3"},
+  {"name": "Species tree polytomy test: level of significance below which a branch is taken to have a length (not in the original)", "group": "species", "value": 0.05, "source": "Sayyari and Mirarab 2018"},
+  {"name": "Motif search: bases in all the sequences above which Automatic sends the search to the workstation, what the Motif Finder takes on this computer (not in the original)", "group": "motif", "value": 300000, "unit": "bases", "estimated": true},
+  {"name": "Motif search: most memory the windows of the sequences may take (not in the original)", "group": "motif", "value": 4, "unit": "GB", "estimated": true},
+  {"name": "Motif search: most sequences in a workstation request (not in the original)", "group": "motif", "value": 100000, "unit": "sequences", "estimated": true},
+  {"name": "Motif search: most motifs, starting words and rounds a workstation request may ask for (not in the original)", "group": "motif", "value": "50, 1000, 10000", "estimated": true},
+  {"name": "Motif search: least and most effort, a multiple of the usual budget of about five seconds (not in the original)", "group": "motif", "value": "0.01 to 1000", "estimated": true},
+  {"name": "Domain search: most protein sequences in a search (not in the original)", "group": "domains", "value": 10000, "unit": "sequences", "estimated": true},
+  {"name": "Domain search: most residues in all the sequences, and in one sequence (not in the original)", "group": "domains", "value": "20000000, 100000", "unit": "residues", "estimated": true},
+  {"name": "Domain search: most permissive E-value cutoff taken (not in the original)", "group": "domains", "value": 100, "estimated": true},
+  {"name": "Domain search: sequences above which Automatic sends the search to the workstation (not in the original)", "group": "domains", "value": 100, "unit": "sequences", "estimated": true}
  ]
 }

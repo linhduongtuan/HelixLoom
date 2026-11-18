@@ -252,3 +252,219 @@ fn the_commands_of_the_server_are_told_from_the_apps_own_arguments() {
     assert_eq!(dispatch(&args(&["helixloom", "serve", "--help"])), Some(0));
     assert_eq!(dispatch(&args(&["helixloom", "status"])), Some(2));
 }
+
+fn built_page(label: &str) -> PathBuf {
+    let dir = work_folder(label).expect("a folder");
+    std::fs::write(dir.join("index.html"), "<html></html>").expect("index");
+    dir
+}
+
+#[test]
+fn the_server_serves_no_page_and_allows_no_origin_unless_told_to() {
+    let file = token_file("cli-no-web", "a-token-of-sixteen-chars-or-more");
+    let o = serve_options(
+        &args(&[
+            "--token-file",
+            &file.display().to_string(),
+            "--gpus",
+            "none",
+        ]),
+        no_env,
+    )
+    .expect("options");
+    assert!(!o.config.site.has_page());
+    assert!(o.config.site.origins().is_empty());
+}
+
+#[test]
+fn a_web_folder_and_the_origins_that_may_call_are_options_of_the_server() {
+    let file = token_file("cli-web", "a-token-of-sixteen-chars-or-more");
+    let page = built_page("cli-web-page");
+    let o = serve_options(
+        &args(&[
+            "--token-file",
+            &file.display().to_string(),
+            "--gpus",
+            "none",
+            "--web-dir",
+            &page.display().to_string(),
+            "--allow-origin",
+            "https://Lab.Example.org",
+            "--allow-origin",
+            "http://10.0.0.5:8080",
+        ]),
+        no_env,
+    )
+    .expect("options");
+    assert!(o.config.site.has_page());
+    assert_eq!(
+        o.config.site.origins(),
+        ["https://lab.example.org", "http://10.0.0.5:8080"]
+    );
+}
+
+#[test]
+fn a_web_folder_that_is_not_a_built_page_and_an_origin_that_is_not_one_stop_the_server() {
+    let file = token_file("cli-web-bad", "a-token-of-sixteen-chars-or-more");
+    let token = file.display().to_string();
+    let empty = work_folder("cli-web-empty").expect("a folder");
+    let why = serve_options(
+        &args(&[
+            "--token-file",
+            &token,
+            "--gpus",
+            "none",
+            "--web-dir",
+            &empty.display().to_string(),
+        ]),
+        no_env,
+    )
+    .err()
+    .expect("refused");
+    assert!(why.contains("index.html"), "{why}");
+    for bad in ["*", "lab.example.org", "https://lab.example.org/x", "null"] {
+        let why = serve_options(
+            &args(&[
+                "--token-file",
+                &token,
+                "--gpus",
+                "none",
+                "--allow-origin",
+                bad,
+            ]),
+            no_env,
+        )
+        .err()
+        .expect("refused");
+        assert!(
+            why.contains("--allow-origin") && why.contains("not an origin"),
+            "{bad}: {why}"
+        );
+    }
+    // an origin is allowed on its own, with no page: the page may be on another server
+    let o = serve_options(
+        &args(&[
+            "--token-file",
+            &token,
+            "--gpus",
+            "none",
+            "--allow-origin",
+            "https://lab.example.org",
+        ]),
+        no_env,
+    )
+    .expect("options");
+    assert!(!o.config.site.has_page() && o.config.site.origins().len() == 1);
+}
+
+#[test]
+fn the_usage_text_names_the_web_options() {
+    assert!(USAGE.contains("--web-dir") && USAGE.contains("--allow-origin"));
+}
+
+/// The options of a server that hands out `page` and keeps its token in `token` and its jobs in `data`.
+fn web_options(page: &Path, token: &Path, data: &Path) -> Result<ServeOptions, String> {
+    serve_options(
+        &args(&[
+            "--token-file",
+            &token.display().to_string(),
+            "--gpus",
+            "none",
+            "--data-dir",
+            &data.display().to_string(),
+            "--web-dir",
+            &page.display().to_string(),
+        ]),
+        no_env,
+    )
+}
+
+#[test]
+fn a_web_folder_is_the_build_and_nothing_the_server_keeps() {
+    const TOKEN: &str = "a-token-of-sixteen-chars-or-more";
+    let outside = work_folder("cli-web-keep").expect("a folder");
+    let token = outside.join("token.txt");
+    std::fs::write(&token, TOKEN).expect("a token file");
+    let data = outside.join("data");
+    // a folder that holds only the build, with the token and the jobs elsewhere: fine
+    let page = built_page("cli-web-clean");
+    assert!(web_options(&page, &token, &data).is_ok());
+
+    // the token's own file in the folder: handed to anyone who asks
+    let page = built_page("cli-web-token-file");
+    let inside = page.join("token.txt");
+    std::fs::write(&inside, TOKEN).expect("a token file");
+    let why = web_options(&page, &inside, &data).err().expect("refused");
+    assert!(why.contains("token.txt") && why.contains("token"), "{why}");
+
+    // a copy of the token in some other file of the folder
+    let page = built_page("cli-web-token-copy");
+    std::fs::write(page.join("backup.txt"), format!("TOKEN={TOKEN}\n")).expect("a file");
+    let why = web_options(&page, &token, &data).err().expect("refused");
+    assert!(
+        why.contains("/backup.txt") && why.contains("has the token in it"),
+        "{why}"
+    );
+
+    // the folder of the jobs, which does not exist yet, inside the folder of the page
+    let page = built_page("cli-web-data");
+    let why = web_options(&page, &token, &page.join("jobs/here"))
+        .err()
+        .expect("refused");
+    assert!(why.contains("--data-dir"), "{why}");
+
+    // a token file that the page cannot even name (a space in its name) is still inside the folder
+    let page = built_page("cli-web-token-hidden");
+    let odd = page.join("my token.txt");
+    std::fs::write(&odd, TOKEN).expect("a token file");
+    let why = web_options(&page, &odd, &data).err().expect("refused");
+    assert!(why.contains("token's file"), "{why}");
+}
+
+#[test]
+fn tools_install_takes_one_program_by_any_of_its_names_a_manager_and_the_yes() {
+    let words =
+        |text: &str| -> Vec<String> { text.split_whitespace().map(str::to_string).collect() };
+    let asked =
+        |text: &str| install_ask(&words(text)).map(|ask| (ask.program.label, ask.with, ask.yes));
+    use crate::pipeline::install::Manager;
+    assert_eq!(asked("mafft"), Ok(("MAFFT", None, false)));
+    // the label in any case, or the name of one of its programs
+    assert_eq!(asked("HMMER --yes"), Ok(("HMMER", None, true)));
+    assert_eq!(asked("hmmscan -y"), Ok(("HMMER", None, true)));
+    // a label that is no program's name, in small letters
+    assert_eq!(asked("iq-tree"), Ok(("IQ-TREE", None, false)));
+    assert_eq!(asked("Snakemake"), Ok(("Snakemake", None, false)));
+    assert_eq!(
+        asked("iqtree3 --with conda"),
+        Ok(("IQ-TREE", Some(Manager::Conda), false))
+    );
+    assert_eq!(
+        asked("--with Homebrew --yes primer3_core"),
+        Ok(("primer3", Some(Manager::Homebrew), true))
+    );
+
+    let refused = |text: &str| asked(text).expect_err("refused");
+    assert!(refused("").starts_with("Which program? HelixLoom calls: MAFFT, IQ-TREE, HMMER,"));
+    assert!(
+        refused("blast").starts_with("blast is not a program HelixLoom calls; it calls: MAFFT,")
+    );
+    assert_eq!(
+        refused("mafft fastp"),
+        "fastp is one argument too many: one program is installed at a time."
+    );
+    assert_eq!(
+        refused("mafft --with apt"),
+        "apt is no package manager HelixLoom knows: brew, micromamba, mamba or conda."
+    );
+    assert_eq!(
+        refused("mafft --with"),
+        "--with needs a package manager: brew, micromamba, mamba or conda."
+    );
+    assert_eq!(
+        refused("mafft --force"),
+        "The option --force is not known; `tools install` takes --with and --yes."
+    );
+    // a command typed after the name is no program: nothing a person types reaches a shell
+    assert!(refused("mafft;rm").starts_with("mafft;rm is not a program HelixLoom calls"));
+}

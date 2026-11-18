@@ -21,7 +21,7 @@ What is sent, and what is not:
 | In the app | Where it runs when the job goes to the workstation |
 | --- | --- |
 | Alignment (built-in or MAFFT) | the workstation's processor |
-| Phylogeny: neighbour-joining, UPGMA, maximum likelihood, Bayesian, bootstrap | the workstation's processor |
+| Phylogeny: neighbour-joining, UPGMA, maximum likelihood, Bayesian, bootstrap | the workstation's processor, and its GPUs when the job is big enough to be worth them (maximum likelihood and Bayesian over many alignment columns; the distances and the bootstrap of many sequences): see step 1.7 |
 | Pipelines (align, tree, primers) | the workstation's processor, with its MAFFT, IQ-TREE and primer3 |
 | PhyloCNN epidemic estimates | the workstation, on one GPU or on several at once (see "GPUs for one job" below) when "many trees run on the GPU" is chosen |
 | Structure prediction | the workstation's GPU with your folding program (one GPU, or more if the server is told the program uses them: `--fold-gpus`), or the ESM Atlas web service asked from the workstation |
@@ -43,8 +43,9 @@ estimates, not measurements; if a job should go the other way, pick This compute
 also asks how many of them one job is given: **1 GPU** (the start: every job that needs a GPU takes one, so several jobs run
 side by side), **2 GPUs**, **3 GPUs** and so on up to what the workstation has, or **All GPUs**. A job that can spread its
 work over several GPUs (PhyloCNN with many trees: it shares the trees out over them) is given that many at once, or fewer if
-it has fewer trees to share or the workstation has fewer GPUs. A job that cannot use more than one GPU (a structure, unless
-the server was told its program does) is given one whatever you choose. The choice is remembered with the address and token.
+it has fewer trees to share or the workstation has fewer GPUs. A big tree job (step 1.7) uses every GPU it is given, so choose **All GPUs** to have it use both of two. A job that
+cannot use more than one GPU (a structure, unless the server was told its program does) is given one whatever you choose. The
+choice is remembered with the address and token.
 
 ## 1. On the workstation
 
@@ -54,26 +55,61 @@ the GPU version, step 1.2) and Python (for the folding program, step 5).
 
 ### 1.1 Get the program there
 
-Copy the `app` folder of this project to the workstation (not its `target` folder, which holds this computer's build), then
-install Rust once and build:
+Get the code onto the workstation (clone it there; copying a folder from another computer must leave out its `target` folder,
+which holds that computer's build), then install Rust once and build. `docs/UBUNTU.md` has the whole path on Ubuntu, with the web
+version and the service:
 
 ```sh
-rsync -a --exclude target app/ you@workstation:HelixLoom-app/       # from your Mac or Linux computer
 ssh you@workstation
+sudo apt install build-essential pkg-config git curl libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev libxkbcommon-dev libssl-dev
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh     # follow the questions, then open a new shell
-sudo apt install build-essential pkg-config        # more libraries if the build says one is missing
-cd HelixLoom-app
+git clone https://github.com/linhduongtuan/HelixLoom.git && cd HelixLoom
 ```
 
 ### 1.2 Build it
 
 ```sh
 cargo build --release                       # processor only
-cargo build --release --features cuda       # also lets PhyloCNN use the NVIDIA GPUs (needs the CUDA toolkit)
+cargo build --release --features cuda       # also lets PhyloCNN and big trees use the NVIDIA GPUs through candle (needs the CUDA toolkit)
 ```
+
+**Or use PyTorch for the big tree jobs, and build with no CUDA toolkit at all.** The ordinary build runs the tensor work of tree jobs in
+Python worker processes, one for each GPU, when it is told which Python to use. You need a Python with PyTorch (and NumPy) on the
+workstation; the program installs nothing:
+
+```sh
+cargo build --release                       # no --features cuda needed for this
+sudo python3 -m venv /opt/helixloom/torch-env       # where the service's user can read it (the unit hides /home)
+sudo /opt/helixloom/torch-env/bin/pip install torch numpy
+# it must list both cards, and sm_86 and sm_120 (RTX 3090 and RTX 5060 Ti); if sm_120 is missing, install the build for CUDA 12.8 or later from pytorch.org
+/opt/helixloom/torch-env/bin/python -c 'import torch; print(torch.cuda.device_count(), torch.cuda.get_arch_list())'
+export HELIXLOOM_TORCH_PYTHON=/opt/helixloom/torch-env/bin/python   # for the server: the `Environment=` line in the service file (step 3)
+./target/release/helixloom gpu-check --bench
+```
+
+This only covers the distances, the bootstrap and the likelihood of a tree (step 1.7); PhyloCNN still needs `--features cuda`. The path
+of the Python is the server owner's, in the server's environment, as `--fold-command` is: nothing sent to the server ever names a program.
 
 The program is then `target/release/helixloom`. If the `cuda` build stops with a message about `nvcc` or CUDA, the toolkit
 is missing or not on the path: `nvcc --version` must work first.
+
+**Two different cards (an RTX 3090 with an RTX 5060 Ti, say).** candle compiles its kernels once, for one compute capability
+(`CUDA_COMPUTE_CAP`; if it is not set, the build asks `nvidia-smi`, which gives whichever card it lists first). Set it to the
+*oldest* card's, so that the newer one compiles the same kernels when it first uses them:
+
+```sh
+# the CUDA toolkit from NVIDIA's repository, version 12.8 or later (the RTX 5060 Ti is Blackwell and needs it, for the program's
+# build and for the libcublas it loads while running; Ubuntu's own `nvidia-cuda-toolkit` is 12.0, too old), and a driver of 570
+# or later with the open kernel modules, which Blackwell cards need
+CUDA_COMPUTE_CAP=86 cargo build --release --features cuda   # 86 is the RTX 3090; use 8.9 -> 89 for an RTX 4090, and so on
+export CUDA_CACHE_MAXSIZE=4294967296        # the driver keeps the compiled kernels in ~/.nv/ComputeCache: room, and a home folder the server's user can write
+./target/release/helixloom gpu-check        # "Card 0 alone", "Card 1 alone" and "All cards together" must all pass
+```
+
+**This recipe was written from reading the code and candle's sources; it has not been run on a CUDA card.** It is what to
+try first. If `gpu-check` fails on the newer card only, the message says which check and the reason: it is most likely a
+`libcublas` older than 12.8 (the 5060 Ti is then left out of the pool, with a line on the standard error saying so, and the
+3090 works alone), or a driver too old to compile the 3090's kernels for it.
 
 ### 1.3 The programs that the jobs call (optional, recommended)
 
@@ -84,6 +120,12 @@ sudo apt install mafft primer3 curl
 IQ-TREE comes from <https://iqtree.org>, from conda (`conda install -c bioconda iqtree`) or from your package manager: the
 server looks for `iqtree3`, `iqtree2` or `iqtree` on its path. A program that is missing is replaced by the built-in
 method, and the Workstation page shows what the server found.
+
+`helixloom tools` lists the programs the server can call, which are found and in which version. Where Homebrew, micromamba,
+mamba or conda is installed, `helixloom tools install NAME` installs one with it: it prints the command first
+(`micromamba install --yes --channel conda-forge --channel bioconda mafft`) and asks before it runs it (`--yes` answers).
+conda and its kin install into the environment that is active, so activate the one the server runs in first. Nothing is ever
+installed because a job asked for it.
 
 ### 1.4 Make a token and start the server
 
@@ -115,7 +157,7 @@ never see it). A token shorter than 32 characters is refused.
 | --- | --- |
 | `--listen ADDRESS` | where to listen; default `127.0.0.1:7878`, this computer only (see step 2) |
 | `--token-file FILE` | the file that holds the token (or set `HELIXLOOM_TOKEN`) |
-| `--data-dir DIR` | where jobs and results are kept; default `./helixloom-data` |
+| `--data-dir DIR` | where jobs and results are kept (`jobs`), and the answers of the steps of pipeline files (`flow-cache`, which the server never empties: `helixloom pipeline clear-cache DIR/flow-cache` does); default `./helixloom-data` |
 | `--gpus auto`, `none`, or a list | which GPUs to hand out: `auto` asks `nvidia-smi`; `0,1,3` or `0-3` names them |
 | `--cpu-jobs N` | jobs that need no GPU at once; default 2. A job may itself use many cores: choose with that in mind |
 | `--max-upload-mb N` | the biggest request accepted; default 512 |
@@ -124,6 +166,8 @@ never see it). A token shorter than 32 characters is refused.
 | `--fold-command "PROGRAM words"` | a program that folds a protein on a GPU (step 5) |
 | `--fold-gpus N` | how many GPUs one folding job is given; default 1. Raise it only if your folding program uses several GPUs (it is shown all of them) |
 | `--name NAME` | the name your computers see; default the workstation's own |
+| `--web-dir DIR` | also hand out the web version found in `DIR` (what `scripts/build-web.sh` or `trunk build --release` makes, `docs/WEB.md`): a browser that opens `http://HOST:7878/` gets the app, and its Workstation page is already pointed at this server. A file with a packed copy beside it (`name.gz`, as the script makes) is sent packed to a browser that takes gzip: the program is a third of its size that way. The folder must hold only the build, because it is handed to anyone: the server refuses to start if a file in it holds the token, or if the token's file or the `--data-dir` is inside it. It is read once, when the server starts: restart it after a new build |
+| `--allow-origin ORIGIN` | let the web version hosted at `ORIGIN` (`https://host` or `http://host:port`, nothing after it) call this server from there. Not needed for the page `--web-dir` hands out. May be given more than once |
 
 ### 1.6 How the GPUs are shared
 
@@ -141,10 +185,96 @@ to a few gigabytes; the service file (step 3) also caps the memory of the server
 that is asked to do something enormous is stopped instead of slowing the whole machine.
 
 What uses a GPU: PhyloCNN estimates of many trees (with the CUDA build; it divides the trees among the GPUs it is given, and
-the estimates come back in the order of the trees), and structure prediction with `--fold-command`.
+the estimates come back in the order of the trees), big tree jobs (step 1.7), and structure prediction with `--fold-command`.
 The PhyloCNN networks are files of their authors' and are not part of the program: install them on the workstation too (a
 `models` folder next to the server's settings, or the folder named by `HELIXLOOM_MODELS`; see `docs/MODELS.md`).
-Alignments, trees and pipelines run on the processor.
+Alignments and pipelines run on the processor, and so do tree jobs too small to be worth a GPU. A tree job is given GPUs by its
+size alone (the server never opens a GPU itself) and waits for them in the queue like any GPU job; on a workstation with no GPU
+(`--gpus none`) it is not refused but runs on the processor.
+
+### 1.7 Trees on the GPUs
+
+A tree job runs in a process that is shown the GPUs it was given, and uses them when it is big enough, through **candle** (built into the
+program) or **PyTorch** (Python workers, one per GPU; chosen when `HELIXLOOM_TORCH_PYTHON` names a Python, or with
+`HELIXLOOM_ACCEL_BACKEND=torch|candle`). Both do the same work and give the same answers:
+
+| What | How it uses the GPUs | How exact |
+| --- | --- | --- |
+| Distances between all pairs of sequences, and the resampled distances of a bootstrap | the columns are written as 0 and 1 and the three counts of each pair come from three matrix products; every card does its share of the rows, and a bootstrap sends the columns to the cards once and then only a weight for each column per resample | the counts are whole numbers a 32-bit float holds exactly, and the distance is worked out from them by the processor's own function: **equal to the processor's to the last digit** |
+| The likelihood of a tree (maximum-likelihood search and the fit of its four models; the Bayesian sampler) | Felsenstein's pruning written as tensor operations over all the distinct columns; one big likelihood is cut into ranges of columns, one per card in proportion to its speed, and the four model fits and the sampler's chains are spread over the cards | 32-bit logarithms summed in 64 bits: **agrees to about seven digits, not to the last**; on GPUs a change of topology must raise the log-likelihood by at least a millionth of its size (0.001 at the least) to be taken as better, so that noise is not mistaken for a better tree |
+
+One more thing goes to the GPUs with PyTorch (not with candle):
+
+| What | How it uses the GPUs | How exact |
+| --- | --- | --- |
+| Neighbour-joining of thousands of sequences | the n by n distance matrix stays on one card in 64 bits, and every join is a few passes over it (the matrix is cut down as clusters leave) | **the processor's joins and tree**: tied pairs are taken earliest in the list first, as the processor takes them, but the row sums are added in another order, so a near-tie, one in the last digit, can be decided the other way (about one matrix in ten with many identical sequences and fractional distances, in the checks made): the tree has the same total length and differs only in how a polytomy is resolved. A card with no 64-bit floats (a Mac's GPU) leaves it to the processor. Not above 15,000 sequences. The processor's own joins are 1.8 times faster on one core since November 2026 and shared among its cores from 800 sequences on, to the last bit the same joins (4,000 sequences: 50 s before, 7 to 9 s on a 10-core Mac), so the cards have less to win here |
+
+**What is not on the GPUs, and why.** MAFFT and IQ-TREE are other programs. UPGMA, species trees (ASTRAL), the conservation scores and
+pipelines run on the processor; a pipeline's job is given no GPU. **Alignment is not GPU work in this program, and the part that was slow needed no GPU.**
+The built-in aligner chooses a centre sequence, by how many 6-mers each shares with the others, and aligns every other sequence to it. The choice used to intersect
+the sets of 6-mers of every pair of sequences (half a minute for 600 sequences of 1,500 bases); it now counts, for each 6-mer, how many sequences hold it, which
+gives the same sums in one pass (`seq/msa.rs`, checked against the pairwise way on random, related, protein and degenerate sets). The alignments themselves (the dynamic
+programming of the centre against each other sequence) took 10.4 ns for each cell on one core, shared among all cores; they take **1.3 ns now in a release build** (2.9 ns for one pair alone, 3.6 ns in a
+debug or test build), because the program does eight pairs at once in vector instructions on the processor, with results identical to the old code to the last bit (`seq/align.rs`, checked against a copy of it on about 850 pairs):
+a centre star of 200 sequences of 1,500 bases takes 0.13 s on a Mac with 10 cores (it took 0.70 s). **They are not on the GPUs unless you ask, on purpose.** Eager PyTorch,
+along anti-diagonals with about 45 small tensor operations for each, took 20 ns for each cell at 64 pairs of 1,000 by 1,000 and 10 ns at 256 pairs on a Mac's GPU, where one core took 10.4 ns then (all eight, 1.3 ns) and takes 1.3 ns
+now (all eight, about 0.17 ns); that is mostly the launching of operations, so a card would do better, perhaps twice the cores (an estimate from the memory traffic, not a measurement), and
+only a fused kernel would beat the cores by much: it cannot be written and checked without a CUDA machine, and the processor's answer is now eight times nearer. **They can go to the PyTorch workers on request** (`HELIXLOOM_ACCEL=force`, or `HELIXLOOM_ACCEL_ALIGN_CELLS` set to the cells of all the tables together from which they go: `accel/torch/align.rs`): the tables are filled along their anti-diagonals for many pairs at once, with the processor's 32-bit sums and ties, the pairs shared among the GPUs of the job by speed, and the alignments come out **the same to the last bit** (checked against the old aligner on 1, 2 and 3 workers of the CPU device, and, in the worker's own check, on a Mac's GPU), with the processor taking over if a worker fails; but it is **slower than the processor wherever it has been measured**: 61 to 72 times on a worker of the CPU device and 413 to 1,008 times on this Mac's GPU (a busy machine, 32 to 64 pairs of 300 to 500 bases), because every diagonal is about sixty small operations. So nothing sends alignments there unless asked, and `helixloom gpu-check --bench` times them on your cards and says whether to set the variable (a fused kernel is the one thing that could win, and needs a CUDA machine). Sequences over about 2,800 bases, whose eight tables would take over 64 MB, are aligned one pair at a time (2.9 ns a cell). PhyloCNN, the one other user of the
+GPUs, has its own path. When a card fails in the middle of a job, the processor finishes it and the job's details and log say which card and why.
+
+**How big is big enough.** Below a size the processor is faster, because a GPU has to be fed and answered. The server decides
+by size alone, and the job decides again from its own alignment (patterns times tips for a likelihood; sequences squared times
+columns, for all resamples together, for distances). The starting values (10 million cells for a likelihood, 100 million for
+distances) were measured on **one machine, a Mac's GPU**, so on your cards they are a place to start from. Find the real ones with
+`helixloom gpu-check --bench` (a few minutes), which tests each card and then all together against the processor's answers, times both on growing
+sizes and prints the variables to set.
+
+| Variable | Meaning |
+| --- | --- |
+| `HELIXLOOM_TORCH_PYTHON=/path/to/python` | the Python (with PyTorch and NumPy) whose workers do the tensor work; with it set, PyTorch is the backend unless `HELIXLOOM_ACCEL_BACKEND=candle` |
+| `HELIXLOOM_ACCEL_BACKEND=auto\|torch\|candle` | which library; `auto` (the start) is PyTorch where a Python is named, else candle |
+| `HELIXLOOM_TORCH_DEVICES=cuda:0,cuda:1` | the devices PyTorch uses, instead of every card it finds (`cpu` tries it with no GPU; `mps` is a Mac's GPU) |
+| `HELIXLOOM_ACCEL=off\|auto\|force` | `off`: processor only; `auto` (the start): GPUs for big work; `force`: GPUs whatever the size (to try them) |
+| `HELIXLOOM_GPU_WEIGHTS=0.6,0.4` | the share of the work of each GPU, in `nvidia-smi` order; not set, each card's speed is measured when the job starts. Measured speed rates matrix products, and the likelihood is limited by memory speed, so for an RTX 3090 with an RTX 5060 Ti `2,1` (their memory bandwidths are about 936 and 448 GB/s) may suit it better: try both |
+| `HELIXLOOM_ACCEL_ALIGN_CELLS` | the cells of all the tables of a set of pairwise alignments from which they go to the PyTorch workers: **infinite unless you set it**, because the processor was 60 to 1,000 times faster wherever this was measured (`gpu-check --bench` says for your cards) |
+| `HELIXLOOM_ACCEL_LIKELIHOOD_CELLS`, `HELIXLOOM_ACCEL_DISTANCE_CELLS`, `HELIXLOOM_ACCEL_JOIN_CELLS` | the sizes above which the GPUs are used: patterns times tips; sequences squared times columns; sequences cubed (what `gpu-check --bench` suggests) |
+
+Set them in the service file (step 3) for the server, or in the shell for `gpu-check`. The server numbers the GPUs as `nvidia-smi`
+does (`CUDA_DEVICE_ORDER=PCI_BUS_ID`), and so does `gpu-check`; inside a job, the cards it was given are named `CUDA 0`, `CUDA 1`... counting from the first of
+those, whatever their numbers on the machine.
+
+**PyTorch or candle.** On the one GPU that has been measured, a Mac's (`helixloom gpu-check --bench --quick`, warm, 256 sequences by 20,000 columns
+for distances and 64 tips by 100,000 patterns for the likelihood), against one core of the processor:
+
+| | distances | likelihood of one tree |
+| --- | --- | --- |
+| candle (Metal) | 61 times faster | 0.8 times: *slower* than the processor |
+| PyTorch (Metal, `mps`) | 95 times faster | 16 times faster |
+
+candle's small reductions and its broadcast products are slow, and the likelihood launches about nine of them for every inner node; PyTorch does each
+node with a matrix product and a fused reduction. That is one machine and one GPU: **how either does on an RTX 3090 and an RTX 5060 Ti is not known until
+`gpu-check --bench` has run on them.** PyTorch costs seconds to start in each job process that uses it (importing it and opening the cards, in parallel for all
+the cards), so its start for the size of distances that go to the GPUs is higher (5·10^9 cells, ten seconds or so of one core; the likelihood's, 10^7 cells, is the
+same as for candle, since a search makes hundreds of evaluations). Each worker is a process of its own, one per GPU, and ends when the job's process does. What PyTorch prints, and the line that says which cards
+were found and how the work is cut (`HelixLoom: PyTorch 2.x, CUDA 12.x (built for …): share of the likelihood …`), are in the job's log. The workers
+run with `python -I`, which ignores the user's own packages (`pip install --user`): install PyTorch and NumPy in a virtual environment, as above. A worker
+that takes more than five minutes to start, or more than half an hour over one request (a GPU that has stopped answering), is killed and the processor does the
+work. A likelihood too short to keep two cards busy (under about 200,000 patterns for each) goes whole to the faster card: with a tree of a few hundred tips, the time is
+the launching of kernels, not the card, and a second card would add nothing (an estimate, not measured on your cards). **Setting the length of a branch no longer tries the whole tree for every length** (since November 2026): the workers keep what lies beyond both ends of the branch and try each length with one small product, so a search for a tree makes about a tenth to a twentieth of the launches (setting 12 branches took 3.8, 9.7 and 14.4 times less on a worker of the CPU device, for trees of 10, 20 and 40 tips; the processor's search is 4.7 to 10 times faster by the same change); the lengths found agree with the whole tree's to the noise of 32 bits (a few hundredths of the logarithm on a flat peak). If one of two workers dies in the middle of a job, the other does the work it was given, and the job's report says so. Without `HELIXLOOM_TORCH_PYTHON`, `HELIXLOOM_ACCEL_BACKEND=torch` runs `python3`
+from the server's `PATH`.
+
+**What to expect, and what is not known (candle).** Tried only with candle's CPU and Metal devices on a Mac. There, the distances were
+5 times faster on a GPU at 64 sequences by 20,000 columns and 33 to 38 times at 256 sequences, and the likelihood was *slower*
+than the processor below about 6 million cells and 1.2 times faster at 6.4 million: candle launches about nine small operations
+for every inner node of a tree, so it is limited by launching, not by arithmetic, and a CUDA card will win by more or less than
+this; nobody knows how much until `gpu-check --bench` has run on it. The likelihood search also evaluates the whole tree about 20 times
+for every branch length it adjusts; keeping the partial results (re-rooting at the branch) would cut that 10 to 20 times on the
+GPUs *and* the processor, and is the next step for speed (`docs/ROADMAP.md`). Whether CUDA needs the one-thread-at-a-time
+rule per card that Metal needed (several threads on one Metal device gave silently wrong numbers, found by the tests) has not been tried;
+the program takes turns on every card whatever the card, which costs a little overlap at most. Each GPU holds a full copy of the alignment's columns (the
+tips as 32-bit numbers, and for distances 28 bytes a column and sequence, 4 GB at most per card; a bigger one is refused and the processor does it, with a
+line in the log), and the partial results of a likelihood take about 20 bytes per pattern and inner node alive at once, which for
+a few million patterns of a few hundred tips can exceed the 16 GB card: its failure is then reported and the processor finishes.
 
 ## 2. Reaching the workstation from your computers
 
@@ -169,6 +299,40 @@ port on the open internet.** There are three ways to connect safely, from the be
    ```sh
    sudo ufw allow from 192.168.1.0/24 to any port 7878 proto tcp     # your network's addresses
    ```
+
+### 2.1 From a browser
+
+The web version (`docs/WEB.md`) reaches the server through the browser's `fetch`, with the same token. The simplest way is to
+let the server hand out the page itself, so that the page and the server have the same address and the browser has nothing
+to allow:
+
+```sh
+scripts/build-web.sh                       # on the computer where you build (docs/WEB.md): makes dist/, with packed copies
+                                           # (or: trunk build --release)
+helixloom serve --listen 127.0.0.1:7878 --token-file token.txt --web-dir dist
+```
+
+Then open `http://127.0.0.1:7878/` (through the SSH tunnel of way 1, on the computer you work at), go to Workstation, type
+the token and press Connect: the address is already there. The browser keeps the address and the token for that tab, so
+loading the page again does not ask for them; *Forget* on the Workstation page removes them, and a new tab starts without
+them. On a computer that others use, press *Forget* before you leave (`docs/WEB.md` says why closing the tab is not enough).
+
+The page can also be **installed** like a program and opened without a network (`docs/WEB.md`, *Installed, and without a
+network*). Browsers allow that only to a page that is opened over `https://` or from the computer itself, so through the
+SSH tunnel (`http://127.0.0.1:7878/`) it is offered, and at `http://workstation.local:7878/` it is not.
+
+Two things the browser insists on:
+
+- **A page opened over `https://` cannot call an `http://` address** (browsers make an exception for `localhost` and
+  `127.0.0.1`). The server does not speak TLS. Either open the page from the server (`http://`, as above), or put a proxy
+  that has a certificate in front of the server (Caddy, nginx) and type its `https://` address into the page. Tell the proxy
+  that jobs are large: nginx refuses a body over 1 MB unless `client_max_body_size` is at least `--max-upload-mb`, and its
+  `proxy_read_timeout` and `proxy_send_timeout` must be longer than the longest upload or result takes to move.
+- **A page that the server does not hand out is another origin**, and the browser asks the server first whether it may call
+  it. Name that page when you start the server, exactly as the browser writes it, and the server answers: `--allow-origin
+  https://lab.example.org`. Without it the browser refuses and the page says it cannot reach the workstation. The server never
+  answers "anyone"; the token is still needed for every job. The address that such a page fills in is its own, not the
+  workstation's: replace it before you type the token, or the token goes to the computer that hosts the page.
 
 ## 3. As a service that starts at boot (Linux, systemd)
 
@@ -223,6 +387,16 @@ your own profile):
 `compute=local`, `compute=workstation` or `compute=automatic` (a file from before the choice had three ways says `use=1`,
 which is read as Workstation). Setting `HELIXLOOM_CONFIG_DIR` puts the file in another folder.
 
+### A Mac app
+
+`scripts/bundle-macos.sh` makes `target/bundle/HelixLoom.app` and a disk image of it (`HelixLoom-0.2.0.dmg`) from a release
+build, with the program's own mark as its icon. It is signed ad hoc: it starts on the Mac that made it, and on another Mac
+the first start needs a right-click and **Open**, because it is not signed with a developer identity and not notarized by
+Apple. With an Apple Developer account, sign it with your identity instead (`codesign --force --options runtime --timestamp
+--sign "Developer ID Application: …" HelixLoom.app`), have the disk image notarized (`xcrun notarytool submit … --wait`) and
+staple the answer to the app (`xcrun stapler staple HelixLoom.app`); **these three were not tried here**, for want of an
+account. A file double-clicked in the Finder does not open in the app yet: open it from the app or drop it on its window.
+
 ## 5. Folding proteins on the GPUs (optional)
 
 Without a folding program, the Structure page's prediction goes to the ESM Atlas web service, asked from the workstation
@@ -250,11 +424,15 @@ on a GPU of the workstation.
 
 | What you see | What to do |
 | --- | --- |
+| Anything you want to report | **Help ▸ Copy Diagnostics** in the app copies the version, the system, the programs it found (with their paths) and the day and place in the code of the last fault: paste that into the report. It holds nothing of your work, no address and no token. |
 | "The workstation refused the token" | The token differs from the one in the file the server was started with. Paste it again, with nothing before or after. |
 | "Cannot reach 127.0.0.1:7878" | The SSH tunnel is not running, the server is not running (`systemctl status helixloom-server`), or a firewall is in the way. |
 | "This workstation speaks version 2 of the protocol…" | The app and the server are from different versions: build both from the same folder. |
 | The page lists no GPU | `nvidia-smi` must work for the user that runs the server; or name the GPUs yourself with `--gpus 0,1`. |
-| A GPU job says "no GPU set up" | The server runs with `--gpus none`, or `--gpus auto` found none. |
+| A GPU job says "no GPU set up" | The server runs with `--gpus none`, or `--gpus auto` found none. (A big tree job is not refused for this: it runs on the processor.) |
+| A big tree job did not use the GPUs | Look at the job's details and log: they say "the processor (the GPUs could not be used: …)" or which card failed. Otherwise the job was too small (`gpu-check --bench` finds the size), or the server's GPUs setting gave it none, or the program was built without `--features cuda`. |
+| `gpu-check` says "PyTorch could not be started" or "No GPU can be used" with PyTorch | The Python named by `HELIXLOOM_TORCH_PYTHON` cannot `import torch`, or PyTorch sees no CUDA device: run `/path/to/python -c 'import torch; print(torch.cuda.device_count(), torch.cuda.get_arch_list())'`. The RTX 5060 Ti needs a PyTorch built for CUDA 12.8 or later (`sm_120` in that list), and a driver of 570 or later. PyTorch's own messages are in the job's log (`jobs/<id>/log.txt`). |
+| `gpu-check` leaves a card out, or prints "…is left out of the pool" | The card could not run the speed test: the CUDA toolkit's libraries are older than the card needs (step 1.2), or the driver is. The other cards go on working. |
 | A job was given fewer GPUs than "GPUs for one job" says | It can use no more (a structure needs `--fold-gpus` on the server; PhyloCNN needs at least as many trees as GPUs), or the workstation has fewer. The job's line on the Workstation page says which GPUs it got. |
 | A job waits although a GPU is free | The job in front of it wants more GPUs than are free; jobs wait in the order they were sent. Choose fewer GPUs for one job, or wait for the job in front. |
 | A PhyloCNN run on the GPU fails with "This computer has no GPU the program can use" | The program on the workstation was built without `--features cuda`, or the CUDA driver is not usable by it: build again as in step 1.2. |
@@ -271,10 +449,24 @@ on a GPU of the workstation.
 
 ## 7. What the server does and does not allow
 
-- A request is one of six kinds of job (alignment, tree, pipeline, PhyloCNN, structure, species tree) with its data. It is
+- A request is one of nine kinds of job (alignment, tree, pipeline, PhyloCNN, structure, species tree, pipeline file, motif search, domain search) with its data. It is
   checked when it arrives. Nothing in it is used as a file name, a command or a program.
 - The token is checked from the header before any body is read, so a stranger without the token cannot make the server
   take in a large upload.
+- With `--web-dir`, the files of the page (and nothing else) are sent to anyone who asks, without a token: it is the program,
+  not your data. The folder is read into memory when the server starts and a request can only look names up in that list,
+  so no request can name a file of the workstation (`/../token.txt`, `%2e%2e` and the like are simply not in the list).
+  Links, hidden files and names with unusual characters are left out. Every address under `/v1/` still needs the token (a
+  folder called `v1` in the page's folder is refused). What is in the folder is public, so the server refuses to start if the
+  token is in a file there, or the token's file or the jobs' folder is inside it: keep the web build in a folder of its own.
+- The page is sent to at most 16 computers at a time (the others are told to try again), and each file within a minute or so
+  (the 13 MB program), so that a computer that only pretends to read cannot hold the places that the person with the token
+  needs for long. That is a limit and not a lock: a determined computer that can reach the port can still keep it busy (the
+  next point).
+- Anyone who can reach the port can learn whether an origin is in the `--allow-origin` list, by sending it as `Origin`: the
+  answer to a refusal has to say so for the page to be able to read it.
+- With `--allow-origin`, a page of exactly that origin may read the server's answers (a refusal too, so that it can say why).
+  No other origin gets any permission, and there is no setting that allows every origin.
 - Requests, headers and uploads have size limits; at most 64 connections are served at once, and at most 8 from one
   address; a connection must send its whole header within 5 seconds, however slowly, or it is dropped; an upload is given
   the time its size needs at 50 KB a second (the largest, about three hours), however slowly it comes; and only as many
@@ -294,14 +486,16 @@ on a GPU of the workstation.
 ## 8. What has been tried, and what has not
 
 Tried, on a Mac, with the server and the app on the same computer: the whole path (the app sends an alignment, a tree, a
-pipeline, PhyloCNN estimates, a species tree or a structure; the server queues it and runs it in a process of its own; the result comes
+pipeline, a pipeline file over a folder of loci, PhyloCNN estimates, a species tree, a motif search, a domain search or a structure; the server queues it and runs it in a process of its own; the result comes
 back and opens in its page), the token and the limits, results kept across a restart, stopping a running job and ending its
 process, and the sharing of (pretend) GPUs, with a stand-in folding program that reports which GPUs it was shown: one GPU to
 a job, then several GPUs to one job, and the order in which jobs wait for them. The sharing of one batch of PhyloCNN trees
 over several devices was tried with the processor standing in for the devices (the estimates equal those of a single
 device). These are automatic tests (`cargo test`, including `tests/remote.rs`, which starts the real program).
 
-**Not tried:** a real NVIDIA GPU or the `cuda` build, PhyloCNN on several real GPUs at once (the code that opens GPU number 0, 1,
+**Not tried:** a real NVIDIA GPU or the `cuda` build (this includes the multi-GPU alignment, tree and bootstrap code of step 1.7, which was
+tried with candle's CPU device in every pool shape, with several threads at once, and on a Mac's GPU; whether a 3090 and a 5060 Ti in one process work, and
+what the CUDA build recipe of step 1.2 does, is for `helixloom gpu-check` to say on your machine; the same for the PyTorch workers: they were run on a Mac's CPU and GPU, never on CUDA), PhyloCNN on several real GPUs at once (the code that opens GPU number 0, 1,
 2… of the CUDA build has never been compiled or run, and how much faster it is than one GPU is not measured), the systemd unit
 and the ESMFold example (no Linux GPU machine was at hand), running the server on Windows, building and running the app on Windows and Linux, an SSH
 tunnel or Tailscale (they are standard tools, but they were not run), and uploads of hundreds of megabytes. Expect to try each
@@ -348,7 +542,11 @@ that shows a fetched result in the page it belongs to (the compiler asks for it)
 
 The species-tree job (`src/remote/species.rs`, the `species` kind, `src/ui/windows/species.rs`) is the newest worked example
 of exactly these four pieces: its `Weight` is the leaves of its gene trees, its function is `species::run`, and the same
-function is `helixloom astral` on the command line.
+function is `helixloom astral` on the command line. The motif search (`src/remote/motif.rs`, the `motif` kind,
+`src/ui/windows/motifs.rs`, `helixloom motif`) is the same shape with a smaller `Weight` (the bases of its sequences). The domain
+search (`src/remote/domains.rs`, the `domains` kind, `src/ui/windows/domains.rs`) runs another program, HMMER's `hmmscan`, which the
+server finds on its own PATH and reads Pfam from its own models folder (`docs/DOMAINS.md`); the Workstation page lists HMMER among
+the programs it found.
 
 The analyses you have in mind fit this directly: conserved motifs and domains are a function of an alignment or a set of
 sequences (a few sections in, a table or annotations out); an epitope and paratope interaction is a function of two

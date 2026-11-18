@@ -2,6 +2,7 @@
 //! more branches the taxa on each branch are kept as a set: that is all the counting needs to know of a gene tree.
 
 use super::bits::Bits;
+use super::wgenes::{largest_support, Missing, WTree, Weights};
 use crate::seq::newick::NwTree;
 use std::collections::{BTreeSet, HashMap};
 
@@ -23,14 +24,14 @@ pub struct GTree {
 }
 
 /// One branch at a node: the taxa on that side, and how many.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Branch {
     pub set: Bits,
     pub size: u64,
 }
 
 /// What the counting reads of a gene tree: the taxa it has, and the branches around each node that joins at least three.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Gene {
     pub present: Bits,
     pub nodes: Vec<Vec<Branch>>,
@@ -42,12 +43,20 @@ pub struct Genes {
     pub taxa: Vec<String>,
     pub trees: Vec<GTree>,
     pub genes: Vec<Gene>,
+    /// For weighted counting, each gene tree with its supports and lengths (as many as `genes`; none for unweighted).
+    pub wtrees: Vec<WTree>,
+    /// What the reading of the weights has to say (a branch without a support taken as fully supported).
+    pub notes: Vec<String>,
     /// Trees left out for having fewer leaves than asked.
     pub skipped: usize,
+    /// How many trees the text held, those that were left out included.
+    pub input_trees: usize,
+    /// Where each tree of `trees` was in the text, counted from 1 (empty for trees that were not read from a text).
+    pub origin: Vec<usize>,
 }
 
 impl GTree {
-    fn from_newick(t: &NwTree, index: &HashMap<&str, usize>) -> GTree {
+    pub(super) fn from_newick(t: &NwTree, index: &HashMap<&str, usize>) -> GTree {
         let nodes = t
             .nodes
             .iter()
@@ -177,7 +186,7 @@ impl Gene {
 }
 
 /// The leaf names of gene tree number `k` (counted from 1): each must be there and be there once.
-fn leaf_names(t: &NwTree, k: usize) -> Result<Vec<&str>, String> {
+pub(super) fn leaf_names(t: &NwTree, k: usize) -> Result<Vec<&str>, String> {
     let names: Vec<&str> = t
         .nodes
         .iter()
@@ -190,7 +199,7 @@ fn leaf_names(t: &NwTree, k: usize) -> Result<Vec<&str>, String> {
     let mut seen = BTreeSet::new();
     if let Some(twice) = names.iter().find(|n| !seen.insert(**n)) {
         return Err(format!(
-            "Gene tree {k} has the leaf {twice} more than once. Genes with several copies per species need ASTRAL-Pro, which is not built yet; give each leaf its species name only once per tree."
+            "Gene tree {k} has the leaf {twice} more than once. If these are gene families (several copies of a species in a tree), use the gene families option (ASTRAL-Pro: `helixloom astral --families`, or the setting of the window); otherwise give each leaf its species name only once per tree."
         ));
     }
     Ok(names)
@@ -207,21 +216,32 @@ fn set_bytes(nodes: u128, taxa: usize) -> u128 {
 
 /// Whether the quartets of `genes` trees on `taxa` taxa can be counted in 64 bits: a tree has at most C(taxa, 4) of them
 /// and every one is counted twice, once from each of the nodes that join its two pairs.
-fn counts_fit(taxa: usize, genes: usize) -> bool {
+pub(super) fn counts_fit(taxa: usize, genes: usize) -> bool {
     let n = taxa as u128;
     let quartets = n * n.saturating_sub(1) * n.saturating_sub(2) * n.saturating_sub(3) / 24;
     quartets * 2 * (genes as u128) < u128::from(u64::MAX)
 }
 
 /// Read gene trees (one `;`-ended Newick tree after the other). A tree with fewer than `min_leaves` leaves is left out;
-/// a name that appears twice in one tree is refused (genes with several copies need ASTRAL-Pro, not built yet).
+/// a name that appears twice in one tree is refused (gene families with several copies are read by `family::read`).
+#[cfg(test)]
 pub fn read(text: &str, min_leaves: usize) -> Result<Genes, String> {
     read_within(text, min_leaves, MAX_SET_BYTES)
 }
 
+/// `read`, also taking from the trees what the `weights` need (supports, lengths); refused when a tree lacks them.
+pub fn read_weighted(text: &str, min_leaves: usize, weights: Weights) -> Result<Genes, String> {
+    read_inner(text, min_leaves, MAX_SET_BYTES, weights)
+}
+
 /// Whether `trees` gene trees of `nodes` nodes in all, on `taxa` taxa, can be searched: their sets of taxa must take at most
 /// `max_bytes` and their quartets be countable.
-fn check_size(trees: usize, nodes: u128, taxa: usize, max_bytes: u128) -> Result<(), String> {
+pub(super) fn check_size(
+    trees: usize,
+    nodes: u128,
+    taxa: usize,
+    max_bytes: u128,
+) -> Result<(), String> {
     let bytes = set_bytes(nodes, taxa);
     if bytes > max_bytes {
         let gigabytes = |b: u128| b.div_ceil(1 << 30);
@@ -239,9 +259,43 @@ fn check_size(trees: usize, nodes: u128, taxa: usize, max_bytes: u128) -> Result
     Ok(())
 }
 
+/// The gene trees as the weights read them, and a note on what they had to assume.
+fn weighted_trees(
+    kept: &[(usize, &NwTree)],
+    index: &HashMap<&str, usize>,
+    weights: Weights,
+) -> Result<(Vec<WTree>, Vec<String>), String> {
+    if weights == Weights::None {
+        return Ok((Vec::new(), Vec::new()));
+    }
+    // supports above 1 are percentages, in all the trees alike
+    let scale = if weights.uses_support() && largest_support(kept)? > 1.0 {
+        0.01
+    } else {
+        1.0
+    };
+    let mut missing = Missing::default();
+    let trees = kept
+        .iter()
+        .map(|&(k, t)| WTree::build(t, index, weights, scale, k, &mut missing))
+        .collect::<Result<Vec<_>, _>>()?;
+    Ok((trees, missing.notes()))
+}
+
 /// `read`, refusing trees whose sets of taxa would take more than `max_bytes`, or whose quartets could not be counted.
+#[cfg(test)]
 fn read_within(text: &str, min_leaves: usize, max_bytes: u128) -> Result<Genes, String> {
-    let parsed = NwTree::parse_all(text)?;
+    read_inner(text, min_leaves, max_bytes, Weights::None)
+}
+
+fn read_inner(
+    text: &str,
+    min_leaves: usize,
+    max_bytes: u128,
+    weights: Weights,
+) -> Result<Genes, String> {
+    // the lengths are only read by the weights, which need to know which are not written
+    let parsed = NwTree::parse_all_raw(text)?;
     let least = min_leaves.max(MIN_LEAVES);
     let mut kept = Vec::new();
     let mut names = BTreeSet::new();
@@ -253,26 +307,34 @@ fn read_within(text: &str, min_leaves: usize, max_bytes: u128) -> Result<Genes, 
             continue;
         }
         names.extend(leaves.iter().map(|s| s.to_string()));
-        kept.push(tree);
+        kept.push((k + 1, tree));
     }
     if names.len() < MIN_LEAVES {
         return Err("A species tree needs at least four taxa in the gene trees.".into());
     }
     let taxa: Vec<String> = names.into_iter().collect();
-    let nodes: u128 = kept.iter().map(|t| t.nodes.len() as u128).sum();
+    let nodes: u128 = kept.iter().map(|(_, t)| t.nodes.len() as u128).sum();
     check_size(kept.len(), nodes, taxa.len(), max_bytes)?;
     let index: HashMap<&str, usize> = taxa
         .iter()
         .enumerate()
         .map(|(i, s)| (s.as_str(), i))
         .collect();
-    let trees: Vec<GTree> = kept.iter().map(|t| GTree::from_newick(t, &index)).collect();
+    let trees: Vec<GTree> = kept
+        .iter()
+        .map(|(_, t)| GTree::from_newick(t, &index))
+        .collect();
     let genes = trees.iter().map(|t| t.gene(taxa.len())).collect();
+    let (wtrees, notes) = weighted_trees(&kept, &index, weights)?;
     Ok(Genes {
         taxa,
         trees,
         genes,
+        wtrees,
+        notes,
         skipped,
+        input_trees: parsed.len(),
+        origin: kept.iter().map(|&(k, _)| k).collect(),
     })
 }
 

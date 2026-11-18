@@ -10,3 +10,10 @@
 
 # the web build's output (trunk build --release)
 /dist
+
+# Python's compiled files (the PyTorch worker and the reference scripts are run from source)
+__pycache__/
+*.pyc
+
+# per-user IDE state
+/.openidea/

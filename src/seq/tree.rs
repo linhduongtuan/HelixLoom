@@ -54,6 +54,18 @@ pub fn aligned_distance(a: &[u8], b: &[u8], model: DistanceModel) -> Option<f64>
             }
         }
     }
+    distance_from_counts(sites, transitions, transversions, model)
+}
+
+/// The distance between two sequences from how many sites were compared and how many of them differ by a transition and by a
+/// transversion. `None` when no site was compared or the sequences differ too much for the model (the logarithm is
+/// undefined). Counts are whole numbers, so whoever counts them (the processor, a GPU) gets the same distance.
+pub fn distance_from_counts(
+    sites: u32,
+    transitions: u32,
+    transversions: u32,
+    model: DistanceModel,
+) -> Option<f64> {
     if sites == 0 {
         return None;
     }
@@ -74,23 +86,142 @@ pub fn aligned_distance(a: &[u8], b: &[u8], model: DistanceModel) -> Option<f64>
     d.map(f64::abs) // turns -0.0 into 0.0
 }
 
-/// Distances between every pair of rows of an alignment. `Err` names the first pair that can't
-/// be compared.
+/// The distances of every pair from the GPUs, or the first pair that cannot be compared; none if the cards failed.
+type Distances = Option<Result<Vec<Vec<f64>>, (usize, usize)>>;
+
+/// What is said of a pair of rows that can't be compared.
+fn not_comparable(msa: &Msa, i: usize, j: usize, model: DistanceModel) -> String {
+    format!(
+        "{} and {} are too different to give a {} distance",
+        msa.names[i],
+        msa.names[j],
+        model.label()
+    )
+}
+
+/// Distances between every pair of rows of an alignment, on the GPUs when there are some and there are enough pairs and columns
+/// to be worth it (the same numbers to the last digit: `accel::distance`), else on the processor. `Err` names the first pair that
+/// can't be compared.
 pub fn msa_distances(msa: &Msa, model: DistanceModel) -> Result<Vec<Vec<f64>>, String> {
+    if let Ok(Some(cards)) = Cards::for_work(msa, 1) {
+        if let Some(d) = cards.distances(None, model) {
+            return d.map_err(|(i, j)| not_comparable(msa, i, j, model));
+        }
+    }
+    cpu_distances(msa, model)
+}
+
+/// The same on the processor, whatever the size (the reference that the GPUs' answers are checked against).
+pub(crate) fn cpu_distances(msa: &Msa, model: DistanceModel) -> Result<Vec<Vec<f64>>, String> {
     let n = msa.rows.len();
     let mut d = vec![vec![0.0; n]; n];
     for (i, j) in (0..n).flat_map(|i| (i + 1..n).map(move |j| (i, j))) {
-        let v = aligned_distance(&msa.rows[i], &msa.rows[j], model).ok_or_else(|| {
-            format!(
-                "{} and {} are too different to give a {} distance",
-                msa.names[i],
-                msa.names[j],
-                model.label()
-            )
-        })?;
+        let v = aligned_distance(&msa.rows[i], &msa.rows[j], model)
+            .ok_or_else(|| not_comparable(msa, i, j, model))?;
         (d[i][j], d[j][i]) = (v, v);
     }
     Ok(d)
+}
+
+/// The columns of an alignment on the GPUs, for any number of weightings of them (the resamples of a bootstrap): nothing where
+/// there is no GPU, it is not worth it, or the alignment does not fit.
+#[cfg(all(feature = "gpu", not(target_arch = "wasm32")))]
+pub struct Cards {
+    engine: crate::accel::Distances,
+    /// Why a card failed, the first time one did: the processor does everything after that.
+    failure: std::sync::Mutex<Option<String>>,
+}
+
+#[cfg(not(all(feature = "gpu", not(target_arch = "wasm32"))))]
+pub struct Cards;
+
+#[cfg(all(feature = "gpu", not(target_arch = "wasm32")))]
+impl Cards {
+    fn new(engine: crate::accel::Distances) -> Cards {
+        Cards {
+            engine,
+            failure: std::sync::Mutex::new(None),
+        }
+    }
+
+    /// The columns of `msa` on the GPUs, if `times` sets of distances of this size are worth it (see `accel::threshold`):
+    /// `Ok(None)` where they are not (or there is no GPU), and `Err` with the reason where they were meant to be used and could
+    /// not be (said on the standard error too).
+    fn for_work(msa: &Msa, times: usize) -> Result<Option<Cards>, String> {
+        use crate::accel::{note_failure, threshold, worth_it, Distances};
+        let n = msa.rows.len() as f64;
+        let cells = times as f64 * n * n * msa.columns() as f64;
+        if !worth_it(cells, threshold::distance_cells()) {
+            return Ok(None);
+        }
+        match Distances::open(&msa.rows) {
+            Ok(engine) => Ok(engine.map(Cards::new)),
+            Err(why) => {
+                note_failure(
+                    "the GPUs could not take the distances",
+                    &format!("{why}; the processor does them"),
+                );
+                Err(why)
+            }
+        }
+    }
+
+    /// Why a card failed, if one has.
+    fn failure(&self) -> Option<String> {
+        self.failure
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner)
+            .clone()
+    }
+
+    /// The distances with each column taken `weights[column]` times: `Err` is the first pair that cannot be compared; `None` if a
+    /// card failed (this time or earlier: a card that failed is not asked again), and the processor must do it.
+    fn distances(&self, weights: Option<&[u32]>, model: DistanceModel) -> Distances {
+        if self.failure().is_some() {
+            return None;
+        }
+        match self.engine.counts(weights) {
+            Ok(counts) => Some(counts.distances(model)),
+            Err(why) => {
+                crate::accel::note_failure(
+                    "the GPUs failed on distances",
+                    &format!("{why}; the processor does them"),
+                );
+                self.failure
+                    .lock()
+                    .unwrap_or_else(std::sync::PoisonError::into_inner)
+                    .get_or_insert(why);
+                None
+            }
+        }
+    }
+
+    /// Where the distances of `resamples` bootstrap resamples were computed, `done` of them on the cards.
+    fn report(&self, done: usize, resamples: usize) -> String {
+        let place = self.engine.describe();
+        match self.failure() {
+            None => place,
+            Some(why) if done == 0 => format!("the processor (a GPU failed: {why})"),
+            Some(why) => format!(
+                "{place} for {done} of {resamples} resamples, then a GPU failed ({why}) and the processor did the rest"
+            ),
+        }
+    }
+}
+
+#[cfg(not(all(feature = "gpu", not(target_arch = "wasm32"))))]
+impl Cards {
+    fn for_work(_: &Msa, _: usize) -> Result<Option<Cards>, String> {
+        Ok(None)
+    }
+
+    fn distances(&self, _: Option<&[u32]>, _: DistanceModel) -> Distances {
+        None
+    }
+
+    fn report(&self, _: usize, _: usize) -> String {
+        String::new()
+    }
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -209,6 +340,16 @@ fn quoted_name(name: &str) -> String {
     }
 }
 
+/// One join of neighbour-joining: the positions, in the current list of clusters, of the two that are joined (`i` before `j`), and the
+/// lengths of their branches to the new cluster, which goes to the end of the list.
+#[derive(Clone, Debug, PartialEq)]
+pub struct Join {
+    pub i: usize,
+    pub j: usize,
+    pub li: f64,
+    pub lj: f64,
+}
+
 /// Neighbour-joining tree from a symmetric distance matrix. The tree is unrooted, drawn from a
 /// root with three children (two for two sequences). Negative branch lengths are set to zero.
 pub fn neighbor_joining(names: &[String], dist: &[Vec<f64>]) -> Option<Node> {
@@ -216,38 +357,32 @@ pub fn neighbor_joining(names: &[String], dist: &[Vec<f64>]) -> Option<Node> {
     if n < 2 || dist.len() != n || dist.iter().any(|row| row.len() != n) {
         return None;
     }
+    // many sequences: the GPUs make the joins (the same ones, but for ties that rounding decides)
+    #[cfg(all(feature = "gpu", not(target_arch = "wasm32")))]
+    if let Some((joins, last)) = crate::accel::neighbor_joins(dist) {
+        return Some(join_tree(names, &joins, &last));
+    }
+    let (joins, last) = cpu_joins(dist);
+    Some(join_tree(names, &joins, &last))
+}
+
+// The joins of neighbour-joining on the processor, and the distances among the (two or three) clusters that are left: in
+// `tree/joins.rs`, which makes the same joins to the last bit as the plain way and shares the work among the cores.
+mod joins;
+pub(crate) use joins::cpu_joins;
+
+/// The tree that `joins` make of the sequences `names`, the last two or three clusters being `last` apart.
+pub(crate) fn join_tree(names: &[String], joins: &[Join], last: &[Vec<f64>]) -> Node {
     let mut nodes: Vec<Node> = names.iter().map(|s| Node::leaf(s)).collect();
-    let mut d: Vec<Vec<f64>> = dist.to_vec();
-    while nodes.len() > 3 {
-        let m = nodes.len() as f64;
-        let r: Vec<f64> = d.iter().map(|row| row.iter().sum()).collect();
-        let mut best = (f64::INFINITY, 0, 1);
-        for i in 0..nodes.len() {
-            for j in i + 1..nodes.len() {
-                let q = (m - 2.0) * d[i][j] - r[i] - r[j];
-                if q < best.0 {
-                    best = (q, i, j);
-                }
-            }
-        }
-        let (_, i, j) = best;
-        let dij = d[i][j];
-        let li = (dij / 2.0 + (r[i] - r[j]) / (2.0 * (m - 2.0))).max(0.0);
-        let lj = (dij - li).max(0.0);
-        // distance from the new node to every node that is left, in their current order
-        let to_new: Vec<f64> = (0..nodes.len())
-            .filter(|&k| k != i && k != j)
-            .map(|k| (d[i][k] + d[j][k] - dij) / 2.0)
-            .collect();
-        let (mut right, mut left) = (nodes.remove(j), nodes.remove(i));
-        (left.length, right.length) = (li, lj);
+    for join in joins {
+        let (mut right, mut left) = (nodes.remove(join.j), nodes.remove(join.i));
+        (left.length, right.length) = (join.li, join.lj);
         nodes.push(Node::inner(vec![left, right]));
-        join_rows(&mut d, i, j, to_new);
     }
     let lengths: Vec<f64> = if nodes.len() == 2 {
-        vec![d[0][1] / 2.0; 2]
+        vec![last[0][1] / 2.0; 2]
     } else {
-        let (ab, ac, bc) = (d[0][1], d[0][2], d[1][2]);
+        let (ab, ac, bc) = (last[0][1], last[0][2], last[1][2]);
         vec![
             (ab + ac - bc) / 2.0,
             (ab + bc - ac) / 2.0,
@@ -257,7 +392,7 @@ pub fn neighbor_joining(names: &[String], dist: &[Vec<f64>]) -> Option<Node> {
     for (node, length) in nodes.iter_mut().zip(lengths) {
         node.length = length.max(0.0);
     }
-    Some(Node::inner(nodes))
+    Node::inner(nodes)
 }
 
 /// Drop rows and columns `i < j` of `d` and append the merged cluster with distances `to_new`.
@@ -431,23 +566,58 @@ pub fn add_bootstrap(
     method: Method,
     replicates: usize,
     seed: u64,
-) {
+) -> Option<String> {
+    match Cards::for_work(msa, replicates) {
+        Ok(cards) => add_bootstrap_with(tree, msa, model, method, replicates, seed, cards),
+        Err(why) => {
+            add_bootstrap_with(tree, msa, model, method, replicates, seed, None);
+            Some(format!("the processor (the GPUs could not be used: {why})"))
+        }
+    }
+}
+
+/// The same with the columns on the GPUs (or not) as `cards` says: every resample is then a weight for each column, and its
+/// distances come from the cards without the columns being sent again.
+fn add_bootstrap_with(
+    tree: &mut Node,
+    msa: &Msa,
+    model: DistanceModel,
+    method: Method,
+    replicates: usize,
+    seed: u64,
+    cards: Option<Cards>,
+) -> Option<String> {
     let (width, mut rng) = (msa.columns(), Rng::new(seed));
     let mut counts: HashMap<Vec<usize>, f64> = HashMap::new();
     let mut usable = 0.0;
+    let mut on_cards_count = 0;
     for _ in 0..replicates {
         let picks: Vec<usize> = (0..width).map(|_| rng.below(width)).collect();
-        let rows = msa
-            .rows
-            .iter()
-            .map(|r| picks.iter().map(|&c| r[c]).collect())
-            .collect();
-        let resampled = Msa {
-            names: msa.names.clone(),
-            rows,
-        };
-        let Ok(d) = msa_distances(&resampled, model) else {
-            continue;
+        let on_cards = cards.as_ref().and_then(|c| {
+            let mut weights = vec![0u32; width];
+            picks.iter().for_each(|&p| weights[p] += 1);
+            c.distances(Some(&weights), model)
+        });
+        on_cards_count += usize::from(on_cards.is_some());
+        let d = match on_cards {
+            Some(Ok(d)) => d,
+            // two sequences that cannot be compared in this resample: it is skipped, as on the processor
+            Some(Err(_)) => continue,
+            None => {
+                let rows = msa
+                    .rows
+                    .iter()
+                    .map(|r| picks.iter().map(|&c| r[c]).collect())
+                    .collect();
+                let resampled = Msa {
+                    names: msa.names.clone(),
+                    rows,
+                };
+                let Ok(d) = cpu_distances(&resampled, model) else {
+                    continue;
+                };
+                d
+            }
         };
         if let Some(t) = method.tree(&msa.names, &d) {
             usable += 1.0;
@@ -466,12 +636,157 @@ pub fn add_bootstrap(
             .collect();
         set_support(tree, &index, msa.names.len(), &counts);
     }
+    cards.as_ref().map(|c| c.report(on_cards_count, replicates))
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::seq::msa::center_star;
+
+    /// The branch supports of a tree in the order of a walk down it.
+    #[cfg(all(feature = "gpu", not(target_arch = "wasm32")))]
+    fn supports(node: &Node, out: &mut Vec<Option<f64>>) {
+        out.push(node.support);
+        node.children.iter().for_each(|c| supports(c, out));
+    }
+
+    #[cfg(all(feature = "gpu", not(target_arch = "wasm32")))]
+    #[test]
+    fn a_bootstrap_on_the_cards_gives_the_support_of_a_bootstrap_on_the_processor_for_the_same_seed(
+    ) {
+        use crate::accel::distance::Engine;
+        use crate::accel::pool::Member;
+        use crate::accel::Pool;
+        // three groups of four sequences, each group a copy of its own ancestor with a few changes: a tree with something to support
+        let mut rng = Rng::new(77);
+        let letters = b"ACGT";
+        let ancestor: Vec<u8> = (0..300).map(|_| letters[rng.below(4)]).collect();
+        let mut rows: Vec<Vec<u8>> = Vec::new();
+        for _ in 0..3 {
+            let group: Vec<u8> = ancestor
+                .iter()
+                .map(|&c| {
+                    if rng.below(100) < 18 {
+                        letters[rng.below(4)]
+                    } else {
+                        c
+                    }
+                })
+                .collect();
+            for _ in 0..4 {
+                rows.push(
+                    group
+                        .iter()
+                        .map(|&c| match rng.below(60) {
+                            0 => b'-',
+                            1..=6 => letters[rng.below(4)],
+                            _ => c,
+                        })
+                        .collect(),
+                );
+            }
+        }
+        let msa = Msa {
+            names: (0..rows.len()).map(|k| format!("s{k}")).collect(),
+            rows,
+        };
+        let model = DistanceModel::JukesCantor;
+        let start = neighbor_joining(&msa.names, &cpu_distances(&msa, model).unwrap()).unwrap();
+        let mut pools = vec![
+            Pool::new(vec![Member::new(
+                candle_core::Device::Cpu,
+                "CPU".into(),
+                1.0,
+            )]),
+            Pool::new(vec![
+                Member::new(candle_core::Device::Cpu, "CPU".into(), 2.0),
+                Member::new(candle_core::Device::Cpu, "CPU".into(), 1.0),
+            ]),
+        ];
+        pools.extend(Pool::global().cloned());
+        for method in [Method::NeighborJoining, Method::Upgma] {
+            let mut on_cpu = start.clone();
+            add_bootstrap_with(&mut on_cpu, &msa, model, method, 40, 5, None);
+            let mut want = Vec::new();
+            supports(&on_cpu, &mut want);
+            assert!(
+                want.iter().flatten().any(|&s| s > 0.0),
+                "there is something to support"
+            );
+            for pool in &pools {
+                let cards = Cards::new(crate::accel::Distances::Candle(
+                    Engine::new(pool, &msa.rows).unwrap(),
+                ));
+                let mut on_cards = start.clone();
+                add_bootstrap_with(&mut on_cards, &msa, model, method, 40, 5, Some(cards));
+                let mut got = Vec::new();
+                supports(&on_cards, &mut got);
+                assert_eq!(got, want, "{} cards", pool.len());
+            }
+        }
+    }
+
+    #[cfg(all(feature = "gpu", not(target_arch = "wasm32")))]
+    #[test]
+    fn a_card_that_fails_in_a_bootstrap_hands_every_resample_to_the_processor_and_the_report_says_so(
+    ) {
+        use crate::accel::distance::Engine;
+        use crate::accel::pool::Member;
+        use crate::accel::Pool;
+        let mut rng = Rng::new(3);
+        let letters = b"ACGT";
+        let mut rows = |columns: usize| -> Vec<Vec<u8>> {
+            (0..6)
+                .map(|_| (0..columns).map(|_| letters[rng.below(4)]).collect())
+                .collect()
+        };
+        let names: Vec<String> = (0..6).map(|k| format!("s{k}")).collect();
+        let msa = Msa {
+            names: names.clone(),
+            rows: rows(120),
+        };
+        // columns for a different alignment: a resample of this one is the wrong size for them, which the cards refuse
+        let others = rows(60);
+        let pool = Pool::new(vec![Member::new(
+            candle_core::Device::Cpu,
+            "CPU".into(),
+            1.0,
+        )]);
+        let model = DistanceModel::P;
+        let start = neighbor_joining(&names, &cpu_distances(&msa, model).unwrap()).unwrap();
+        let mut on_cpu = start.clone();
+        add_bootstrap_with(
+            &mut on_cpu,
+            &msa,
+            model,
+            Method::NeighborJoining,
+            12,
+            5,
+            None,
+        );
+        let mut with_failure = start.clone();
+        let cards = Cards::new(crate::accel::Distances::Candle(
+            Engine::new(&pool, &others).unwrap(),
+        ));
+        let said = add_bootstrap_with(
+            &mut with_failure,
+            &msa,
+            model,
+            Method::NeighborJoining,
+            12,
+            5,
+            Some(cards),
+        )
+        .expect("a report");
+        assert!(said.contains("a GPU failed"), "{said}");
+        assert!(said.contains("one weight for each column"), "{said}");
+        // the processor did every resample, so the support is what it gives alone
+        let (mut got, mut want) = (Vec::new(), Vec::new());
+        supports(&with_failure, &mut got);
+        supports(&on_cpu, &mut want);
+        assert_eq!(got, want);
+    }
 
     fn names(list: &[&str]) -> Vec<String> {
         list.iter().map(|s| s.to_string()).collect()
@@ -666,7 +981,7 @@ mod tests {
     }
 
     #[test]
-    fn bootstrap_gives_full_support_to_a_clear_split_and_repeats_with_the_same_seed() {
+    fn bootstrap_supports_a_clear_split_and_repeats_with_the_same_seed() {
         let msa = four_related();
         let d = msa_distances(&msa, DistanceModel::JukesCantor).unwrap();
         let mut tree = neighbor_joining(&msa.names, &d).unwrap();

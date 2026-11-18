@@ -203,7 +203,7 @@ impl App {
             self.text_map.result_open = false;
             return;
         };
-        let look = design::look(self.prefs.dark);
+        let look = self.prefs.look();
         let live = self
             .docs
             .iter()

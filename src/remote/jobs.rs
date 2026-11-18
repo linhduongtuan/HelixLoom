@@ -37,6 +37,8 @@ const RESULT_FILE: &str = "result.bin";
 const ERROR_FILE: &str = "error.txt";
 const META_FILE: &str = "meta.txt";
 const LOG_FILE: &str = "log.txt";
+/// The folder of the data folder where the answers of pipeline-file steps are kept (beside `jobs`, which holds the jobs).
+const FLOW_CACHE: &str = "flow-cache";
 
 struct State {
     jobs: BTreeMap<String, JobInfo>,
@@ -587,6 +589,9 @@ impl Shared {
             .arg(dir)
             .arg("--fold-seconds")
             .arg(self.config.job_limit.as_secs().to_string())
+            // the answers of a pipeline file's steps are kept here, beside the jobs, so that a run sent again finds them
+            .arg("--flow-cache")
+            .arg(self.config.data_dir.join(FLOW_CACHE))
             // the job ends by itself if this process goes (it is told which process that is, so that it is not fooled
             // by a server that went before the job had looked)
             .arg("--server-pid")

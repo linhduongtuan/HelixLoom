@@ -61,6 +61,9 @@ fn scrub(seq: &mut [u8], protected: (usize, usize)) {
     }
 }
 
+/// The name of the example plasmid that the program opens with when it was given nothing to open.
+pub const DEMO_NAME: &str = "pDemo";
+
 pub fn demo_plasmid() -> Doc {
     let mut rng = Lcg(2026);
     let mut seq: Vec<u8> = Vec::new();
@@ -144,7 +147,7 @@ pub fn demo_plasmid() -> Doc {
     );
     add(&mut seq, &rng.dna(60), "", "", false);
     scrub(&mut seq, (mcs_start, mcs_end));
-    let mut doc = Doc::new("pDemo", seq);
+    let mut doc = Doc::new(DEMO_NAME, seq);
     doc.circular = true;
     doc.features = features;
     doc.definition = "Synthetic demo plasmid generated for HelixLoom.".into();
@@ -189,6 +192,23 @@ pub fn demo_fastq() -> String {
             format!("@demo_{i}\n{}\n+\n{text}\n", String::from_utf8_lossy(&seq))
         })
         .collect()
+}
+
+#[cfg(test)]
+/// Ubiquitin (the example structure) as a file of two chains, residues 1 to 38 in chain A and the rest in chain B: a made-up
+/// split, only so that the tests of the Interface section of the Structure page have two chains to work on. It is not a complex.
+pub fn ubiquitin_in_two_chains() -> String {
+    include_str!("../assets/structure/1ubq.pdb")
+        .lines()
+        .map(|l| {
+            let number: Option<i32> = l.get(22..26).and_then(|n| n.trim().parse().ok());
+            match (l.starts_with("ATOM"), number) {
+                (true, Some(n)) if n > 38 => format!("{}B{}", &l[..21], &l[22..]),
+                _ => l.to_string(),
+            }
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
 }
 
 /// Six related sequences for the tree view: the demo plasmid's first 600 bases with growing
@@ -421,6 +441,34 @@ pub fn tree_sample(count: usize) -> String {
 pub const SPECIES_GENE_TREES: &str = include_str!("../assets/species/genes.tre");
 /// The species tree that `SPECIES_GENE_TREES` were simulated from.
 pub const SPECIES_TRUTH: &str = include_str!("../assets/species/truth.tre");
+
+/// Twelve random sequences of 90 bases, each carrying a changed copy of one word (`ACCGTTAGCA`, one base in ten changed) on either
+/// strand, as FASTA: something for the Motif Finder to find on its first run.
+pub fn motif_demo() -> String {
+    let mut rng = crate::seq::tree::Rng::new(2026);
+    let word = b"ACCGTTAGCA";
+    (0..12)
+        .map(|k| {
+            let mut seq: Vec<u8> = (0..90).map(|_| b"ACGT"[rng.below(4)]).collect();
+            let mut copy: Vec<u8> = word
+                .iter()
+                .map(|&b| {
+                    if rng.unit() < 0.1 {
+                        b"ACGT"[rng.below(4)]
+                    } else {
+                        b
+                    }
+                })
+                .collect();
+            if rng.below(2) == 1 {
+                copy = revcom(&copy);
+            }
+            let at = rng.below(90 - word.len() + 1);
+            seq[at..at + word.len()].copy_from_slice(&copy);
+            format!(">promoter_{}\n{}\n", k + 1, String::from_utf8_lossy(&seq))
+        })
+        .collect()
+}
 
 #[cfg(test)]
 mod tests {

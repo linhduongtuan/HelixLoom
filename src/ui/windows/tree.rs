@@ -31,8 +31,18 @@ pub struct TreeWin {
     /// Generations of each Bayesian run.
     pub generations: usize,
     pub tree: Option<Node>,
+    /// Counted up whenever `tree` is set (`set_tree`): the session keeps the tree, and tells by this that it is another one.
+    pub changed: u64,
     pub details: Vec<String>,
     pub message: String,
+}
+
+impl TreeWin {
+    /// Show `tree`, or none. Every change of the tree goes through here, so that it is counted.
+    pub fn set_tree(&mut self, tree: Option<Node>) {
+        self.tree = tree;
+        self.changed += 1;
+    }
 }
 
 impl Default for TreeWin {
@@ -44,6 +54,7 @@ impl Default for TreeWin {
             bootstrap: 100,
             generations: DEFAULT_GENERATIONS,
             tree: None,
+            changed: 0,
             details: Vec::new(),
             message: String::new(),
         }
@@ -142,8 +153,11 @@ impl App {
     // window waits); the Phylogeny page runs the same estimation on a worker thread.
     pub fn build_tree(&mut self) {
         let seqs = open_sequences(&self.docs);
+        // the tree of this window replaces the one the Phylogeny page estimated: that page's record does not describe it
+        self.platform.phylogeny.made = None;
         let w = &mut self.tree_win;
-        (w.tree, w.details, w.message) = (None, Vec::new(), String::new());
+        w.set_tree(None);
+        (w.details, w.message) = (Vec::new(), String::new());
         if seqs.len() < 2 {
             w.message = "Open at least two sequences to build a tree.".into();
             return;
@@ -169,7 +183,7 @@ impl App {
         match estimate(&msa, &options) {
             Ok(done) => {
                 w.details.extend(done.details);
-                w.tree = Some(done.tree);
+                w.set_tree(Some(done.tree));
             }
             Err(e) => w.message = e,
         }

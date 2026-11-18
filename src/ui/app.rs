@@ -1,25 +1,32 @@
 //! The application shell: the top bar and its menus, the rail, toolbar, tabs, the sequence view with its map and feature
 //! table, the command palette, and the screenshot hook used by the build checks.
 
+use super::appearance::Appearance;
+use super::autosave::Keeper;
 use super::clipboard::{self, Special};
-use super::design;
 use super::headless::{claim_picture, save_png, SCREENSHOT_FRAMES};
 use super::palette::CommandPalette;
 use super::platform::{Platform, Workspace, RAIL_WIDTH};
 use super::state::{DocView, Prefs, ThemeMode, TransMode};
 use super::theme::{self, Palette};
 use super::toasts::Toasts;
+use super::tour::Tour;
+use super::tray::Tray;
 use super::windows::assembly::{AssemblyWin, Preset};
 use super::windows::calculator::CalculatorWin;
 use super::windows::digest::DigestWin;
+use super::windows::domains::DomainsWin;
 use super::windows::enzlist::{EnzListWin, Quick};
 use super::windows::enzymes::EnzymeWin;
 use super::windows::features::FeatureWin;
+use super::windows::fetch::FetchWin;
 use super::windows::find::{Dir, FindWin};
 use super::windows::molcalc::MolCalcWin;
+use super::windows::motifs::MotifWin;
 use super::windows::orfs::{OrfStep, OrfWin};
 use super::windows::phylocnn::PhyloCnnWin;
 use super::windows::primer3::Primer3Win;
+use super::windows::programs::ProgramsWin;
 use super::windows::reads::ReadsWin;
 use super::windows::sitetools::SiteToolsWin;
 use super::windows::species::SpeciesWin;
@@ -35,6 +42,7 @@ use crate::seq::features::{builtin_library, LibraryEntry};
 use eframe::egui::{self, Key, KeyboardShortcut, Modifiers, Ui};
 use std::collections::BTreeSet;
 use std::path::{Path, PathBuf};
+use web_time::Instant;
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub enum Tab {
@@ -55,6 +63,9 @@ pub struct Startup {
     /// The folder the program keeps its settings in (the workstation's address and token); none reads and keeps
     /// nothing.
     pub settings_dir: Option<PathBuf>,
+    /// Settings of the appearance to start with, put on what the settings folder holds (`--appearance scale=150,contrast=high`). A run
+    /// that is given any (or `--dark`) writes none of its appearance to the folder.
+    pub appearance: Option<String>,
 }
 
 #[derive(Clone, Debug)]
@@ -69,6 +80,8 @@ pub enum Action {
     Save,
     SaveAs,
     ExportFasta,
+    /// Save a report of the results that are on the pages.
+    Report,
     CloseTab(usize),
     CloseCurrent,
     Undo,
@@ -113,6 +126,12 @@ pub enum Action {
     Translation(TransMode),
     ToggleMap,
     ToggleFeatures,
+    ToggleInspector,
+    /// Help > Show the Tour, and Help > Open the Sample Project.
+    Tour,
+    SampleProject,
+    /// File > Fetch from a Database…
+    Fetch,
     ToggleSecondStrand,
     SwitchTab(Tab),
     OpenAssembler,
@@ -140,6 +159,10 @@ pub enum Action {
     Tree,
     PhyloCnn,
     SpeciesTree,
+    Motifs,
+    Domains,
+    /// The programs HelixLoom calls: which are here, and installing one.
+    Programs,
     TreeTools,
     Workflow,
     Primer3,
@@ -149,8 +172,29 @@ pub enum Action {
     Palette,
     /// Show the sheet of keyboard shortcuts.
     Shortcuts,
+    /// The page that says how each analysis was checked.
+    Checks,
+    /// Copy what a report of a problem needs: the version, the computer, what was found on it.
+    Diagnostics,
     /// Choose how the colours are decided: by the system, light or dark.
     Theme(ThemeMode),
+    /// Open the window of the appearance settings.
+    Appearance,
+    /// Make everything larger (1) or smaller (-1) by one step, or back to the normal size (0).
+    Zoom(i8),
+    /// Open the `n`th recent file (File ▸ Open Recent), and forget them all.
+    OpenRecent(usize),
+    ClearRecent,
+    /// Turn the keeping of the open sequences for the next run off, or on again (File menu).
+    ToggleKeeping,
+    /// Open or close the job tray under the top bar.
+    JobTray,
+    /// Answers the command palette makes from the work in hand: go to a base (counted from 1), search the sequence in view for a
+    /// pattern, show the open sequence with this number, select the feature with this number in the sequence in view.
+    JumpTo(usize),
+    FindText(String),
+    SwitchDoc(usize),
+    SelectFeature(usize),
 }
 
 pub struct App {
@@ -177,10 +221,22 @@ pub struct App {
     pub pcr_win: PcrWin,
     pub calc_win: CalcWin,
     pub calculator_win: CalculatorWin,
+    pub fetch_win: FetchWin,
     pub molcalc_win: MolCalcWin,
     pub tree_win: TreeWin,
     pub phylocnn_win: PhyloCnnWin,
     pub species_win: SpeciesWin,
+    pub motif_win: MotifWin,
+    pub domains_win: DomainsWin,
+    pub programs_win: ProgramsWin,
+    /// The folder the program keeps its settings in, if it keeps any.
+    pub settings_dir: Option<std::path::PathBuf>,
+    /// What is kept between runs: the session, the recent files and the place of the window.
+    pub keeper: Keeper,
+    /// What is running, and what ended lately.
+    pub tray: Tray,
+    /// The first-run tour: where it is, and where the parts of the window that it points at are.
+    pub tour: Tour,
     pub treetools_win: TreeToolsWin,
     /// The workspace showing beside the rail, and what the platform keeps for them.
     pub workspace: Workspace,
@@ -192,12 +248,16 @@ pub struct App {
     pub palette: CommandPalette,
     pub toasts: Toasts,
     pub shortcuts_open: bool,
+    pub checks_win: super::checks::ChecksWin,
+    pub appearance_open: bool,
     paste_rc_pending: bool,
     shot: Option<String>,
     shot_asked: bool,
     frames: u32,
-    /// The colours last put on the window: whether dark, and whether they follow the system.
-    theme_applied: Option<(bool, bool)>,
+    /// The colours last put on the window: whether dark, whether they follow the system, and the settings on them.
+    theme_applied: Option<(bool, bool, Appearance)>,
+    /// This run was started with settings on the command line: they are for this run, and nothing of the appearance is kept.
+    pub appearance_locked: bool,
 }
 
 impl App {
@@ -234,10 +294,21 @@ impl App {
             pcr_win: PcrWin::default(),
             calc_win: CalcWin::default(),
             calculator_win: CalculatorWin::default(),
+            fetch_win: FetchWin::default(),
             molcalc_win: MolCalcWin::default(),
             tree_win: TreeWin::default(),
             phylocnn_win: PhyloCnnWin::default(),
             species_win: SpeciesWin::default(),
+            motif_win: MotifWin::default(),
+            domains_win: DomainsWin::default(),
+            programs_win: ProgramsWin::default(),
+            settings_dir: start.settings_dir.clone(),
+            keeper: Keeper::new(start.settings_dir.as_deref()),
+            tour: Tour::first_run(
+                start.settings_dir.as_deref(),
+                !start.files.is_empty() || !start.view.is_empty() || start.screenshot.is_some(),
+            ),
+            tray: Tray::default(),
             treetools_win: TreeToolsWin::default(),
             workspace: if start.view.is_empty() && start.files.is_empty() {
                 Workspace::Home
@@ -252,18 +323,25 @@ impl App {
             palette: CommandPalette::default(),
             toasts: Toasts::default(),
             shortcuts_open: false,
+            checks_win: Default::default(),
+            appearance_open: false,
             paste_rc_pending: false,
             shot: start.screenshot.clone(),
             shot_asked: false,
             frames: 0,
             theme_applied: None,
+            appearance_locked: false,
         };
+        app.start_appearance(&start);
+        // the tool windows open where they were left (the places that this run has none of are cleared: the registry is per thread)
+        crate::ui::design::set_saved_places(app.keeper.places_for_windows());
         for f in &start.files {
             app.open_file(Path::new(f));
         }
         if app.docs.is_empty() {
             app.docs.push(DocView::new(crate::sample::demo_plasmid()));
         }
+        app.fetch_win.cache_dir = start.settings_dir.as_ref().map(|d| d.join("downloads"));
         app.apply_startup_view(&start.view);
         app
     }
@@ -290,7 +368,7 @@ impl App {
     // Actions
     // -----------------------------------------------------------------------
 
-    fn run(&mut self, action: Action, ctx: &egui::Context) {
+    pub(super) fn run(&mut self, action: Action, ctx: &egui::Context) {
         // the palette and the menus are on every page: what works on the open sequence takes the person to it first
         if super::commands::acts_on_the_sequence(&action) && self.workspace != Workspace::Sequences
         {
@@ -302,17 +380,39 @@ impl App {
             Action::Example(ws) => self.load_example(ws),
             Action::New => self.add_doc(Doc::new("Untitled", Vec::new())),
             Action::Open => self.pick_open(),
+            Action::OpenRecent(i) => self.open_recent(i),
+            Action::ClearRecent => self.keeper.forget_recent(),
+            Action::ToggleKeeping => {
+                let said = match self.keeper.keeps_work() {
+                    // turning it off removes the session that is on offer, and "Start fresh" asks before it does that
+                    // with work that was not saved: the offer is answered first
+                    Some(_) if self.keeper.offer.is_some() => {
+                        Some(super::autosave::ANSWER_FIRST.to_string())
+                    }
+                    Some(kept) => self.keeper.set_keeping(!kept),
+                    None => Some(self.keeper.why_nothing_to_choose().to_string()),
+                };
+                if let Some(said) = said {
+                    self.say(said);
+                }
+            }
+            Action::JobTray => self.tray.open = !self.tray.open,
             Action::DuplicateSelection => self.duplicate_current(false),
             Action::DuplicateFull => self.duplicate_current(true),
             Action::Save => cur.into_iter().for_each(|i| self.save_doc(i, false, false)),
             Action::SaveAs => cur.into_iter().for_each(|i| self.save_doc(i, true, false)),
             Action::ExportFasta => cur.into_iter().for_each(|i| self.save_doc(i, true, true)),
+            Action::Report => self.save_report(),
             Action::CloseCurrent => cur.into_iter().for_each(|i| self.request_close(i)),
             Action::CloseTab(i) => self.request_close(i),
             Action::SwitchTab(t) => self.tab = t,
             Action::Find => self.find_win.open = true,
             Action::FindAgain => self.find_step(Dir::Next),
             Action::Jump => self.open_jump(),
+            Action::JumpTo(n) => self.jump_to_base(n),
+            Action::FindText(p) => self.find_text(p),
+            Action::SwitchDoc(i) => self.switch_doc(i),
+            Action::SelectFeature(fi) => self.select_feature(fi),
             Action::SelectRange => self.open_range(),
             Action::EnzymeSelector => self.enzyme_win.open = true,
             Action::Digest => self.digest_win.open = true,
@@ -324,9 +424,23 @@ impl App {
             Action::ToggleSelectionOnly => self.toggle_selection_only(),
             Action::ToggleMap => self.prefs.show_map = !self.prefs.show_map,
             Action::ToggleFeatures => self.prefs.show_features = !self.prefs.show_features,
+            Action::ToggleInspector => self.prefs.show_inspector = !self.prefs.show_inspector,
+            Action::Fetch => {
+                self.fetch_win.fresh = !self.fetch_win.open;
+                self.fetch_win.open = true;
+            }
+            Action::Tour => self.tour.replay(),
+            Action::SampleProject => self.open_sample_project(),
             Action::Theme(mode) => self.prefs.theme = mode,
+            Action::Appearance => self.appearance_open = true,
+            Action::Zoom(by) => {
+                self.prefs.appearance = self.prefs.appearance.stepped(by);
+                self.status = format!("Size {}%", self.prefs.appearance.scale);
+            }
             Action::Palette => self.palette.toggle(),
             Action::Shortcuts => self.shortcuts_open = true,
+            Action::Checks => self.checks_win.open = true,
+            Action::Diagnostics => self.copy_diagnostics(ctx),
             Action::ToggleSecondStrand => self.prefs.second_strand = !self.prefs.second_strand,
             Action::OpenAssembler => self.tab = Tab::Assembly,
             Action::GibsonAssembler => {
@@ -382,6 +496,9 @@ impl App {
             Action::Tree => self.tree_win.open = true,
             Action::PhyloCnn => self.phylocnn_win.open = true,
             Action::SpeciesTree => self.species_win.open = true,
+            Action::Motifs => self.motif_win.open = true,
+            Action::Domains => self.domains_win.open = true,
+            Action::Programs => self.programs_win.open = true,
             Action::TreeTools => self.treetools_win.open = true,
             Action::Workflow => self.workspace = Workspace::Pipelines,
             Action::Primer3 => self.p3_win.open = true,
@@ -567,6 +684,11 @@ impl App {
             (Modifiers::COMMAND, Key::R, Action::Digest),
             (Modifiers::COMMAND, Key::I, Action::SetOrigin),
             (Modifiers::COMMAND, Key::Slash, Action::RevCom),
+            // the sizes: the equals key is the plus key without Shift, as in a browser
+            (Modifiers::COMMAND, Key::Equals, Action::Zoom(1)),
+            (Modifiers::COMMAND, Key::Plus, Action::Zoom(1)),
+            (Modifiers::COMMAND, Key::Minus, Action::Zoom(-1)),
+            (Modifiers::COMMAND, Key::Num0, Action::Zoom(0)),
         ];
         // holding Cmd+Shift+E would turn the switch over again and again: its repeats are let go
         let repeating = ctx.input(|i| {
@@ -591,7 +713,43 @@ impl App {
     }
 
     pub fn palette(&self) -> Palette {
-        theme::palette(self.prefs.dark)
+        self.prefs
+            .appearance
+            .palette(theme::palette(self.prefs.dark))
+    }
+
+    /// Take the theme and settings from the settings folder, with those of the command line put on them, and say what the folder holds.
+    fn start_appearance(&mut self, start: &Startup) {
+        let (kept_theme, kept) = self
+            .keeper
+            .saved_appearance()
+            .unwrap_or((ThemeMode::default(), Appearance::default()));
+        self.keeper.appearance_starts_as(kept_theme, kept);
+        self.prefs.theme = if start.dark {
+            ThemeMode::Dark
+        } else {
+            kept_theme
+        };
+        self.prefs.appearance = match &start.appearance {
+            Some(spec) => kept.with_spec(spec),
+            None => kept,
+        };
+        // what was asked for on the command line is for this run: it is not written over what the person chose
+        self.appearance_locked = start.dark || start.appearance.is_some();
+    }
+
+    /// Write the theme and settings to the settings folder when they are not what it holds (not in a run that was given settings).
+    fn keep_appearance(&mut self, ctx: &egui::Context) {
+        if self.appearance_locked {
+            return;
+        }
+        let (theme, appearance) = (self.prefs.theme, self.prefs.appearance);
+        if let Some(wait) = self
+            .keeper
+            .keep_appearance(theme, &appearance, Instant::now())
+        {
+            ctx.request_repaint_after(wait);
+        }
     }
 
     // -----------------------------------------------------------------------
@@ -638,6 +796,12 @@ fn map_selection(dv: &mut DocView, f: impl Fn(u8) -> u8) {
 }
 
 impl eframe::App for App {
+    /// The page reaches the app through this when it is left (`web.rs`): what is waiting to be kept is written then.
+    #[cfg(target_arch = "wasm32")]
+    fn as_any_mut(&mut self) -> Option<&mut dyn std::any::Any> {
+        Some(&mut *self)
+    }
+
     /// While taking a screenshot, ignore the mouse so the picture doesn't depend on where the
     /// pointer happens to rest (hover read-outs, stray scroll events).
     fn raw_input_hook(&mut self, _ctx: &egui::Context, raw_input: &mut egui::RawInput) {
@@ -653,6 +817,16 @@ impl eframe::App for App {
                 )
             });
         }
+    }
+
+    /// Called before every frame, and also while the window is not drawn (minimised, covered): the session goes on being kept.
+    fn logic(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        self.keep_work(ctx);
+    }
+
+    /// The program is ending (Cmd+Q on a Mac goes here without a close request): whatever is not in the session is written.
+    fn on_exit(&mut self) {
+        self.flush_session();
     }
 
     fn ui(&mut self, ui: &mut Ui, _frame: &mut eframe::Frame) {
@@ -671,11 +845,20 @@ impl App {
         let typing = ctx.text_edit_focused();
         // the colours follow the system until the person chooses light or dark
         self.prefs.dark = self.prefs.theme.is_dark(ctx.system_theme());
-        let colours = (self.prefs.dark, self.prefs.theme == ThemeMode::System);
+        super::figure::frame_begins(super::figure::Looks {
+            dark: self.prefs.dark,
+            appearance: self.prefs.appearance,
+        });
+        let colours = (
+            self.prefs.dark,
+            self.prefs.theme == ThemeMode::System,
+            self.prefs.appearance,
+        );
         if self.theme_applied != Some(colours) {
-            theme::apply(&ctx, colours.0, colours.1);
+            theme::apply(&ctx, colours.0, colours.1, colours.2);
             self.theme_applied = Some(colours);
         }
+        self.keep_appearance(&ctx);
         self.take_reverse_paste(&ctx);
         let mut actions: Vec<Action> = Vec::new();
         self.shortcuts(&ctx, &mut actions);
@@ -683,7 +866,7 @@ impl App {
         if self.palette.is_open() {
             actions.retain(|a| matches!(a, Action::Palette));
         }
-        let look = design::look(self.prefs.dark);
+        let look = self.prefs.look();
         egui::Panel::top("topbar")
             .exact_size(super::topbar::HEIGHT)
             .frame(
@@ -718,15 +901,26 @@ impl App {
         self.pcr_window(&ctx);
         self.calc_window(&ctx);
         self.calculator_window(&ctx);
+        self.fetch_window(&ctx);
         self.molcalc_window(&ctx);
         self.tree_window(&ctx);
         self.phylocnn_window(&ctx);
         self.species_window(&ctx);
+        self.motif_window(&ctx);
+        self.domains_window(&ctx);
+        self.programs_window(&ctx);
+        self.session_offer_window(&ctx);
+        self.keep_work(&ctx);
+        self.tray_step(&ctx);
+        self.tray_panel(&ctx, &mut actions);
+        self.tour_window(&ctx, &mut actions);
         self.treetools_window(&ctx);
         self.primer3_window(&ctx);
         self.reads_window(&ctx);
         self.about_window(&ctx);
         self.shortcuts_window(&ctx);
+        self.checks_window(&ctx);
+        self.appearance_window(&ctx);
         self.close_prompt(&ctx);
         self.paste_follow_up(&ctx);
         self.take_dropped_files(&ctx);

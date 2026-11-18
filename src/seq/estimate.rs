@@ -69,6 +69,10 @@ pub fn estimate(msa: &Msa, o: &EstimateOptions) -> Result<Estimate, String> {
         ml_tree(msa).map(|r| {
             details.extend(r.fits.iter().map(|f| f.describe()));
             details.push(format!("Best model by BIC: {}.", r.best.describe()));
+            details.extend(
+                r.accelerator
+                    .map(|a| format!("Likelihood computed on {a}.")),
+            );
             r.tree
         })
     } else if o.analysis == Analysis::Bayesian {
@@ -96,6 +100,7 @@ pub fn estimate(msa: &Msa, o: &EstimateOptions) -> Result<Estimate, String> {
                 None => "A single run: convergence can't be checked.".to_string(),
             });
             details.push("Branch labels: posterior probability, %. Majority-rule consensus.".into());
+            details.extend(r.accelerator.map(|a| format!("Likelihood computed on {a}.")));
             r.tree
         })
     } else {
@@ -104,11 +109,13 @@ pub fn estimate(msa: &Msa, o: &EstimateOptions) -> Result<Estimate, String> {
                 .tree(&msa.names, &d)
                 .ok_or("The distances can't make a tree.")?;
             if o.bootstrap > 0 {
-                add_bootstrap(&mut tree, msa, o.model, method, o.bootstrap, BOOTSTRAP_SEED);
+                let on =
+                    add_bootstrap(&mut tree, msa, o.model, method, o.bootstrap, BOOTSTRAP_SEED);
                 details.push(format!(
                     "Branch labels: bootstrap support, % of {} resamples of the columns.",
                     o.bootstrap
                 ));
+                details.extend(on.map(|a| format!("Bootstrap distances computed on {a}.")));
             }
             Ok(tree)
         })

@@ -2,7 +2,6 @@
 //! PhyloCNN estimates, structure predictions) run on its processors and GPUs and wait there until they are fetched; this
 //! page says how the workstation is, lists its jobs and opens a result in the page it belongs to.
 
-mod browser;
 mod compute;
 
 use super::Workspace;
@@ -15,7 +14,10 @@ use crate::remote::weight::Weight;
 use crate::remote::PROTOCOL;
 use crate::ui::app::{Action, App};
 use crate::ui::design::{self, Look, Tone};
+use crate::ui::dialog::IN_BROWSER;
+use crate::ui::fonts::FontWeight;
 use crate::ui::job::{Job, Poll};
+use crate::ui::session::Shelf;
 use eframe::egui::{self, Align, Layout, RichText, ScrollArea, Ui};
 use std::path::PathBuf;
 use std::time::Duration;
@@ -23,10 +25,8 @@ use web_time::Instant;
 
 pub use compute::Place;
 use compute::{choice_id, heavy_jobs_section};
-pub(in crate::ui) use compute::{compute_picker, ComputeView};
+pub(in crate::ui) use compute::{compute_picker, run_button, ComputeView};
 
-const OPTIONS_WIDTH: f32 = 340.0;
-const CARD_GAP: f32 = 10.0;
 /// How often the page asks the workstation how it is while the page is showing.
 const REFRESH: Duration = Duration::from_secs(3);
 const WORKING_REDRAW: Duration = Duration::from_millis(200);
@@ -68,8 +68,121 @@ pub struct WorkstationPage {
     work: Option<Job<Result<Done, String>>>,
     pending: Option<Pending>,
     looked: Option<Instant>,
-    /// Where the connection is kept between runs; none keeps nothing.
-    dir: Option<PathBuf>,
+    /// Where the connection is kept between runs.
+    keep: Keep,
+}
+
+/// What a page says when the browser would not keep the connection for its tab.
+const NOT_KEPT_FOR_THE_TAB: &str =
+    "This browser would not keep the connection for the tab: it is asked for again when the page is loaded again.";
+
+/// What the page says about who can see the token and where it is kept. A tab's table is not as private as it sounds, and
+/// the words say what is true of it: a tab that was duplicated has a copy of its own, and a browser can bring a closed tab
+/// back with what it held.
+fn privacy_text(kept_by_the_tab: bool, in_a_browser: bool) -> &'static str {
+    if kept_by_the_tab {
+        "The address and the token are kept by this browser for this tab, so that loading the page again does not ask \
+         for them. Forget removes them; so does closing the tab, unless the browser brings the tab back (a tab that was \
+         duplicated has a copy of its own). On a computer that others use, press Forget before you leave. Unless the \
+         address starts with https://, the token and your sequences travel as they are: use a private network or an \
+         SSH tunnel (DEPLOY.md shows how)."
+    } else if in_a_browser {
+        "The token stays in this page only: it is not kept, and loading the page again forgets it. Unless the address \
+         starts with https://, the token and your sequences travel as they are: use a private network or an SSH \
+         tunnel (DEPLOY.md shows how)."
+    } else {
+        "The connection is not encrypted: the token and your sequences travel as they are. Use it on a private \
+         network or through an SSH tunnel (DEPLOY.md shows how)."
+    }
+}
+
+/// What the pointer is told over the Forget button.
+fn forget_hint(kept_by_the_tab: bool) -> &'static str {
+    if kept_by_the_tab {
+        "Remove the address and the token from this tab, now"
+    } else {
+        "Remove the address and the token from this computer"
+    }
+}
+
+/// Where the connection (the address, the token, where jobs run) is kept from one run of the program to the next.
+#[derive(Default)]
+enum Keep {
+    /// Nowhere: a picture, a test, a page whose browser gives it no storage.
+    #[default]
+    Nowhere,
+    /// In the settings folder of the computer, in a file that only the person may read.
+    Folder(PathBuf),
+    /// In the table a browser gives one tab: the tab's alone, there when the page is loaded again in it, and gone when
+    /// the tab is closed. The token is a password, and the owner of the program said (17 November 2026) that a page may
+    /// keep it that long and no longer: it is never put in the table of the site, which stays.
+    // only a page, or a test, has a tab
+    #[cfg_attr(not(any(target_arch = "wasm32", test)), allow(dead_code))]
+    Tab(std::rc::Rc<dyn Shelf>),
+}
+
+impl Keep {
+    /// The place a page has when it is given no settings folder: its tab's table in a browser, none anywhere else.
+    #[cfg(target_arch = "wasm32")]
+    fn of_a_page() -> Keep {
+        crate::ui::session::tab_shelf().map_or(Keep::Nowhere, Keep::Tab)
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    fn of_a_page() -> Keep {
+        Keep::Nowhere
+    }
+
+    /// What was kept; nothing where nothing is.
+    fn load(&self) -> Saved {
+        match self {
+            Keep::Nowhere => Saved::default(),
+            Keep::Folder(dir) => settings::load_from(dir),
+            Keep::Tab(tab) => tab
+                .get(settings::FILE)
+                .map(|text| Saved::parse(&text))
+                .unwrap_or_default(),
+        }
+    }
+
+    /// Keep `saved`, or nothing of a connection when it is none (the workstation was forgotten): a tab's table then has
+    /// no entry at all, and a file is written empty of an address and a token.
+    fn save(&self, saved: &Saved) -> Result<(), String> {
+        match self {
+            Keep::Nowhere => Ok(()),
+            Keep::Folder(dir) => settings::save_to(dir, saved),
+            Keep::Tab(tab) if *saved == Saved::default() => {
+                tab.remove(settings::FILE);
+                Ok(())
+            }
+            // what the table says of why (it speaks of the work that is kept in the site's table) is not what is true
+            // here: only the keeping of the connection failed. An entry from before is then not what the person has
+            // just typed: it is removed, or the page would come back connected to where it was before
+            Keep::Tab(tab) => tab.set(settings::FILE, &saved.to_text()).map_err(|_| {
+                tab.remove(settings::FILE);
+                NOT_KEPT_FOR_THE_TAB.to_string()
+            }),
+        }
+    }
+
+    fn is_a_tab(&self) -> bool {
+        matches!(self, Keep::Tab(_))
+    }
+}
+
+/// The address the page itself was loaded from, in a browser; `None` in a program, and for a page opened from a file.
+#[cfg(target_arch = "wasm32")]
+fn page_origin() -> Option<String> {
+    web_sys::window()?
+        .location()
+        .origin()
+        .ok()
+        .filter(|origin| origin.starts_with("http"))
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+fn page_origin() -> Option<String> {
+    None
 }
 
 impl WorkstationPage {
@@ -79,14 +192,36 @@ impl WorkstationPage {
     }
 
     /// The page as it was left last time: connected again, and with the choice of where jobs run, if there was one. With
-    /// no folder nothing is read or kept.
+    /// no folder it is a page of a browser, which keeps the connection for its tab, or a picture, which keeps nothing.
     pub fn open(dir: Option<PathBuf>) -> WorkstationPage {
-        let saved = dir.as_deref().map(settings::load_from).unwrap_or_default();
+        WorkstationPage::opened(dir.map_or_else(Keep::of_a_page, Keep::Folder))
+    }
+
+    /// A page of a browser whose tab has the table `tab`.
+    #[cfg(test)]
+    pub(in crate::ui) fn on_tab(tab: std::rc::Rc<dyn Shelf>) -> WorkstationPage {
+        WorkstationPage::opened(Keep::Tab(tab))
+    }
+
+    fn opened(keep: Keep) -> WorkstationPage {
+        let mut saved = keep.load();
         let active = Remote::new(&saved.address, &saved.token)
             .ok()
             .map(|r| r.with_gpus(saved.gpus));
+        // what a tab keeps was a connection when the page kept it (`connect` checks what is typed first). An entry that
+        // makes none is not this page's doing (any page of the site that is loaded in the tab can write there): it is
+        // removed, and nothing of it is shown, so that no token is left where the page has no button to forget it with
+        if let (None, Keep::Tab(tab)) = (&active, &keep) {
+            tab.remove(settings::FILE);
+            saved = Saved::default();
+        }
         WorkstationPage {
-            address: saved.address,
+            // in a page that the workstation's own server handed out, the workstation is where the page came from
+            address: if saved.address.is_empty() {
+                page_origin().unwrap_or_default()
+            } else {
+                saved.address
+            },
             token: saved.token,
             compute: if active.is_some() {
                 saved.compute
@@ -95,7 +230,7 @@ impl WorkstationPage {
             },
             gpus: saved.gpus,
             active,
-            dir,
+            keep,
             ..WorkstationPage::default()
         }
     }
@@ -134,6 +269,18 @@ impl WorkstationPage {
     }
 
     /// The programs the workstation has, as (name, version): known once it has said, empty when it could not.
+    /// Whether a workstation answers, and how many GPUs it has: what a report of a problem may hold of it. Never its address.
+    pub fn for_diagnostics(&self) -> String {
+        if !self.answering() {
+            return "not connected".to_string();
+        }
+        match self.gpu_count() {
+            0 => "connected (no GPU)".to_string(),
+            1 => "connected (1 GPU)".to_string(),
+            n => format!("connected ({n} GPUs)"),
+        }
+    }
+
     pub fn tools(&self) -> Option<&[(String, String)]> {
         match &self.status {
             Some(s) => Some(&s.tools),
@@ -156,16 +303,13 @@ impl WorkstationPage {
     }
 
     fn save(&mut self) {
-        let Some(dir) = &self.dir else {
-            return;
-        };
         let saved = self.active.as_ref().map_or_else(Saved::default, |r| Saved {
             address: r.address().to_string(),
             token: r.token().to_string(),
             compute: self.compute,
             gpus: self.gpus,
         });
-        if let Err(why) = settings::save_to(dir, &saved) {
+        if let Err(why) = self.keep.save(&saved) {
             self.message = why;
         }
     }
@@ -187,7 +331,9 @@ impl WorkstationPage {
     /// Forget the workstation: the connection, and the token with it.
     fn forget(&mut self) {
         *self = WorkstationPage {
-            dir: self.dir.take(),
+            keep: std::mem::take(&mut self.keep),
+            // in a page that the workstation handed out, its own address is still the one to use
+            address: page_origin().unwrap_or_default(),
             ..WorkstationPage::default()
         };
         // saving may say that it could not (and then that is what the person should read)
@@ -221,8 +367,11 @@ impl WorkstationPage {
             return;
         };
         self.looked = Some(Instant::now());
-        self.work = Some(Job::spawn(ctx, move || {
-            Ok(Done::Looked(remote.status()?, remote.jobs()?))
+        self.work = Some(Job::spawn_async(ctx, async move {
+            Ok(Done::Looked(
+                remote.status_async().await?,
+                remote.jobs_async().await?,
+            ))
         }));
     }
 
@@ -231,8 +380,8 @@ impl WorkstationPage {
             return;
         };
         self.message = format!("Fetching \"{}\"…", job.label);
-        self.work = Some(Job::spawn(ctx, move || {
-            let response = remote.result(job.kind, &job.id)?;
+        self.work = Some(Job::spawn_async(ctx, async move {
+            let response = remote.result_async(job.kind, &job.id).await?;
             Ok(Done::Fetched(job, response))
         }));
     }
@@ -241,8 +390,8 @@ impl WorkstationPage {
         let Some(remote) = self.active.clone() else {
             return;
         };
-        self.work = Some(Job::spawn(ctx, move || {
-            remote.delete(&id)?;
+        self.work = Some(Job::spawn_async(ctx, async move {
+            remote.delete_async(&id).await?;
             Ok(Done::Removed(id, stopping))
         }));
     }
@@ -358,17 +507,19 @@ impl App {
                 self.workspace = Workspace::Alignment;
             }
             Response::Tree(estimate) => {
-                self.tree_win.details = estimate.details;
                 self.show_tree(estimate.tree, &note);
+                self.tree_win.details = estimate.details;
                 self.workspace = Workspace::Trees;
             }
             Response::Pipeline(outcome) => {
-                let page = &mut self.platform.pipelines;
-                (page.outcome, page.message) = (Some(outcome), note);
+                self.platform.pipelines.show_fetched(outcome, note);
                 self.workspace = Workspace::Pipelines;
             }
             Response::PhyloCnn(result) => self.show_phylocnn_result(result),
             Response::Species(result) => self.show_species_result(result),
+            Response::Motif(result) => self.show_motif_result(result),
+            Response::Domains(result) => self.show_domains_result(result),
+            Response::Flow(result) => self.show_flow_result(result, &note),
             Response::Fold(folded) => {
                 let page = &mut self.platform.structure;
                 match page.show_pdb("ESMFold prediction", &folded.pdb) {
@@ -383,10 +534,7 @@ impl App {
     }
 
     pub(super) fn workstation_page(&mut self, ui: &mut Ui, _out: &mut Vec<Action>) {
-        if cfg!(target_arch = "wasm32") {
-            return browser::not_available(ui);
-        }
-        let look = design::look(self.prefs.dark);
+        let look = self.prefs.look();
         let mut c = Clicks::default();
         let page = &mut self.platform.workstation;
         design::page(ui, |ui| {
@@ -401,23 +549,10 @@ impl App {
                     }
                 },
             );
-            egui::Panel::left("workstation_options")
-                .exact_size(OPTIONS_WIDTH)
-                .resizable(false)
-                .frame(egui::Frame::new())
-                .show(ui, |ui| {
-                    ScrollArea::vertical()
-                        .auto_shrink([false, false])
-                        .show(ui, |ui| {
-                            design::card(ui, &look, |ui| connection_panel(ui, &look, page, &mut c));
-                        });
-                });
-            egui::CentralPanel::default()
-                .frame(egui::Frame::new().inner_margin(egui::Margin {
-                    left: design::PAGE_MARGIN,
-                    ..egui::Margin::ZERO
-                }))
-                .show(ui, |ui| overview(ui, &look, page, &mut c));
+            design::controls_panel(ui, &look, "workstation_options", |ui| {
+                connection_panel(ui, &look, page, &mut c)
+            });
+            design::results_area(ui, |ui| overview(ui, &look, page, &mut c));
         });
         let ctx = ui.ctx().clone();
         self.apply_workstation_clicks(c, &ctx);
@@ -459,7 +594,11 @@ fn connection_panel(ui: &mut Ui, look: &Look, page: &mut WorkstationPage, c: &mu
     ui.label("Address");
     ui.add(
         egui::TextEdit::singleline(&mut page.address)
-            .hint_text("workstation.local:7878")
+            .hint_text(if IN_BROWSER {
+                "http://workstation.local:7878"
+            } else {
+                "workstation.local:7878"
+            })
             .desired_width(f32::INFINITY),
     );
     ui.label("Token");
@@ -477,10 +616,8 @@ fn connection_panel(ui: &mut Ui, look: &Look, page: &mut WorkstationPage, c: &mu
             .inner
             .clicked();
         if page.active.is_some() {
-            c.forget = ui
-                .button("Forget")
-                .on_hover_text("Remove the address and the token from this computer")
-                .clicked();
+            let from = forget_hint(page.keep.is_a_tab());
+            c.forget = ui.button("Forget").on_hover_text(from).clicked();
         }
     });
     if !page.problem.is_empty() {
@@ -492,14 +629,8 @@ fn connection_panel(ui: &mut Ui, look: &Look, page: &mut WorkstationPage, c: &mu
     heavy_jobs_section(ui, look, page, c);
 
     design::section(ui, look, "Keep it private");
-    ui.label(
-        RichText::new(
-            "The connection is not encrypted: the token and your sequences travel as they are. Use it on a private \
-             network or through an SSH tunnel (DEPLOY.md shows how).",
-        )
-        .size(11.5)
-        .color(look.warn),
-    );
+    let privacy = privacy_text(page.keep.is_a_tab(), IN_BROWSER);
+    ui.label(RichText::new(privacy).size(11.5).color(look.warn));
 }
 
 fn overview(ui: &mut Ui, look: &Look, page: &WorkstationPage, c: &mut Clicks) {
@@ -510,23 +641,14 @@ fn overview(ui: &mut Ui, look: &Look, page: &WorkstationPage, c: &mut Clicks) {
                 return setup_card(ui, look);
             }
             status_card(ui, look, page);
-            ui.add_space(CARD_GAP);
+            ui.add_space(design::CARD_GAP);
             jobs_card(ui, look, page, c);
         });
 }
 
 /// A card with a title.
-fn titled(ui: &mut Ui, look: &Look, title: &str, add: impl FnOnce(&mut Ui)) {
-    design::card(ui, look, |ui| {
-        ui.set_min_width(ui.available_width());
-        ui.label(RichText::new(title).size(15.0).strong().color(look.text));
-        ui.add_space(4.0);
-        add(ui);
-    });
-}
-
 fn setup_card(ui: &mut Ui, look: &Look) {
-    titled(ui, look, "Set up a workstation", |ui| {
+    design::titled_card(ui, look, "Set up a workstation", |ui| {
         ui.label(RichText::new("Run the heavy work on a computer with GPUs and read the results here, on this one.").color(look.dim));
         ui.add_space(6.0);
         let step = |ui: &mut Ui, text: &str, command: &str| {
@@ -543,17 +665,33 @@ fn setup_card(ui: &mut Ui, look: &Look) {
             "1. On the workstation, make a token and keep it in a file:",
             "helixloom token > token.txt",
         );
-        step(
-            ui,
-            "2. Start the server there:",
-            "helixloom serve --listen 0.0.0.0:7878 --token-file token.txt",
-        );
-        ui.label(
-            RichText::new(
-                "3. Type the workstation's address and the token on the left, and press Connect.",
-            )
-            .color(look.text),
-        );
+        if IN_BROWSER {
+            step(
+                ui,
+                "2. Start the server there, and let it hand out this page:",
+                "helixloom serve --listen 0.0.0.0:7878 --token-file token.txt --web-dir dist",
+            );
+            ui.label(
+                RichText::new(
+                    "3. Open http://HOST:7878/ in this browser: the address on the left is then filled in. Type the token \
+                     and press Connect.",
+                )
+                .color(look.text),
+            );
+            ui.label(dim(look, "A page that is hosted somewhere else can call the server too, if the server is started with --allow-origin and that page's address: then replace the address on the left, which is that of the page, with the workstation's."));
+        } else {
+            step(
+                ui,
+                "2. Start the server there:",
+                "helixloom serve --listen 0.0.0.0:7878 --token-file token.txt",
+            );
+            ui.label(
+                RichText::new(
+                    "3. Type the workstation's address and the token on the left, and press Connect.",
+                )
+                .color(look.text),
+            );
+        }
         ui.add_space(6.0);
         ui.label(dim(look, "DEPLOY.md has the whole setup: building for CUDA, choosing GPUs, starting the server at boot and reaching it safely."));
     });
@@ -566,7 +704,7 @@ fn status_card(ui: &mut Ui, look: &Look, page: &WorkstationPage) {
         .map(|s| s.name.as_str())
         .filter(|n| !n.is_empty())
         .unwrap_or("The workstation");
-    titled(ui, look, title, |ui| {
+    design::titled_card(ui, look, title, |ui| {
         let Some(s) = &page.status else {
             let (text, colour) = if page.problem.is_empty() {
                 ("Asking the workstation…", look.dim)
@@ -631,7 +769,7 @@ fn gpu_grid(ui: &mut Ui, look: &Look, s: &ServerStatus, jobs: &[JobInfo]) {
         .spacing([14.0, 4.0])
         .show(ui, |ui| {
             for g in &s.gpus {
-                let number = RichText::new(format!("GPU {}", g.id)).strong();
+                let number = RichText::new(format!("GPU {}", g.id)).semibold();
                 ui.label(number.color(look.text));
                 ui.label(RichText::new(&g.name).color(look.text));
                 match &g.job {
@@ -679,7 +817,7 @@ fn tool_chips(ui: &mut Ui, look: &Look, s: &ServerStatus) {
 }
 
 fn jobs_card(ui: &mut Ui, look: &Look, page: &WorkstationPage, c: &mut Clicks) {
-    titled(ui, look, "Jobs", |ui| {
+    design::titled_card(ui, look, "Jobs", |ui| {
         if page.jobs.is_empty() {
             ui.label(dim(
                 look,

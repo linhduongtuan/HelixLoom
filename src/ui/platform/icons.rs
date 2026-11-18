@@ -1,12 +1,12 @@
 //! The workspace icons, drawn with the painter in the platform's two inks: the page's text colour and the accent.
 
 use super::Workspace;
-use crate::ui::design;
+use crate::ui::design::{self, Look};
 use eframe::egui::{pos2, vec2, Color32, Painter, Pos2, Rect, Shape, Stroke, StrokeKind};
 use std::f32::consts::TAU;
 
 /// Paint the icon of `ws` inside `r`.
-pub fn paint(p: &Painter, ws: Workspace, r: Rect, ink: Color32, accent: Color32, dark: bool) {
+pub fn paint(p: &Painter, ws: Workspace, r: Rect, ink: Color32, accent: Color32, look: &Look) {
     let at = |x: f32, y: f32| pos2(r.left() + x * r.width(), r.top() + y * r.height());
     let thin = Stroke::new(1.8, ink);
     let bold = Stroke::new(2.5, accent);
@@ -71,7 +71,7 @@ pub fn paint(p: &Painter, ws: Workspace, r: Rect, ink: Color32, accent: Color32,
                 .enumerate()
             {
                 let centre = 0.2 + 0.2 * k as f32;
-                let colour = design::trace_color(base, dark);
+                let colour = design::trace_color(base, look);
                 path(
                     curve(&|t| {
                         let u = (t - 0.5) * 4.0;

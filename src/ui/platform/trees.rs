@@ -14,15 +14,20 @@ use crate::ui::design::{self, Look, Tone};
 use crate::ui::dialog::{self, Wanted};
 use eframe::egui::{self, RichText, ScrollArea, Ui};
 
-const OPTIONS_WIDTH: f32 = 270.0;
 const INFO_WIDTH: f32 = 260.0;
+/// The least width a tree is drawn in beside the card that says what it is.
+const TREE_MIN_WIDTH: f32 = 360.0;
 const NAMES_HEIGHT: f32 = 260.0;
+/// The card that says what the tree is, when it is under the tree: its share of the height, and the least and the most.
+const UNDER_SHARE: f32 = 0.4;
+const UNDER_LEAST: f32 = 110.0;
+const UNDER_MOST: f32 = 200.0;
 
 #[derive(Default)]
 pub struct TreesPage {
     pub options: Options,
     camera: Camera,
-    selected: Option<usize>,
+    pub(in crate::ui) selected: Option<usize>,
     paste: String,
     pub message: String,
 }
@@ -60,7 +65,7 @@ fn through_tools(
 
 impl App {
     pub(super) fn trees_page(&mut self, ui: &mut Ui, out: &mut Vec<Action>) {
-        let look = design::look(self.prefs.dark);
+        let look = self.prefs.look();
         let tree = self.tree_win.tree.clone();
         let mut c = Clicks::default();
         let page = &mut self.platform.trees;
@@ -77,40 +82,58 @@ impl App {
                         c.save_newick = ui.button("Save Newick…").clicked();
                         c.copy = ui.button("Copy Newick").clicked();
                         c.fit = ui.button("Fit to window").clicked();
+                        crate::ui::figure::button(ui);
                     });
                 },
             );
-            egui::Panel::left("trees_options")
-                .exact_size(OPTIONS_WIDTH)
-                .resizable(false)
-                .frame(egui::Frame::new())
-                .show(ui, |ui| {
-                    ScrollArea::vertical()
-                        .auto_shrink([false, false])
+            // a window too narrow for the tree between two cards: the card that says what the tree is, and what was picked
+            // in it, goes under the tree, where a click on the tree still shows its answer without scrolling for it
+            let for_the_tree = ui.available_width()
+                - design::CONTROLS_WIDTH
+                - INFO_WIDTH
+                - 2.0 * f32::from(design::PAGE_MARGIN);
+            let under_the_tree = for_the_tree < TREE_MIN_WIDTH;
+            design::controls_panel(ui, &look, "trees_options", |ui| {
+                options_panel(ui, &look, page, tree.is_some(), &mut c)
+            });
+            let apart = |left: i8, top: i8| {
+                egui::Frame::new().inner_margin(egui::Margin {
+                    left,
+                    top,
+                    ..egui::Margin::ZERO
+                })
+            };
+            match &laid {
+                Some(laid) if under_the_tree => {
+                    // of one height whatever it holds: picking a clade must not make the tree smaller under the pointer
+                    // that picked it, and a long list of names scrolls in the card, it does not take the tree's room
+                    let high = (ui.available_height() * UNDER_SHARE).clamp(UNDER_LEAST, UNDER_MOST);
+                    egui::Panel::bottom("trees_info_under")
+                        .exact_size(high)
+                        .resizable(false)
+                        .frame(apart(design::PAGE_MARGIN, design::CARD_GAP as i8))
                         .show(ui, |ui| {
                             design::card(ui, &look, |ui| {
-                                options_panel(ui, &look, page, tree.is_some(), &mut c)
+                                ui.set_min_width(ui.available_width());
+                                ScrollArea::vertical()
+                                    .id_salt("trees_info_under_scroll")
+                                    .auto_shrink([false, false])
+                                    .show(ui, |ui| info_panel(ui, &look, page, laid));
                             });
                         });
-                });
-            if let Some(laid) = &laid {
-                egui::Panel::right("trees_info")
-                    .exact_size(INFO_WIDTH)
-                    .resizable(false)
-                    .frame(egui::Frame::new().inner_margin(egui::Margin {
-                        left: design::PAGE_MARGIN,
-                        ..egui::Margin::ZERO
-                    }))
-                    .show(ui, |ui| {
-                        design::card(ui, &look, |ui| info_panel(ui, &look, page, laid));
-                    });
+                }
+                Some(laid) => {
+                    egui::Panel::right("trees_info")
+                        .exact_size(INFO_WIDTH)
+                        .resizable(false)
+                        .frame(apart(design::PAGE_MARGIN, 0))
+                        .show(ui, |ui| {
+                            design::card(ui, &look, |ui| info_panel(ui, &look, page, laid));
+                        });
+                }
+                None => {}
             }
-            egui::CentralPanel::default()
-                .frame(egui::Frame::new().inner_margin(egui::Margin {
-                    left: design::PAGE_MARGIN,
-                    ..egui::Margin::ZERO
-                }))
-                .show(ui, |ui| canvas(ui, &look, page, laid.as_ref()));
+            design::results_area(ui, |ui| canvas(ui, &look, page, laid.as_ref(), &mut c));
         });
         self.apply_tree_clicks(c, ui.ctx(), out);
     }
@@ -150,7 +173,10 @@ impl App {
             };
             match done {
                 Ok(node) => {
-                    self.tree_win.tree = Some(node);
+                    // rooted or ordered anew, it is no longer the tree that the estimation made: running that again would
+                    // not give it, so the Phylogeny page's record goes
+                    self.platform.phylogeny.made = None;
+                    self.tree_win.set_tree(Some(node));
                     self.platform.trees.selected = None;
                     self.platform.trees.message = if c.midpoint {
                         "Rooted at the midpoint."
@@ -189,7 +215,11 @@ impl App {
 
     /// Show a tree on the page: it becomes the platform's current tree.
     pub(in crate::ui) fn show_tree(&mut self, tree: Node, message: &str) {
-        self.tree_win.tree = Some(tree);
+        // a tree from elsewhere is not the one the Phylogeny page estimated: its record goes with it, and so do the lines that say
+        // how that one was made (a caller that has such lines for this tree sets them after this)
+        self.platform.phylogeny.made = None;
+        self.tree_win.details.clear();
+        self.tree_win.set_tree(Some(tree));
         self.platform.trees.reset_view();
         self.platform.trees.message = message.to_string();
     }
@@ -256,7 +286,7 @@ fn options_panel(ui: &mut Ui, look: &Look, page: &mut TreesPage, have_tree: bool
             c.ladderize = ui.button("Ladderize").clicked();
         });
     });
-    c.to_phylogeny = ui.small_button("Estimate a tree instead").clicked();
+    c.to_phylogeny = ui.button("Estimate a tree instead").clicked();
 
     design::section(ui, look, "Layout");
     let o = &mut page.options;
@@ -358,31 +388,32 @@ fn info_panel(ui: &mut Ui, look: &Look, page: &mut TreesPage, laid: &Laid) {
     }
 }
 
-fn canvas(ui: &mut Ui, look: &Look, page: &mut TreesPage, laid: Option<&Laid>) {
+fn canvas(ui: &mut Ui, look: &Look, page: &mut TreesPage, laid: Option<&Laid>, c: &mut Clicks) {
     let Some(laid) = laid else {
-        design::card(ui, look, |ui| {
-            ui.label(
-                RichText::new("No tree yet")
-                    .size(17.0)
-                    .strong()
-                    .color(look.text),
-            );
-            ui.label(
-                RichText::new(
-                    "Open a Newick file, paste a tree, or try the example on the left. A tree estimated on the Phylogeny \
-                     page shows up here too.",
-                )
-                .color(look.dim),
-            );
-        });
+        let pick = design::empty_state(
+            ui,
+            look,
+            "No tree yet",
+            "Open a Newick file, paste a tree on the left, or try the example. A tree estimated on the Phylogeny \
+             page shows up here too.",
+            &["Open Newick…", "Try the example"],
+        );
+        match pick {
+            Some(0) => c.open = true,
+            Some(1) => c.example = true,
+            _ => {}
+        }
         return;
     };
-    egui::Frame::new()
-        .fill(look.surface)
-        .stroke(egui::Stroke::new(1.0, look.border))
-        .corner_radius(egui::CornerRadius::same(design::CARD_RADIUS))
-        .show(ui, |ui| {
-            let (options, camera, selected) = (page.options, &mut page.camera, &mut page.selected);
-            treeview::show(ui, look, laid, &options, camera, selected, true);
+    if let Some(format) = crate::ui::figure::wanted() {
+        // what the window shows: the same room, zoomed and moved as it is, with what is picked
+        let (options, mut camera, mut selected) = (page.options, page.camera, page.selected);
+        page.message = crate::ui::figure::save(format, "tree", ui.available_size(), |ui| {
+            treeview::show(ui, look, laid, &options, &mut camera, &mut selected, false);
         });
+    }
+    design::view_frame(ui, look, |ui| {
+        let (options, camera, selected) = (page.options, &mut page.camera, &mut page.selected);
+        treeview::show(ui, look, laid, &options, camera, selected, true);
+    });
 }

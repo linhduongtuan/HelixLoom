@@ -43,3 +43,36 @@ fn the_window_and_the_fallback_never_both_take_the_picture() {
     assert!(claim_picture());
     assert!(!claim_picture());
 }
+
+fn zoomed(scale: u16) -> ColorImage {
+    let start = Startup {
+        appearance: Some(format!("scale={scale}")),
+        ..Startup::default()
+    };
+    draw(start, 6, Duration::ZERO)
+}
+
+#[test]
+fn a_zoomed_window_holds_fewer_points_and_the_picture_is_still_as_big_as_the_window() {
+    let rect = frame_input_at(0, 2.0).screen_rect.expect("a screen");
+    assert_eq!((rect.width(), rect.height()), (640.0, 400.0));
+    let rect = frame_input_at(0, 0.8).screen_rect.expect("a screen");
+    assert_eq!((rect.width(), rect.height()), (1600.0, 1000.0));
+    let (large, small, normal) = (zoomed(200), zoomed(80), zoomed(100));
+    for image in [&large, &small, &normal] {
+        assert_eq!(image.size, [2560, 1600]);
+        // the whole of it is drawn: a part that was left out would still be the black of an empty canvas
+        let empty = image
+            .pixels
+            .iter()
+            .filter(|c| **c == Color32::BLACK)
+            .count();
+        assert!(
+            empty * 100 < image.pixels.len(),
+            "{empty} of {} pixels are empty",
+            image.pixels.len()
+        );
+    }
+    assert_ne!(large.pixels, normal.pixels);
+    assert_ne!(small.pixels, normal.pixels);
+}

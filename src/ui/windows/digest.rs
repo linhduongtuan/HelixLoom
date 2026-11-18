@@ -2,6 +2,7 @@
 
 use crate::seq::enzymes::{collect_cuts, digest, Enzyme, Fragment, Site};
 use crate::ui::app::App;
+use crate::ui::fonts::FontWeight;
 use crate::ui::map::commify;
 use crate::ui::state::DocView;
 use crate::ui::theme::{self, Palette};
@@ -255,7 +256,7 @@ impl App {
             self.digest_win.open = false;
             return;
         };
-        let pal = theme::palette(self.prefs.dark);
+        let pal = self.palette();
         let mut open = true;
         crate::ui::design::window("Digest")
             .open(&mut open)
@@ -269,7 +270,7 @@ impl App {
                         } else {
                             result.enzymes.join(" + ")
                         })
-                        .strong(),
+                        .semibold(),
                     );
                     if ui.button("Select enzymes…").clicked() {
                         self.enzyme_win.open = true;
@@ -305,7 +306,7 @@ impl App {
                                 .spacing([12.0, 2.0])
                                 .show(ui, |ui| {
                                     for h in ["Size", "Site 1", "Site 2", "Mass %"] {
-                                        ui.label(RichText::new(h).strong());
+                                        ui.label(RichText::new(h).semibold());
                                     }
                                     ui.end_row();
                                     for f in &result.fragments {

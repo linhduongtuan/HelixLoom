@@ -4,6 +4,7 @@
 
 use crate::seq::molcalc::expr::calculate;
 use crate::ui::app::App;
+use crate::ui::fonts::FontWeight;
 use eframe::egui::{self, RichText};
 
 #[derive(Default)]
@@ -50,7 +51,7 @@ impl App {
                 win.typed |= line.changed();
                 let result = shown(&win.text, win.typed);
                 ui.horizontal(|ui| {
-                    ui.label(RichText::new(&result).size(18.0).strong());
+                    ui.label(RichText::new(&result).size(18.0).semibold());
                     if !result.is_empty() && ui.small_button("Copy").clicked() {
                         ui.ctx().copy_text(result.clone());
                     }

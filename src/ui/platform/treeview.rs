@@ -54,6 +54,17 @@ impl Default for Options {
     }
 }
 
+/// The length the scale bar stands for, when one is drawn: not on a circular tree, and not on a tree whose branches have no
+/// length to measure.
+pub fn scale_length(laid: &Laid, o: &Options) -> Option<f32> {
+    if !o.scale_bar || laid.kind == Layout::Circular {
+        return None;
+    }
+    let (_, max) = laid.extent();
+    let length = Laid::nice_length(max.0 * 0.25);
+    (length > 0.0).then_some(length)
+}
+
 /// Where the picture sits: zoomed about the middle of the area and moved by `pan` pixels.
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub struct Camera {
@@ -297,25 +308,21 @@ pub fn show(
         }
     }
 
-    if o.scale_bar && laid.kind != Layout::Circular {
-        let (_, max) = laid.extent();
-        let length = Laid::nice_length(max.0 * 0.25);
-        if length > 0.0 {
-            let y = rect.bottom() - 16.0;
-            let (x1, x2) = (
-                rect.left() + MARGIN,
-                rect.left() + MARGIN + length * f.scale.x,
-            );
-            let stroke = Stroke::new(1.6, look.text);
-            painter.line_segment([pos2(x1, y), pos2(x2, y)], stroke);
-            painter.text(
-                pos2((x1 + x2) / 2.0, y - 4.0),
-                Align2::CENTER_BOTTOM,
-                format!("{length}"),
-                FontId::proportional(11.0),
-                look.text,
-            );
-        }
+    if let Some(length) = scale_length(laid, o) {
+        let y = rect.bottom() - 16.0;
+        let (x1, x2) = (
+            rect.left() + MARGIN,
+            rect.left() + MARGIN + length * f.scale.x,
+        );
+        let stroke = Stroke::new(1.6, look.text);
+        painter.line_segment([pos2(x1, y), pos2(x2, y)], stroke);
+        painter.text(
+            pos2((x1 + x2) / 2.0, y - 4.0),
+            Align2::CENTER_BOTTOM,
+            format!("{length}"),
+            FontId::proportional(11.0),
+            look.text,
+        );
     }
 
     // what is under the pointer: a node, or a tip and its name

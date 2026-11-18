@@ -25,7 +25,7 @@ impl App {
         if !self.shortcuts_open {
             return;
         }
-        let look = design::look(self.prefs.dark);
+        let look = self.prefs.look();
         let mut open = true;
         crate::ui::design::window("Keyboard shortcuts")
             .open(&mut open)

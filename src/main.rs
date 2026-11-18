@@ -16,9 +16,17 @@
 // The web build has no workstation server and no command line, so what only they use is not called there.
 #![cfg_attr(target_arch = "wasm32", allow(dead_code))]
 
+#[cfg(all(feature = "gpu", not(target_arch = "wasm32")))]
+mod accel;
+mod checks;
+mod connect;
+mod diagnostics;
+mod kept;
 mod models;
 mod pipeline;
+mod provenance;
 mod remote;
+mod report;
 mod sample;
 mod seq;
 mod ui;
@@ -34,13 +42,15 @@ use ui::{app::App, headless};
 #[cfg(not(target_arch = "wasm32"))]
 fn parse_args(args: &[String]) -> Startup {
     let mut start = Startup::default();
-    let mut it = args.iter().skip(1);
+    let mut it = args.iter().skip(1).peekable();
     while let Some(a) = it.next() {
         match a.as_str() {
             "--screenshot" => start.screenshot = it.next().cloned(),
             "--view" => start.view = it.next().cloned().unwrap_or_default(),
             "--no-window" => start.no_window = true,
             "--dark" => start.dark = true,
+            // a value that is another option (`--appearance --dark`) is not the value: it is left to be read as the option it is
+            "--appearance" => start.appearance = it.next_if(|v| !v.starts_with("--")).cloned(),
             other if !other.starts_with("--") => start.files.push(other.to_string()),
             _ => {}
         }
@@ -83,24 +93,38 @@ fn main() -> eframe::Result {
     if start.screenshot.is_none() || explicit {
         start.settings_dir = remote::settings::dir();
     }
+    // a fault leaves a note beside the settings, for the diagnostics a person copies into a report of it
+    if let (Some(dir), None) = (&start.settings_dir, &start.screenshot) {
+        diagnostics::note_faults_in(dir.clone());
+    }
     if let Some(path) = &start.screenshot {
         if start.no_window {
             headless::finish(start.clone(), path);
         }
         headless::watch(start.clone(), path.clone());
     }
+    // the window starts where it was left, when that was kept
+    let mut viewport = egui::ViewportBuilder::default()
+        .with_inner_size(headless::WINDOW_POINTS)
+        .with_min_inner_size([760.0, 480.0])
+        .with_title("HelixLoom");
+    if let Some(place) = ui::autosave::Keeper::window_place(start.settings_dir.as_deref()) {
+        viewport = viewport
+            .with_inner_size([place.width.max(760.0), place.height.max(480.0)])
+            .with_position([place.x, place.y]);
+    }
     let options = eframe::NativeOptions {
-        viewport: egui::ViewportBuilder::default()
-            .with_inner_size(headless::WINDOW_POINTS)
-            .with_min_inner_size([760.0, 480.0])
-            .with_title("HelixLoom"),
+        viewport,
         ..Default::default()
     };
     let again = start.clone();
     let shown = eframe::run_native(
         "HelixLoom",
         options,
-        Box::new(move |_cc| Ok(Box::new(App::new(start)))),
+        Box::new(move |cc| {
+            ui::fonts::install(&cc.egui_ctx);
+            Ok(Box::new(App::new(start)))
+        }),
     );
     if let (Err(why), Some(path)) = (&shown, again.screenshot.clone()) {
         picture_without_window(again, &path, why);
@@ -155,6 +179,24 @@ mod tests {
         assert_eq!(s.files, vec!["a.gb", "b.fa"]);
         assert!(!s.no_window);
         assert!(parse_args(&args(&["helixloom"])).screenshot.is_none());
+    }
+
+    #[test]
+    fn the_appearance_option_takes_the_next_word_unless_that_is_an_option() {
+        let s = parse_args(&args(&[
+            "helixloom",
+            "--appearance",
+            "scale=150,contrast=high",
+            "a.gb",
+        ]));
+        assert_eq!(s.appearance.as_deref(), Some("scale=150,contrast=high"));
+        assert_eq!(s.files, vec!["a.gb"]);
+        // a value that is missing is not the next option: that one is read as what it is
+        let s = parse_args(&args(&["helixloom", "--appearance", "--dark"]));
+        assert_eq!(s.appearance, None);
+        assert!(s.dark);
+        let s = parse_args(&args(&["helixloom", "--appearance"]));
+        assert_eq!(s.appearance, None);
     }
 
     #[test]

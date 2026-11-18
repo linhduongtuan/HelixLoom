@@ -33,7 +33,13 @@ pub fn claim_picture() -> bool {
     !PICTURE_CLAIMED.swap(true, Ordering::SeqCst)
 }
 
+#[cfg(test)]
 pub(super) fn frame_input(frame: u32) -> RawInput {
+    frame_input_at(frame, 1.0)
+}
+
+/// The input of one frame when the window is zoomed by `zoom` (`Context::zoom_factor`): the same window holds fewer points.
+pub(super) fn frame_input_at(frame: u32, zoom: f32) -> RawInput {
     let screen = ViewportInfo {
         native_pixels_per_point: Some(PIXELS_PER_POINT),
         ..Default::default()
@@ -42,7 +48,7 @@ pub(super) fn frame_input(frame: u32) -> RawInput {
         viewports: std::iter::once((ViewportId::ROOT, screen)).collect(),
         screen_rect: Some(Rect::from_min_size(
             Pos2::ZERO,
-            egui::vec2(WINDOW_POINTS[0], WINDOW_POINTS[1]),
+            egui::vec2(WINDOW_POINTS[0] / zoom, WINDOW_POINTS[1] / zoom),
         )),
         max_texture_side: Some(MAX_TEXTURE_SIDE),
         time: Some(f64::from(frame) / 60.0),
@@ -54,6 +60,7 @@ pub(super) fn frame_input(frame: u32) -> RawInput {
 /// There is no pointer, so nothing is hovered or scrolled.
 fn draw(start: Startup, frames: u32, pace: Duration) -> ColorImage {
     let ctx = egui::Context::default();
+    super::fonts::install(&ctx);
     let mut app = App::new(start);
     let mut textures = Textures::default();
     let mut freed = Vec::new();
@@ -64,32 +71,42 @@ fn draw(start: Startup, frames: u32, pace: Duration) -> ColorImage {
             shapes: drawn,
             pixels_per_point,
             ..
-        } = ctx.run_ui(frame_input(frame), |ui| app.draw(ui));
+        } = ctx.run_ui(frame_input_at(frame, ctx.zoom_factor()), |ui| app.draw(ui));
         textures.forget(&freed);
         freed = textures.apply(&mut textures_delta);
         (shapes, scale) = (drawn, pixels_per_point);
         std::thread::sleep(pace);
     }
     let jobs = ctx.tessellate(shapes, scale);
+    // the picture is as big as the window, however far the contents are zoomed
     let mut canvas = Canvas::new(
-        WINDOW_POINTS.map(|points| (points * scale).round() as usize),
+        WINDOW_POINTS.map(|points| (points * PIXELS_PER_POINT).round() as usize),
         Color32::BLACK,
     );
     canvas.paint(&jobs, &textures, scale);
     canvas.into_image()
 }
 
-pub fn save_png(path: &str, img: &ColorImage) -> Result<(), String> {
-    let file = std::fs::File::create(path).map_err(|e| e.to_string())?;
-    let mut enc = png::Encoder::new(
-        std::io::BufWriter::new(file),
-        img.size[0] as u32,
-        img.size[1] as u32,
-    );
+/// A picture as the bytes of a PNG file.
+pub fn png_bytes(img: &ColorImage) -> Result<Vec<u8>, String> {
+    let mut bytes = Vec::new();
+    let mut enc = png::Encoder::new(&mut bytes, img.size[0] as u32, img.size[1] as u32);
     enc.set_color(png::ColorType::Rgba);
     enc.set_depth(png::BitDepth::Eight);
     let mut w = enc.write_header().map_err(|e| e.to_string())?;
-    w.write_image_data(img.as_raw()).map_err(|e| e.to_string())
+    // a PNG keeps a colour and how see-through it is apart; the picture keeps them multiplied together
+    let plain: Vec<u8> = img
+        .pixels
+        .iter()
+        .flat_map(|p| p.to_srgba_unmultiplied())
+        .collect();
+    w.write_image_data(&plain).map_err(|e| e.to_string())?;
+    w.finish().map_err(|e| e.to_string())?;
+    Ok(bytes)
+}
+
+pub fn save_png(path: &str, img: &ColorImage) -> Result<(), String> {
+    std::fs::write(path, png_bytes(img)?).map_err(|e| e.to_string())
 }
 
 /// Draw the picture with no window, save it, and end the program: 0 when it was saved, 1 when not.

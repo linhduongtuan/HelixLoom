@@ -153,6 +153,13 @@ const COMMANDS: &[Command] = &[
     ),
     c(
         "File",
+        "Fetch a record from NCBI, UniProt, the PDB or the AlphaFold DB",
+        "",
+        "download accession genbank uniprot pdb alphafold ncbi database",
+        Action::Fetch,
+    ),
+    c(
+        "File",
         "Duplicate selection",
         "",
         "copy new sequence part",
@@ -174,6 +181,20 @@ const COMMANDS: &[Command] = &[
         Action::SaveAs,
     ),
     c("File", "Export as FASTA…", "", "write", Action::ExportFasta),
+    c(
+        "File",
+        "Save a report of the results…",
+        "",
+        "html methods figures provenance write up publication",
+        Action::Report,
+    ),
+    c(
+        "File",
+        "Remember my work for next time: on or off",
+        "",
+        "session keep forget private shared computer browser storage restore recent files open sequences",
+        Action::ToggleKeeping,
+    ),
     c("File", "Close", "Cmd+W", "", Action::CloseCurrent),
     c("Edit", "Undo", "Cmd+Z", "", Action::Undo),
     c("Edit", "Redo", "Cmd+Shift+Z", "", Action::Redo),
@@ -535,6 +556,27 @@ const COMMANDS: &[Command] = &[
     ),
     c(
         "Tools",
+        "Motif finder…",
+        "",
+        "motif pwm meme fimo logo binding site discover scan",
+        Action::Motifs,
+    ),
+    c(
+        "Tools",
+        "Protein domains (HMMER)…",
+        "",
+        "domain pfam hmmer hmmscan family architecture protein hmm",
+        Action::Domains,
+    ),
+    c(
+        "Tools",
+        "Programs HelixLoom calls…",
+        "",
+        "install tools mafft iqtree hmmer primer3 fastp homebrew brew conda micromamba version licence registry",
+        Action::Programs,
+    ),
+    c(
+        "Tools",
         "Tree tools (Newick)…",
         "",
         "root midpoint distance",
@@ -553,6 +595,13 @@ const COMMANDS: &[Command] = &[
         "",
         "",
         Action::ToggleFeatures,
+    ),
+    c(
+        "View",
+        "Show or hide the inspector",
+        "",
+        "details selection feature",
+        Action::ToggleInspector,
     ),
     c(
         "View",
@@ -597,6 +646,34 @@ const COMMANDS: &[Command] = &[
         Action::Theme(ThemeMode::Dark),
     ),
     c(
+        "View",
+        "Appearance…",
+        "",
+        "size scale zoom density spacing accent colour contrast colour-blind colourblind settings",
+        Action::Appearance,
+    ),
+    c(
+        "View",
+        "Zoom in",
+        "Cmd+=",
+        "larger bigger size scale",
+        Action::Zoom(1),
+    ),
+    c(
+        "View",
+        "Zoom out",
+        "Cmd+-",
+        "smaller size scale",
+        Action::Zoom(-1),
+    ),
+    c(
+        "View",
+        "Actual size",
+        "Cmd+0",
+        "reset zoom size scale",
+        Action::Zoom(0),
+    ),
+    c(
         "Help",
         "Command palette",
         "Cmd+K",
@@ -609,6 +686,34 @@ const COMMANDS: &[Command] = &[
         "",
         "keys hotkeys cheat sheet",
         Action::Shortcuts,
+    ),
+    c(
+        "Help",
+        "How each analysis was checked",
+        "",
+        "trust benchmark accuracy validation tests reference compare verified",
+        Action::Checks,
+    ),
+    c(
+        "Help",
+        "Copy diagnostics",
+        "",
+        "bug report problem version system crash fault support",
+        Action::Diagnostics,
+    ),
+    c(
+        "Help",
+        "Show the tour",
+        "",
+        "welcome introduction first run guide",
+        Action::Tour,
+    ),
+    c(
+        "Help",
+        "Open the sample project",
+        "",
+        "example demo plasmid trace tree",
+        Action::SampleProject,
     ),
     c(
         "Help",
@@ -635,7 +740,15 @@ pub fn acts_on_the_sequence(action: &Action) -> bool {
             | Action::CloseTab(_)
             | Action::Palette
             | Action::Shortcuts
+            | Action::Checks
+            | Action::Diagnostics
+            | Action::Report
+            | Action::Tour
+            | Action::Fetch
+            | Action::SampleProject
             | Action::Theme(_)
+            | Action::Appearance
+            | Action::Zoom(_)
             | Action::About
             | Action::Calculator
             | Action::TmCalculator
@@ -643,10 +756,14 @@ pub fn acts_on_the_sequence(action: &Action) -> bool {
             | Action::Tree
             | Action::PhyloCnn
             | Action::SpeciesTree
+            | Action::Motifs
+            | Action::Domains
+            | Action::Programs
             | Action::TreeTools
             | Action::Workflow
             | Action::Reads
             | Action::ToggleSelectionOnly
+            | Action::ToggleKeeping
     )
 }
 

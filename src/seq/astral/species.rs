@@ -6,6 +6,8 @@
 
 use super::bits::Bits;
 use super::genes::Genes;
+use super::polytomy::{self, Polytomy};
+use super::search::Total;
 use super::special::{coalescent_length, posteriors};
 use super::weight::{around_branch, tripartition};
 use crate::seq::newick::NwTree;
@@ -47,6 +49,10 @@ pub struct Branch {
     pub quartets: u64,
     /// The length in coalescent units.
     pub length: f64,
+    /// The share of the bootstrap replicates (in percent) whose species tree has this branch, when there were any.
+    pub bootstrap: Option<f64>,
+    /// The test for a polytomy, when it was asked for and enough gene trees count (`polytomy.rs`).
+    pub polytomy: Option<Polytomy>,
 }
 
 impl Sp {
@@ -142,18 +148,29 @@ impl Sp {
     /// Half the sum, over the inner nodes, of the quartets of the gene trees that agree with the node: the number of
     /// quartets of the species tree that the gene trees share (each counted once per gene tree).
     pub fn score(&self, genes: &Genes) -> u64 {
-        let inner: Vec<(usize, usize)> = self.nodes.iter().filter_map(|n| n.kids).collect();
-        let weights = par_map(&inner, |&(a, b)| {
-            tripartition(&genes.genes, &self.nodes[a].set, &self.nodes[b].set)
-        });
-        weights.iter().sum::<u64>() / 2
+        self.score_with(|a, b| tripartition(&genes.genes, a, b))
     }
 
-    /// What the gene trees say about every inner branch (all but the one under the root taxon's leaf).
-    pub fn annotate(&self, genes: &Genes, lambda: f64) -> Vec<Branch> {
+    /// The same with the weights of the splits that `weight` gives (quartets counted one, or their weights).
+    pub fn score_with<T: Total>(&self, weight: impl Fn(&Bits, &Bits) -> T + Sync) -> T {
+        self.sum_with(weight).half()
+    }
+
+    /// The sum over the inner nodes of what `weight` gives for the three clusters around each (with no half: for scores in
+    /// which a quartet is counted once, not from both of its nodes).
+    pub fn sum_with<T: Total>(&self, weight: impl Fn(&Bits, &Bits) -> T + Sync) -> T {
+        let inner: Vec<(usize, usize)> = self.nodes.iter().filter_map(|n| n.kids).collect();
+        let weights = par_map(&inner, |&(a, b)| {
+            weight(&self.nodes[a].set, &self.nodes[b].set)
+        });
+        weights.into_iter().fold(T::ZERO, |sum, w| sum + w)
+    }
+
+    /// The four groups of taxa around every inner branch (all but the one under the root taxon's leaf), with the node under it:
+    /// the two children of the node, its sibling, and everything else.
+    fn ends(&self) -> Vec<(usize, Bits, Bits, Bits, Bits)> {
         let all = Bits::of(self.n, 0..self.n);
-        let ends: Vec<(usize, Bits, Bits, Bits, Bits)> = self
-            .nodes
+        self.nodes
             .iter()
             .enumerate()
             .filter(|&(i, n)| n.kids.is_some() && i != self.root)
@@ -168,8 +185,12 @@ impl Sp {
                 let o = all.minus(&n.set.union(&s.set));
                 Some((i, l.set.clone(), r.set.clone(), s.set.clone(), o))
             })
-            .collect();
-        par_map(&ends, |(i, l, r, s, o)| {
+            .collect()
+    }
+
+    /// What the gene trees say about every inner branch (all but the one under the root taxon's leaf).
+    pub fn annotate(&self, genes: &Genes, lambda: f64) -> Vec<Branch> {
+        par_map(&self.ends(), |(i, l, r, s, o)| {
             let a = around_branch(&genes.genes, l, r, s, o);
             let q = a.f.map(|x| if a.en > 0.0 { x / a.en } else { 0.0 });
             Branch {
@@ -180,7 +201,16 @@ impl Sp {
                 en: a.en,
                 quartets: a.quartets,
                 length: coalescent_length(a.f[0], a.en, lambda),
+                bootstrap: None,
+                polytomy: None,
             }
+        })
+    }
+
+    /// The test for a polytomy on every inner branch, by the node under it (none for a branch with too few gene trees).
+    pub fn polytomy_tests(&self, genes: &Genes) -> Vec<(usize, Option<Polytomy>)> {
+        par_map(&self.ends(), |(i, l, r, s, o)| {
+            (*i, polytomy::around(&genes.genes, [l, r, s, o]))
         })
     }
 }

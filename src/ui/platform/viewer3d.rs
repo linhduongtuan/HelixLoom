@@ -34,7 +34,7 @@ const PICK_RADIUS: f32 = 14.0;
 /// Stick drawings of structures with more atoms than this fall back to the backbone.
 pub const MAX_STICK_ATOMS: usize = 40_000;
 /// What the pointer does, in the corner of the picture.
-const HINT: &str = "drag to turn · scroll to zoom · shift-drag to move · click a residue to pick it · double-click to start again";
+pub(super) const HINT: &str = "drag to turn · scroll to zoom · shift-drag to move · click a residue to pick it · double-click to start again";
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub enum Representation {
@@ -51,6 +51,10 @@ pub enum Scheme {
     Chain,
     /// Blue at the start of the chain to red at its end.
     Rainbow,
+    /// How conserved each residue is in an alignment of its family (`Fold::apply_conservation`).
+    Conservation,
+    /// What each residue buries where two groups of chains meet (`Fold::apply_interface`).
+    Interface,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -171,6 +175,45 @@ const CHAIN_COLOURS: [[u8; 3]; 8] = [
     [0x8a, 0x93, 0x4a],
 ];
 
+/// The colour of a residue by its conservation, 0 (the most variable of the alignment) to 1 (the most conserved): turquoise
+/// through light grey to maroon, as the ConSurf server draws it, which a person who colours by conservation expects; a
+/// residue that no row of the alignment matches is grey.
+pub fn conservation_colour(c: Option<f32>) -> Color32 {
+    const VARIABLE: [f32; 3] = [0x2a as f32, 0x9d as f32, 0xb0 as f32];
+    const MIDDLE: [f32; 3] = [0xee as f32, 0xee as f32, 0xee as f32];
+    const CONSERVED: [f32; 3] = [0x9d as f32, 0x1c as f32, 0x5b as f32];
+    let Some(c) = c else {
+        return Color32::from_gray(0x9a);
+    };
+    let c = c.clamp(0.0, 1.0);
+    let (from, to, t) = if c < 0.5 {
+        (VARIABLE, MIDDLE, c * 2.0)
+    } else {
+        (MIDDLE, CONSERVED, (c - 0.5) * 2.0)
+    };
+    let level = |k: usize| (from[k] + (to[k] - from[k]) * t).round() as u8;
+    Color32::from_rgb(level(0), level(1), level(2))
+}
+
+/// What a residue buries at an interface, in square angstroms, that the colour is deepest at.
+pub const DEEPEST_BURIAL: f32 = 100.0;
+
+/// The colour of a residue by what it buries: pale yellow for a little to deep red for `DEEPEST_BURIAL` or more. A residue that
+/// buries nothing is light grey, and one that is in neither group of the interface a darker grey.
+pub fn interface_colour(buried: Option<f32>) -> Color32 {
+    const LITTLE: [f32; 3] = [0xff as f32, 0xe0 as f32, 0x7a as f32];
+    const MUCH: [f32; 3] = [0xc6 as f32, 0x1f as f32, 0x1f as f32];
+    let Some(b) = buried else {
+        return Color32::from_gray(0x9a);
+    };
+    if b < crate::seq::interface::MIN_BURIED as f32 {
+        return Color32::from_gray(0xdd);
+    }
+    let t = (b / DEEPEST_BURIAL).clamp(0.0, 1.0);
+    let level = |k: usize| (LITTLE[k] + (MUCH[k] - LITTLE[k]) * t).round() as u8;
+    Color32::from_rgb(level(0), level(1), level(2))
+}
+
 pub fn secondary_colour(ss: Ss) -> Color32 {
     match ss {
         Ss::Helix => Color32::from_rgb(0xe0, 0x40, 0x5a),
@@ -192,6 +235,8 @@ pub fn residue_colour(fold: &Fold, k: usize, scheme: Scheme) -> Color32 {
             Color32::from_rgb(c[0], c[1], c[2])
         }
         Scheme::Rainbow => rainbow(k as f32 / (fold.residues.len().max(2) - 1) as f32),
+        Scheme::Conservation => conservation_colour(r.conservation),
+        Scheme::Interface => interface_colour(r.buried),
     }
 }
 
@@ -411,7 +456,22 @@ pub fn show(
         let sure = r
             .confidence
             .map_or(String::new(), |c| format!(" · pLDDT {c:.0}"));
-        let label = format!("{} {} · {kind}{sure}", char::from(r.letter), r.number);
+        // the colour of a score is not to be read by everyone: the number is the same
+        let conserved = r
+            .conservation
+            .map_or(String::new(), |c| format!(" · conservation {c:.2}"));
+        // the column of the alignment that the residue was lined up with, which is selected there
+        let column = r
+            .column
+            .map_or(String::new(), |k| format!(" · column {}", k + 1));
+        let buried = r
+            .buried
+            .map_or(String::new(), |b| format!(" · buries {b:.0} Å²"));
+        let label = format!(
+            "{} {} · {kind}{sure}{conserved}{column}{buried}",
+            char::from(r.letter),
+            r.number
+        );
         painter.text(
             at + vec2(12.0, -12.0),
             Align2::LEFT_BOTTOM,
@@ -421,13 +481,16 @@ pub fn show(
         );
     }
     legend(&painter, rect, look, style.scheme, fold);
-    painter.text(
-        rect.right_bottom() - vec2(14.0, 12.0),
-        Align2::RIGHT_BOTTOM,
-        HINT,
-        FontId::proportional(11.5),
-        look.dim,
-    );
+    // what the pointer does is said on the screen, not in a figure
+    if !crate::ui::figure::is_figure(ui.ctx()) {
+        painter.text(
+            rect.right_bottom() - vec2(14.0, 12.0),
+            Align2::RIGHT_BOTTOM,
+            HINT,
+            FontId::proportional(11.5),
+            look.dim,
+        );
+    }
 
     // picking: the alpha carbon nearest to the click
     let mut touched = Touched::default();
@@ -484,8 +547,43 @@ fn legend(painter: &eframe::egui::Painter, rect: Rect, look: &Look, scheme: Sche
             (rainbow(0.0), "N terminus".to_string()),
             (rainbow(1.0), "C terminus".to_string()),
         ],
+        Scheme::Interface => vec![
+            (
+                interface_colour(Some(DEEPEST_BURIAL)),
+                format!("buries {DEEPEST_BURIAL:.0} Å² or more"),
+            ),
+            (interface_colour(Some(30.0)), "buries 30 Å²".to_string()),
+            (
+                interface_colour(Some(crate::seq::interface::MIN_BURIED as f32)),
+                "buries a little".to_string(),
+            ),
+            (interface_colour(Some(0.0)), "buries nothing".to_string()),
+            (
+                interface_colour(None),
+                "not in either group of chains".to_string(),
+            ),
+        ],
+        Scheme::Conservation => vec![
+            (
+                conservation_colour(Some(1.0)),
+                "1 · most conserved of the alignment".to_string(),
+            ),
+            (
+                conservation_colour(Some(0.5)),
+                "0.5 · in between".to_string(),
+            ),
+            (
+                conservation_colour(Some(0.0)),
+                "0 · most variable".to_string(),
+            ),
+            (
+                conservation_colour(None),
+                "no score (no matching sequence, or too many gaps)".to_string(),
+            ),
+        ],
     };
-    let mut y = rect.bottom() - 12.0 - 17.0 * entries.len() as f32;
+    // above the line of hints at the bottom, which in a narrow view runs under the left side as well
+    let mut y = rect.bottom() - 32.0 - 17.0 * entries.len() as f32;
     for (colour, label) in entries {
         painter.rect_filled(
             Rect::from_min_size(pos2(rect.left() + 14.0, y + 2.0), vec2(12.0, 12.0)),
@@ -506,6 +604,34 @@ fn legend(painter: &eframe::egui::Painter, rect: Rect, look: &Look, scheme: Sche
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn conservation_runs_from_turquoise_through_light_grey_to_maroon_and_unmatched_is_grey() {
+        assert_eq!(
+            conservation_colour(Some(0.0)),
+            Color32::from_rgb(0x2a, 0x9d, 0xb0)
+        );
+        assert_eq!(
+            conservation_colour(Some(0.5)),
+            Color32::from_rgb(0xee, 0xee, 0xee)
+        );
+        assert_eq!(
+            conservation_colour(Some(1.0)),
+            Color32::from_rgb(0x9d, 0x1c, 0x5b)
+        );
+        assert_eq!(conservation_colour(None), Color32::from_gray(0x9a));
+        // out of range is the nearest end, and the ramp is smooth: a quarter of the way is half way to the middle
+        assert_eq!(
+            conservation_colour(Some(-3.0)),
+            conservation_colour(Some(0.0))
+        );
+        assert_eq!(
+            conservation_colour(Some(9.0)),
+            conservation_colour(Some(1.0))
+        );
+        let quarter = conservation_colour(Some(0.25));
+        assert_eq!(quarter, Color32::from_rgb(0x8c, 0xc6, 0xcf));
+    }
     use crate::seq::pdb::parse;
 
     fn fold() -> Fold {

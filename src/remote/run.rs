@@ -2,8 +2,8 @@
 //! process for each job (`helixloom run-job`), which reads the request from the job's folder, runs it here and writes the
 //! response beside it.
 
-use super::species;
 use super::tasks::{CnnResult, Folded, Request, Response};
+use super::{domains, flow, motif, species};
 use crate::pipeline::steps::{Aligned, Named};
 use crate::pipeline::tools::{self, Installed};
 use crate::pipeline::{self, predict, steps, Available};
@@ -21,6 +21,8 @@ pub struct Env {
     pub fold_command: Option<Vec<String>>,
     /// How long that program may take, in seconds.
     pub fold_seconds: u64,
+    /// Where the answers of the steps of a pipeline file are kept, so that a run sent again is not done again from the start.
+    pub flow_cache: Option<std::path::PathBuf>,
 }
 
 /// How often a running folding program is looked at.
@@ -86,7 +88,7 @@ fn fold_local(command: &[String], sequence: &[u8], limit: Duration) -> Result<St
     let (program, args) = command
         .split_first()
         .ok_or("The folding command is empty.")?;
-    let dir = tools::work_folder("fold")?;
+    let dir = tools::WorkFolder::new("fold")?;
     let (input, output) = (dir.join("input.fasta"), dir.join("output.pdb"));
     std::fs::write(
         &input,
@@ -121,7 +123,6 @@ fn fold_local(command: &[String], sequence: &[u8], limit: Duration) -> Result<St
         std::fs::read_to_string(&output)
             .map_err(|e| format!("{program} wrote no structure file: {e}"))
     });
-    let _ = std::fs::remove_dir_all(&dir);
     let pdb = pdb?;
     if !pdb.lines().any(|l| l.starts_with("ATOM")) {
         return Err(format!("{program} wrote a file with no atoms in it."));
@@ -131,15 +132,13 @@ fn fold_local(command: &[String], sequence: &[u8], limit: Duration) -> Result<St
 
 /// Align `seqs` with MAFFT when asked for and found here, else with the built-in aligner.
 fn align(seqs: &[Named], mafft: bool) -> Result<Aligned, String> {
-    let dir = tools::work_folder("align")?;
+    let dir = tools::WorkFolder::new("align")?;
     let found = if mafft {
         tools::detect(&tools::MAFFT)
     } else {
         None
     };
-    let aligned = steps::align(seqs, found.as_ref(), &dir);
-    let _ = std::fs::remove_dir_all(&dir);
-    aligned
+    steps::align(seqs, found.as_ref(), &dir)
 }
 
 /// Fold `sequence` with the workstation's own program (`local`), else through the ESM Atlas web service.
@@ -212,6 +211,9 @@ pub fn execute(request: Request, env: &Env) -> Result<Response, String> {
         } => run_phylocnn(&newick, sampling, task, priors, gpu).map(Response::PhyloCnn),
         Request::Fold { sequence, local } => fold(&sequence, local, env).map(Response::Fold),
         Request::Species(job) => species::run(&job).map(Response::Species),
+        Request::Motif(job) => motif::run(&job).map(Response::Motif),
+        Request::Domains(job) => domains::run(&job).map(Response::Domains),
+        Request::Flow(job) => flow::run(job, env.flow_cache.as_deref()).map(Response::Flow),
     }
 }
 

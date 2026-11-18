@@ -6,6 +6,7 @@ use super::TextMapWin;
 use crate::seq::textmap::{Frame, LineNumbers, Reading, Settings, INDEX_CHARS};
 use crate::ui::app::App;
 use crate::ui::design::{self, Look};
+use crate::ui::fonts::FontWeight;
 use eframe::egui::{self, Key, Modifiers, ScrollArea, Ui};
 
 /// The longest a line may be asked to be, and the shortest (the dialog's spin box, L19448).
@@ -51,7 +52,7 @@ impl App {
         if !self.text_map.dialog_open {
             return;
         }
-        let look = design::look(self.prefs.dark);
+        let look = self.prefs.look();
         let (mut open, mut ok, mut cancel) = (true, false, false);
         design::window("Text Map")
             .open(&mut open)
@@ -111,7 +112,11 @@ fn frame_box(
     let mut request = None;
     ui.group(|ui| {
         ui.horizontal(|ui| {
-            ui.label(egui::RichText::new(frame.label()).strong().color(look.text));
+            ui.label(
+                egui::RichText::new(frame.label())
+                    .semibold()
+                    .color(look.text),
+            );
             if let Some(on) = shown(&mut w.settings, frame) {
                 ui.checkbox(on, "Show");
             }
