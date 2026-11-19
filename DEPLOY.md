@@ -397,6 +397,27 @@ Apple. With an Apple Developer account, sign it with your identity instead (`cod
 staple the answer to the app (`xcrun stapler staple HelixLoom.app`); **these three were not tried here**, for want of an
 account. A file double-clicked in the Finder does not open in the app yet: open it from the app or drop it on its window.
 
+### Releases for end users
+
+A release is made by pushing a tag: `git tag v0.2.1 && git push origin v0.2.1` (the version in `Cargo.toml` should be the tag's).
+`.github/workflows/release.yml` then builds on GitHub's machines and puts on the Release of that tag
+`HelixLoom-v0.2.1-macos-arm64.dmg` (Apple Silicon, signed ad hoc as above), `HelixLoom-v0.2.1-windows-x64-NOT-TRIED.zip` and
+`SHA256SUMS`, and publishes the server's container image (below). **The Windows file is marked in its name and in the notes because
+nobody has started HelixLoom on Windows**: its build may fail (the Mac disk image and the release go on without it), and a build that
+comes out may still not start. It is not signed: Windows shows SmartScreen's warning, and a console window may open behind the
+program, because the same program is also the command line. Signing it needs a certificate (SignPath Foundation signs open-source
+programs for free; Azure Trusted Signing is cheap), and Apple's notarization an Apple Developer account: none is used. The programs
+are built without the GPU engine. **The workflow has not run yet**: its first run is the test of it. By hand, for the Mac file only:
+`scripts/bundle-macos.sh`, then `gh release create v0.2.1 target/bundle/HelixLoom-0.2.1.dmg --title "HelixLoom 0.2.1"`.
+
+### In a container
+
+The `Dockerfile` builds the server and the web page into one image: see its first lines for the commands. It computes on the
+processor, listens on `0.0.0.0` inside the container (publish the port on `127.0.0.1` only, as the example does) and reads the
+token from `/run/secrets/token`. The release workflow pushes it to `ghcr.io/linhduongtuan/helixloom-server`; a package of a personal
+account starts private, so make it public in the package's settings if others are to pull it. **Not built and not run**: it
+follows the steps of `docs/UBUNTU.md`, and the libraries it installs to run the program are a guess from what the build needs.
+
 ## 5. Folding proteins on the GPUs (optional)
 
 Without a folding program, the Structure page's prediction goes to the ESM Atlas web service, asked from the workstation

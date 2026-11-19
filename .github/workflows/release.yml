@@ -1,0 +1,108 @@
+# Making a release. Pushing a tag that begins with v (git tag v0.2.0 && git push origin v0.2.0) builds, on GitHub's machines:
+#   * a Mac disk image (Apple Silicon), signed ad hoc: the first start needs a right-click and Open (DEPLOY.md, "A Mac app");
+#   * a Windows zip of helixloom.exe, NOT TRIED: nobody has started HelixLoom on Windows yet, and the file says so in its name;
+#   * a Docker image of the workstation server with the web page, published as a package (ghcr.io);
+# and puts the first two, with their checksums, on the Release of that tag. A Windows build that fails does not hold back the Mac
+# disk image, and neither does the Docker image. The programs are built without the GPU engine (as CI builds them): they compute
+# on the processor, and the workstation uses its GPUs through its own build (DEPLOY.md, 1.2).
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  mac:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rust toolchain
+        run: rustup update stable --no-self-update && rustc --version
+      - name: App and disk image
+        run: CARGO_FLAGS=--no-default-features scripts/bundle-macos.sh
+      - name: Name the file for its system
+        run: mv target/bundle/HelixLoom-*.dmg "HelixLoom-${GITHUB_REF_NAME}-macos-arm64.dmg"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mac
+          path: HelixLoom-*.dmg
+
+  windows:
+    runs-on: windows-latest
+    # nobody has tried the program on Windows: a build that fails is said in the log, and the rest of the release goes on
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rust toolchain
+        run: rustup update stable --no-self-update; rustc --version
+      - name: Program
+        run: cargo build --release --no-default-features
+      - name: Zip, named as what it is
+        shell: pwsh
+        run: Compress-Archive -Path target/release/helixloom.exe -DestinationPath "HelixLoom-$env:GITHUB_REF_NAME-windows-x64-NOT-TRIED.zip"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: HelixLoom-*.zip
+
+  release:
+    needs: [mac, windows]
+    # the Mac disk image is what the release needs; a Windows build that did not come out is only missing from it
+    if: ${{ !cancelled() && needs.mac.result == 'success' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Checksums
+        run: cd dist && sha256sum * > SHA256SUMS && cat SHA256SUMS
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          generate_release_notes: true
+          body: |
+            ## HelixLoom ${{ github.ref_name }}
+
+            **Mac (Apple Silicon): `HelixLoom-${{ github.ref_name }}-macos-arm64.dmg`.** Open the disk image and drag HelixLoom to
+            Applications. It is signed ad hoc, not by an Apple developer: the first start needs a right-click on the app and
+            **Open** (on a recent macOS: System Settings, Privacy & Security, **Open Anyway**). Tried on the Mac it was made on.
+
+            **Windows: `HelixLoom-${{ github.ref_name }}-windows-x64-NOT-TRIED.zip`. NOT TRIED.** It was built by GitHub's Windows
+            machine and has never been started on a Windows computer by the people who make HelixLoom. Unzip it and run
+            `helixloom.exe`. It is not signed, so Windows may warn (More info, Run anyway); a console window may open behind
+            the program. If it does not start, please say what it printed. It is missing from this release if its build failed.
+
+            **Linux:** no file; build it from the source (`docs/UBUNTU.md`). **In a browser:** no install is needed
+            (`docs/USING.md`). **The workstation server:** `docker pull ghcr.io/${{ github.repository_owner }}/helixloom-server:${{ github.ref_name }}`
+            (not tried either; `DEPLOY.md`, "In a container").
+
+            These programs compute on the processor; `SHA256SUMS` lists the checksums of the files above.
+
+  server-image:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/metadata-action@v5
+        id: meta
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/helixloom-server
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}

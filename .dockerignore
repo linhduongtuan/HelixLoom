@@ -1,0 +1,8 @@
+.git
+/target
+/dist
+/shots
+/checks
+/assets/phylocnn
+*.log
+.DS_Store

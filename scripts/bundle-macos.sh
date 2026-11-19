@@ -35,7 +35,9 @@ TARGET=${CARGO_TARGET_DIR:-target}
 OUT=${OUT:-$TARGET/bundle}
 APP="$OUT/HelixLoom.app"
 
-cargo build --release
+# CARGO_FLAGS adds options to the build (a build without the GPU engine: CARGO_FLAGS=--no-default-features)
+# shellcheck disable=SC2086
+cargo build --release ${CARGO_FLAGS:-}
 BIN="$TARGET/release/helixloom"
 
 rm -rf "$APP"
