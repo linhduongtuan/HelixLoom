@@ -180,13 +180,13 @@ pub fn decorate(t: &NwTree, laid: &Laid, o: &StyleOptions) -> Decor {
         return d;
     }
     if let Some(key) = &o.colour_by {
-        colour(t, laid, key, &mut d, &at);
+        colour(t, key, &mut d, &at);
     }
     if let Some(key) = &o.width_by {
         if let Values::Numbers { low, high } = survey(t, key) {
-            for i in 0..n {
+            for (i, width) in d.width.iter_mut().enumerate() {
                 if let Some(v) = t.attr_number(at(i), key) {
-                    d.width[i] = 1.0 + (MOST_WIDTH - 1.0) * along(v, low, high) as f32;
+                    *width = 1.0 + (MOST_WIDTH - 1.0) * along(v, low, high) as f32;
                 }
             }
         }
@@ -199,12 +199,12 @@ pub fn decorate(t: &NwTree, laid: &Laid, o: &StyleOptions) -> Decor {
         }
     }
     if let Some(key) = &o.shape_by {
-        shapes(t, laid, key, &mut d, &at);
+        shapes(t, key, &mut d, &at);
     }
     if let Some(key) = &o.bars_by {
         let deepest = laid.nodes.iter().map(|p| p.radius).fold(0.0, f32::max);
-        for i in 0..n {
-            d.bar[i] = t
+        for (i, bar) in d.bar.iter_mut().enumerate() {
+            *bar = t
                 .attr_range(at(i), key)
                 .map(|(lo, hi)| (deepest - hi as f32, deepest - lo as f32));
         }
@@ -212,12 +212,12 @@ pub fn decorate(t: &NwTree, laid: &Laid, o: &StyleOptions) -> Decor {
     d
 }
 
-fn colour(t: &NwTree, laid: &Laid, key: &str, d: &mut Decor, at: &dyn Fn(usize) -> usize) {
+fn colour(t: &NwTree, key: &str, d: &mut Decor, at: &dyn Fn(usize) -> usize) {
     match survey(t, key) {
         Values::Numbers { low, high } => {
-            for i in 0..laid.nodes.len() {
+            for (i, slot) in d.colour.iter_mut().enumerate() {
                 if let Some(v) = t.attr_number(at(i), key) {
-                    d.colour[i] = Some(gradient(along(v, low, high)));
+                    *slot = Some(gradient(along(v, low, high)));
                 }
             }
             d.legend = Some(Legend::Gradient {
@@ -229,9 +229,9 @@ fn colour(t: &NwTree, laid: &Laid, key: &str, d: &mut Decor, at: &dyn Fn(usize) 
         Values::Words(words) => {
             let tone =
                 |w: &str| PALETTE[words.iter().position(|x| x == w).unwrap_or(0) % PALETTE.len()];
-            for i in 0..laid.nodes.len() {
+            for (i, slot) in d.colour.iter_mut().enumerate() {
                 if let Some(v) = t.attr(at(i), key) {
-                    d.colour[i] = Some(tone(v));
+                    *slot = Some(tone(v));
                 }
             }
             let items = words.iter().map(|w| (w.clone(), tone(w))).collect();
@@ -244,10 +244,10 @@ fn colour(t: &NwTree, laid: &Laid, key: &str, d: &mut Decor, at: &dyn Fn(usize) 
     }
 }
 
-fn shapes(t: &NwTree, laid: &Laid, key: &str, d: &mut Decor, at: &dyn Fn(usize) -> usize) {
+fn shapes(t: &NwTree, key: &str, d: &mut Decor, at: &dyn Fn(usize) -> usize) {
     let kind = survey(t, key);
-    for i in 0..laid.nodes.len() {
-        d.shape[i] = match (&kind, t.attr(at(i), key)) {
+    for (i, slot) in d.shape.iter_mut().enumerate() {
+        *slot = match (&kind, t.attr(at(i), key)) {
             (Values::Numbers { low, high }, Some(v)) => v.parse::<f64>().ok().map(|v| {
                 SHAPE_RADII.0 + (SHAPE_RADII.1 - SHAPE_RADII.0) * along(v, *low, *high) as f32
             }),
