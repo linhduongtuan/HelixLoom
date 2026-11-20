@@ -1,21 +1,41 @@
-# Checks on every change: formatting, lints and the tests, on macOS (the system the program has been tried on).
-# Linux and Windows are not here yet: they have not been tried (see docs/ROADMAP.md). The GPU build (candle) is left out
-# because a CI machine has no GPU; the tests that need the PhyloCNN files skip themselves, as the files are not in the repository.
+# Checks on every change: formatting, lints and the tests, on macOS (the system the program has been tried on), and the same on
+# Linux and Windows, which have NOT been tried by hand: those two jobs report but do not turn the change red (`continue-on-error`),
+# so that a fault of a system nobody has run the program on is seen without holding up the rest; a job that is green there for a while
+# is the reason to take that line out. A fourth job checks that the browser build compiles and passes its lints.
+# The GPU build (candle) is left out because a CI machine has no GPU; the tests that need the PhyloCNN files skip themselves, as the
+# files are not in the repository.
 name: CI
 
 on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   check:
-    runs-on: macos-latest
+    name: check (${{ matrix.name }})
+    runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.untried }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: macOS, os: macos-latest, untried: false }
+          - { name: Linux (not tried by hand), os: ubuntu-latest, untried: true }
+          - { name: Windows (not tried by hand), os: windows-latest, untried: true }
     steps:
       - uses: actions/checkout@v4
+      - name: Libraries of the window system (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y pkg-config libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev libxkbcommon-dev libssl-dev
       - name: Rust toolchain
         run: rustup update stable --no-self-update && rustc --version
       - name: Formatting
@@ -24,3 +44,13 @@ jobs:
         run: cargo clippy --all-targets --no-default-features -- -D warnings
       - name: Tests
         run: cargo test --no-default-features
+
+  web:
+    name: web build compiles
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rust toolchain and the browser target
+        run: rustup update stable --no-self-update && rustup target add wasm32-unknown-unknown && rustc --version
+      - name: Lints for the browser build
+        run: cargo clippy --target wasm32-unknown-unknown --no-default-features -- -D warnings

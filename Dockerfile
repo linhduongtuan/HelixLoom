@@ -8,7 +8,8 @@
 # then open http://127.0.0.1:7878/ (from another computer, through an SSH tunnel: DEPLOY.md, section 2). The port is published on
 # the loopback address only: the server does not encrypt, so do not publish it to the internet (DEPLOY.md, section 7).
 #
-# NOT TRIED: this file was written from the build steps of docs/UBUNTU.md and has not been built or run. The server computes on
+# NOT RUN: this file was written from the build steps of docs/UBUNTU.md. GitHub's release workflow built it for v0.2.0 (the build came
+# out); nobody has started the image. The server computes on
 # the processor; GPUs need the NVIDIA container toolkit and a build made with them (DEPLOY.md, 1.2), which this one is not.
 
 # ---- build the program and the web page

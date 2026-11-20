@@ -276,8 +276,9 @@ fn coverage(c: &Ctx, contig: &Contig) {
     let bottom = top + COVERAGE_H - 6.0;
     let max = contig.depth.iter().copied().max().unwrap_or(1).max(1) as f32;
     let fill = c.pal.accent.gamma_multiply(0.45);
-    for col in c.first..c.last.min(contig.depth.len()) {
-        let h = contig.depth[col] as f32 / max * (bottom - top);
+    let last = c.last.min(contig.depth.len());
+    for (col, &depth) in contig.depth.iter().enumerate().take(last).skip(c.first) {
+        let h = depth as f32 / max * (bottom - top);
         let x = (c.x_of)(col as f32);
         c.p.rect_filled(
             Rect::from_min_max(pos2(x, bottom - h), pos2(x + c.geo.zoom.max(1.0), bottom)),

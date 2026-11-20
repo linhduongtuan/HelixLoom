@@ -407,15 +407,22 @@ nobody has started HelixLoom on Windows**: its build may fail (the Mac disk imag
 comes out may still not start. It is not signed: Windows shows SmartScreen's warning, and a console window may open behind the
 program, because the same program is also the command line. Signing it needs a certificate (SignPath Foundation signs open-source
 programs for free; Azure Trusted Signing is cheap), and Apple's notarization an Apple Developer account: none is used. The programs
-are built without the GPU engine. **The workflow has not run yet**: its first run is the test of it. By hand, for the Mac file only:
+are built without the GPU engine. **The workflow ran once, for `v0.2.0` on 19 November 2026, and all four jobs came out**: the Mac disk image (9.7 MB), the Windows zip (9.7 MB) and the container image were built, and the Release holds the first two with `SHA256SUMS`. **None of the files has been started on a computer other than the one that made the Mac app, or on Windows at all**; the container image was built, not run. By hand, for the Mac file only:
 `scripts/bundle-macos.sh`, then `gh release create v0.2.1 target/bundle/HelixLoom-0.2.1.dmg --title "HelixLoom 0.2.1"`.
+
+### Checks on every change
+
+`.github/workflows/ci.yml` runs on every push to `main`, every pull request and by hand: formatting, lints and the tests on macOS (the system
+the program has been tried on), the same on Linux and Windows (**not tried by hand: those two report but do not turn a change red**; a job that is
+green there for a while is the reason to take `continue-on-error` out), and the lints of the browser build. The GPU build is not tried there (a
+CI machine has no GPU).
 
 ### In a container
 
 The `Dockerfile` builds the server and the web page into one image: see its first lines for the commands. It computes on the
 processor, listens on `0.0.0.0` inside the container (publish the port on `127.0.0.1` only, as the example does) and reads the
 token from `/run/secrets/token`. The release workflow pushes it to `ghcr.io/linhduongtuan/helixloom-server`; a package of a personal
-account starts private, so make it public in the package's settings if others are to pull it. **Not built and not run**: it
+account starts private, so make it public in the package's settings if others are to pull it. **Built by the release workflow for `v0.2.0`, not run**: it
 follows the steps of `docs/UBUNTU.md`, and the libraries it installs to run the program are a guess from what the build needs.
 
 ## 5. Folding proteins on the GPUs (optional)
