@@ -1,6 +1,7 @@
 //! Sequence model and algorithms (no UI code in here).
 pub mod abif;
 pub mod align;
+pub mod alnprimers;
 pub mod alnstats;
 pub mod assemble;
 pub mod astral;
@@ -30,6 +31,7 @@ pub mod motif;
 pub mod msa;
 pub mod newick;
 pub mod nextorf;
+pub mod nexus;
 pub mod par;
 pub mod pcr;
 pub mod pdb;
@@ -45,5 +47,7 @@ pub mod sitesearch;
 pub mod textmap;
 pub mod translation;
 pub mod tree;
+pub mod treeedit;
 pub mod treelayout;
+pub mod treestyle;
 pub mod treetools;

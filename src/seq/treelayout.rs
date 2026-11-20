@@ -12,6 +12,8 @@ pub enum Layout {
     Cladogram,
     /// Branch lengths to scale, root in the middle, tips round the edge.
     Circular,
+    /// Branch lengths to scale, no root: the equal-angle layout of an unrooted tree, branches leaving every node in a fan.
+    Radial,
 }
 
 #[derive(Clone, Debug)]
@@ -29,6 +31,17 @@ pub struct Placed {
     pub support: Option<f64>,
     /// Tips at or below this node.
     pub tips: usize,
+    /// Where the node is in the tree it was laid out from, counted in pre-order from the root as 0 (a clade that is collapsed counts all its nodes).
+    pub origin: usize,
+    /// Set for a node that stands for a clade collapsed into a triangle.
+    pub cartoon: Option<Cartoon>,
+}
+
+/// A collapsed clade: the triangle reaches `far` (a distance from the root, in the layout's units) and is `rows` rows tall.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Cartoon {
+    pub far: f32,
+    pub rows: f32,
 }
 
 impl Placed {
@@ -56,6 +69,8 @@ pub struct Laid {
     pub kind: Layout,
     /// Root first, then every node before its children (pre-order); children in the tree's order.
     pub nodes: Vec<Placed>,
+    /// The rows that the tips take together (a collapsed clade takes several): the angle of a circular layout is shared over them.
+    pub rows_total: f32,
 }
 
 fn finite(length: f64) -> f32 {
@@ -66,12 +81,43 @@ fn finite(length: f64) -> f32 {
     }
 }
 
+/// How many rows the triangle of a collapsed clade of `tips` tips stands for: more tips, a taller triangle, up to a limit.
+fn rows_for(tips: usize) -> f32 {
+    (tips as f32).sqrt().ceil().clamp(1.0, MOST_CARTOON_ROWS)
+}
+
+/// The most rows a collapsed clade takes.
+const MOST_CARTOON_ROWS: f32 = 8.0;
+
+fn node_count(root: &Node) -> usize {
+    let mut n = 0;
+    let mut stack = vec![root];
+    while let Some(node) = stack.pop() {
+        n += 1;
+        stack.extend(node.children.iter());
+    }
+    n
+}
+
 pub fn lay_out(root: &Node, kind: Layout) -> Laid {
+    lay_out_with(root, kind, &[])
+}
+
+/// `lay_out`, with the nodes whose `origin` (their place in the tree's pre-order) is in `collapsed` drawn as one triangle each instead of
+/// the clade below them (FigTree's cartoon). Such a node is a tip of the layout that stands for all the tips below it.
+pub fn lay_out_with(root: &Node, kind: Layout, collapsed: &[usize]) -> Laid {
     let mut nodes: Vec<Placed> = Vec::new();
     let mut lengths: Vec<f32> = Vec::new();
+    // for a collapsed node: the longest distance from it to a tip below
+    let mut deepest: Vec<f32> = Vec::new();
+    let mut folded: Vec<bool> = Vec::new();
+    let mut counter = 0usize;
     let mut stack: Vec<(&Node, Option<usize>)> = vec![(root, None)];
     while let Some((node, parent)) = stack.pop() {
         let i = nodes.len();
+        let origin = counter;
+        counter += 1;
+        let fold = !node.is_leaf() && collapsed.contains(&origin);
         nodes.push(Placed {
             x: 0.0,
             y: 0.0,
@@ -81,18 +127,34 @@ pub fn lay_out(root: &Node, kind: Layout) -> Laid {
             children: Vec::new(),
             name: node.name.clone(),
             support: node.support,
-            tips: 0,
+            tips: if fold { node.leaf_count() } else { 0 },
+            origin,
+            cartoon: None,
         });
         lengths.push(finite(node.length));
+        deepest.push(if fold {
+            finite(node.depth() - node.length)
+        } else {
+            0.0
+        });
+        folded.push(fold);
         if let Some(p) = parent {
             nodes[p].children.push(i);
         }
-        stack.extend(node.children.iter().rev().map(|c| (c, Some(i))));
+        if fold {
+            // the nodes below are not drawn, but they are counted, so that the numbers of the nodes after this one stay the tree's own
+            counter += node_count(node) - 1;
+        } else {
+            stack.extend(node.children.iter().rev().map(|c| (c, Some(i))));
+        }
     }
     let n = nodes.len();
     // children come after their parents, so going backwards sees every child first
     let mut height = vec![0usize; n];
     for i in (0..n).rev() {
+        if folded[i] {
+            continue;
+        }
         if nodes[i].children.is_empty() {
             nodes[i].tips = 1;
         } else {
@@ -113,12 +175,22 @@ pub fn lay_out(root: &Node, kind: Layout) -> Laid {
             _ => distance[parent] + lengths[i],
         };
     }
+    // the rows a tip takes: one, and for a collapsed clade as many as its triangle is tall
+    let weight: Vec<f32> = (0..n)
+        .map(|i| {
+            if folded[i] {
+                rows_for(nodes[i].tips)
+            } else {
+                1.0
+            }
+        })
+        .collect();
     let mut row = vec![0.0f32; n];
     let mut next = 0.0;
     for i in 0..n {
         if nodes[i].children.is_empty() {
-            row[i] = next;
-            next += 1.0;
+            row[i] = next + (weight[i] - 1.0) / 2.0;
+            next += weight[i];
         }
     }
     for i in (0..n).rev() {
@@ -130,9 +202,9 @@ pub fn lay_out(root: &Node, kind: Layout) -> Laid {
             row[i] = (lo + hi) / 2.0;
         }
     }
-    let tips = nodes.first().map_or(1, |r| r.tips).max(1) as f32;
+    let rows_total = next.max(1.0);
     for i in 0..n {
-        let turn = (row[i] + 0.5) / tips;
+        let turn = (row[i] + 0.5) / rows_total;
         let p = &mut nodes[i];
         p.radius = distance[i];
         p.angle = turn;
@@ -143,8 +215,64 @@ pub fn lay_out(root: &Node, kind: Layout) -> Laid {
             ),
             _ => (distance[i], row[i]),
         };
+        if folded[i] {
+            let far = if kind == Layout::Cladogram {
+                height[0] as f32
+            } else {
+                distance[i] + deepest[i]
+            };
+            p.cartoon = Some(Cartoon {
+                far,
+                rows: weight[i],
+            });
+        }
     }
-    Laid { kind, nodes }
+    if kind == Layout::Radial {
+        equal_angle(&mut nodes, &lengths, &weight);
+    }
+    Laid {
+        kind,
+        nodes,
+        rows_total,
+    }
+}
+
+/// The unrooted layout of Felsenstein's equal-angle method: every node's branch leaves its parent in the middle of a share of the full
+/// circle that is as large as the share of the tips that lie below the node; the root is at the centre.
+fn equal_angle(nodes: &mut [Placed], lengths: &[f32], weight: &[f32]) {
+    let n = nodes.len();
+    let mut below = vec![0.0f32; n];
+    for i in (0..n).rev() {
+        below[i] = if nodes[i].children.is_empty() {
+            weight[i]
+        } else {
+            nodes[i].children.iter().map(|&c| below[c]).sum()
+        };
+    }
+    // the wedge of each node as turns of a circle: where it starts and where it ends
+    let mut wedge = vec![(0.0f32, 1.0f32); n];
+    for i in 0..n {
+        let (start, end) = wedge[i];
+        let mut at = start;
+        for &c in &nodes[i].children.clone() {
+            let share = (end - start) * below[c] / below[i].max(f32::EPSILON);
+            wedge[c] = (at, at + share);
+            at += share;
+        }
+        let middle = (start + end) / 2.0;
+        nodes[i].angle = middle;
+        let (px, py) = nodes[i]
+            .parent
+            .map_or((0.0, 0.0), |p| (nodes[p].x, nodes[p].y));
+        (nodes[i].x, nodes[i].y) = if nodes[i].parent.is_none() {
+            (0.0, 0.0)
+        } else {
+            (
+                px + lengths[i] * (TAU * middle).cos(),
+                py + lengths[i] * (TAU * middle).sin(),
+            )
+        };
+    }
 }
 
 impl Laid {
@@ -185,6 +313,10 @@ impl Laid {
                 out.push((
                     i,
                     match self.kind {
+                        Layout::Radial => Piece::Line {
+                            from: (from.x, from.y),
+                            to: (node.x, node.y),
+                        },
                         Layout::Circular => Piece::Line {
                             from: (
                                 from.radius * (TAU * node.angle).cos(),
@@ -199,8 +331,9 @@ impl Laid {
                     },
                 ));
             }
-            if node.children.len() > 1
-                || (node.children.len() == 1 && self.kind != Layout::Circular)
+            if self.kind != Layout::Radial
+                && (node.children.len() > 1
+                    || (node.children.len() == 1 && self.kind != Layout::Circular))
             {
                 let first = &self.nodes[node.children[0]];
                 let last = &self.nodes[*node.children.last().unwrap_or(&node.children[0])];
@@ -225,13 +358,21 @@ impl Laid {
 
     /// The smallest and largest x and y of the drawing, labels not counted.
     pub fn extent(&self) -> ((f32, f32), (f32, f32)) {
-        let longest = self.nodes.iter().map(|n| n.radius).fold(0.0, f32::max);
+        let reach = |n: &Placed| n.cartoon.map_or(n.radius, |c| c.far.max(n.radius));
+        let longest = self.nodes.iter().map(reach).fold(0.0, f32::max);
         match self.kind {
             Layout::Circular => ((-longest, -longest), (longest, longest)),
-            _ => {
-                let rows = self.nodes.iter().map(|n| n.y).fold(0.0, f32::max);
-                ((0.0, 0.0), (longest, rows))
+            Layout::Radial => {
+                let (mut lo, mut hi) = ((0.0f32, 0.0f32), (0.0f32, 0.0f32));
+                for n in &self.nodes {
+                    let far = n.cartoon.map_or(0.0, |c| c.far - n.radius);
+                    let (dx, dy) = ((TAU * n.angle).cos() * far, (TAU * n.angle).sin() * far);
+                    lo = (lo.0.min(n.x + dx.min(0.0)), lo.1.min(n.y + dy.min(0.0)));
+                    hi = (hi.0.max(n.x + dx.max(0.0)), hi.1.max(n.y + dy.max(0.0)));
+                }
+                (lo, hi)
             }
+            _ => ((0.0, 0.0), (longest, (self.rows_total - 1.0).max(0.0))),
         }
     }
 
@@ -285,7 +426,9 @@ const FONT: f32 = 12.0;
 /// layouts that keep branch lengths a scale bar.
 pub fn to_svg(laid: &Laid, o: SvgOptions) -> String {
     let (min, max) = laid.extent();
-    let circular = laid.kind == Layout::Circular;
+    // the circular and the radial layout are drawn round a middle point, with one scale in both directions
+    let circular = matches!(laid.kind, Layout::Circular | Layout::Radial);
+    let centre = ((min.0 + max.0) / 2.0, (min.1 + max.1) / 2.0);
     let (width, height) = if circular {
         (CIRCLE_SIZE, CIRCLE_SIZE)
     } else {
@@ -295,7 +438,7 @@ pub fn to_svg(laid: &Laid, o: SvgOptions) -> String {
         )
     };
     let span = if circular {
-        (max.0 - min.0).max(f32::EPSILON)
+        (max.0 - min.0).max(max.1 - min.1).max(f32::EPSILON)
     } else {
         max.0.max(f32::EPSILON)
     };
@@ -306,7 +449,10 @@ pub fn to_svg(laid: &Laid, o: SvgOptions) -> String {
     };
     let at = |x: f32, y: f32| -> (f32, f32) {
         if circular {
-            (CIRCLE_SIZE / 2.0 + x * scale, CIRCLE_SIZE / 2.0 + y * scale)
+            (
+                CIRCLE_SIZE / 2.0 + (x - centre.0) * scale,
+                CIRCLE_SIZE / 2.0 + (y - centre.1) * scale,
+            )
         } else {
             (MARGIN + x * scale, MARGIN + ROW / 2.0 + y * ROW)
         }
@@ -361,7 +507,7 @@ pub fn to_svg(laid: &Laid, o: SvgOptions) -> String {
             ));
         }
     }
-    if o.scale_bar && !circular {
+    if o.scale_bar && laid.kind != Layout::Circular {
         let length = Laid::nice_length(max.0 * 0.25);
         if length > 0.0 {
             let (x1, y) = (MARGIN, height - 14.0);
@@ -377,6 +523,9 @@ pub fn to_svg(laid: &Laid, o: SvgOptions) -> String {
     svg.push_str("</g>\n</svg>\n");
     svg
 }
+
+#[cfg(test)]
+mod folded_tests;
 
 #[cfg(test)]
 mod tests {

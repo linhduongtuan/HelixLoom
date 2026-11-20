@@ -257,6 +257,7 @@ impl Unrooted {
             dist: 0.0,
             parent: None,
             children: Vec::new(),
+            attrs: Vec::new(),
         }];
         let edge = &self.edges[e];
         // (node, edge it hangs from, its parent in the new tree, length of that edge)
@@ -272,6 +273,7 @@ impl Unrooted {
                 dist,
                 parent: Some(parent),
                 children: Vec::new(),
+                attrs: Vec::new(),
             });
             nodes[parent].children.push(me);
             for &next in self.at[g].iter().rev().filter(|&&n| n != via) {

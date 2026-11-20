@@ -163,10 +163,14 @@ pub struct AlignmentPage {
     selected: Option<usize>,
     /// The viewer scrolls to the selected column when it is next drawn: the column was selected on another page.
     pub(in crate::ui) reveal: bool,
+    /// Stretches of columns marked for the oligos of a design (see `marks`): gone with the alignment they were made for.
+    marks: Vec<Mark>,
 }
 
 mod column;
 mod kept;
+mod marks;
+pub use marks::{Mark, Role};
 
 impl Default for AlignmentPage {
     fn default() -> Self {
@@ -188,6 +192,7 @@ impl Default for AlignmentPage {
             run_when_shown: false,
             selected: None,
             reveal: false,
+            marks: Vec::new(),
         }
     }
 }
@@ -343,6 +348,7 @@ impl AlignmentPage {
             // a report is of the alignment, not of what was clicked in it
             selected: None,
             reveal: false,
+            marks: &[],
         })
     }
 
@@ -353,6 +359,7 @@ impl AlignmentPage {
         let protein = alnstats::is_protein(&rows);
         // a column of the alignment that was here is not a column of this one
         (self.selected, self.reveal) = (None, false);
+        self.marks.clear();
         self.revision += 1;
         self.stats = Some(Stats {
             bars: Bars::new(&rows, &columns, protein, self.score),
@@ -427,6 +434,7 @@ struct Clicks {
     save_clustal: bool,
     copy: bool,
     to_phylogeny: bool,
+    primers: bool,
     remove: Option<usize>,
     /// The column that was clicked in the viewer.
     column: Option<usize>,
@@ -504,6 +512,12 @@ impl App {
                     ui.add_enabled_ui(have, |ui| {
                         c.to_phylogeny =
                             design::primary_button(ui, &look, "Estimate a tree").clicked();
+                        c.primers = ui
+                            .button("Pick primers and probes…")
+                            .on_hover_text(
+                                "Primers and a TaqMan probe from the columns the sequences share",
+                            )
+                            .clicked();
                         c.copy = ui.button("Copy FASTA").clicked();
                         c.save = ui.button("Save FASTA…").clicked();
                         c.save_clustal = ui.button("Save Clustal…").clicked();
@@ -611,6 +625,9 @@ impl App {
         }
         if c.to_phylogeny {
             out.push(Action::Go(Workspace::Phylogeny));
+        }
+        if c.primers {
+            out.push(Action::AlignmentPrimers);
         }
         if let Some(k) = c.column {
             // a click on the column that is selected lets it go
@@ -1022,6 +1039,7 @@ fn viewer_panel(
         scroll,
         selected: page.selected,
         reveal,
+        marks: &page.marks,
     };
     if let Some(format) = crate::ui::figure::wanted() {
         // what the window shows: the same room, scrolled to the same place

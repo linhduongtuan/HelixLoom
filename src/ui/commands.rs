@@ -437,6 +437,13 @@ const COMMANDS: &[Command] = &[
     ),
     c(
         "Analyse",
+        "Pick primers and probes from the alignment…",
+        "",
+        "primers probes taqman alignment conserved consensus design",
+        Action::AlignmentPrimers,
+    ),
+    c(
+        "Analyse",
         "Read quality and trimming…",
         "",
         "fastq reads clean",

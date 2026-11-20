@@ -12,6 +12,7 @@ use super::theme::{self, Palette};
 use super::toasts::Toasts;
 use super::tour::Tour;
 use super::tray::Tray;
+use super::windows::aln_primers::AlnPrimersWin;
 use super::windows::assembly::{AssemblyWin, Preset};
 use super::windows::calculator::CalculatorWin;
 use super::windows::digest::DigestWin;
@@ -174,6 +175,8 @@ pub enum Action {
     TreeTools,
     Workflow,
     Primer3,
+    /// Pick primers and probes from the alignment on the Alignment page.
+    AlignmentPrimers,
     Reads,
     About,
     /// Open or close the command palette.
@@ -250,6 +253,7 @@ pub struct App {
     pub workspace: Workspace,
     pub platform: Platform,
     pub p3_win: Primer3Win,
+    pub aln_win: AlnPrimersWin,
     pub update_win: UpdateWin,
     pub reads_win: ReadsWin,
     pub about_open: bool,
@@ -326,6 +330,7 @@ impl App {
             },
             platform: Platform::new(start.settings_dir.clone()),
             p3_win: Primer3Win::default(),
+            aln_win: AlnPrimersWin::default(),
             update_win: UpdateWin::default(),
             reads_win: ReadsWin::default(),
             about_open: false,
@@ -515,6 +520,7 @@ impl App {
             Action::TreeTools => self.treetools_win.open = true,
             Action::Workflow => self.workspace = Workspace::Pipelines,
             Action::Primer3 => self.p3_win.open = true,
+            Action::AlignmentPrimers => self.aln_win.open = true,
             Action::CheckForUpdates => self.update_win.open = true,
             Action::Reads => self.reads_win.open = true,
             Action::About => self.about_open = true,
@@ -930,6 +936,7 @@ impl App {
         self.tour_window(&ctx, &mut actions);
         self.treetools_window(&ctx);
         self.primer3_window(&ctx);
+        self.aln_primers_window(&ctx, &mut actions);
         self.update_window(&ctx);
         self.reads_window(&ctx);
         self.about_window(&ctx);

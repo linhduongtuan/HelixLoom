@@ -648,6 +648,28 @@ which needs the original's test data or its program: a download that waits for a
 **Not planned**: basecalling, Canu, Flye, Medaka, Racon, Pilon, SPAdes' own error correction and scaffolding, and anything that needs the
 GPL source. **Stage 1 (gffread) has not been run against `gffread`**: its examples folder is small, and fetching it needs a yes.
 
+### 2.8 Tree drawing and editing after FigTree and TreeGraph 2, and primers from an alignment (asked on 20 November 2026)
+
+The owner asked to improve the tree visualisation with what FigTree and TreeGraph 2 do, and for a button that picks primers and probes from
+an alignment. Both tree programs are GPL, so **no source was read**: two agents read their documentation, tutorials, change logs and the
+TreeGraph 2 paper and returned feature lists in their own words; the code was written from those lists (`docs/TREES.md`).
+
+* **Built, November 2026 (`docs/TREES.md`):** NEXUS files with `translate` tables and BEAST-style `[&key=value]` annotations (`seq::nexus`, and
+  the Newick reader keeps the annotations); the radial (equal-angle) layout; collapsing a clade to a triangle; colour, width, labels, shapes
+  and bars by annotations with a legend (`seq::treestyle`); an axis in distance, time before the tips or dates; highlight, find, rotate,
+  order, root on a branch, take out weak branches, rename tips, cut out a clade (`seq::treeedit`); support values from other trees: the
+  share of replicates with each branch, its strongest rival, or the value on the same branch of another tree.
+* **Built: primers and probes from an alignment (`docs/ALIGNMENT_PRIMERS.md`):** the button *Pick primers and probes…* on the Alignment
+  page; oligos only on columns that enough sequences share, each laid against every sequence, a ranking by the sequences covered, the oligos
+  marked on the alignment, the consensus opened with them as features, a table to copy or save.
+* **Not run against the originals:** FigTree and TreeGraph 2 were not run, so nothing says the drawing or the numbers are the same; the
+  rules the documentation leaves open (how a rooting shares a branch's length, how a missing branch is valued, how the radial layout
+  is drawn) are this program's choices and are said so in the text. **Not looked at on a screen by a person**: the tests draw the page
+  without a window and read its text and shapes.
+* **Not done:** see the end of `docs/TREES.md` (fish-eye zoom, polar controls, taxon colours in NEXUS, tip-annotation import with
+  ancestral states, pie charts, separate labels with their own formats, PhyloXML, NeXML, XTG, cut and paste of nodes, a command line) and
+  the limits of `docs/ALIGNMENT_PRIMERS.md` (no degenerate oligos, no genome check). The `helixloom` command line has nothing for either.
+
 ### 2.4 Trust
 * ★ **A benchmark page (M).** For every analysis, say how it was checked and how accurate it is (the golden tests already
   compare Tm, PCR, tree building, DSSP, ABIF reading and the calculators with the reference programs; show that to the user).

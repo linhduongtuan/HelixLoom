@@ -3,16 +3,26 @@
 //! from a Newick file or pasted.
 
 use super::route::Source;
-use super::treeview::{self, Camera, Options};
+use super::treeview::{self, Camera, Dress, Options};
 use super::Workspace;
 use crate::seq::newick::NwTree;
+use crate::seq::nexus;
 use crate::seq::tree::Node;
-use crate::seq::treelayout::{lay_out, to_svg, Laid, Layout, SvgOptions};
-use crate::seq::treetools;
+use crate::seq::treelayout::{lay_out_with, to_svg, Laid, Layout, SvgOptions};
+use crate::seq::treestyle::{decorate, Decor};
 use crate::ui::app::{Action, App};
 use crate::ui::design::{self, Look, Tone};
 use crate::ui::dialog::{self, Wanted};
 use eframe::egui::{self, RichText, ScrollArea, Ui};
+
+mod edits;
+mod looks;
+mod panels;
+#[cfg(test)]
+mod tests;
+
+pub(in crate::ui) use looks::Looks;
+use looks::{found_tips, laid_index, node_id, notes, tip_names_under, Annotated};
 
 const INFO_WIDTH: f32 = 260.0;
 /// The least width a tree is drawn in beside the card that says what it is.
@@ -30,6 +40,9 @@ pub struct TreesPage {
     pub(in crate::ui) selected: Option<usize>,
     paste: String,
     pub message: String,
+    /// The tree with its annotations, and how it is dressed and marked.
+    doc: Option<Annotated>,
+    pub(in crate::ui) looks: Looks,
 }
 
 impl TreesPage {
@@ -49,27 +62,55 @@ struct Clicks {
     ladderize: bool,
     save_svg: bool,
     save_newick: bool,
+    save_nexus: bool,
     copy: bool,
     fit: bool,
     to_phylogeny: bool,
-}
-
-/// Rebuild a tree with one of the tree tools, which work on Newick trees.
-fn through_tools(
-    tree: &Node,
-    tool: impl Fn(&NwTree) -> Result<NwTree, String>,
-) -> Result<Node, String> {
-    let parsed = NwTree::parse_all(&tree.newick())?.remove(0);
-    tool(&parsed).map(|t| t.to_node())
+    reroot: bool,
+    rotate: bool,
+    extract: bool,
+    order_up: bool,
+    order_down: bool,
+    weak: bool,
+    rename: bool,
+    support: bool,
+    /// Collapse or expand the picked clade.
+    fold: bool,
+    /// The palette colour (by its place) to highlight the picked clade with, and to take the highlight off.
+    colour: Option<usize>,
+    unmark: bool,
 }
 
 impl App {
     pub(super) fn trees_page(&mut self, ui: &mut Ui, out: &mut Vec<Action>) {
         let look = self.prefs.look();
+        self.sync_annotated();
         let tree = self.tree_win.tree.clone();
         let mut c = Clicks::default();
         let page = &mut self.platform.trees;
-        let laid = tree.as_ref().map(|t| lay_out(t, page.options.layout));
+        let laid = tree
+            .as_ref()
+            .map(|t| lay_out_with(t, page.options.layout, &page.looks.collapsed));
+        let decor = match (&laid, page.annotated()) {
+            (Some(laid), Some(nw)) => Some(decorate(nw, laid, &page.looks.style)),
+            _ => None,
+        };
+        let drawn = laid.as_ref().zip(page.annotated()).map(|(laid, nw)| Drawn {
+            notes: notes(nw, laid),
+            found: found_tips(laid, &page.looks.find),
+            highlights: page
+                .looks
+                .highlights
+                .iter()
+                .filter_map(|&(o, c)| Some((laid_index(laid, o)?, c)))
+                .collect(),
+        });
+        let keys = page.annotated().map(NwTree::attr_keys).unwrap_or_default();
+        let has_labels = page.annotated().is_some_and(|nw| {
+            nw.nodes
+                .iter()
+                .any(|n| !n.children.is_empty() && !n.name.is_empty())
+        });
         design::page(ui, |ui| {
             design::page_header(
                 ui,
@@ -80,6 +121,10 @@ impl App {
                     ui.add_enabled_ui(tree.is_some(), |ui| {
                         c.save_svg = design::primary_button(ui, &look, "Save SVG…").clicked();
                         c.save_newick = ui.button("Save Newick…").clicked();
+                        c.save_nexus = ui
+                            .button("Save NEXUS…")
+                            .on_hover_text("With the annotations of the nodes, as BEAST and FigTree write them")
+                            .clicked();
                         c.copy = ui.button("Copy Newick").clicked();
                         c.fit = ui.button("Fit to window").clicked();
                         crate::ui::figure::button(ui);
@@ -93,8 +138,16 @@ impl App {
                 - INFO_WIDTH
                 - 2.0 * f32::from(design::PAGE_MARGIN);
             let under_the_tree = for_the_tree < TREE_MIN_WIDTH;
+            let found = drawn.as_ref().map_or(0, |d| d.found.len());
             design::controls_panel(ui, &look, "trees_options", |ui| {
-                options_panel(ui, &look, page, tree.is_some(), &mut c)
+                options_panel(
+                    ui,
+                    &look,
+                    page,
+                    (&keys, has_labels, found),
+                    tree.is_some(),
+                    &mut c,
+                )
             });
             let apart = |left: i8, top: i8| {
                 egui::Frame::new().inner_margin(egui::Margin {
@@ -118,7 +171,7 @@ impl App {
                                 ScrollArea::vertical()
                                     .id_salt("trees_info_under_scroll")
                                     .auto_shrink([false, false])
-                                    .show(ui, |ui| info_panel(ui, &look, page, laid));
+                                    .show(ui, |ui| info_panel(ui, &look, page, laid, &mut c));
                             });
                         });
                 }
@@ -128,18 +181,38 @@ impl App {
                         .resizable(false)
                         .frame(apart(design::PAGE_MARGIN, 0))
                         .show(ui, |ui| {
-                            design::card(ui, &look, |ui| info_panel(ui, &look, page, laid));
+                            ScrollArea::vertical()
+                                .id_salt("trees_info_scroll")
+                                .auto_shrink([false, false])
+                                .show(ui, |ui| {
+                                    design::card(ui, &look, |ui| {
+                                        info_panel(ui, &look, page, laid, &mut c)
+                                    });
+                                });
                         });
                 }
                 None => {}
             }
-            design::results_area(ui, |ui| canvas(ui, &look, page, laid.as_ref(), &mut c));
+            design::results_area(ui, |ui| {
+                canvas(
+                    ui,
+                    &look,
+                    page,
+                    laid.as_ref(),
+                    (decor.as_ref(), drawn.as_ref()),
+                    &mut c,
+                )
+            });
         });
         self.apply_tree_clicks(c, ui.ctx(), out);
     }
 
     fn apply_tree_clicks(&mut self, c: Clicks, ctx: &egui::Context, out: &mut Vec<Action>) {
         if c.open {
+            self.open_tree_file();
+        }
+        if c.support {
+            self.platform.trees.looks.awaiting_support = true;
             self.open_tree_file();
         }
         if c.example {
@@ -150,44 +223,24 @@ impl App {
         }
         if c.draw_pasted {
             let text = std::mem::take(&mut self.platform.trees.paste);
-            match NwTree::parse_all(&text) {
-                Ok(mut trees) => {
+            match nexus::parse_any(&text) {
+                Ok(trees) => {
                     let n = trees.len();
-                    self.show_tree(
-                        trees.remove(0).to_node(),
-                        &format!("Drew the first of {n} pasted tree(s)."),
-                    );
+                    if self.platform.trees.looks.awaiting_support {
+                        self.add_support(&trees, "the pasted text");
+                    } else {
+                        self.show_annotated(
+                            trees,
+                            &format!("Drew the first of {n} pasted tree(s)."),
+                        );
+                    }
                 }
                 Err(e) => self.platform.trees.message = e,
             }
         }
+        self.apply_tree_edits(&c);
         let tree = self.tree_win.tree.clone();
         let Some(tree) = tree else { return };
-        if c.midpoint || c.ladderize {
-            let done = if c.midpoint {
-                through_tools(&tree, |t| {
-                    treetools::midpoint_root(t).map(|(rooted, _)| rooted)
-                })
-            } else {
-                through_tools(&tree, |t| Ok(treetools::ladderize(t)))
-            };
-            match done {
-                Ok(node) => {
-                    // rooted or ordered anew, it is no longer the tree that the estimation made: running that again would
-                    // not give it, so the Phylogeny page's record goes
-                    self.platform.phylogeny.made = None;
-                    self.tree_win.set_tree(Some(node));
-                    self.platform.trees.selected = None;
-                    self.platform.trees.message = if c.midpoint {
-                        "Rooted at the midpoint."
-                    } else {
-                        "Ladderized."
-                    }
-                    .into();
-                }
-                Err(e) => self.platform.trees.message = e,
-            }
-        }
         let page = &mut self.platform.trees;
         if c.fit {
             page.reset_view();
@@ -199,8 +252,14 @@ impl App {
         if c.save_newick {
             page.message = save_text("Save the tree", "tree.nwk", &tree.newick());
         }
+        if c.save_nexus {
+            if let Some(nw) = page.annotated() {
+                let text = nexus::write(nw, "tree", true);
+                page.message = save_text("Save the tree", "tree.nex", &text);
+            }
+        }
         if c.save_svg {
-            let laid = lay_out(&tree, page.options.layout);
+            let laid = lay_out_with(&tree, page.options.layout, &page.looks.collapsed);
             let o = SvgOptions {
                 labels: page.options.labels,
                 support: page.options.support,
@@ -231,28 +290,43 @@ impl App {
         }
     }
 
-    /// Read a Newick file and draw its first tree.
+    /// Read a Newick or NEXUS file and draw its first tree (or, when the page waits for the trees that give support, take the support
+    /// from them).
     pub(in crate::ui) fn load_tree(&mut self, file: Source) {
         let shown = file.shown();
         let text = match file.text() {
             Ok(t) => t,
             Err(e) => {
                 self.platform.trees.message = format!("Could not read {shown}: {e}");
+                self.platform.trees.looks.awaiting_support = false;
                 return;
             }
         };
-        match NwTree::parse_all(&text) {
-            Ok(mut trees) => {
+        match nexus::parse_any(&text) {
+            Ok(trees) if self.platform.trees.looks.awaiting_support => {
+                self.add_support(&trees, &shown)
+            }
+            Ok(trees) => {
                 let n = trees.len();
                 let note = format!(
                     "Opened {shown} ({n} tree{}; the first is drawn).",
                     if n == 1 { "" } else { "s" }
                 );
-                self.show_tree(trees.remove(0).to_node(), &note);
+                self.show_annotated(trees, &note);
             }
-            Err(e) => self.platform.trees.message = format!("{shown}: {e}"),
+            Err(e) => {
+                self.platform.trees.looks.awaiting_support = false;
+                self.platform.trees.message = format!("{shown}: {e}");
+            }
         }
     }
+}
+
+/// What the viewer needs besides the layout and the decoration, worked out for the frame.
+struct Drawn {
+    notes: Vec<String>,
+    found: Vec<usize>,
+    highlights: Vec<(usize, crate::seq::treestyle::Rgb)>,
 }
 
 /// Ask where to save `text` and write it; what to tell the person (nothing when they cancelled).
@@ -261,15 +335,23 @@ pub(in crate::ui) fn save_text(title: &str, name: &str, text: &str) -> String {
     dialog::save_bytes(ask, name, text.as_bytes()).map_or_else(String::new, |saved| saved.message)
 }
 
-fn options_panel(ui: &mut Ui, look: &Look, page: &mut TreesPage, have_tree: bool, c: &mut Clicks) {
+fn options_panel(
+    ui: &mut Ui,
+    look: &Look,
+    page: &mut TreesPage,
+    facts: (&[String], bool, usize),
+    have_tree: bool,
+    c: &mut Clicks,
+) {
+    let (keys, has_labels, found) = facts;
     design::section(ui, look, "Tree");
     ui.horizontal_wrapped(|ui| {
-        c.open = ui.button("Open Newick…").clicked();
+        c.open = ui.button("Open Newick or NEXUS…").clicked();
         c.example = ui.button("Example").clicked();
     });
     ui.add(
         egui::TextEdit::multiline(&mut page.paste)
-            .hint_text("Paste a Newick tree")
+            .hint_text("Paste a Newick or NEXUS tree")
             .font(egui::TextStyle::Monospace)
             .desired_rows(2)
             .desired_width(f32::INFINITY),
@@ -277,7 +359,11 @@ fn options_panel(ui: &mut Ui, look: &Look, page: &mut TreesPage, have_tree: bool
     c.draw_pasted = ui
         .add_enabled(
             !page.paste.trim().is_empty(),
-            egui::Button::new("Draw pasted tree"),
+            egui::Button::new(if page.looks.awaiting_support {
+                "Use the pasted trees"
+            } else {
+                "Draw pasted tree"
+            }),
         )
         .clicked();
     ui.add_enabled_ui(have_tree, |ui| {
@@ -301,6 +387,11 @@ fn options_panel(ui: &mut Ui, look: &Look, page: &mut TreesPage, have_tree: bool
         "Cladogram: branching only",
     );
     ui.radio_value(&mut o.layout, Layout::Circular, "Circular");
+    ui.radio_value(
+        &mut o.layout,
+        Layout::Radial,
+        "Radial: unrooted, branches in a fan",
+    );
 
     design::section(ui, look, "Show");
     ui.checkbox(&mut o.labels, "Tip names");
@@ -315,6 +406,13 @@ fn options_panel(ui: &mut Ui, look: &Look, page: &mut TreesPage, have_tree: bool
         );
     ui.add(egui::Slider::new(&mut o.font, 8.0..=22.0).text("Text"));
     ui.add(egui::Slider::new(&mut o.line, 0.8..=4.0).text("Lines"));
+    if have_tree {
+        panels::annotations(ui, look, page, keys, has_labels);
+        panels::axis(ui, look, page);
+        panels::find(ui, look, page, found);
+        panels::edit(ui, look, page, keys, has_labels, c);
+        panels::support(ui, look, page, c);
+    }
     ui.add_space(6.0);
     ui.label(
         RichText::new("Scroll to zoom, drag to move, click a node to pick its clade.")
@@ -327,7 +425,7 @@ fn options_panel(ui: &mut Ui, look: &Look, page: &mut TreesPage, have_tree: bool
     }
 }
 
-fn info_panel(ui: &mut Ui, look: &Look, page: &mut TreesPage, laid: &Laid) {
+fn info_panel(ui: &mut Ui, look: &Look, page: &mut TreesPage, laid: &Laid, c: &mut Clicks) {
     let root = &laid.nodes[0];
     design::section(ui, look, "This tree");
     ui.horizontal_wrapped(|ui| {
@@ -362,41 +460,53 @@ fn info_panel(ui: &mut Ui, look: &Look, page: &mut TreesPage, laid: &Laid) {
         return;
     };
     let node = &laid.nodes[i];
-    let tips = laid.tips_under(i);
+    // the names come from the tree itself: a collapsed clade is one node of the layout, and its tips are all there
+    let names: Vec<String> = page
+        .annotated()
+        .and_then(|nw| node_id(nw, laid, i).map(|id| tip_names_under(nw, id)))
+        .unwrap_or_else(|| {
+            laid.tips_under(i)
+                .iter()
+                .map(|&t| laid.nodes[t].name.clone())
+                .collect()
+        });
     ui.horizontal_wrapped(|ui| {
-        design::chip(ui, look, &format!("{} tips", tips.len()), Tone::Accent);
+        design::chip(ui, look, &format!("{} tips", names.len()), Tone::Accent);
         if let Some(s) = node.support {
             design::chip(ui, look, &format!("support {s:.0}"), Tone::Good);
         }
     });
+    panels::picked(ui, look, page, c, node.cartoon.is_some(), i != 0);
     ScrollArea::vertical()
         .max_height(NAMES_HEIGHT)
         .auto_shrink([false, true])
         .show(ui, |ui| {
-            for &t in &tips {
-                ui.label(
-                    RichText::new(&laid.nodes[t].name)
-                        .size(12.5)
-                        .color(look.text),
-                );
+            for name in &names {
+                ui.label(RichText::new(name).size(12.5).color(look.text));
             }
         });
     if ui.button("Copy these names").clicked() {
-        let names: Vec<&str> = tips.iter().map(|&t| laid.nodes[t].name.as_str()).collect();
         ui.ctx().copy_text(names.join("\n"));
         page.message = format!("Copied {} names.", names.len());
     }
 }
 
-fn canvas(ui: &mut Ui, look: &Look, page: &mut TreesPage, laid: Option<&Laid>, c: &mut Clicks) {
+fn canvas(
+    ui: &mut Ui,
+    look: &Look,
+    page: &mut TreesPage,
+    laid: Option<&Laid>,
+    dressed: (Option<&Decor>, Option<&Drawn>),
+    c: &mut Clicks,
+) {
     let Some(laid) = laid else {
         let pick = design::empty_state(
             ui,
             look,
             "No tree yet",
-            "Open a Newick file, paste a tree on the left, or try the example. A tree estimated on the Phylogeny \
+            "Open a Newick or NEXUS file, paste a tree on the left, or try the example. A tree estimated on the Phylogeny \
              page shows up here too.",
-            &["Open Newick…", "Try the example"],
+            &["Open Newick or NEXUS…", "Try the example"],
         );
         match pick {
             Some(0) => c.open = true,
@@ -405,15 +515,39 @@ fn canvas(ui: &mut Ui, look: &Look, page: &mut TreesPage, laid: Option<&Laid>, c
         }
         return;
     };
+    let (decor, drawn) = dressed;
+    let empty = Drawn {
+        notes: Vec::new(),
+        found: Vec::new(),
+        highlights: Vec::new(),
+    };
+    let drawn = drawn.unwrap_or(&empty);
+    let dress = Dress {
+        decor,
+        highlights: &drawn.highlights,
+        found: &drawn.found,
+        axis: page.looks.axis_on.then_some(page.looks.axis),
+        notes: &drawn.notes,
+        tip_colours: page.looks.tip_colours,
+    };
     if let Some(format) = crate::ui::figure::wanted() {
         // what the window shows: the same room, zoomed and moved as it is, with what is picked
         let (options, mut camera, mut selected) = (page.options, page.camera, page.selected);
         page.message = crate::ui::figure::save(format, "tree", ui.available_size(), |ui| {
-            treeview::show(ui, look, laid, &options, &mut camera, &mut selected, false);
+            treeview::show_dressed(
+                ui,
+                look,
+                laid,
+                &options,
+                &dress,
+                &mut camera,
+                &mut selected,
+                false,
+            );
         });
     }
     design::view_frame(ui, look, |ui| {
         let (options, camera, selected) = (page.options, &mut page.camera, &mut page.selected);
-        treeview::show(ui, look, laid, &options, camera, selected, true);
+        treeview::show_dressed(ui, look, laid, &options, &dress, camera, selected, true);
     });
 }

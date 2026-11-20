@@ -139,6 +139,126 @@ pub const CHECKS: &[Check] = &[
         ],
     },
     Check {
+        group: ALIGNMENT,
+        analysis: "Primers and probes picked from an alignment",
+        standard: Standard::Known,
+        against: "Alignments made by hand from a template of 1,000 bases that primer3's own tests use: rows that agree everywhere (the pairs must be the ones primer3's rules give for the sequence, with the same penalties), one row with one changed base (no oligo may lie on that column, and the longest run of usable columns is counted), a lower share of agreeing rows (the oligo that lies on the variable column is counted as fitting 4 of 5 rows exactly and all 5 with a mismatch), a mismatch placed at each of the last five bases of a primer's 3' end, for the left and the right primer, and in a probe (not tolerated in a primer, tolerated in a probe), gaps counted as mismatches, a majority of gaps that leaves a column out of the consensus, a gap inside the amplicon (the product is 3 bases shorter in that row), positions counted in the first row's own bases, RNA and lower case, a region, and rows that share nothing.",
+        result: "The pairs, penalties, counts, sizes, positions and messages are those worked out by hand; every oligo is the consensus or its reverse complement as it is ordered; the table has one line to an oligo.",
+        limits: "Not compared with another program that designs primers from an alignment: none was run. The melting temperature and the penalties are primer3's for the consensus oligo, not for the oligo with the mismatches of a row; the number of rows that an oligo fits is a count of mismatches, not a prediction of whether it primes. No degenerate (IUPAC) oligos, and nothing is checked against a genome for other binding sites. The windows are looked at as text and shapes by the tests, not by a person.",
+        tests: &[
+            (
+                "src/seq/alnprimers/tests.rs",
+                "rows_that_agree_everywhere_give_the_pairs_primer3_gives_for_the_sequence",
+            ),
+            (
+                "src/seq/alnprimers/tests.rs",
+                "a_column_where_the_rows_differ_is_in_no_oligo_when_all_must_agree",
+            ),
+            (
+                "src/seq/alnprimers/tests.rs",
+                "a_mismatch_in_the_last_five_bases_of_a_primer_is_not_tolerated_but_one_in_a_probe_is",
+            ),
+            (
+                "src/seq/alnprimers/tests.rs",
+                "the_product_is_counted_in_the_bases_of_each_row",
+            ),
+            (
+                "src/seq/alnprimers/tests.rs",
+                "a_probe_lies_between_the_primers_and_on_columns_all_the_rows_share",
+            ),
+            (
+                "src/ui/windows/aln_primers_tests.rs",
+                "the_consensus_opens_with_the_primers_as_features_in_the_right_places",
+            ),
+        ],
+    },
+    Check {
+        group: TREES,
+        analysis: "Tree files with annotations (NEXUS, BEAST and FigTree notes)",
+        standard: Standard::Known,
+        against: "Files written by hand in the way BEAST's TreeAnnotator, MrBayes and FigTree write them: a translate table with quoted names, comments before statements, a semicolon inside a quoted name, case-insensitive block names, `[&posterior=0.98,height_95%_HPD={0.5,1.5},note=\"a, b\"]` after a node, after a tip and after the closing bracket, `[&R]` and NHX comments that are no annotation.",
+        result: "Every name, branch length, annotation and range is as written; a tree written with its annotations reads back equal; a file with no trees block or no tree statement is refused with a reason.",
+        limits: "Not compared with FigTree or TreeAnnotator on real files: neither was run. Annotations of a taxon block (colours of taxa) and FigTree's own `figtree` block are not read; NHX is read as a comment. Annotations are kept for the session, not in the session's saved results.",
+        tests: &[
+            (
+                "src/seq/newick.rs",
+                "annotations_in_square_brackets_belong_to_the_node_before_them",
+            ),
+            (
+                "src/seq/newick.rs",
+                "a_tree_written_with_its_annotations_reads_back_the_same",
+            ),
+            (
+                "src/seq/nexus/tests.rs",
+                "trees_are_read_with_their_names_translated_tip_names_and_annotations",
+            ),
+            (
+                "src/seq/nexus/tests.rs",
+                "case_comments_quotes_and_a_semicolon_in_a_name_do_not_confuse_the_reader",
+            ),
+        ],
+    },
+    Check {
+        group: TREES,
+        analysis: "Editing a tree (root here, rotate, order, collapse weak branches) and support from other trees",
+        standard: Standard::Known,
+        against: "Trees of six tips whose branches carry lengths and a posterior: after rooting on the branch above every kind of node (tip, inner node, child of a root that has two or three children) the set of branches seen from outside, their lengths added up where the old root joined two, and their values must equal the original's; replicates built by hand for which the share of trees with each branch and with its strongest rival is counted on paper; the value on the same branch of a tree that is rooted elsewhere.",
+        result: "The branches, their total lengths and values are equal before and after an edit; the shares are 0.75, 0.5 and 0.75 with rivals at 0.25; the root's place does not change what is counted.",
+        limits: "Not compared with TreeGraph 2 or FigTree on the same trees: neither was run, and their documentation does not state every rule (how a rooting inside a branch shares its length, how a missing branch is valued), so these are this program's choices, stated in the code. Branches are matched on the tips that every tree has (at least four). A conflict is searched among the 5,000 branches that most of the other trees have. Rooting at the midpoint keeps node labels but not other annotations.",
+        tests: &[
+            (
+                "src/seq/treeedit/tests.rs",
+                "rooting_on_a_branch_keeps_every_branch_with_its_length_and_value",
+            ),
+            (
+                "src/seq/treeedit/tests.rs",
+                "branches_below_a_value_are_collapsed_into_their_parent",
+            ),
+            (
+                "src/seq/treeedit/tests.rs",
+                "how_often_a_branch_is_among_the_replicates_and_how_often_a_rival_is",
+            ),
+            (
+                "src/seq/treeedit/tests.rs",
+                "the_value_on_the_same_branch_of_another_tree_is_found_wherever_it_is_rooted",
+            ),
+        ],
+    },
+    Check {
+        group: TREES,
+        analysis: "Drawing trees: radial layout, collapsed clades, annotation colours, axis",
+        standard: Standard::Known,
+        against: "Layouts worked out by hand on small trees (a branch is as long on the page as its length in the radial layout; four equal tips sit at 45, 135, 225 and 315 degrees; a clade of three tips takes three times the wedge of one), the rows and the numbers of the nodes after a collapsed clade, the gradient at its ends and middle, the tick numbers of an axis from the root, from the tips and in dates, and the page drawn without a window and read as its text.",
+        result: "The numbers are those worked out; every layout draws every tip name; a collapsed clade is one triangle that says its tips; a picked clade still lists the names of all its tips; the legend and the dates are on the page.",
+        limits: "Looked at by the tests as text and shapes, not by a person, on a screen. The radial layout is the equal-angle method as the literature describes it, not compared with FigTree's drawing. No fish-eye zoom, no polar root angle, no pie charts or text brackets of TreeGraph 2, and the node bars assume the range is a height before the tips.",
+        tests: &[
+            (
+                "src/seq/treelayout/folded_tests.rs",
+                "the_radial_layout_puts_the_root_in_the_middle_and_every_branch_its_own_length_long",
+            ),
+            (
+                "src/seq/treelayout/folded_tests.rs",
+                "a_collapsed_clade_is_one_tip_that_stands_for_all_of_its_tips",
+            ),
+            (
+                "src/seq/treestyle/tests.rs",
+                "a_number_gets_a_colour_from_the_gradient_by_its_place_between_the_least_and_the_greatest",
+            ),
+            (
+                "src/seq/treestyle/tests.rs",
+                "ticks_are_at_round_numbers_in_the_range_of_the_axis_and_written_with_the_decimals_they_need",
+            ),
+            (
+                "src/ui/platform/trees/tests.rs",
+                "every_layout_draws_every_tip_name",
+            ),
+            (
+                "src/ui/platform/trees/tests.rs",
+                "the_names_of_a_collapsed_clade_are_still_those_of_its_tips",
+            ),
+        ],
+    },
+    Check {
         group: CLONING,
         analysis: "PCR (primer sites and products)",
         standard: Standard::Reference,

@@ -1,6 +1,7 @@
 //! The alignment viewer: names kept at the left and a ruler, conservation bars and the consensus kept at the
 //! top while the letters scroll, with only the visible part painted so a long alignment stays quick.
 
+use super::alignment::Mark;
 use crate::seq::alnstats::Column;
 use crate::ui::design::{self, Look};
 use eframe::egui::{
@@ -44,6 +45,8 @@ pub struct View<'a> {
     pub selected: Option<usize>,
     /// Scroll so that the selected column is in the middle: it was selected somewhere else, and may be out of view.
     pub reveal: bool,
+    /// Stretches of columns to mark (the oligos of a design).
+    pub marks: &'a [Mark],
 }
 
 fn scroll_id() -> eframe::egui::Id {
@@ -222,6 +225,21 @@ pub fn show(ui: &mut Ui, v: &View) -> Option<usize> {
             );
         }
 
+        // the stretches marked for oligos, outlined over all the rows
+        for m in v.marks.iter().filter(|m| m.last < width) {
+            let x1 = NAME_WIDTH + m.first as f32 * cell;
+            let x2 = NAME_WIDTH + (m.last + 1) as f32 * cell;
+            p.rect_stroke(
+                Rect::from_min_max(
+                    at(x1, HEADER_HEIGHT),
+                    at(x2, HEADER_HEIGHT + n as f32 * ROW_HEIGHT),
+                ),
+                0.0,
+                Stroke::new(SELECTED_LINE, m.role.colour(look)),
+                StrokeKind::Inside,
+            );
+        }
+
         // the names stay at the left
         let left = view.min.x;
         let names_area =
@@ -320,6 +338,19 @@ pub fn show(ui: &mut Ui, v: &View) -> Option<usize> {
                 char::from(column.consensus).to_string(),
                 font.clone(),
                 look.dim,
+            );
+        }
+        // a bar for each marked stretch in the spare room at the foot of the header
+        for m in v.marks.iter().filter(|m| m.last < width) {
+            let x1 = NAME_WIDTH + m.first as f32 * cell;
+            let x2 = NAME_WIDTH + (m.last + 1) as f32 * cell;
+            p.rect_filled(
+                Rect::from_min_max(
+                    at(x1, top + HEADER_HEIGHT - 5.0),
+                    at(x2, top + HEADER_HEIGHT - 1.0),
+                ),
+                1.0,
+                m.role.colour(look),
             );
         }
         // the corner above the names

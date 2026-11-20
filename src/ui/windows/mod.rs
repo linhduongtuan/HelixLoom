@@ -1,4 +1,7 @@
 //! Floating tool windows and the assembler tab. Each file adds an `impl App` block for one tool.
+pub mod aln_primers;
+#[cfg(test)]
+mod aln_primers_tests;
 pub mod assembly;
 pub mod calculator;
 pub mod contig_view;

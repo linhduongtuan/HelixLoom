@@ -39,7 +39,7 @@ fn a_page_with_nothing_to_show_offers_the_buttons_that_get_it_started() {
         ),
         (
             Workspace::Trees,
-            &[("Open Newick…", 2), ("Try the example", 1)][..],
+            &[("Open Newick or NEXUS…", 2), ("Try the example", 1)][..],
         ),
         (
             Workspace::Structure,

@@ -11,6 +11,9 @@ pub struct NwNode {
     pub dist: f64,
     pub parent: Option<usize>,
     pub children: Vec<usize>,
+    /// What the file says in `[&key=value,...]` after the node (the way BEAST's TreeAnnotator and FigTree write it): the keys as
+    /// written and the values as written, a list in braces (`{1.2,3.4}`) still a list.
+    pub attrs: Vec<(String, String)>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -33,6 +36,36 @@ struct Reader<'a> {
     nodes: Vec<NwNode>,
     /// How deep the node being read lies.
     depth: usize,
+    /// The node that a `[&...]` comment read now belongs to: the one being read, or the last one that was finished.
+    current: usize,
+}
+
+/// The `key=value` pairs of a comment that begins with `&` (`&posterior=0.98,height_95%_HPD={1.2,3.4},!color=#ff0000`), cut at the commas that
+/// are neither inside braces nor inside quotes. Anything else (an ordinary comment, `&R`, `&U`, NHX's `&&NHX:`) has none.
+fn annotations(comment: &str) -> Vec<(String, String)> {
+    let Some(body) = comment.strip_prefix('&').filter(|b| !b.starts_with('&')) else {
+        return Vec::new();
+    };
+    let (mut parts, mut depth, mut quoted, mut from) = (Vec::new(), 0i32, false, 0);
+    for (i, c) in body.char_indices() {
+        match c {
+            '"' => quoted = !quoted,
+            '{' if !quoted => depth += 1,
+            '}' if !quoted => depth -= 1,
+            ',' if !quoted && depth <= 0 => {
+                parts.push(&body[from..i]);
+                from = i + 1;
+            }
+            _ => {}
+        }
+    }
+    parts.push(&body[from..]);
+    parts
+        .into_iter()
+        .filter_map(|p| p.split_once('='))
+        .map(|(k, v)| (k.trim().to_string(), v.trim().trim_matches('"').to_string()))
+        .filter(|(k, _)| !k.is_empty())
+        .collect()
 }
 
 impl Reader<'_> {
@@ -42,8 +75,21 @@ impl Reader<'_> {
                 Some(c) if c.is_ascii_whitespace() => self.pos += 1,
                 // comments and NHX annotations in square brackets
                 Some(b'[') => {
-                    while self.text.get(self.pos).is_some_and(|&c| c != b']') {
+                    let start = self.pos + 1;
+                    let mut quoted = false;
+                    while let Some(&c) = self.text.get(self.pos) {
+                        if c == b'"' {
+                            quoted = !quoted;
+                        }
+                        if c == b']' && !quoted {
+                            break;
+                        }
                         self.pos += 1;
+                    }
+                    let inside = String::from_utf8_lossy(&self.text[start.min(self.pos)..self.pos])
+                        .into_owned();
+                    if let Some(node) = self.nodes.get_mut(self.current) {
+                        node.attrs.extend(annotations(&inside));
                     }
                     // a comment that is never closed runs to the end of the text
                     self.pos = (self.pos + 1).min(self.text.len());
@@ -111,7 +157,9 @@ impl Reader<'_> {
             dist: f64::NAN,
             parent,
             children: Vec::new(),
+            attrs: Vec::new(),
         });
+        self.current = me;
         if self.peek() == Some(b'(') {
             self.pos += 1;
             loop {
@@ -131,6 +179,8 @@ impl Reader<'_> {
                     }
                 }
             }
+            // a comment after the closing bracket is this node's, not its last child's
+            self.current = me;
         }
         let name = self.label();
         self.nodes[me].name = name;
@@ -176,10 +226,12 @@ impl NwTree {
             pos: 0,
             nodes: Vec::new(),
             depth: 0,
+            current: usize::MAX,
         };
         let mut trees = Vec::new();
         while reader.peek().is_some() {
             reader.nodes.clear();
+            reader.current = usize::MAX;
             let root = reader.node(None)?;
             if reader.peek() == Some(b';') {
                 reader.pos += 1;
@@ -256,16 +308,84 @@ impl NwTree {
     /// Newick text with a closing `;` and no length on the root. Characters Newick uses are
     /// replaced by `_` in names.
     pub fn newick(&self) -> String {
-        format!("{};", self.write(self.root, false))
+        format!("{};", self.write(self.root, false, false))
     }
 
-    fn write(&self, i: usize, with_length: bool) -> String {
+    /// `newick`, with each node's annotations written after its name as `[&key=value,...]`, where BEAST and FigTree put them.
+    pub fn newick_annotated(&self) -> String {
+        format!("{};", self.write(self.root, false, true))
+    }
+
+    /// The node `i`'s annotation `key`, as written.
+    pub fn attr(&self, i: usize, key: &str) -> Option<&str> {
+        self.nodes[i]
+            .attrs
+            .iter()
+            .find(|(k, _)| k == key)
+            .map(|(_, v)| v.as_str())
+    }
+
+    /// The annotation as a number (a value that is not one, or a list, is none).
+    pub fn attr_number(&self, i: usize, key: &str) -> Option<f64> {
+        self.attr(i, key)?
+            .parse()
+            .ok()
+            .filter(|v: &f64| v.is_finite())
+    }
+
+    /// The annotation as a range: a list of two numbers in braces (`{1.2,3.4}`, as `height_95%_HPD` is written), the least first.
+    pub fn attr_range(&self, i: usize, key: &str) -> Option<(f64, f64)> {
+        let inside = self.attr(i, key)?.strip_prefix('{')?.strip_suffix('}')?;
+        let (a, b) = inside.split_once(',')?;
+        let (a, b) = (a.trim().parse::<f64>().ok()?, b.trim().parse::<f64>().ok()?);
+        (a.is_finite() && b.is_finite()).then_some((a.min(b), a.max(b)))
+    }
+
+    /// The keys that some node has, in the order of the nodes (a parent before its children) in which they were first met.
+    pub fn attr_keys(&self) -> Vec<String> {
+        let mut keys: Vec<String> = Vec::new();
+        for n in &self.nodes {
+            for (k, _) in &n.attrs {
+                if !keys.contains(k) {
+                    keys.push(k.clone());
+                }
+            }
+        }
+        keys
+    }
+
+    /// The nodes root first, then every node before its children, children in order: the order that `treelayout` numbers them in.
+    pub fn preorder(&self) -> Vec<usize> {
+        let mut out = Vec::with_capacity(self.nodes.len());
+        let mut stack = vec![self.root];
+        while let Some(i) = stack.pop() {
+            out.push(i);
+            stack.extend(self.nodes[i].children.iter().rev());
+        }
+        out
+    }
+
+    fn write(&self, i: usize, with_length: bool, annotated: bool) -> String {
         let n = &self.nodes[i];
         let inside = if n.children.is_empty() {
             String::new()
         } else {
-            let kids: Vec<String> = n.children.iter().map(|&c| self.write(c, true)).collect();
+            let kids: Vec<String> = n
+                .children
+                .iter()
+                .map(|&c| self.write(c, true, annotated))
+                .collect();
             format!("({})", kids.join(","))
+        };
+        let notes = if annotated && !n.attrs.is_empty() {
+            let pairs: Vec<String> = n
+                .attrs
+                .iter()
+                .map(|(k, v)| format!("{k}={}", written(v)))
+                .collect();
+            format!("[&{}]", pairs.join(","))
+        } else {
+            String::new()
         };
         let name: String = n
             .name
@@ -279,10 +399,24 @@ impl NwTree {
             })
             .collect();
         if with_length {
-            format!("{inside}{name}:{}", number(n.dist))
+            format!("{inside}{name}{notes}:{}", number(n.dist))
         } else {
-            format!("{inside}{name}")
+            format!("{inside}{name}{notes}")
         }
+    }
+}
+
+/// An annotation's value as it is written: text with a comma, a space or a bracket in it is quoted, a list or a number is not.
+fn written(value: &str) -> String {
+    let plain = value.starts_with('{')
+        || value.parse::<f64>().is_ok()
+        || value
+            .chars()
+            .all(|c| c.is_ascii_alphanumeric() || "_.-%#".contains(c));
+    if plain {
+        value.to_string()
+    } else {
+        format!("\"{}\"", value.replace('"', "'"))
     }
 }
 
@@ -360,6 +494,65 @@ mod tests {
             .map(|&i| t.nodes[i].name.as_str())
             .collect();
         assert_eq!(post, ["A", "B c", "90", "C", ""]);
+    }
+
+    #[test]
+    fn annotations_in_square_brackets_belong_to_the_node_before_them() {
+        let text = "((A[&rate=1.5]:1,B:2)[&posterior=0.98,height_95%_HPD={0.5,1.5},!color=#ff0000,note=\"a, b\"]:3,C:4)[&R];";
+        let t = &NwTree::parse_all(text).unwrap()[0];
+        let by = |name: &str| t.nodes.iter().position(|n| n.name == name).unwrap();
+        assert_eq!(t.attr(by("A"), "rate"), Some("1.5"));
+        assert!(t.nodes[by("B")].attrs.is_empty() && t.nodes[by("C")].attrs.is_empty());
+        let inner = t.nodes[by("A")].parent.unwrap();
+        assert_eq!(t.attr_number(inner, "posterior"), Some(0.98));
+        assert_eq!(t.attr_range(inner, "height_95%_HPD"), Some((0.5, 1.5)));
+        assert_eq!(t.attr(inner, "!color"), Some("#ff0000"));
+        // a comma inside quotes does not cut the value
+        assert_eq!(t.attr(inner, "note"), Some("a, b"));
+        // `[&R]` marks the tree as rooted and is no annotation
+        assert!(t.nodes[t.root].attrs.is_empty());
+        assert_eq!(t.attr_number(inner, "note"), None);
+        assert_eq!(t.attr_range(inner, "posterior"), None);
+        assert_eq!(
+            t.attr_keys(),
+            ["posterior", "height_95%_HPD", "!color", "note", "rate"]
+        );
+        // other comments, and NHX's, are not annotations
+        let plain = &NwTree::parse_all("(A[just a comment]:1,B[&&NHX:S=x]:1);").unwrap()[0];
+        assert!(plain.nodes.iter().all(|n| n.attrs.is_empty()));
+    }
+
+    #[test]
+    fn a_range_written_the_wrong_way_round_is_put_right_and_what_is_not_a_range_is_none() {
+        let t = &NwTree::parse_all("(A[&r={3,1},s={1},t={1,x},u=1,v={1,2,3},w={1e400,2}]:1,B:1);")
+            .unwrap()[0];
+        let a = t.nodes.iter().position(|n| n.name == "A").unwrap();
+        assert_eq!(t.attr_range(a, "r"), Some((1.0, 3.0)));
+        for key in ["s", "t", "u", "v", "w", "missing"] {
+            assert_eq!(t.attr_range(a, key), None, "{key}");
+        }
+    }
+
+    #[test]
+    fn a_tree_written_with_its_annotations_reads_back_the_same() {
+        let text =
+            "((A[&rate=1.5]:1,B:2)[&posterior=0.98,height_95%_HPD={0.5,1.5},note=\"a, b\"]:3,C:4);";
+        let t = &NwTree::parse_all(text).unwrap()[0];
+        let again = &NwTree::parse_all(&t.newick_annotated()).unwrap()[0];
+        assert_eq!(again, t);
+        // the plain writer leaves them out
+        assert!(!t.newick().contains('['));
+    }
+
+    #[test]
+    fn the_order_of_the_nodes_is_the_one_the_layout_numbers_them_in() {
+        let t = &NwTree::parse_all("((A,B)x,(C,D)y)z;").unwrap()[0];
+        let names: Vec<&str> = t
+            .preorder()
+            .iter()
+            .map(|&i| t.nodes[i].name.as_str())
+            .collect();
+        assert_eq!(names, ["z", "x", "A", "B", "y", "C", "D"]);
     }
 
     #[test]
