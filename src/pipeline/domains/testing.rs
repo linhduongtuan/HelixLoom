@@ -30,6 +30,7 @@ pub(crate) fn pressed_db(folder: &Folder) -> PathBuf {
 }
 
 /// A table in the format of the HMMER 3.4 User's Guide, made by hand, for the sequences `q1` (60 residues) and `q2` (30).
+#[cfg(unix)]
 pub(crate) const TABLE: &str = "\
 # target name accession tlen query name accession qlen E-value score bias # of c-Evalue i-Evalue score bias from to from to from to acc description of target
 Pkinase PF00069.30 264 q1 - 60 1e-20 70.0 0.1 1 1 1e-17 2e-17 60.0 0.0 1 264 5 55 3 58 0.97 Protein kinase domain

@@ -464,31 +464,27 @@ fn the_first_conversion_of_the_window_is_one_milligram_and_one_micromole() {
 
 const CALC: &str = include_str!("golden/calc.txt");
 
-/// Whether two written numbers are at most `ulps` units of the last place apart.
-fn within_ulps(a: &str, b: &str, ulps: u32) -> bool {
+/// The relative difference that another system's maths library may make in a result: one unit in the last place of `tanh` or `hypot`,
+/// carried through a power of a large number (`2.11e+4**hypot(.16,59.70)` is 1e-260, and its exponent's last digit is 14 digits in).
+const OTHER_LIBRARY: f64 = 1e-11;
+
+/// Whether two written numbers agree to within `OTHER_LIBRARY`.
+fn close(a: &str, b: &str) -> bool {
     match (a.parse::<f64>(), b.parse::<f64>()) {
-        (Ok(a), Ok(b)) => (a - b).abs() <= f64::from(ulps) * f64::EPSILON * a.abs().max(b.abs()),
+        (Ok(a), Ok(b)) => (a - b).abs() <= OTHER_LIBRARY * a.abs().max(b.abs()),
         _ => false,
     }
 }
 
 #[test]
-fn numbers_one_place_apart_in_the_last_digit_are_close_and_others_are_not() {
-    // what a Linux runner gave for `tanh(1.13e-3)`, and what the original gave on a Mac
-    assert!(within_ulps(
-        "0.0011299995190345788",
-        "0.001129999519034579",
-        4
-    ));
-    assert!(within_ulps(
-        "0.001129999519034579",
-        "0.0011299995190345788",
-        4
-    ));
-    assert!(!within_ulps("0.0011299995190345788", "0.00113", 4));
-    assert!(!within_ulps("1.0000000000000004", "1", 1));
-    assert!(within_ulps("1.0000000000000004", "1", 2));
-    assert!(!within_ulps("abc", "1", 4) && !within_ulps("1", "", 4));
+fn numbers_that_differ_in_the_last_digits_are_close_and_others_are_not() {
+    // what a Linux runner gave, and what the original gave on a Mac
+    assert!(close("0.0011299995190345788", "0.001129999519034579"));
+    assert!(close("2.6944794647238497e-260", "2.6944794647240403e-260"));
+    assert!(close("2.6944794647240403e-260", "2.6944794647238497e-260"));
+    assert!(!close("0.0011299995190345788", "0.00113"));
+    assert!(!close("1.00000001", "1"));
+    assert!(!close("abc", "1") && !close("1", ""));
 }
 
 #[test]
@@ -521,7 +517,7 @@ fn lines_of_arithmetic_equal_what_the_original_gives() {
             assert_eq!(got, want, "{text:?}");
         } else {
             assert!(
-                got == want || within_ulps(&got, want, 4),
+                got == want || close(&got, want),
                 "{text:?}: {got} for {want}"
             );
         }

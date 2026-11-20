@@ -1,7 +1,10 @@
 use super::testing::*;
 use super::*;
+#[cfg(unix)]
 use std::path::PathBuf;
 
+// the tests that use these start a stand-in program, which is a shell script (Unix)
+#[cfg(unix)]
 fn queries() -> Vec<(String, Vec<u8>)> {
     vec![
         ("first protein".to_string(), vec![b'M'; 60]),
@@ -9,6 +12,7 @@ fn queries() -> Vec<(String, Vec<u8>)> {
     ]
 }
 
+#[cfg(unix)]
 fn lines(path: PathBuf) -> Vec<String> {
     std::fs::read_to_string(path)
         .expect("a file")
