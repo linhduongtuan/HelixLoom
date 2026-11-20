@@ -36,6 +36,7 @@ fn align_request() -> Request {
             ("b".into(), b"ACGTTCGT".to_vec()),
         ],
         mafft: false,
+        progressive: None,
     }
 }
 

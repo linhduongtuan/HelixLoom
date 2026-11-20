@@ -7,7 +7,7 @@ use crate::seq::features::{
 use crate::ui::app::App;
 use crate::ui::dialog::{self, Wanted};
 use crate::ui::fonts::FontWeight;
-use crate::ui::platform::route::Source;
+use crate::ui::platform::route::{self, Source};
 use eframe::egui::{self, RichText};
 
 /// Feature types offered in the editor (GenBank feature keys).
@@ -250,6 +250,59 @@ impl App {
             if n == 1 { "" } else { "s" },
             self.library.len()
         ));
+    }
+
+    /// Features ▸ Import Features from GFF/GTF…
+    pub fn import_gff(&mut self) {
+        let ask = dialog::FileDialog::new()
+            .set_title("Open an annotation")
+            .add_filter("GFF3 and GTF", &route::ANNOTATION_EXTENSIONS);
+        if let Some(path) = dialog::pick_one(Wanted::Gff, ask) {
+            self.load_gff(Source::Path(&path));
+        }
+    }
+
+    /// Put the genes of a GFF3 or GTF file on the open sequence as features (the annotation's name for the sequence is the sequence's
+    /// name, or its only one); why not, when there is no sequence open, the file cannot be read, or it names no such sequence.
+    pub fn load_gff(&mut self, file: Source) {
+        let Some(i) = self.current_doc() else {
+            self.say("Open the sequence that the annotation is of first.");
+            return;
+        };
+        let shown = file.shown();
+        let text = match file.text() {
+            Ok(text) => text,
+            Err(e) => {
+                self.say(format!("Couldn't read {shown}: {e}"));
+                return;
+            }
+        };
+        let doc = &self.docs[i].doc;
+        let made = crate::seq::gff::parse(&text)
+            .and_then(|a| crate::seq::gff::features_for(&a, &doc.name, doc.len()));
+        match made {
+            Err(why) => self.say(format!("Could not use {shown}: {why}")),
+            Ok(done) => {
+                let n = done.features.len();
+                self.docs[i].edit(|d| {
+                    d.features.extend(done.features);
+                    d.features.sort_by_key(|f| (f.start(), f.name.clone()));
+                });
+                let left_out = if done.skipped > 0 {
+                    format!(
+                        "; {} left out because they reach beyond the sequence",
+                        done.skipped
+                    )
+                } else {
+                    String::new()
+                };
+                self.say(format!(
+                    "Added {n} feature{} from {shown} (its sequence {}){left_out}.",
+                    if n == 1 { "" } else { "s" },
+                    done.seqname
+                ));
+            }
+        }
     }
 
     pub fn open_feature_library(&mut self) {

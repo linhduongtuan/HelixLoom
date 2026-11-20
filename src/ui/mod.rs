@@ -28,6 +28,7 @@ pub mod palette;
 pub mod panels;
 pub mod places;
 pub mod platform;
+pub mod project;
 pub mod provenance;
 mod raster;
 pub mod results;

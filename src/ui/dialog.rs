@@ -38,6 +38,8 @@ pub enum Wanted {
     Fastq,
     /// A feature library for annotating.
     FeatureLibrary,
+    /// An annotation (GFF3 or GTF) whose genes become features of the open sequence.
+    Gff,
     /// A Newick tree for the Tree Tools window.
     TreeToolsTree,
     /// A Newick tree for the PhyloCNN window.

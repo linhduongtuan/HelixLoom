@@ -267,6 +267,11 @@ fn a_result_is_led_to_the_check_of_the_method_that_made_it_by_its_kind_and_its_s
         ),
         (
             "Alignment",
+            vec![("engine", "progressive (ClustalW-style)")],
+            "Alignment (progressive, after ClustalW)",
+        ),
+        (
+            "Alignment",
             vec![("engine", "MAFFT")],
             "MAFFT, IQ-TREE and the other programs HelixLoom runs",
         ),

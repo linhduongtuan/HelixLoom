@@ -48,6 +48,7 @@ impl App {
             ui.menu_button("File", |ui| {
                 item(ui, "New", "⌘N", true, Action::New);
                 item(ui, "Open…", "⌘O", true, Action::Open);
+                item(ui, "Open Project…", "", true, Action::OpenProject);
                 ui.menu_button("Open Recent", |ui| {
                     if recent.is_empty() {
                         ui.add_enabled(false, egui::Button::new("No recent files"));
@@ -86,6 +87,7 @@ impl App {
                 item(ui, "Save", "⌘S", true, Action::Save);
                 item(ui, "Save As…", "⇧⌘S", true, Action::SaveAs);
                 item(ui, "Export as FASTA…", "", true, Action::ExportFasta);
+                item(ui, "Save Project As…", "", true, Action::SaveProject);
                 item(
                     ui,
                     "Save a Report of the Results…",
@@ -398,6 +400,13 @@ impl App {
                     true,
                     Action::OpenLibrary,
                 );
+                item(
+                    ui,
+                    "Import Features from GFF/GTF…",
+                    "",
+                    true,
+                    Action::ImportGff,
+                );
                 ui.separator();
                 item(ui, "Show Feature Table", "", true, Action::ToggleFeatures);
             });
@@ -535,6 +544,7 @@ impl App {
                     Action::Checks,
                 );
                 item(ui, "Copy Diagnostics", "", true, Action::Diagnostics);
+                item(ui, "Check for Updates…", "", true, Action::CheckForUpdates);
                 item(ui, "Show the Tour", "", true, Action::Tour);
                 item(
                     ui,

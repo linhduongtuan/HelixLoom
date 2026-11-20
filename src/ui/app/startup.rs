@@ -210,8 +210,9 @@ impl App {
                 self.treetools_win.open = true;
                 self.load_treetools_demo();
             }
-            "primer3" => {
+            "primer3" | "primer3-probe" => {
                 self.p3_win.open = true;
+                self.p3_win.with_probe = view == "primer3-probe";
                 self.docs[0].select(224, 280); // the MCS feature of the demo plasmid
                 self.run_primer3();
             }

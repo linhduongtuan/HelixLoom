@@ -218,8 +218,9 @@ started in 154 to 165 ms, against 60 to 131 ms with none (three starts each; the
 took 551 ms). With a database whose `open` never calls back the page was still on *Loading HelixLoom…* at 1.5 s and had started at
 6.1 s, and kept its results in `localStorage`. **Not tried:** Firefox and Safari; a database that really refuses a write (the
 browser's never did: that is tested with a stand-in only); two tabs; a tab closed in the middle of a write; results over 6 megabytes.
-The deliberate-breakage round of the earlier steps was **not run** for this step (a list of 34 breakages was written and checked, not run),
-and the mended version was not read again by independent readers.
+The deliberate-breakage round was run for this step on 19 November 2026, after the page was tried: 72 breakages of the code were each
+put in by a script and the tests run, and **all 72 were caught** (61 on the first run; the 11 that were not got new tests, and then were).
+The mended version was not read again by independent readers.
 
 **Tried on 18 November 2026: the runs of the Pipelines page** (the page built from the code of that day). In the built-in
 browser: *Try the example* on Pipelines (align, tree and primers of six isolates); the storage then held

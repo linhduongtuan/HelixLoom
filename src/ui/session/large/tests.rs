@@ -717,3 +717,161 @@ fn forgetting_the_sessions_takes_the_database_empty_including_what_another_page_
     assert!(idb.entries().is_empty());
     assert!(table.names().is_empty());
 }
+
+/// The names the database was asked for, in the order it was, as text: `put X`, `delete X`, `clear`.
+fn asked(idb: &Idb) -> Vec<String> {
+    idb.ops
+        .borrow()
+        .iter()
+        .map(|op| match op {
+            Op::Put(name, _) => format!("put {name}"),
+            Op::Delete(name) => format!("delete {name}"),
+            Op::Clear => "clear".to_string(),
+        })
+        .collect()
+}
+
+#[test]
+fn a_newer_text_that_was_written_after_an_older_one_was_refused_is_not_taken_away_by_a_later_change(
+) {
+    let idb = Idb::new(Mode::Later);
+    let large = idb.open(ROOM_FOR_ALL);
+    let name = "session/1-a.result";
+    large.set(name, "older").expect("kept");
+    large.set(name, "newer").expect("kept");
+    idb.fail("QuotaExceededError");
+    // the newer one is written, and then another change comes: the database must still hold the newer one
+    idb.finish();
+    idb.mode.set(Mode::Now);
+    large.set("session/2-b.result", "b").expect("kept");
+    assert_eq!(
+        idb.stored.borrow().get(name).map(String::as_str),
+        Some("newer")
+    );
+    assert_eq!(
+        asked(&idb),
+        [
+            format!("put {name}"),
+            format!("put {name}"),
+            "put session/2-b.result".to_string()
+        ]
+    );
+}
+
+#[test]
+fn what_the_database_may_hold_is_not_asked_to_be_taken_away_when_the_same_name_is_put_again_or_already_waits_to_go(
+) {
+    let (x, y, z) = (
+        "session/1-x.result",
+        "session/2-y.result",
+        "session/1-z.result",
+    );
+    // a refused text, and the same name put again: the put takes the place of what was there
+    let idb = Idb::new(Mode::Later);
+    let large = idb.open(ROOM_FOR_ALL);
+    large.set(x, "one").expect("kept");
+    idb.fail("QuotaExceededError");
+    idb.mode.set(Mode::Now);
+    large.set(x, "two").expect("kept");
+    assert_eq!(asked(&idb), [format!("put {x}"), format!("put {x}")]);
+    // a refused text whose name then has a removal waiting behind another change: it is not asked for twice
+    let idb = Idb::new(Mode::Later);
+    let large = idb.open(ROOM_FOR_ALL);
+    large.set(x, "one").expect("kept");
+    large.set(z, "z").expect("kept");
+    large.remove(x);
+    idb.fail("QuotaExceededError");
+    // z is out and the removal of x waits behind it: a change for another name comes now, and finds x to be taken away
+    large.set(y, "y").expect("kept");
+    idb.mode.set(Mode::Now);
+    idb.finish();
+    assert_eq!(
+        asked(&idb),
+        [
+            format!("put {x}"),
+            format!("put {z}"),
+            format!("delete {x}"),
+            format!("put {y}")
+        ]
+    );
+}
+
+#[test]
+fn what_an_earlier_refusal_left_is_taken_away_before_the_changes_that_wait_and_not_after_them() {
+    let idb = Idb::new(Mode::Later);
+    let large = idb.open(ROOM_FOR_ALL);
+    large.set("session/1-a.result", "a").expect("kept");
+    large.set("session/1-b.result", "b").expect("kept");
+    large.set("session/1-c.result", "c").expect("kept");
+    idb.fail("QuotaExceededError");
+    // b is out, c waits; the next change finds a to be taken away, and it goes before c
+    large.set("session/1-d.result", "d").expect("kept");
+    while idb.waiting() > 0 {
+        idb.finish();
+    }
+    assert_eq!(
+        asked(&idb),
+        [
+            "put session/1-a.result",
+            "put session/1-b.result",
+            "delete session/1-a.result",
+            "put session/1-c.result",
+            "put session/1-d.result"
+        ]
+    );
+}
+
+#[test]
+fn a_clear_that_the_database_took_leaves_nothing_to_take_away_and_one_after_a_refused_one_is_not_asked_again(
+) {
+    // what an earlier refusal left is of no use once everything is taken away
+    let idb = Idb::new(Mode::Later);
+    let large = idb.open(ROOM_FOR_ALL);
+    large.set("session/1-a.result", "a").expect("kept");
+    idb.fail("QuotaExceededError");
+    idb.mode.set(Mode::Now);
+    large.clear();
+    large.set("session/2-b.result", "b").expect("kept");
+    assert_eq!(
+        asked(&idb),
+        ["put session/1-a.result", "clear", "put session/2-b.result"]
+    );
+    // a clear that is refused is asked again with the next change; a clear that is asked and taken in the meantime is not asked a third time
+    let idb = Idb::new(Mode::Later);
+    let large = idb.open(ROOM_FOR_ALL);
+    large.clear();
+    idb.fail("InvalidStateError");
+    idb.mode.set(Mode::Now);
+    large.clear();
+    large.set("session/2-b.result", "b").expect("kept");
+    assert_eq!(asked(&idb), ["clear", "clear", "put session/2-b.result"]);
+    assert_eq!(idb.names(), ["session/2-b.result"]);
+}
+
+#[test]
+fn the_room_is_used_up_to_the_last_byte_and_what_is_taken_out_gives_its_room_back() {
+    let idb = Idb::new(Mode::Now);
+    let name = "session/1-a.result";
+    // 100 bytes of room: a name of 18 and a text of 82 fill it exactly
+    let large = idb.open(100);
+    assert!(large.set(name, &"x".repeat(82)).is_ok(), "fills it exactly");
+    assert!(large.set(name, &"x".repeat(83)).is_err(), "a byte over");
+    // a rename that comes to the room exactly (the new name is 9 bytes longer, the text 9 shorter)
+    let tight = Large::new(idb.clone(), vec![(name.to_string(), "t".repeat(60))], 87);
+    assert!(tight.rename(name, "session.previous/1-a.result").is_ok());
+    // clearing gives all the room back
+    large.clear();
+    assert!(large.set(name, &"y".repeat(82)).is_ok());
+    // a text that the database refused gives its room back
+    let refusing = Idb::new(Mode::Refuse);
+    let large = refusing.open(100);
+    large
+        .set(name, &"x".repeat(60))
+        .expect("kept in memory, refused at once");
+    assert!(!large.holds(name));
+    refusing.mode.set(Mode::Now);
+    assert!(
+        large.set("session/1-b.result", &"x".repeat(60)).is_ok(),
+        "the refused one took no room"
+    );
+}

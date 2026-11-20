@@ -41,6 +41,105 @@ pub const CHECKS: &[Check] = &[
     },
     Check {
         group: CLONING,
+        analysis: "TaqMan probe design (between the primers)",
+        standard: Standard::Independent,
+        against: "A plain restatement of the rules, written apart from the program for the rules themselves (the melting temperature, the dimer scores, the enumeration and the weights are the program's own, so a misreading shared there would pass): every placement, strand and length between the primers of eight pairs, judged one by one, for four settings, and, for the best assays as a whole (the best pairs, each with its best probe, for upper and lower case), against the same search over forty pairs. The probes the program lists are exactly those that pass, with the penalties that the text of the module gives. The rules are Applied Biosystems' published ones, as the defaults are written (and a test pins the defaults): no G at the 5' end, no run of four G, G+C 30 to 80 %, at most 30 bases, a melting temperature about 10 °C above the primers, primers close to the probe without overlapping it. The guidance says only to avoid runs of other bases: the limit of four, the window of 6 to 14 °C around the 10, the smallest size of 18 and a gap of one base are this program's choices.",
+        result: "The same set of probes and the same penalties (within 1e-9), for every pair and setting tried (and at least one probe passes in each setting); the G+C limits are tried at exactly 30 and 80 %.",
+        limits: "Not compared with Primer Express, nor with primer3's internal oligo, on the same template. The melting temperature is primer3's (SantaLucia, 50 mM salt) and is placed against the primers' by a difference; Primer Express's own numbers differ, and the 10 °C is a guideline for its calculator. The weights of the penalty are this program's choice. Minor-groove-binder probes are not modelled; no check that the probe is unique in a genome or avoids a known variant. The preference for more C than G is widely quoted but was not in the Applied Biosystems documents read, so it is only a small penalty.",
+        tests: &[
+            (
+                "src/seq/probe/tests.rs",
+                "the_probes_for_a_pair_are_all_of_those_that_pass_and_the_best_comes_first",
+            ),
+            (
+                "src/seq/probe/tests.rs",
+                "every_probe_found_follows_the_rules_and_lies_between_its_primers",
+            ),
+            (
+                "src/seq/probe/tests.rs",
+                "each_rule_on_its_own_refuses_what_it_names_and_nothing_else",
+            ),
+            (
+                "src/seq/probe/tests.rs",
+                "the_assays_are_the_best_pairs_each_with_its_best_probe_for_any_case_of_the_template",
+            ),
+            (
+                "src/seq/probe/tests.rs",
+                "the_g_plus_c_limits_are_inclusive_at_thirty_and_eighty_percent",
+            ),
+            (
+                "src/seq/probe/tests.rs",
+                "the_defaults_are_the_published_guidelines_and_the_choices_the_module_names",
+            ),
+        ],
+    },
+    Check {
+        group: CLONING,
+        analysis: "Annotation files (GFF3 and GTF): transcripts, sequences, filters",
+        standard: Standard::Known,
+        against: "Cases worked out by hand: a gene of two exons and an intron on each strand (the same gene on the minus strand is the reverse complement with its coordinates mirrored), a CDS that begins in the middle of a codon (phase 1 and 2), a stop inside, the same gene as GFF3 and as GTF, UTR and codon lines that must be left out, exons made from CDS and UTR, a CDS with no parent and a gene with CDS under it (bacterial annotations), an exon with two parents, features in several lines with one ID, names with the characters GFF3 escapes. What is written (GFF3 and GTF) is read back to the same transcripts. Every filter, every error with its line, and the command with its outputs.",
+        result: "Every sequence, protein, coordinate and refusal is what the test says by hand.",
+        limits: "Not compared with gffread itself: its repository's examples (an annotation, a genome, the outputs its test script expects) would be the test, and fetching them is a download not yet asked for. Taken on trust from its documentation and not verified: that the stop codon at the end is left out of the protein, that the phase trims the first segment of the CDS, and the symbol for a stop inside. Only the standard genetic code. Merging transcripts into loci (-M), BED, TLF and the other options of gffread are not done. The features put on a sequence were not compared with another program's.",
+        tests: &[
+            (
+                "src/seq/gff/tests.rs",
+                "the_spliced_transcript_the_cds_and_the_protein_are_cut_from_the_genome_as_the_annotation_says",
+            ),
+            (
+                "src/seq/gff/tests.rs",
+                "a_gene_on_the_minus_strand_gives_the_same_transcript_and_protein",
+            ),
+            (
+                "src/seq/gff/tests.rs",
+                "a_cds_that_begins_in_the_middle_of_a_codon_loses_the_bases_its_phase_says",
+            ),
+            (
+                "src/seq/gff/tests.rs",
+                "gtf_gives_the_same_transcript_and_start_and_stop_codon_lines_are_ignored_when_there_is_cds",
+            ),
+            (
+                "src/seq/gff/tests.rs",
+                "what_is_written_is_read_back_the_same_as_gff3_and_as_gtf",
+            ),
+            ("src/seq/gff/tests.rs", "the_filters_keep_what_they_say"),
+            (
+                "src/seq/gff/tests.rs",
+                "the_filters_that_read_the_genome_judge_splice_sites_and_stops",
+            ),
+            (
+                "src/seq/gff/tests.rs",
+                "an_annotation_becomes_features_of_the_sequence_with_the_strand_the_gene_and_the_product",
+            ),
+        ],
+    },
+    Check {
+        group: ALIGNMENT,
+        analysis: "K-mer counting and spectra (after KAT)",
+        standard: Standard::Independent,
+        against: "A plain string-based counter written apart from the program (every window of random sequences with letters that break windows, lower case and U, canonical by the smaller of the k-mer and its reverse complement as text), for k = 1, 2, 3, 5, 11, 21, 27, 31 and 32; cases worked out by hand (the spectrum, the G+C matrix, the comparison matrix, the section of a sequence); reads simulated from a random genome of 20,000 bases (30-fold, both strands, one base in 200 wrong) whose spectrum has its peak where the k-mer coverage is and whose size comes out within 10 % of the genome; synthetic spectra with one peak and two.",
+        result: "Every count equals the plain counter's; the peak of the simulated reads is within 21 to 27 for a k-mer coverage of 24, and the size within 10 % of 20,000.",
+        limits: "Not compared with KAT: its program and its example data were not run (that needs a download), so no claim of the same numbers. The genome size is the textbook estimate (k-mers from the valley on over the peak), not KAT's fit of distributions, whose method the pages read do not give; where the first rise after the errors is only a small bump on a long error tail the valley may be put after it. The default k of 27 is the manual's example, not KAT's documented default. Counting is in memory (not a human genome); no compressed input; filter, blob, cvg and the plots are not done.",
+        tests: &[
+            (
+                "src/seq/kmer/tests.rs",
+                "the_counts_are_those_of_the_plain_way_for_every_length_with_other_letters_and_lower_case",
+            ),
+            (
+                "src/seq/kmer/tests.rs",
+                "the_spectrum_the_gc_matrix_and_the_comparison_are_what_they_are_worked_out_to_be",
+            ),
+            (
+                "src/seq/kmer/tests.rs",
+                "reads_of_a_simulated_genome_give_a_peak_at_the_coverage_of_the_k_mers_and_the_size_of_the_genome",
+            ),
+            (
+                "src/seq/kmer/tests.rs",
+                "a_spectrum_of_errors_and_one_peak_gives_the_valley_the_peak_and_the_size",
+            ),
+        ],
+    },
+    Check {
+        group: CLONING,
         analysis: "PCR (primer sites and products)",
         standard: Standard::Reference,
         against: "The original's own PCR code, cut out of its source and run unchanged under Tcl, on 140 random templates and primers, and its copying of the template's features into a product on 240 random features.",
@@ -333,6 +432,99 @@ pub const CHECKS: &[Check] = &[
             (
                 "src/seq/msa.rs",
                 "the_alignments_eight_at_a_time_give_the_same_msa_as_one_pair_at_a_time",
+            ),
+        ],
+    },
+    Check {
+        group: ALIGNMENT,
+        analysis: "Alignment (progressive, after ClustalW)",
+        standard: Standard::Known,
+        against: "Sequences evolved on a computer along a balanced tree of 8 leaves from one ancestor of 110 residues, with substitutions and insertions and deletions, so that the true alignment is known (proteins change in the way BLOSUM62 favours). Per branch 2 % (nucleotides) or 4 % (proteins) of the residues change, so two leaves are 2, 4 or 6 branches apart, about 5 on average. The share of the truly homologous pairs of residues that the alignment finds, and the share of the pairs it finds that are true, on four seeds. Also: every alignment, made with either guide tree, with end gaps free or costly, from lower case, RNA, ambiguity codes, stops and one-letter sequences, is its sequences with gaps in rows of one length and no empty column; refining never lowers the score and does raise it for some of 24 simulated sets; the score of an alignment worked out by hand; the distance of two proteins and of RNA, and that two sequences with one letter in common at their ends are far apart; BLOSUM62 against its published entries.",
+        result: "The tests demand that the plain method finds 0.88 (nucleotides, 0.02 per branch) and 0.82 (proteins, 0.04) of the true pairs, and that refining loses no more than 0.02. A printout of the ignored comparison test, on 8 other seeds (the ones the gap costs were chosen on, so it is not a fresh test), gives for nucleotides at 0.02 per branch 0.93 plain, 0.95 refined (3 passes) and 0.95 for the centre-star method; at 0.04: 0.82, 0.84 and 0.81; at 0.07: 0.51, 0.49 and 0.53. For proteins at 0.04: 0.88, 0.91 and 0.92; at 0.06: 0.77, 0.81 and 0.82; at 0.1: 0.62, 0.64 and 0.61. So the method is about as accurate as the centre-star method on these: a little behind at low divergence, a little ahead at some higher ones, and refining raises the score and mostly the accuracy but at 0.07 it lowered it.",
+        limits: "Not compared with ClustalW, ClustalX, MAFFT or MUSCLE themselves (none is run here for this), and not on a benchmark of real alignments (BAliBASE): the method follows ClustalW's published description and is not a port of its code, so its alignments are not ClustalW's. The gap costs were chosen on simulated sequences (the same 8 seeds as the printout), which have more insertions and deletions than most real data. Not done from ClustalW: several matrices by divergence (BLOSUM62 only), residue-specific gap penalties, the hydrophobic-stretch rule and delaying the divergent sequences. Not tested: groups of more than 60 sequences (they are not refined), 2,000 sequences, and the automatic change to word distances beyond its rule. Ambiguity codes score -1 against themselves. Two ignored tests print the numbers.",
+        tests: &[
+            (
+                "src/seq/clustal/tests.rs",
+                "the_alignment_is_close_to_the_true_one_for_sequences_that_evolved_with_substitutions_and_indels",
+            ),
+            (
+                "src/seq/clustal/tests.rs",
+                "every_alignment_is_its_sequences_with_gaps_in_rows_of_one_length_with_no_empty_column",
+            ),
+            (
+                "src/seq/clustal/tests.rs",
+                "lower_case_rna_ambiguity_codes_stops_and_one_letter_sequences_are_aligned_without_harm",
+            ),
+            (
+                "src/seq/clustal/tests.rs",
+                "refinement_never_lowers_the_score_and_never_changes_what_a_row_is",
+            ),
+            (
+                "src/seq/clustal/tests.rs",
+                "refinement_improves_the_score_of_some_alignments_and_not_only_leaves_it_alone",
+            ),
+            (
+                "src/seq/clustal/tests.rs",
+                "the_score_of_an_alignment_is_what_the_costs_say_worked_out_by_hand",
+            ),
+            (
+                "src/seq/clustal/tests.rs",
+                "unrelated_sequences_that_share_a_letter_at_their_ends_are_far_apart_not_identical",
+            ),
+            (
+                "src/seq/clustal/tests.rs",
+                "the_distance_of_proteins_is_kimuras_correction_of_the_share_that_differs",
+            ),
+            ("src/seq/clustal/tests.rs", "blosum62_is_the_published_matrix"),
+            (
+                "src/seq/clustal/tests.rs",
+                "the_fast_distances_come_from_shared_words_and_still_give_an_alignment",
+            ),
+        ],
+    },
+    Check {
+        group: ALIGNMENT,
+        analysis: "Clustal format (.aln) and its conservation marks",
+        standard: Standard::Known,
+        against: "The groups of residues that ClustalW documents for its marks (nine strong and eleven weak, as the UCSF Chimera pages give them), written again in a test apart from the program's own lists, and columns made by hand; a write then a read of an alignment of three blocks (nucleotides, with gaps) and of one block (a protein); text laid out as ClustalW writes it (with its version, counts and marks), and the headers of MAFFT, Clustal Omega, MUSCLE, Kalign and ProbCons over a plain body; and refusals: text that is not a Clustal alignment, rows of different lengths, blocks out of order, and a count that shows that a block is missing.",
+        result: "Every group gives its mark, every count at the end of a line is the residues so far, and every refusal names its line, as each test says by hand.",
+        limits: "Not compared with a file that ClustalW or any of the other programs wrote, nor read by them: the layouts are written from their documentation and from memory, so a program that lays the format out in another way may be refused or misread. A name that holds a space gets an underscore on writing. Nucleotides get the star only. The count at the end of a line is checked against the residues or the columns so far, so a program that counts in another way would be refused.",
+        tests: &[
+            (
+                "src/seq/clustal/aln/tests.rs",
+                "proteins_get_clustalws_strong_and_weak_groups_and_a_gap_blanks_the_column",
+            ),
+            (
+                "src/seq/clustal/aln/tests.rs",
+                "every_group_that_clustalw_documents_gives_its_mark_and_a_letter_outside_it_takes_it_away",
+            ),
+            (
+                "src/seq/clustal/aln/tests.rs",
+                "nucleotides_get_stars_where_every_row_agrees_and_blanks_otherwise",
+            ),
+            (
+                "src/seq/clustal/aln/tests.rs",
+                "a_text_is_written_in_blocks_of_sixty_with_counts_and_marks_under_each",
+            ),
+            (
+                "src/seq/clustal/aln/tests.rs",
+                "what_is_written_is_read_back_whole",
+            ),
+            (
+                "src/seq/clustal/aln/tests.rs",
+                "a_file_of_clustalw_with_its_version_marks_counts_and_blank_lines_is_read",
+            ),
+            (
+                "src/seq/clustal/aln/tests.rs",
+                "files_of_other_programs_are_read_with_no_counts_with_no_marks_and_with_their_own_headers",
+            ),
+            (
+                "src/seq/clustal/aln/tests.rs",
+                "a_text_that_is_not_a_clustal_alignment_is_refused_in_words",
+            ),
+            (
+                "src/seq/clustal/aln/tests.rs",
+                "the_counts_at_the_ends_of_lines_catch_a_block_that_is_missing_and_a_count_of_columns_is_taken_too",
             ),
         ],
     },

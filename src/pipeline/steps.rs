@@ -3,6 +3,7 @@
 //! port of it.
 
 use super::tools::{self, Installed};
+use crate::seq::clustal;
 use crate::seq::msa::{center_star, Msa};
 use crate::seq::newick::NwTree;
 use crate::seq::primer3::Settings;
@@ -53,6 +54,22 @@ impl Aligned {
             rows: self.rows.iter().map(|r| r.1.clone()).collect(),
         }
     }
+}
+
+/// Align `seqs` with the built-in progressive method (`seq::clustal`): a guide tree, weights, profiles.
+pub fn align_progressive(seqs: &[Named], o: &clustal::Options) -> Result<Aligned, String> {
+    if seqs.len() < 2 {
+        return Err("Aligning needs at least two sequences.".into());
+    }
+    let start = Instant::now();
+    let report = clustal::align(seqs, o)?;
+    let engine = clustal::describe(o, &report);
+    let rows = report.msa.names.into_iter().zip(report.msa.rows).collect();
+    Ok(Aligned {
+        rows,
+        engine,
+        seconds: start.elapsed().as_secs_f64(),
+    })
 }
 
 /// Align `seqs`: with MAFFT when `mafft` is given, else with the built-in centre-star method.

@@ -1,5 +1,7 @@
 use super::*;
 use crate::pipeline::steps::Aligned;
+use crate::ui::app::{App, Startup};
+use std::time::{Duration, Instant};
 
 /// Twelve proteins of nine columns: the first five are alike, the next four vary, and the last is a gap in two rows.
 fn family() -> Aligned {
@@ -130,13 +132,105 @@ fn a_sequence_with_the_same_name_gets_a_number() {
 fn pasted_text_is_fasta_or_one_sequence() {
     let fasta = sequences_in(">one\nACGT\nAC\n>two\nGGGG\n", "x");
     assert_eq!(
-        fasta,
+        fasta.expect("fasta"),
         vec![
             ("one".into(), b"ACGTAC".to_vec()),
             ("two".into(), b"GGGG".to_vec())
         ]
     );
     let bare = sequences_in("acgt acgt\n123\n", "Pasted");
-    assert_eq!(bare, vec![("Pasted".to_string(), b"acgtacgt".to_vec())]);
-    assert!(sequences_in("  \n 12 \n", "x").is_empty());
+    assert_eq!(
+        bare.expect("bare"),
+        vec![("Pasted".to_string(), b"acgtacgt".to_vec())]
+    );
+    assert!(sequences_in("  \n 12 \n", "x").expect("nothing").is_empty());
+}
+
+#[test]
+fn a_clustal_text_gives_its_sequences_without_the_gaps_and_one_that_cannot_be_read_gives_its_reason(
+) {
+    let text = "CLUSTAL W (1.83) multiple sequence alignment\n\nfirst  AC-GT-A\nsecond ACAG.TA\n\n";
+    let found = sequences_in(text, "x").expect("clustal");
+    assert_eq!(
+        found,
+        vec![
+            ("first".to_string(), b"ACGTA".to_vec()),
+            ("second".to_string(), b"ACAGTA".to_vec())
+        ]
+    );
+    // a page takes them as it takes FASTA
+    let mut page = AlignmentPage::default();
+    found.iter().for_each(|(n, b)| page.add(n, b));
+    assert_eq!(page.inputs.len(), 2);
+    // rows of different lengths are no alignment: the reason, and nothing is added
+    let ragged = "CLUSTAL W\n\nx ACGT\ny AC\n";
+    let why = sequences_in(ragged, "x").expect_err("ragged");
+    assert!(why.contains("not of one length"), "{why}");
+    // a pasted protein that spells a header is a protein
+    let protein = sequences_in("MUSCLEMUSCLE", "Pasted").expect("a sequence");
+    assert_eq!(protein.len(), 1);
+}
+
+#[test]
+fn the_progressive_method_aligns_with_the_settings_the_page_shows_and_the_record_names_them() {
+    let mut app = App::new(Startup::default());
+    let ctx = egui::Context::default();
+    let options = clustal::Options {
+        guide: clustal::Guide::Upgma,
+        free_end_gaps: false,
+        refine: 1,
+        fast: false,
+    };
+    let page = &mut app.platform.alignment;
+    for d in crate::sample::tree_demo() {
+        page.add(&d.name, &d.seq);
+    }
+    // the engine that was chosen carries other settings than the ones the page shows now: the page's are the ones that count
+    page.engine = Engine::Progressive(clustal::Options::default());
+    page.progressive = options;
+    app.start_alignment(&ctx);
+    let end = Instant::now() + Duration::from_secs(60);
+    while app.platform.alignment.result.is_none() {
+        app.alignment_tick(&ctx);
+        assert!(Instant::now() < end, "gave up waiting");
+        std::thread::sleep(Duration::from_millis(15));
+    }
+    let page = &app.platform.alignment;
+    let result = page.result.as_ref().expect("an alignment");
+    for part in ["UPGMA guide tree", "end gaps cost", "refined, up to 1 pass"] {
+        assert!(result.engine.contains(part), "{}", result.engine);
+    }
+    let (record, engine) = page.made.as_ref().expect("the record");
+    assert!(*engine == Engine::Progressive(options));
+    let text = record.to_text();
+    for part in ["progressive (ClustalW-style)", "UPGMA", "refinement passes"] {
+        assert!(text.contains(part), "{text}");
+    }
+    // and kept, then put back on another page, it can be run again with them
+    let kept = page.kept();
+    let mut back = AlignmentPage::default();
+    back.put_back(&kept).expect("put back");
+    assert_eq!(back.progressive, options);
+    assert!(back
+        .made
+        .as_ref()
+        .is_some_and(|(_, e)| *e == Engine::Progressive(options)));
+}
+
+#[test]
+fn a_file_named_as_clustal_that_is_not_one_is_said_so_and_adds_nothing() {
+    let folder = std::env::temp_dir().join(format!("helixloom-aln-{}", std::process::id()));
+    std::fs::create_dir_all(&folder).expect("a folder");
+    let path = folder.join("x.aln");
+    std::fs::write(&path, ">a\nACGT\n>b\nACGA\n").expect("a file");
+    let mut page = AlignmentPage::default();
+    page.add_source(Source::Path(&path));
+    assert!(page.inputs.is_empty(), "no one long junk sequence");
+    assert!(page.message.contains("Clustal"), "{}", page.message);
+    // and a real one is read, whatever the case of its extension
+    let real = folder.join("y.ALN");
+    std::fs::write(&real, "CLUSTAL W\n\nu  AC-GT\nv  ACAGT\n").expect("a file");
+    page.add_source(Source::Path(&real));
+    assert_eq!(page.inputs.len(), 2);
+    std::fs::remove_dir_all(&folder).ok();
 }

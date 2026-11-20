@@ -43,6 +43,7 @@ fn requests() -> Vec<Request> {
         Request::Align {
             seqs: isolates(),
             mafft: true,
+            progressive: None,
         },
         Request::Tree {
             alignment: vec![
@@ -186,6 +187,7 @@ fn names_that_would_break_a_fasta_line_are_made_one_line() {
             ("plain".into(), b"ACGA".to_vec()),
         ],
         mafft: false,
+        progressive: None,
     };
     let Ok(Request::Align { seqs, .. }) = Request::decode(Kind::Align, &request.encode()) else {
         panic!("a request");
@@ -198,6 +200,7 @@ fn names_that_would_break_a_fasta_line_are_made_one_line() {
     let request = Request::Align {
         seqs: vec![(long('1'), b"ACGT".to_vec()), (long('2'), b"ACGA".to_vec())],
         mafft: false,
+        progressive: None,
     };
     let Ok(Request::Align { seqs, .. }) = Request::decode(Kind::Align, &request.encode()) else {
         panic!("a request");
@@ -206,6 +209,102 @@ fn names_that_would_break_a_fasta_line_are_made_one_line() {
         (seqs[0].0.clone(), seqs[1].0.clone()),
         (long('1'), long('2'))
     );
+}
+
+/// A request to align with the progressive method and the settings the test gives it.
+fn progressive_request(options: clustal::Options) -> Request {
+    Request::Align {
+        seqs: isolates(),
+        mafft: false,
+        progressive: Some(options),
+    }
+}
+
+#[test]
+fn the_progressive_method_goes_to_the_workstation_with_every_one_of_its_settings() {
+    for options in [
+        clustal::Options::default(),
+        clustal::Options {
+            guide: clustal::Guide::Upgma,
+            free_end_gaps: false,
+            refine: 4,
+            fast: true,
+        },
+        clustal::Options {
+            refine: clustal::MOST_REFINE,
+            ..clustal::Options::default()
+        },
+    ] {
+        let request = progressive_request(options);
+        let back = Request::decode(Kind::Align, &request.encode()).expect("a request");
+        assert_eq!(back, request, "{options:?}");
+    }
+    // MAFFT, when it is asked for, is the engine, and the settings of the other method are not sent with it
+    let both = Request::Align {
+        seqs: isolates(),
+        mafft: true,
+        progressive: Some(clustal::Options::default()),
+    };
+    let Ok(Request::Align {
+        mafft, progressive, ..
+    }) = Request::decode(Kind::Align, &both.encode())
+    else {
+        panic!("a request");
+    };
+    assert!(mafft && progressive.is_none());
+}
+
+#[test]
+fn settings_of_the_progressive_method_that_are_missing_or_mean_nothing_are_the_programs_own() {
+    let message = |meta: &str| {
+        let c = Container::new()
+            .with("meta", meta)
+            .with("sequences", ">a\nACGT\n>b\nACGA\n");
+        let Ok(Request::Align { progressive, .. }) = Request::decode(Kind::Align, &c) else {
+            panic!("a request: {meta}");
+        };
+        progressive
+    };
+    let own = clustal::Options::default();
+    assert_eq!(message("engine=progressive\n"), Some(own));
+    // a word that is not understood is the program's own choice, for a switch as for the rest
+    assert_eq!(
+        message("engine=progressive\nguide=tree\nrefine=lots\nfast=yes\nfree_ends=\n"),
+        Some(own)
+    );
+    // and 0 and 1 are what they say
+    assert_eq!(
+        message("engine=progressive\nfast=1\nfree_ends=0\n"),
+        Some(clustal::Options {
+            fast: true,
+            free_end_gaps: false,
+            ..own
+        })
+    );
+    // more passes than the program makes are as many as it makes, and no other engine word is the progressive method
+    assert_eq!(
+        message("engine=progressive\nrefine=1000000\n").map(|o| o.refine),
+        Some(clustal::MOST_REFINE)
+    );
+    assert_eq!(message("engine=builtin\nguide=upgma\n"), None);
+    assert_eq!(message("engine=clustalw\n"), None);
+}
+
+#[test]
+fn the_server_aligns_with_the_progressive_method_as_this_computer_would() {
+    let options = clustal::Options {
+        refine: 1,
+        ..clustal::Options::default()
+    };
+    let Response::Align(there) =
+        execute(progressive_request(options), &Env::default()).expect("aligned")
+    else {
+        panic!("an alignment");
+    };
+    let here = crate::pipeline::steps::align_progressive(&isolates(), &options).expect("aligned");
+    assert_eq!(there.rows, here.rows);
+    assert!(there.engine.contains("progressive"), "{}", there.engine);
+    assert!(there.engine.contains("refined"), "{}", there.engine);
 }
 
 #[test]
@@ -495,6 +594,7 @@ fn an_alignment_a_tree_and_a_pipeline_come_back_as_the_server_made_them() {
         Request::Align {
             seqs: isolates(),
             mafft: false,
+            progressive: None,
         },
         &env,
     )
@@ -834,6 +934,7 @@ fn a_tree_job_is_given_gpus_only_when_it_is_big_enough_to_be_worth_them_and_then
     let align = Request::Align {
         seqs: rows(200, 100_000),
         mafft: false,
+        progressive: None,
     };
     assert!(!align.needs_gpu());
     assert_eq!(align.most_gpus(1), 1);

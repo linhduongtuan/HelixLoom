@@ -436,6 +436,17 @@ items below.
   the program does not take yet, so the app does not promise it; files are opened from the app, dropped on its window or named
   on the command line); there is no Windows installer and no Linux AppImage or Flatpak (neither system is here to try one on).
 * **Updates and crash reports (M).** Check for a new version; opt-in crash reports; a "copy diagnostics" button.
+  **Built in part, 20 November 2026: Help ▸ Check for Updates… and `helixloom update`** (`src/update.rs`, `docs/USING.md`). Question 11 (where releases are
+  published) is answered by the releases page of the repository. **Nothing is asked of any server until the button is pressed** (no check at start,
+  none in the background); then one request goes to `api.github.com` (made by `curl`, sending the program's name and nothing of the work). The window
+  says whether a later release is out, shows its notes, and, if the person says so, downloads the file for this computer (the disk image of a Mac with
+  Apple silicon, the zip of Windows) into the Downloads folder, checks it against the release's `SHA256SUMS` (a file that does not match is removed),
+  and says what to do with it. **The program does not replace itself**: an ad hoc signed Mac app cannot be replaced behind Gatekeeper's back, and
+  rewriting its own files cannot be tried on every system. The web version updates when its page is loaded again (the window says so and has a Reload
+  button). Tested: SHA-256 against the published test values, the reading of GitHub's answer, the comparison of versions, the choice of file, the
+  checksum and every refusal of a file or address, with a table in place of curl. **Tried against GitHub itself on the Mac** (`helixloom update` answered *up to date, the latest release is v0.2.0*); the
+  download was not tried against a real file (no release later than `v0.2.0` exists), nor was the window in a browser or anything on Windows. **Not built:** a check at start (it would be the program asking about itself without
+  being asked), an updater that installs, crash reports.
   **Built in part, November 2026: Help → *Copy Diagnostics*** (`src/diagnostics.rs`, `src/ui/diagnostics.rs`). It puts on the
   clipboard what a report of a problem needs: the version, the system, what the program was built with, the appearance, which
   settings folder is used (in words: the usual one, or one that was named), whether a workstation is connected and how many
@@ -542,6 +553,31 @@ items below.
   antibody-antigen complex prediction (AlphaFold-Multimer, Boltz, Chai; check each licence), docking (HADDOCK, ClusPro),
   interface analysis (contacts, buried area), binding-affinity change for mutations, T-cell epitopes (NetMHCpan). Validate
   against the SAbDab and IEDB benchmark sets and show the accuracy on the page before the page claims anything.
+* ★ **More ways to align, and probes for real-time PCR** (asked on 19 November 2026: "techniques like ClustalW, ClustalX, etc.", and probe
+  design added to the primer tool for PCR and TaqMan real-time PCR). **Built, 19 November 2026, tried on a Mac only:**
+  (a) a **progressive aligner after ClustalW** (`src/seq/clustal.rs`): pairwise distances (alignment, or shared words for big groups),
+  a neighbour-joining or UPGMA guide tree rooted at its midpoint, sequence weights from the tree, profile-to-profile alignment with
+  position-specific gap opening and free or costly end gaps, BLOSUM62 for proteins, and optional refinement by cutting the tree's edges
+  and realigning; chosen on the Alignment page beside the built-in and MAFFT, sent to the workstation as a job, and kept with the
+  session; (b) the **Clustal format** (`.aln`) read and written, with ClustalW's `* : .` marks of conservation (the groups of its
+  documentation); (c) **TaqMan probe design** between the two primers of each pair (`src/seq/probe.rs`, in the Primer3 window), after
+  Applied Biosystems' published rules, with probes of both strands and the probe's Tm set above the primers'. Checked: see *Help ▸ How
+  Each Analysis Was Checked*. On simulated sequences the progressive aligner is about as accurate as the centre-star method (a little behind at
+  low divergence, a little ahead at some higher ones), so what it adds is ClustalW's vocabulary (guide tree, weights, profile alignment) and
+  refinement, not a gain in accuracy that has been shown. Three independent readers read the code (the aligner, the probe design, the format and
+  its wiring); what they found was mended and given tests (the distances of the guide tree had counted a one-letter overlap as no distance; RNA
+  was left out of them; a refinement that could not be aligned in one piece failed the whole alignment; a Clustal header of other programs was
+  not known; the count at the end of a line was not looked at; features could be put on another sequence than the pairs were picked for).
+  **The code was then broken on purpose in 99 places, one at a time: the tests caught 92 at the first run; the 7 that got through were looked at, 5
+  of them got tests (the joining of the stretches between primers, a count that is not a number, the residues that have no partner in the
+  distance, whether refinement can return a worse alignment, whether more than one pass of it helps) and were then caught; 2 stand,
+  and are the same in everything the tests can see** (which way round the 3' end of a probe is scored against a primer, which the score
+  of the whole stretch settles for probes of the sizes used; and the limit of ten passes, which the loop reaches only when a pass still
+  improves). A first round that was stopped half way left one breakage in the source: found by checking every anchor, and put back by hand. **Not built, and said so:** a port of ClustalW's or ClustalX's code (this follows ClustalW's description,
+  so it does not give ClustalW's alignments); ClustalX's colouring of conserved columns and its quality scores; T-Coffee, MUSCLE
+  and other methods; the progressive method in pipeline files; minor-groove-binder probes; a probe-only mode for primers you already
+  have; checks that a probe is unique in a genome or avoids a known variant; and no comparison with Primer Express or primer3's
+  internal oligo. The gap costs were tuned on simulated sequences, which have more insertions and deletions than most real data.
 * **Cloning design (M).** Gibson and Golden Gate planning with overhang fidelity, primer design with off-target checks,
   restriction-cloning planner, codon optimization with organism tables, in-silico gel and PCR, CRISPR guide design with
   off-targets.
@@ -563,6 +599,54 @@ items below.
 * **Reads and variants (L).** fastp and MultiQC reports, minimap2 or bwa-mem2 mapping, samtools, bcftools or DeepVariant
   calling, assembly of long reads (Flye) and polishing (Medaka), taxonomic profiling (Kraken2).
 * **Structure (M).** AlphaFold DB lookup, ColabFold, structure alignment (TM-align, Foldseek), pocket detection.
+
+### 2.7 Genome assembly, mapping, typing and annotation tools (asked on 19 November 2026)
+
+The owner asked for the functions of ten repositories to be rebuilt in HelixLoom: Unicycler, the Galaxy workflow for plasmid collapse
+with Unicycler, `hybridassembly`, the multiplex-MinION protocol of the Unicycler author, SPAdes, NanoSeq, minimap2, KAT, mlst and gffread.
+Three readers read their pages (README, wiki, papers, format specifications; nothing was cloned or downloaded) and reported.
+
+**The rule for each, from its licence** (the same as for ASTER, 2.3): **minimap2 and gffread are MIT**: reading is allowed, and what is
+written is still from the paper and the documentation. **Unicycler, SPAdes, KAT, mlst, NanoSeq and the Galaxy workflow are GPL (2 or 3)**:
+HelixLoom is MIT, so nothing of their source is read for copying, and each is rebuilt from its paper and manual only. **The MinION protocol
+repository has no licence**: nothing of its code or text is used, only the method as its published paper describes it. **`hybridassembly`
+is MIT** but is only a Nextflow pipeline of other programs. **PubMLST's data may not be bundled** (its terms of 13 May 2026: data submitted
+since 1 January 2025 is for non-commercial use and may not be redistributed in software): mlst typing takes a scheme folder that the person
+downloaded.
+
+**The order, by what each needs and what each is worth to a plasmid and small-genome user** (each stage ends with its tests, a round of
+deliberate breakages, an honest list of what is not done, and no claim of equivalence with the original until it has been run against it,
+which needs the original's test data or its program: a download that waits for a yes):
+
+1. **gffread: GFF3 and GTF** (MIT): **built, 19 November 2026** (`docs/GFF.md`, `helixloom gff`, Features ▸ Import Features from GFF/GTF…). The code was broken on purpose in 25 places: all 25 were caught, 7 of them only after tests were written for them (the phase of a minus strand
+   CDS, a line of eight columns, the kind of a gene with CDS under it, an intron of one base, the AT-AC pair, a partial last codon, the width of a FASTA line).
+2. **KAT: k-mer counting, spectra, comparison** (GPL, from the paper) — **built, 20 November 2026** (`docs/KAT.md`, `helixloom kat hist|gcp|comp|sect`;
+   a count checked against a plain string counter, a simulated genome's spectrum and size; not compared with KAT; `filter`, `blob`, the plots and
+   counting on disk not done; with the update check, the code was broken on purpose in 30 places and all 30 were caught, 5 of them only after tests were
+   written for them: G counted among the G and C, the plateau at the bottom of the valley, the start of the valley, the exact size and the height a half peak must have). The plan as written: a canonical k-mer counter, `hist`, `gcp`, `comp`, `sect`, a peak finder
+   and a genome-size estimate (the textbook one: k-mers above the error valley over the homozygous peak, which is not KAT's own fit, whose
+   method the pages do not give). The k-mer counter is the base of stage 5.
+3. **minimap2: minimizers, chaining, PAF** (MIT, from the paper): (w,k)-minimizers (k 15, w 10), an index, anchors, the chaining of the paper
+   (gap cost 0.01·w̄·|l| + 0.5·log2|l|, 50 steps back), primary and secondary chains, mapping quality, PAF; the overlap mode (`ava-ont`);
+   base-level alignment from HelixLoom's banded aligner. Out of reach for now: the SSE kernel, splice mode, paired short reads, parity with
+   minimap2's output. Tested by reads simulated from a known sequence (the original's own examples need a download).
+4. **mlst typing** (GPL, from the README): a scheme folder (profile table and one FASTA of alleles per locus), contigs scanned on both
+   strands with HelixLoom's aligner, calls `n`, `~n`, `n?`, `-` and `n,m`, the score (+90/N exact, +63/N novel, +18/N partial, +10 for a known
+   sequence type), the sequence type, TSV, CSV and JSON, novel alleles as FASTA with MD5 names. Which scheme is chosen automatically, and
+   how ties go, is not documented: a stated guess.
+5. **A de Bruijn assembler, SPAdes-lite** (GPL, from the papers): k-mer counting, a graph at one k or several (21, 33, 55), tip clipping,
+   bubble removal, a depth filter, unitigs as GFA and FASTA. Useful for small, plasmid-scale reads only; BayesHammer-quality error
+   correction, repeat resolution with read pairs and genome-scale speed are out of reach.
+6. **Hybrid bridging, Unicycler-lite** (GPL, from the paper): read a GFA, give each contig a multiplicity from its depth and links, bridge
+   single-copy contigs with long reads (stage 3), merge, detect and close circular replicons, rotate them to a start gene. The paper gives
+   no bridge-scoring formula, so the scoring is this program's own and says so. No polishing (Racon, Pilon and Medaka stay external).
+7. **Pipelines** that say the routes of the Galaxy plasmid-collapse workflow (reads → trim → filter → short-read assembly → hybrid assembly
+   → evaluate; its multiplicity correction is a human step), of NanoSeq (Canu or Flye → concatemer check → circularisation check → rotate →
+   Medaka; the 30 bp overlap and 95 % identity rules are in its README), and of the multiplex-MinION protocol (the paper's method), as pipeline
+   files that call the external programs where they are installed and, as stages 2 to 6 are built, the built-in ones.
+
+**Not planned**: basecalling, Canu, Flye, Medaka, Racon, Pilon, SPAdes' own error correction and scaffolding, and anything that needs the
+GPL source. **Stage 1 (gffread) has not been run against `gffread`**: its examples folder is small, and fetching it needs a yes.
 
 ### 2.4 Trust
 * ★ **A benchmark page (M).** For every analysis, say how it was checked and how accurate it is (the golden tests already
@@ -780,13 +864,26 @@ One codebase, two targets: the same Rust program compiled to WebAssembly runs in
    letters) and written again after a change, `localStorage` holding only the list; 6 MB in the database added about 0.1 s to the start
    (154 to 165 ms against 60 to 131 ms without, three starts each); and with a database that never answers the page started after
    about 4 s with the results in `localStorage`. The formatting and the lints of the three builds are clean and every test passes: 1,691
-   in the app and 1,619 without its optional parts. **Not done:** the deliberate-breakage round of the earlier steps was **not run** for
-   this one (a list of 34 breakages was written and checked, not run), and the mended version was **not read again** by independent
-   readers; a database that really refuses (quota) was only tried with a stand-in, not in a browser; Firefox, Safari, two tabs and a
+   in the app and 1,619 without its optional parts. **The deliberate-breakage round was run afterwards (19 November 2026): 72 breakages,
+   all 72 caught (61 on the first run; 11 got new tests and were then caught).** **Not done:** the mended version was **not read again**
+   by independent readers; a database that really refuses (quota) was only tried with a stand-in, not in a browser; Firefox, Safari, two tabs and a
    tab closed in the middle of a write were not tried. **Known limits:** a database that stops answering without an error holds the
    results back until the page is loaded again (the sequences are not affected); results that another tab wrote after this page opened
    are not offered by it until it is loaded again. **Not built:** the tool windows' results,
-   projects with names, shareable links. **Not done for the
+   projects with names kept in the browser, shareable links.
+   **19 November 2026: project files** (`src/ui/project.rs`; the next step of W3 that needs no decision of the owner's): **File ▸ Save Project As…**
+   writes the open sequences (each as GenBank with its features) and what the Alignment, Trees, Structure and Pipelines pages show, in the texts
+   those pages keep for the session, as one `.hlproj` file; **File ▸ Open Project…**, the Open dialog, a drop on the window and the command line
+   open it (the sequences come back beside those that are open, tied to no file, with unsaved changes). The file ends in a line with the numbers of
+   sequences and results and the checksum of all the lines before it: a file that was cut short or changed, one of a later version, one that is no
+   project and one over 256 MB are refused in words and open nothing. Tested: a write and a read back of texts with tabs and line ends in them,
+   every kind of refusal, and a save in one window and an open in another (names, circular or linear, features, the alignment's rows and inputs, the
+   workspace, the tab in front). The code was then broken on purpose in 14 places (the checksum, the counts, the version, the end of a
+   name, the size limit, the front tab, the workspace, the unsaved flag): all 14 were caught, one only after the test of the front tab was added.
+   **Not built, and said so:** projects with names kept in the browser's storage and listed in the app (a file is the unit, kept where
+   the person puts it); links to results that another person can open (they need a place to hold the result and a decision about who may read it:
+   the workstation keeps results for 7 days behind its token); what the tool windows show. Not tried in a browser or on another computer; the limit of 256 MB was
+   not tried against a browser's memory. **Not done for the
    switch:** it does not cover the records fetched from a database or the workstation's connection (the hint says so);
    the files of the settings folder other than the session are written readable by others on the computer where the
    system's defaults say so, and a file half written when the program is killed is not looked for; in a browser the tabs'
@@ -962,6 +1059,10 @@ Phase 1 is in this release (`docs/DESIGN.md`): colours and typography, top bar, 
   they are run here by hand. Question 11 (where releases are published) is still open, and matters less while the web app
   is the way in.
 * Next after the roadmap's order: the interface phases 2, 3 and 4 (part 4).
+
+**Said by the owner on 19 November 2026:** asked to update the README, write how to deploy on Ubuntu and how to use the app and the web
+app, and push the code to GitHub (done: commit `4c55985`). This lifts "not pushed for now" above; a push still waits for the owner's
+word each time, as does a commit.
 
 **Said by the owner on 17 November 2026:**
 

@@ -34,6 +34,7 @@ use super::windows::textmap::TextMapWin;
 use super::windows::tools::{AlignWin, CalcWin, PcrWin};
 use super::windows::tree::TreeWin;
 use super::windows::treetools::TreeToolsWin;
+use super::windows::update::UpdateWin;
 use crate::seq::dna::{revcom, swap_case, Strand, GENETIC_CODES};
 use crate::seq::doc::Doc;
 use crate::seq::enzymes::{default_enzymes, Enzyme};
@@ -80,6 +81,11 @@ pub enum Action {
     Save,
     SaveAs,
     ExportFasta,
+    /// Help ▸ Check for Updates…: the window that asks GitHub for the latest release when its button is pressed.
+    CheckForUpdates,
+    /// Save the work on the pages as one project file, and open one.
+    SaveProject,
+    OpenProject,
     /// Save a report of the results that are on the pages.
     Report,
     CloseTab(usize),
@@ -150,6 +156,8 @@ pub enum Action {
     ClearFeatures,
     Annotate,
     OpenLibrary,
+    /// Put the genes of a GFF3 or GTF file on the open sequence as features.
+    ImportGff,
     Align,
     Pcr,
     /// The arithmetic Calculator of the original.
@@ -242,6 +250,7 @@ pub struct App {
     pub workspace: Workspace,
     pub platform: Platform,
     pub p3_win: Primer3Win,
+    pub update_win: UpdateWin,
     pub reads_win: ReadsWin,
     pub about_open: bool,
     pub confirm_close: Option<usize>,
@@ -317,6 +326,7 @@ impl App {
             },
             platform: Platform::new(start.settings_dir.clone()),
             p3_win: Primer3Win::default(),
+            update_win: UpdateWin::default(),
             reads_win: ReadsWin::default(),
             about_open: false,
             confirm_close: None,
@@ -403,6 +413,8 @@ impl App {
             Action::SaveAs => cur.into_iter().for_each(|i| self.save_doc(i, true, false)),
             Action::ExportFasta => cur.into_iter().for_each(|i| self.save_doc(i, true, true)),
             Action::Report => self.save_report(),
+            Action::SaveProject => self.save_project(),
+            Action::OpenProject => self.pick_project(),
             Action::CloseCurrent => cur.into_iter().for_each(|i| self.request_close(i)),
             Action::CloseTab(i) => self.request_close(i),
             Action::SwitchTab(t) => self.tab = t,
@@ -485,6 +497,7 @@ impl App {
             Action::ClearFeatures => self.clear_features(),
             Action::Annotate => self.annotate_with_library(),
             Action::OpenLibrary => self.open_feature_library(),
+            Action::ImportGff => self.import_gff(),
             Action::Align => self.align_win.open = true,
             Action::Pcr => self.pcr_win.open = true,
             Action::Calculator => {
@@ -502,6 +515,7 @@ impl App {
             Action::TreeTools => self.treetools_win.open = true,
             Action::Workflow => self.workspace = Workspace::Pipelines,
             Action::Primer3 => self.p3_win.open = true,
+            Action::CheckForUpdates => self.update_win.open = true,
             Action::Reads => self.reads_win.open = true,
             Action::About => self.about_open = true,
             other => {
@@ -916,6 +930,7 @@ impl App {
         self.tour_window(&ctx, &mut actions);
         self.treetools_window(&ctx);
         self.primer3_window(&ctx);
+        self.update_window(&ctx);
         self.reads_window(&ctx);
         self.about_window(&ctx);
         self.shortcuts_window(&ctx);

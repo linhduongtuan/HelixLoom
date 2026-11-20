@@ -59,6 +59,10 @@ pub enum Kind {
     Trace,
     Structure,
     Tree,
+    /// The work of a session in one file (`ui::project`).
+    Project,
+    /// Genes to put on the sequence that is open.
+    Annotation,
     Sequence,
 }
 
@@ -68,6 +72,10 @@ pub enum Kind {
 pub const TRACE_EXTENSIONS: [&str; 3] = ["ab1", "abi", "scf"];
 pub const STRUCTURE_EXTENSIONS: [&str; 2] = ["pdb", "ent"];
 pub const TREE_EXTENSIONS: [&str; 5] = ["nwk", "newick", "tre", "tree", "treefile"];
+/// The endings of an annotation: its genes become features of the open sequence (`App::load_gff`).
+pub const ANNOTATION_EXTENSIONS: [&str; 4] = ["gff", "gff3", "gtf", "gff2"];
+/// The ending of a project file (`ui::project`).
+pub const PROJECT_EXTENSIONS: [&str; 1] = [crate::ui::project::EXTENSION];
 
 pub fn kind_of(path: &Path) -> Kind {
     let ending = path
@@ -78,6 +86,8 @@ pub fn kind_of(path: &Path) -> Kind {
         Some(e) if TRACE_EXTENSIONS.contains(&e) => Kind::Trace,
         Some(e) if STRUCTURE_EXTENSIONS.contains(&e) => Kind::Structure,
         Some(e) if TREE_EXTENSIONS.contains(&e) => Kind::Tree,
+        Some(e) if PROJECT_EXTENSIONS.contains(&e) => Kind::Project,
+        Some(e) if ANNOTATION_EXTENSIONS.contains(&e) => Kind::Annotation,
         _ => Kind::Sequence,
     }
 }
@@ -108,6 +118,9 @@ impl App {
                 self.load_tree(file);
                 self.workspace = Workspace::Trees;
             }
+            // the project puts the workspace that it was made on back
+            Kind::Project => self.open_project(file),
+            Kind::Annotation => self.load_gff(file),
             Kind::Sequence
                 if matches!(self.workspace, Workspace::Alignment | Workspace::Phylogeny) =>
             {

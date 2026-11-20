@@ -11,6 +11,7 @@ use super::wire::{meta, Container};
 use super::{clean_line, one_line};
 use crate::pipeline::steps::{fasta_text, read_fasta, Aligned, Named, PrimerPair, Primers, Tree};
 use crate::pipeline::{Choice, Outcome};
+use crate::seq::clustal;
 use crate::seq::estimate::{Analysis, Estimate};
 use crate::seq::newick::NwTree;
 use crate::seq::phylocnn::{output_names, Estimate as CnnEstimate, Priors, Task};
@@ -96,6 +97,9 @@ pub enum Request {
     Align {
         seqs: Vec<Named>,
         mafft: bool,
+        /// The built-in progressive method with these settings, instead of the centre-star method (or MAFFT, which wins when
+        /// both are asked for: a request that names two engines is read as the program that is not built in).
+        progressive: Option<clustal::Options>,
     },
     Tree {
         alignment: Vec<Named>,
@@ -209,6 +213,50 @@ settings_codec!(
 
 pub(super) fn lines(items: &[(&str, String)]) -> String {
     items.iter().map(|(k, v)| format!("{k}={v}\n")).collect()
+}
+
+/// The `key=value` lines that say how to align: the engine, and for the progressive method its settings.
+fn align_meta(mafft: bool, progressive: Option<&clustal::Options>) -> String {
+    let engine = match (mafft, progressive) {
+        (true, _) => "mafft",
+        (false, Some(_)) => "progressive",
+        (false, None) => "builtin",
+    };
+    let mut items = vec![("engine", engine.to_string())];
+    if let (false, Some(o)) = (mafft, progressive) {
+        items.push(("guide", o.guide.name().to_string()));
+        items.push(("refine", o.refine.to_string()));
+        items.push(("fast", u8::from(o.fast).to_string()));
+        items.push(("free_ends", u8::from(o.free_end_gaps).to_string()));
+    }
+    lines(&items)
+}
+
+/// A yes-or-no setting of a message: 1 or 0; anything else, or nothing, is `own`.
+fn switch(m: &HashMap<&str, &str>, key: &str, own: bool) -> bool {
+    match m.get(key) {
+        Some(&"1") => true,
+        Some(&"0") => false,
+        _ => own,
+    }
+}
+
+/// The settings of the progressive method from a message: what is not there, or is not understood, is the program's own choice, and
+/// the passes of refinement are no more than the program allows.
+fn progressive_options(m: &HashMap<&str, &str>) -> clustal::Options {
+    let own = clustal::Options::default();
+    clustal::Options {
+        guide: m
+            .get("guide")
+            .and_then(|g| clustal::Guide::from_name(g))
+            .unwrap_or(own.guide),
+        refine: m
+            .get("refine")
+            .and_then(|r| r.parse::<usize>().ok())
+            .map_or(own.refine, |r| r.min(clustal::MOST_REFINE)),
+        fast: switch(m, "fast", own.fast),
+        free_end_gaps: switch(m, "free_ends", own.free_end_gaps),
+    }
 }
 
 /// A number from the message's `key=value` lines.
@@ -497,11 +545,12 @@ impl Request {
 
     pub fn encode(&self) -> Container {
         match self {
-            Request::Align { seqs, mafft } => Container::new()
-                .with(
-                    "meta",
-                    lines(&[("engine", (if *mafft { "mafft" } else { "builtin" }).into())]),
-                )
+            Request::Align {
+                seqs,
+                mafft,
+                progressive,
+            } => Container::new()
+                .with("meta", align_meta(*mafft, progressive.as_ref()))
                 .with("sequences", fasta(seqs)),
             Request::Tree {
                 alignment,
@@ -550,6 +599,8 @@ impl Request {
             Kind::Align => Ok(Request::Align {
                 seqs: within_limits(sequences(c, "sequences")?)?,
                 mafft: m.get("engine") == Some(&"mafft"),
+                progressive: (m.get("engine") == Some(&"progressive"))
+                    .then(|| progressive_options(&m)),
             }),
             Kind::Tree => decode_tree_request(c, &m),
             Kind::Pipeline => decode_pipeline_request(c, &m),

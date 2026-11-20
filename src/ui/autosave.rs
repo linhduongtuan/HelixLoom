@@ -666,7 +666,7 @@ fn reopened(session: &Session, done: &Restored) -> String {
 impl App {
     /// The sequences the session keeps: all but those that nobody has touched and that are not worth coming back to: the example
     /// plasmid that the program opens with (it would be opened again beside the new one at every start), and an empty new one.
-    fn kept_docs(&self) -> Vec<(usize, &DocView)> {
+    pub(super) fn kept_docs(&self) -> Vec<(usize, &DocView)> {
         self.docs
             .iter()
             .enumerate()

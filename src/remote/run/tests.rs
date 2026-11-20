@@ -14,6 +14,7 @@ fn an_alignment_is_made_as_the_app_makes_it_itself() {
         Request::Align {
             seqs: seqs.clone(),
             mafft: false,
+            progressive: None,
         },
         &Env::default(),
     )

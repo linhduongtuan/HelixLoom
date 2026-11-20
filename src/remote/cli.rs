@@ -28,6 +28,9 @@ HelixLoom workstation server
                                   ask a server how it is
   helixloom astral -i GENE_TREES   the species tree of a set of gene trees, with no server (`astral --help`)
   helixloom motif -i SEQUENCES     motifs that DNA sequences share, in MEME's text format, with no server (`motif --help`)
+  helixloom gff ANNOTATION         read, filter and write GFF3/GTF, and cut transcripts, CDS and proteins out of a genome (`gff --help`)
+  helixloom kat COMMAND INPUT...   k-mer analysis in the manner of KAT: hist, gcp, comp, sect (`kat --help`)
+  helixloom update [--download]    look for a later release of HelixLoom on GitHub and, if asked, save its file, checked (`update --help`)
   helixloom pipeline run FILE DIR  run a pipeline file on a folder, keeping what was done so a stopped run resumes (`pipeline --help`)
   helixloom checks [WORDS…]        how each analysis was checked: what it was compared with, how close it came, what was not checked
   helixloom tools                  the programs HelixLoom can call (MAFFT, IQ-TREE, HMMER, …): which are found, their licences, how to install them
@@ -772,6 +775,9 @@ pub fn dispatch(args: &[String]) -> Option<i32> {
         "status" => status(rest),
         "astral" | "species-tree" => crate::seq::astral::cli::run(rest),
         "motif" | "motifs" => crate::seq::motif::cli::run(rest),
+        "gff" | "gffread" => crate::seq::gff::cli::run(rest),
+        "update" => crate::update::cli::run(rest),
+        "kat" => crate::seq::kmer::cli::run(rest),
         "pipeline" => crate::pipeline::flow::cli::main(rest),
         "tools" => tools_report(rest),
         "checks" => checks_report(rest),

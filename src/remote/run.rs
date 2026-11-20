@@ -7,6 +7,7 @@ use super::{domains, flow, motif, species};
 use crate::pipeline::steps::{Aligned, Named};
 use crate::pipeline::tools::{self, Installed};
 use crate::pipeline::{self, predict, steps, Available};
+use crate::seq::clustal;
 use crate::seq::estimate::{estimate, EstimateOptions};
 use crate::seq::msa::Msa;
 use crate::seq::newick::NwTree;
@@ -130,8 +131,16 @@ fn fold_local(command: &[String], sequence: &[u8], limit: Duration) -> Result<St
     Ok(pdb)
 }
 
-/// Align `seqs` with MAFFT when asked for and found here, else with the built-in aligner.
-fn align(seqs: &[Named], mafft: bool) -> Result<Aligned, String> {
+/// Align `seqs` with MAFFT when asked for and found here, else with the built-in progressive method when its settings are given and MAFFT is not asked for,
+/// else with the built-in centre-star aligner.
+fn align(
+    seqs: &[Named],
+    mafft: bool,
+    progressive: Option<&clustal::Options>,
+) -> Result<Aligned, String> {
+    if let (false, Some(options)) = (mafft, progressive) {
+        return steps::align_progressive(seqs, options);
+    }
     let dir = tools::WorkFolder::new("align")?;
     let found = if mafft {
         tools::detect(&tools::MAFFT)
@@ -173,7 +182,11 @@ fn fold(sequence: &[u8], local: bool, env: &Env) -> Result<Folded, String> {
 /// Run `request` here and give the response.
 pub fn execute(request: Request, env: &Env) -> Result<Response, String> {
     match request {
-        Request::Align { seqs, mafft } => align(&seqs, mafft).map(Response::Align),
+        Request::Align {
+            seqs,
+            mafft,
+            progressive,
+        } => align(&seqs, mafft, progressive.as_ref()).map(Response::Align),
         Request::Tree {
             alignment,
             analysis,

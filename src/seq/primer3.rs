@@ -146,7 +146,7 @@ pub fn tm(seq: &[u8], s: &Settings) -> Option<f64> {
 /// reverse complement of `b`, match +1, mismatch -1, a gap of one base -2 and no longer gaps.
 /// Returns `(any, end)`: the best local alignment, and the best alignment that starts at the
 /// start of either sequence and finishes on `a`'s last base, its 3' end. Neither is below 0.
-fn dimer_scores(a: &[u8], b: &[u8]) -> (i32, i32) {
+pub(super) fn dimer_scores(a: &[u8], b: &[u8]) -> (i32, i32) {
     let (x, y) = (a, revcom(b));
     let (m, n) = (x.len(), y.len());
     if m == 0 || n == 0 {
@@ -183,7 +183,7 @@ fn dimer_scores(a: &[u8], b: &[u8]) -> (i32, i32) {
     (run(true), run(false))
 }
 
-fn longest_run(seq: &[u8]) -> usize {
+pub(super) fn longest_run(seq: &[u8]) -> usize {
     let (mut best, mut run, mut prev) = (0, 0, 0u8);
     for &c in seq {
         run = if c == prev { run + 1 } else { 1 };

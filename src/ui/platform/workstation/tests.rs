@@ -443,6 +443,7 @@ fn a_fetched_result_opens_in_the_page_it_belongs_to() {
         Request::Align {
             seqs: isolates(),
             mafft: false,
+            progressive: None,
         },
         &env,
     )
@@ -824,7 +825,7 @@ fn an_alignment_asked_for_with_the_workstation_on_is_computed_there_and_shown_wh
 
     let (queued, request) = answer(&server);
     assert_eq!(queued.label, "Alignment of 6 sequences (built-in)");
-    let Request::Align { seqs, mafft } = request else {
+    let Request::Align { seqs, mafft, .. } = request else {
         panic!("an alignment was asked for");
     };
     assert_eq!((seqs.len(), mafft), (6, false));
@@ -842,6 +843,85 @@ fn an_alignment_asked_for_with_the_workstation_on_is_computed_there_and_shown_wh
 }
 
 #[test]
+fn the_progressive_method_is_asked_for_there_with_the_settings_the_page_shows() {
+    let server = serving("workstation-align-progressive");
+    let (mut app, ctx) = window_for(&server);
+    let options = crate::seq::clustal::Options {
+        guide: crate::seq::clustal::Guide::Upgma,
+        free_end_gaps: false,
+        refine: 2,
+        fast: true,
+    };
+    app.platform.alignment.choose_progressive(options);
+    app.load_example(Workspace::Alignment);
+    draw_until(&mut app, &ctx, |_| !server.shared.list().is_empty());
+    let (queued, request) = answer(&server);
+    assert_eq!(queued.label, "Alignment of 6 sequences (progressive)");
+    let Request::Align {
+        mafft, progressive, ..
+    } = request
+    else {
+        panic!("an alignment was asked for");
+    };
+    assert!(!mafft);
+    assert_eq!(progressive, Some(options));
+    draw_until(&mut app, &ctx, |a| a.platform.alignment.result.is_some());
+    let result = app
+        .platform
+        .alignment
+        .result
+        .as_ref()
+        .expect("an alignment");
+    assert!(
+        result.engine.contains("UPGMA guide tree") && result.engine.contains("refined"),
+        "{}",
+        result.engine
+    );
+}
+
+#[test]
+fn a_workstation_that_does_not_know_the_progressive_method_is_told_from_one_that_does() {
+    let server = serving("workstation-align-older");
+    let (mut app, ctx) = window_for(&server);
+    app.platform
+        .alignment
+        .choose_progressive(crate::seq::clustal::Options::default());
+    app.load_example(Workspace::Alignment);
+    draw_until(&mut app, &ctx, |_| !server.shared.list().is_empty());
+    // an earlier version reads the request without the setting it does not know, and runs the built-in method
+    let queued = server
+        .shared
+        .list()
+        .into_iter()
+        .find(|j| j.status == Status::Queued)
+        .expect("a queued job");
+    let folder = server.shared.job_dir(&queued.id);
+    let sent = std::fs::read(folder.join("request.bin")).expect("a request");
+    let Request::Align { seqs, .. } =
+        Request::decode(queued.kind, &Container::decode(&sent).expect("a container"))
+            .expect("a request")
+    else {
+        panic!("an alignment was asked for");
+    };
+    let older = Request::Align {
+        seqs,
+        mafft: false,
+        progressive: None,
+    };
+    let response = execute(older, &Env::default()).expect("a result");
+    std::fs::write(folder.join("result.bin"), response.encode().encode()).expect("a result");
+    let mut done = queued.clone();
+    done.status = Status::Done;
+    server.shared.replace_for_tests(done);
+    draw_until(&mut app, &ctx, |a| a.platform.alignment.result.is_some());
+    let said = &app.platform.alignment.message;
+    assert!(
+        said.contains("progressive method was asked for") && said.contains("earlier version"),
+        "{said}"
+    );
+}
+
+#[test]
 fn a_tree_is_estimated_there_when_the_alignment_is_ready() {
     let server = serving("workstation-tree");
     let (mut app, ctx) = window_for(&server);
@@ -849,6 +929,7 @@ fn a_tree_is_estimated_there_when_the_alignment_is_ready() {
         Request::Align {
             seqs: isolates(),
             mafft: false,
+            progressive: None,
         },
         &Env::default(),
     )

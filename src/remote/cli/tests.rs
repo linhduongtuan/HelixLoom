@@ -200,6 +200,7 @@ fn the_process_of_a_job_reads_its_request_and_writes_its_result() {
             .map(|d| (d.name, d.seq))
             .collect(),
         mafft: false,
+        progressive: None,
     };
     let bytes = request
         .encode()

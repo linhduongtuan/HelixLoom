@@ -105,6 +105,9 @@ pub fn of_result(analysis: &str, parameters: &[(String, String)]) -> Option<&'st
             "MAFFT, IQ-TREE and the other programs HelixLoom runs"
         }
         "Alignment" if setting("engine") == "built in" => "Alignment (built in)",
+        "Alignment" if setting("engine") == "progressive (ClustalW-style)" => {
+            "Alignment (progressive, after ClustalW)"
+        }
         "Tree estimation" => match setting("method") {
             "Neighbour-joining" | "UPGMA" => "Distance trees (neighbour-joining, UPGMA)",
             "Maximum likelihood" => "Maximum-likelihood trees",

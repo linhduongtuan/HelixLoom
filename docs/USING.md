@@ -45,9 +45,9 @@ the dark theme.
 
    | Page | What you do there |
    | --- | --- |
-   | **Sequences** | edit a plasmid or a sequence; circular and linear maps, restriction sites and digests, ORFs, features, primers and PCR; assemble reads; calculators |
+   | **Sequences** | edit a plasmid or a sequence; circular and linear maps, restriction sites and digests, ORFs, features, primers and PCR (**Tools ▸ Primer3 Pair Design…** picks primer pairs, and a TaqMan probe between them when you tick the box); assemble reads; calculators |
    | **Signals** | look at a Sanger trace and the quality of each base, trim the weak ends, export; summarise and clean FASTQ reads |
-   | **Alignment** | gather sequences (*Add open sequences*, *Open FASTA…*, or paste), press **Align**; a colour-coded viewer with consensus, identity and conservation; click a letter to select its column |
+   | **Alignment** | gather sequences (*Add open sequences*, *Open FASTA…* (it reads GenBank, FASTA and Clustal `.aln`), or paste), choose the method (built-in centre-star, built-in progressive after ClustalW, or MAFFT) and press **Align**; a colour-coded viewer with consensus, identity and conservation; click a letter to select its column; save as FASTA or Clustal |
    | **Phylogeny** | build a tree from the alignment: neighbour-joining, UPGMA, maximum likelihood, Bayesian; bootstrap support; the species tree from many gene trees |
    | **Trees** | draw a tree as a phylogram, cladogram or circle; Newick tools; midpoint root, ladderize; save as SVG |
    | **Structure** | open a PDB file, or predict a structure from a sequence; turn it around in 3D, colour it by confidence, secondary structure, chain, or the alignment's conservation; measure an interface between chains |
@@ -57,6 +57,10 @@ the dark theme.
 5. **Save what you made.** **File ▸ Save**, **Save As…** and **Export as FASTA…** for sequences; **Save figure** on a map, an alignment, a trace, a tree or a structure
    (SVG, or a PNG with four pixels to a point); **File ▸ Save a Report of the Results…** writes one HTML page of the results with
    the methods in sentences and every input with its checksum. In the browser, a save is a download.
+   **File ▸ Save Project As…** writes the open sequences and what the Alignment, Trees, Structure and Pipelines pages show as one
+   `.hlproj` file, to keep, to send to someone, or to move to another computer or a browser; **File ▸ Open Project…** (or dropping the file on the
+   window) puts it back beside what is open. The sequences come back tied to no file and with unsaved changes, so that saving one asks where. A
+   file that was cut short or changed is refused and nothing is opened.
 
 Under a result, **How this was made** says what made it (every input with its checksum, the settings, the programs and their
 versions, the day, where it ran), what has changed since, and runs it again with the same settings.
@@ -73,6 +77,13 @@ browser, for that site, on that computer ([WEB.md](WEB.md), *What the page keeps
 **On a computer that others use, turn it off:** **File ▸ Remember My Work for Next Time** removes what was kept and keeps nothing
 more until you turn it on again. *Start fresh*, at the question, forgets the last session. In the browser, clearing the site's
 data does too. Nothing is ever sent anywhere by this.
+
+## Updates
+
+**Help ▸ Check for Updates…** (or `helixloom update`) asks GitHub whether a later release exists. Nothing is asked until you press the button, and
+the program never checks by itself. If one is out, the window shows what is new and can download the file for your computer (Mac with Apple
+silicon, Windows) into your Downloads folder, checked against the release's checksums; you then open the disk image or unzip the file yourself, since
+the program does not replace itself. The web version updates when you reload the page. See [DEPLOY.md](../DEPLOY.md) for updating the workstation.
 
 ## Heavy jobs on a workstation (optional)
 

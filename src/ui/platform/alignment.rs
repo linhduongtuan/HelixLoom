@@ -5,12 +5,13 @@ use super::alnview::{self, Colouring};
 use super::route::Source;
 use super::workstation::{run_button, ComputeView, Place};
 use super::Workspace;
-use crate::pipeline::steps::{align, fasta_text, read_fasta, Aligned, Named};
+use crate::pipeline::steps::{align, align_progressive, fasta_text, read_fasta, Aligned, Named};
 use crate::pipeline::tools::{self, Installed};
 use crate::provenance::{self, Asked, Provenance};
 use crate::remote::tasks::{Request, Response};
 use crate::remote::weight::Weight;
 use crate::seq::alnstats::{self, Column, Summary};
+use crate::seq::clustal::{self, aln};
 use crate::seq::conservation::{self, Block, Method, Settings};
 use crate::seq::io;
 use crate::ui::app::{Action, App};
@@ -33,11 +34,13 @@ pub struct Input {
     pub keep: bool,
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Default)]
+/// What aligns: the built-in centre-star method, MAFFT, or the built-in progressive method (`seq::clustal`) with its settings.
+#[derive(Clone, Copy, PartialEq, Eq, Default, Hash)]
 pub enum Engine {
     #[default]
     BuiltIn,
     Mafft,
+    Progressive(clustal::Options),
 }
 
 /// The rows of an alignment, the score of each column as the bars show it, and which score that is.
@@ -139,6 +142,8 @@ pub struct AlignmentPage {
     listed: u64,
     paste: String,
     engine: Engine,
+    /// The settings of the progressive method that the page shows (they go into `engine` when that is the choice).
+    progressive: clustal::Options,
     colouring: Colouring,
     score: Score,
     pub result: Option<Aligned>,
@@ -170,6 +175,7 @@ impl Default for AlignmentPage {
             listed: 0,
             paste: String::new(),
             engine: Engine::default(),
+            progressive: clustal::Options::default(),
             colouring: Colouring::ByType,
             score: Score::default(),
             result: None,
@@ -236,11 +242,29 @@ impl AlignmentPage {
                 return;
             }
         };
+        // a file that is named as a Clustal alignment and is not one is said so, not taken for one long sequence
+        let named_clustal = file
+            .path()
+            .extension()
+            .is_some_and(|e| e.eq_ignore_ascii_case("aln"));
+        if named_clustal && !aln::is_clustal(&text) {
+            self.message = format!(
+                "Could not read {}: it is named as a Clustal alignment, but its first line does not say CLUSTAL.",
+                file.shown()
+            );
+            return;
+        }
         let stem = file
             .path()
             .file_stem()
             .map_or("sequence".to_string(), |s| s.to_string_lossy().into_owned());
-        let found = sequences_in(&text, &stem);
+        let found = match sequences_in(&text, &stem) {
+            Ok(found) => found,
+            Err(why) => {
+                self.message = format!("Could not read {}: {why}", file.shown());
+                return;
+            }
+        };
         self.message = format!("Added {} sequences from {}.", found.len(), file.shown());
         found.iter().for_each(|(name, bases)| self.add(name, bases));
     }
@@ -251,6 +275,12 @@ impl AlignmentPage {
         self.engine = engine;
     }
 
+    /// Choose the progressive method with these settings, as the page's controls do.
+    #[cfg(test)]
+    pub fn choose_progressive(&mut self, options: clustal::Options) {
+        (self.engine, self.progressive) = (Engine::Progressive(options), options);
+    }
+
     /// The inputs and the settings of an alignment as they are now: the ticked sequences and the engine asked for.
     pub fn as_it_is(&self) -> (Vec<provenance::Input>, Vec<(String, String)>) {
         let inputs = self
@@ -259,11 +289,43 @@ impl AlignmentPage {
             .filter(|i| i.keep)
             .map(|i| provenance::Input::of(&i.name, &i.bases))
             .collect();
-        let engine = match self.engine {
+        let engine = match self.engine_now() {
             Engine::BuiltIn => "built in",
             Engine::Mafft => "MAFFT",
+            Engine::Progressive(_) => "progressive (ClustalW-style)",
         };
-        (inputs, vec![("engine".to_string(), engine.to_string())])
+        let mut settings = vec![("engine".to_string(), engine.to_string())];
+        if let Engine::Progressive(o) = self.engine_now() {
+            let words = |on: bool, yes: &str, no: &str| if on { yes } else { no }.to_string();
+            settings.extend([
+                (
+                    "guide tree".to_string(),
+                    words(
+                        o.guide == clustal::Guide::Upgma,
+                        "UPGMA",
+                        "neighbour-joining",
+                    ),
+                ),
+                (
+                    "distances".to_string(),
+                    words(o.fast, "from shared words", "from aligned pairs"),
+                ),
+                (
+                    "end gaps".to_string(),
+                    words(o.free_end_gaps, "free", "cost"),
+                ),
+                ("refinement passes".to_string(), o.refine.to_string()),
+            ]);
+        }
+        (inputs, settings)
+    }
+
+    /// The choice of engine with the settings that the page shows now (the progressive method's are edited beside it).
+    fn engine_now(&self) -> Engine {
+        match self.engine {
+            Engine::Progressive(_) => Engine::Progressive(self.progressive),
+            other => other,
+        }
     }
 
     /// What the viewer draws of the alignment, for drawing it elsewhere than on the page (a report); none without an alignment.
@@ -362,6 +424,7 @@ struct Clicks {
     example: bool,
     align: bool,
     save: bool,
+    save_clustal: bool,
     copy: bool,
     to_phylogeny: bool,
     remove: Option<usize>,
@@ -371,8 +434,28 @@ struct Clicks {
     of_column: column::Asks,
 }
 
-/// The sequences of a GenBank or FASTA text; any other text is taken as one sequence.
-fn sequences_in(text: &str, fallback_name: &str) -> Vec<Named> {
+/// The sequences of a GenBank, Clustal or FASTA text; any other text is taken as one sequence. A Clustal text that cannot be read
+/// is the one that gives a reason: the others give what they hold, which may be nothing.
+fn sequences_in(text: &str, fallback_name: &str) -> Result<Vec<Named>, String> {
+    if aln::is_clustal(text) {
+        // the sequences themselves: the gaps of the alignment are not part of them
+        return aln::read(text).map(|rows| {
+            rows.into_iter()
+                .map(|(name, row)| {
+                    (
+                        name,
+                        row.into_iter()
+                            .filter(|c| !matches!(c, b'-' | b'.'))
+                            .collect(),
+                    )
+                })
+                .collect()
+        });
+    }
+    Ok(sequences_of_other_texts(text, fallback_name))
+}
+
+fn sequences_of_other_texts(text: &str, fallback_name: &str) -> Vec<Named> {
     if text.trim_start().starts_with("LOCUS") {
         return io::parse_any(text, fallback_name)
             .map(|docs| docs.into_iter().map(|d| (d.name, d.seq)).collect())
@@ -423,6 +506,7 @@ impl App {
                             design::primary_button(ui, &look, "Estimate a tree").clicked();
                         c.copy = ui.button("Copy FASTA").clicked();
                         c.save = ui.button("Save FASTA…").clicked();
+                        c.save_clustal = ui.button("Save Clustal…").clicked();
                         crate::ui::figure::button(ui);
                     });
                 },
@@ -458,10 +542,15 @@ impl App {
             }
         }
         if c.add_pasted {
-            let found = sequences_in(&page.paste, "Pasted sequence");
-            found.iter().for_each(|(name, bases)| page.add(name, bases));
-            page.message = format!("Added {} pasted sequences.", found.len());
-            page.paste.clear();
+            match sequences_in(&page.paste, "Pasted sequence") {
+                Ok(found) => {
+                    found.iter().for_each(|(name, bases)| page.add(name, bases));
+                    page.message = format!("Added {} pasted sequences.", found.len());
+                    page.paste.clear();
+                }
+                // what was pasted stays, to be mended
+                Err(why) => page.message = format!("Could not read what was pasted: {why}"),
+            }
         }
         if c.clear {
             page.clear_inputs();
@@ -476,6 +565,9 @@ impl App {
             // with the engine the alignment that is shown was made with
             if let Some((_, engine)) = &page.made {
                 page.engine = *engine;
+                if let Engine::Progressive(options) = engine {
+                    page.progressive = *options;
+                }
             }
         }
         self.checks_win.open |= c.made.checks;
@@ -500,6 +592,20 @@ impl App {
                 let fasta = fasta_text(&a.rows);
                 if let Some(saved) = dialog::save_bytes(ask, "alignment.fasta", fasta.as_bytes()) {
                     page.message = saved.message;
+                }
+            }
+            if c.save_clustal {
+                match aln::write(&a.rows) {
+                    Ok(text) => {
+                        let ask =
+                            dialog::FileDialog::new().set_title("Save the alignment as Clustal");
+                        if let Some(saved) =
+                            dialog::save_bytes(ask, "alignment.aln", text.as_bytes())
+                        {
+                            page.message = saved.message;
+                        }
+                    }
+                    Err(why) => page.message = why,
                 }
             }
         }
@@ -542,9 +648,15 @@ impl App {
         // MAFFT that is not installed where this runs cannot be what aligns (its button is greyed, but a choice made earlier
         // stays): the choice goes back to the built-in aligner, so that the page, the record and a later "Run again" all say
         // what really ran
-        if mafft.is_none() {
+        if page.engine == Engine::Mafft && mafft.is_none() {
             page.engine = Engine::BuiltIn;
         }
+        // the progressive method is asked for with the settings that the page shows
+        page.engine = page.engine_now();
+        let progressive = match page.engine {
+            Engine::Progressive(options) => Some(options),
+            _ => None,
+        };
         let (inputs, parameters) = page.as_it_is();
         let ran_on = if matches!(place, Place::There(_)) {
             "the workstation"
@@ -562,9 +674,12 @@ impl App {
         ));
         let Place::There(remote) = place else {
             page.message = "Aligning…".into();
-            page.job = Some(Job::spawn(ctx, move || {
-                let dir = tools::WorkFolder::new("align")?;
-                align(&seqs, mafft.as_ref(), &dir)
+            page.job = Some(Job::spawn(ctx, move || match progressive {
+                Some(options) => align_progressive(&seqs, &options),
+                None => {
+                    let dir = tools::WorkFolder::new("align")?;
+                    align(&seqs, mafft.as_ref(), &dir)
+                }
             }));
             return;
         };
@@ -572,11 +687,16 @@ impl App {
         let label = format!(
             "Alignment of {} sequences ({})",
             seqs.len(),
-            if mafft.is_some() { "MAFFT" } else { "built-in" }
+            match (mafft.is_some(), progressive.is_some()) {
+                (true, _) => "MAFFT",
+                (false, true) => "progressive",
+                (false, false) => "built-in",
+            }
         );
         let request = Request::Align {
             seqs,
             mafft: mafft.is_some(),
+            progressive,
         };
         page.job = Some(Job::spawn_async(ctx, async move {
             remote
@@ -611,7 +731,13 @@ impl App {
                     aligned.engine,
                     aligned.seconds
                 );
-                page.made = page.asked.take().map(|(asked, engine)| {
+                page.made = page.asked.take().map(|(asked, mut engine)| {
+                    // a workstation of an earlier version does not know the progressive method and answers with another: the record
+                    // says what ran, so that running it again does not claim otherwise
+                    if matches!(engine, Engine::Progressive(_)) && !aligned.engine.starts_with(clustal::NAME) {
+                        engine = Engine::BuiltIn;
+                        page.message += " The progressive method was asked for, but another was used: the workstation may be of an earlier version.";
+                    }
                     (
                         asked.made(vec![aligned.engine.clone()], aligned.seconds),
                         engine,
@@ -700,6 +826,7 @@ fn inputs_panel(
         ui.radio_value(&mut page.engine, Engine::Mafft, label)
             .on_hover_text("Handles DNA and proteins, and distant sequences");
     });
+    progressive_choice(ui, look, page);
     let state = (kept >= 2, page.is_running());
     c.align = run_button(ui, look, view, "Align", state);
     // right under the button, where a failure (the workstation cannot be reached, say) is seen
@@ -726,6 +853,52 @@ fn inputs_panel(
         "Differences from the consensus",
     );
     ui.radio_value(&mut page.colouring, Colouring::Plain, "Plain");
+}
+
+/// The choice of the built-in progressive method, and, when it is chosen, its settings.
+fn progressive_choice(ui: &mut Ui, look: &Look, page: &mut AlignmentPage) {
+    let chosen = matches!(page.engine, Engine::Progressive(_));
+    let radio = ui
+        .radio(chosen, "Progressive (ClustalW-style)")
+        .on_hover_text(
+            "A guide tree, weights for the sequences and alignment of profiles, as ClustalW does it (not ClustalW itself). DNA and proteins; nothing to install",
+        );
+    if radio.clicked() {
+        page.engine = Engine::Progressive(page.progressive);
+    }
+    if !chosen {
+        return;
+    }
+    let options = &mut page.progressive;
+    ui.horizontal_wrapped(|ui| {
+        ui.label(RichText::new("Guide tree").size(11.5).color(look.dim));
+        ui.radio_value(
+            &mut options.guide,
+            clustal::Guide::NeighborJoining,
+            "Neighbour-joining",
+        )
+        .on_hover_text("ClustalW's: joins by the distances without assuming a clock");
+        ui.radio_value(&mut options.guide, clustal::Guide::Upgma, "UPGMA")
+            .on_hover_text(
+                "Joins by average distance; faster, and assumes that sequences change at one rate",
+            );
+    });
+    ui.horizontal(|ui| {
+        ui.label(RichText::new("Refine").size(11.5).color(look.dim));
+        ui.add(
+            egui::DragValue::new(&mut options.refine)
+                .range(0..=clustal::MOST_REFINE)
+                .suffix(" passes"),
+        )
+        .on_hover_text("After the first alignment, each branch of the tree splits the sequences in two; the halves are aligned again and the result is kept if its score is higher. 0: none; left out above 60 sequences");
+    });
+    ui.checkbox(&mut options.fast, "Fast distances (shared words)")
+        .on_hover_text("Distances from the words that two sequences share, not from aligning every pair: quicker, a little less exact. Used anyway for many long sequences");
+    ui.checkbox(&mut options.free_end_gaps, "Gaps at the ends are free")
+        .on_hover_text(
+            "For sequences of different lengths, such as fragments: an overhang costs nothing",
+        );
+    page.engine = Engine::Progressive(page.progressive);
 }
 
 /// `linked` is the residues of the structure that the selected column was lined up with, and whether the viewer scrolls

@@ -63,6 +63,7 @@ impl App {
             Wanted::Structure => self.platform.structure.open_source(file),
             Wanted::Fastq => self.load_fastq(file),
             Wanted::FeatureLibrary => self.load_feature_library(file),
+            Wanted::Gff => self.load_gff(file),
             Wanted::TreeToolsTree => self.load_treetools_tree(file),
             Wanted::PhyloCnnTree => self.load_phylocnn_tree(file),
             Wanted::SpeciesTrees => self.load_species_file(file),

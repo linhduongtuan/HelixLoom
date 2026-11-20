@@ -183,6 +183,20 @@ const COMMANDS: &[Command] = &[
     c("File", "Export as FASTA…", "", "write", Action::ExportFasta),
     c(
         "File",
+        "Save project as…",
+        "",
+        "write export share send work session",
+        Action::SaveProject,
+    ),
+    c(
+        "File",
+        "Open project…",
+        "",
+        "open work session",
+        Action::OpenProject,
+    ),
+    c(
+        "File",
         "Save a report of the results…",
         "",
         "html methods figures provenance write up publication",
@@ -478,6 +492,13 @@ const COMMANDS: &[Command] = &[
         Action::OpenLibrary,
     ),
     c(
+        "Features",
+        "Import features from a GFF3 or GTF file…",
+        "",
+        "annotation genes gff gtf prokka bakta",
+        Action::ImportGff,
+    ),
+    c(
         "Assembly",
         "Contig assembler…",
         "",
@@ -703,6 +724,13 @@ const COMMANDS: &[Command] = &[
     ),
     c(
         "Help",
+        "Check for updates…",
+        "",
+        "upgrade update new version release download latest",
+        Action::CheckForUpdates,
+    ),
+    c(
+        "Help",
         "Show the tour",
         "",
         "welcome introduction first run guide",
@@ -737,11 +765,14 @@ pub fn acts_on_the_sequence(action: &Action) -> bool {
         Action::Go(_)
             | Action::Example(_)
             | Action::Open
+            | Action::OpenProject
+            | Action::SaveProject
             | Action::CloseTab(_)
             | Action::Palette
             | Action::Shortcuts
             | Action::Checks
             | Action::Diagnostics
+            | Action::CheckForUpdates
             | Action::Report
             | Action::Tour
             | Action::Fetch

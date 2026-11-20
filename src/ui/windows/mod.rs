@@ -9,11 +9,15 @@ pub mod enzymes;
 pub mod features;
 pub mod fetch;
 pub mod find;
+#[cfg(test)]
+mod gff_tests;
 pub mod molcalc;
 pub mod motifs;
 pub mod orfs;
 pub mod phylocnn;
 pub mod primer3;
+#[cfg(test)]
+mod primer3_tests;
 pub mod programs;
 pub mod reads;
 pub mod sitetools;
@@ -24,3 +28,6 @@ pub mod tools;
 mod tools_pcr_tests;
 pub mod tree;
 pub mod treetools;
+pub mod update;
+#[cfg(test)]
+mod update_tests;

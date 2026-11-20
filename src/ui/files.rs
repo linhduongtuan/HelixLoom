@@ -77,7 +77,18 @@ impl App {
             )
             .add_filter("Sanger traces", &route::TRACE_EXTENSIONS)
             .add_filter("Protein structures", &route::STRUCTURE_EXTENSIONS)
-            .add_filter("Trees", &route::TREE_EXTENSIONS);
+            .add_filter("Trees", &route::TREE_EXTENSIONS)
+            .add_filter("Projects", &route::PROJECT_EXTENSIONS);
+        for f in dialog::pick_many(Wanted::Anything, ask) {
+            self.open_file(&f);
+        }
+    }
+
+    /// File ▸ Open Project…: the same Open dialog, asking for projects.
+    pub(super) fn pick_project(&mut self) {
+        let ask = FileDialog::new()
+            .set_title("Open a project")
+            .add_filter("Projects", &route::PROJECT_EXTENSIONS);
         for f in dialog::pick_many(Wanted::Anything, ask) {
             self.open_file(&f);
         }

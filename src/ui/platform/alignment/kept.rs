@@ -5,10 +5,10 @@ use super::{AlignmentPage, Engine, Input, Score};
 use crate::kept::{fields, line, value, word};
 use crate::pipeline::steps::Aligned;
 use crate::provenance::Provenance;
+use crate::seq::clustal::{Guide, Options, MOST_REFINE};
 use crate::ui::platform::alnview::Colouring;
 use std::hash::{Hash, Hasher};
 
-const ENGINES: [(Engine, &str); 2] = [(Engine::BuiltIn, "builtin"), (Engine::Mafft, "mafft")];
 const COLOURINGS: [(Colouring, &str); 3] = [
     (Colouring::ByType, "type"),
     (Colouring::Differences, "differences"),
@@ -24,6 +24,59 @@ const SCORES: [(Score, &str); 3] = [
 const ALIGNMENT_NOT_READ: &str =
     "The alignment that was kept cannot be read (its rows are empty or not of one length); the sequences are back.";
 
+/// The settings of the progressive method as the kept text writes them: `GUIDE:PASSES:FAST:FREE`, the guide tree by its word, the
+/// passes of refinement, and 1 or 0 for fast distances and for free end gaps.
+fn options_code(o: &Options) -> String {
+    format!(
+        "{}:{}:{}:{}",
+        o.guide.name(),
+        o.refine,
+        u8::from(o.fast),
+        u8::from(o.free_end_gaps)
+    )
+}
+
+/// The settings from their code; none when the code is not one (a word that is not a guide tree, more passes than the program
+/// allows, anything but 0 or 1 for the two switches).
+fn options_of(code: &str) -> Option<Options> {
+    let parts: Vec<&str> = code.split(':').collect();
+    let [guide, refine, fast, free] = parts.as_slice() else {
+        return None;
+    };
+    let switch = |s: &str| match s {
+        "0" => Some(false),
+        "1" => Some(true),
+        _ => None,
+    };
+    Some(Options {
+        guide: Guide::from_name(guide)?,
+        refine: refine.parse().ok().filter(|r| *r <= MOST_REFINE)?,
+        fast: switch(fast)?,
+        free_end_gaps: switch(free)?,
+    })
+}
+
+/// An engine as the kept text writes it: `builtin`, `mafft`, or `progressive:` and the settings (so that a record that is kept can
+/// be run again with them).
+fn engine_code(engine: Engine) -> String {
+    match engine {
+        Engine::BuiltIn => "builtin".to_string(),
+        Engine::Mafft => "mafft".to_string(),
+        Engine::Progressive(o) => format!("progressive:{}", options_code(&o)),
+    }
+}
+
+fn engine_of(code: &str) -> Option<Engine> {
+    match code {
+        "builtin" => Some(Engine::BuiltIn),
+        "mafft" => Some(Engine::Mafft),
+        other => other
+            .strip_prefix("progressive:")
+            .and_then(options_of)
+            .map(Engine::Progressive),
+    }
+}
+
 fn letters(bases: &[u8]) -> String {
     String::from_utf8_lossy(bases).into_owned()
 }
@@ -38,7 +91,7 @@ impl AlignmentPage {
         let mut hasher = std::collections::hash_map::DefaultHasher::new();
         (self.listed, self.revision).hash(&mut hasher);
         (self.result.is_some(), self.made.is_some()).hash(&mut hasher);
-        word(&ENGINES, self.engine).hash(&mut hasher);
+        (self.engine_now(), self.progressive).hash(&mut hasher);
         word(&COLOURINGS, self.colouring).hash(&mut hasher);
         word(&SCORES, self.score).hash(&mut hasher);
         for input in &self.inputs {
@@ -49,7 +102,8 @@ impl AlignmentPage {
 
     /// The page as text that `put_back` reads.
     pub(in crate::ui) fn kept(&self) -> String {
-        let mut text = line(&["engine", word(&ENGINES, self.engine)]);
+        let mut text = line(&["engine", &engine_code(self.engine_now())]);
+        text += &line(&["progressive", &options_code(&self.progressive)]);
         text += &line(&["colouring", word(&COLOURINGS, self.colouring)]);
         text += &line(&["score", word(&SCORES, self.score)]);
         for input in &self.inputs {
@@ -68,7 +122,7 @@ impl AlignmentPage {
             text += &line(&["row", name, &letters(row)]);
         }
         if let Some((made, engine)) = &self.made {
-            text += &line(&["made", word(&ENGINES, *engine), &made.kept()]);
+            text += &line(&["made", &engine_code(*engine), &made.kept()]);
         }
         text
     }
@@ -83,7 +137,18 @@ impl AlignmentPage {
             let kept = fields(kept);
             let kept: Vec<&str> = kept.iter().map(String::as_str).collect();
             match kept.as_slice() {
-                ["engine", name] => back.engine = value(&ENGINES, name).unwrap_or_default(),
+                ["engine", name] => {
+                    back.engine = engine_of(name).unwrap_or_default();
+                    if let Engine::Progressive(o) = back.engine {
+                        back.progressive = o;
+                    }
+                }
+                ["progressive", code] => {
+                    // a line that means nothing leaves what the engine line gave
+                    if let Some(options) = options_of(code) {
+                        back.progressive = options;
+                    }
+                }
                 ["colouring", name] => {
                     back.colouring = value(&COLOURINGS, name).unwrap_or(back.colouring)
                 }
@@ -111,7 +176,7 @@ impl AlignmentPage {
                     }
                 }
                 ["made", engine, record] => {
-                    made = Provenance::from_kept(record).zip(value(&ENGINES, engine))
+                    made = Provenance::from_kept(record).zip(engine_of(engine))
                 }
                 _ => {}
             }
@@ -350,5 +415,134 @@ mod tests {
         shown.put_back(&text).expect("put back");
         assert!(shown.revision > revision);
         assert_ne!(shown.stamp(), stamp);
+    }
+
+    /// Settings of the progressive method that are none of the defaults.
+    fn settled() -> Options {
+        Options {
+            guide: Guide::Upgma,
+            free_end_gaps: false,
+            refine: 3,
+            fast: true,
+        }
+    }
+
+    #[test]
+    fn the_progressive_method_and_its_settings_come_back_as_they_were_kept_with_the_record_that_names_them(
+    ) {
+        let mut page = page();
+        (page.engine, page.progressive) = (Engine::Progressive(Options::default()), settled());
+        page.made = Some((record(), Engine::Progressive(settled())));
+        let text = page.kept();
+        assert!(text.contains("engine\tprogressive:upgma:3:1:0\n"), "{text}");
+        let mut back = AlignmentPage::default();
+        back.put_back(&text).expect("put back");
+        // the page shows the settings that were kept, and the engine is asked for with them
+        assert_eq!(back.progressive, settled());
+        assert!(back.engine_now() == Engine::Progressive(settled()));
+        let (_, engine) = back.made.as_ref().expect("the record");
+        assert!(*engine == Engine::Progressive(settled()));
+        assert_eq!(back.kept(), text);
+    }
+
+    #[test]
+    fn the_settings_of_the_progressive_method_are_kept_while_another_engine_is_the_choice() {
+        let mut page = page();
+        page.progressive = settled();
+        assert!(page.engine == Engine::Mafft);
+        let text = page.kept();
+        let mut back = AlignmentPage::default();
+        back.put_back(&text).expect("put back");
+        assert!(back.engine == Engine::Mafft);
+        assert_eq!(back.progressive, settled());
+        // so that choosing the method again shows what was set
+        back.engine = Engine::Progressive(Options::default());
+        assert!(back.engine_now() == Engine::Progressive(settled()));
+    }
+
+    #[test]
+    fn settings_that_mean_nothing_are_the_ones_the_page_starts_with() {
+        for code in [
+            "progressive:nj:11:0:1", // more passes than the program makes
+            "progressive:nj:-1:0:1",
+            "progressive:nj:x:0:1",
+            "progressive:tree:0:0:1", // not a guide tree
+            "progressive:nj:0:2:1",   // a switch is 0 or 1
+            "progressive:nj:0:0:yes",
+            "progressive:nj:0:0",     // one field short
+            "progressive:nj:0:0:1:9", // one too many
+            "progressive:",
+            "progressive",
+        ] {
+            let mut shown = AlignmentPage::default();
+            let kept = format!("engine\t{code}\nprogressive\t{code}\ninput\t1\ta\tACGT\n");
+            shown.put_back(&kept).expect("put back");
+            assert!(shown.engine == Engine::BuiltIn, "{code}");
+            assert_eq!(shown.progressive, Options::default(), "{code}");
+        }
+        // the largest number of passes the program makes is read as it is
+        let mut shown = AlignmentPage::default();
+        let most = format!("engine\tprogressive:nj:{MOST_REFINE}:0:1\ninput\t1\ta\tACGT\n");
+        shown.put_back(&most).expect("put back");
+        assert_eq!(shown.progressive.refine, MOST_REFINE);
+    }
+
+    #[test]
+    fn a_progressive_line_that_means_nothing_leaves_the_settings_the_engine_line_gave() {
+        let mut shown = AlignmentPage::default();
+        let kept = "engine\tprogressive:upgma:3:1:0\nprogressive\tgarbage\ninput\t1\ta\tACGT\n";
+        shown.put_back(kept).expect("put back");
+        assert_eq!(shown.progressive, settled());
+        assert!(shown.engine_now() == Engine::Progressive(settled()));
+    }
+
+    #[test]
+    fn the_stamp_follows_the_settings_of_the_progressive_method() {
+        let mut page = page();
+        page.engine = Engine::Progressive(Options::default());
+        let mut seen = vec![page.stamp().expect("a stamp")];
+        for (what, set) in [
+            (
+                "the guide tree",
+                Options {
+                    guide: Guide::Upgma,
+                    ..Options::default()
+                },
+            ),
+            (
+                "the passes",
+                Options {
+                    refine: 2,
+                    ..Options::default()
+                },
+            ),
+            (
+                "fast distances",
+                Options {
+                    fast: true,
+                    ..Options::default()
+                },
+            ),
+            (
+                "the end gaps",
+                Options {
+                    free_end_gaps: false,
+                    ..Options::default()
+                },
+            ),
+        ] {
+            page.progressive = set;
+            let stamp = page.stamp().expect("a stamp");
+            assert!(!seen.contains(&stamp), "{what}");
+            seen.push(stamp);
+        }
+        // settings that are kept are kept whichever engine is the choice
+        page.engine = Engine::Mafft;
+        page.progressive = Options {
+            refine: 7,
+            ..Options::default()
+        };
+        let stamp = page.stamp().expect("a stamp");
+        assert!(!seen.contains(&stamp));
     }
 }
