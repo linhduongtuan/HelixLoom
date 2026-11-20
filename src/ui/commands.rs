@@ -800,6 +800,7 @@ pub fn acts_on_the_sequence(action: &Action) -> bool {
             | Action::TreeTools
             | Action::Workflow
             | Action::Reads
+            | Action::AlignmentPrimers
             | Action::ToggleSelectionOnly
             | Action::ToggleKeeping
     )

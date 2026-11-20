@@ -189,3 +189,57 @@ fn a_region_keeps_every_oligo_inside_it_and_the_marks_are_the_columns_of_the_oli
         (d.right.oligo.start, d.right.oligo.end - 1)
     );
 }
+
+#[test]
+fn the_button_on_the_alignment_page_stays_on_that_page_and_picks_for_the_alignment_that_is_there() {
+    // the palette and the menus take what works on the open sequence to the Sequences page first: this works on the alignment
+    assert!(!crate::ui::commands::acts_on_the_sequence(
+        &Action::AlignmentPrimers
+    ));
+    let mut app = app_with(3);
+    app.workspace = crate::ui::platform::Workspace::Alignment;
+    let ctx = eframe::egui::Context::default();
+    app.run(Action::AlignmentPrimers, &ctx);
+    assert_eq!(app.workspace, crate::ui::platform::Workspace::Alignment);
+    assert!(app.aln_win.open);
+    let report = app.aln_win.report.as_ref().expect("designs at once");
+    assert_eq!((report.rows, report.columns), (3, 1000));
+    assert!(!report.designs.is_empty());
+    // opening again keeps what is there; another alignment gets its own
+    let shown = app.aln_win.report.clone();
+    app.run(Action::AlignmentPrimers, &ctx);
+    assert_eq!(app.aln_win.report, shown);
+    let mut other = aligned(4);
+    other.rows[0].1.truncate(600);
+    other
+        .rows
+        .iter_mut()
+        .skip(1)
+        .for_each(|r| r.1.truncate(600));
+    app.platform.alignment.set_result(other);
+    app.run(Action::AlignmentPrimers, &ctx);
+    assert_eq!(
+        app.aln_win.report.as_ref().map(|r| (r.rows, r.columns)),
+        Some((4, 600))
+    );
+}
+
+#[test]
+fn the_header_button_is_clicked_and_the_window_comes_up_over_the_alignment() {
+    let mut app = app_with(3);
+    app.workspace = crate::ui::platform::Workspace::Alignment;
+    let mut screen = crate::ui::testing::Screen::new();
+    screen.settle(&mut app);
+    screen.click(&mut app, "Pick primers and probes…");
+    screen.settle(&mut app);
+    assert_eq!(app.workspace, crate::ui::platform::Workspace::Alignment);
+    let text = screen.text();
+    assert!(
+        text.contains("Primers and Probes from the Alignment"),
+        "{text}"
+    );
+    assert!(
+        text.contains("Left primer") && text.contains("Covers"),
+        "{text}"
+    );
+}

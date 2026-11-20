@@ -113,6 +113,21 @@ pub(super) struct Asks {
 }
 
 impl App {
+    /// Open the window, and pick designs for the alignment on the Alignment page at once when there are none for it yet (or they are
+    /// for another alignment): the person asked for primers for the alignment that is there, and should see them.
+    pub fn open_aln_primers(&mut self) {
+        self.aln_win.open = true;
+        let now = self
+            .platform
+            .alignment
+            .result
+            .as_ref()
+            .map(|a| fingerprint(&a.rows));
+        if self.aln_win.report.is_none() || now != self.aln_win.made_for {
+            self.run_aln_primers();
+        }
+    }
+
     /// Pick designs for the alignment on the Alignment page.
     pub fn run_aln_primers(&mut self) {
         let w = &mut self.aln_win;

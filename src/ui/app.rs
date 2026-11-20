@@ -520,7 +520,7 @@ impl App {
             Action::TreeTools => self.treetools_win.open = true,
             Action::Workflow => self.workspace = Workspace::Pipelines,
             Action::Primer3 => self.p3_win.open = true,
-            Action::AlignmentPrimers => self.aln_win.open = true,
+            Action::AlignmentPrimers => self.open_aln_primers(),
             Action::CheckForUpdates => self.update_win.open = true,
             Action::Reads => self.reads_win.open = true,
             Action::About => self.about_open = true,
