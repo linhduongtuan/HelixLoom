@@ -1,5 +1,6 @@
 use super::*;
 use crate::pipeline::steps::Aligned;
+use crate::seq::codonalign::Codons;
 use crate::ui::app::{App, Startup};
 use std::time::{Duration, Instant};
 
@@ -233,4 +234,213 @@ fn a_file_named_as_clustal_that_is_not_one_is_said_so_and_adds_nothing() {
     page.add_source(Source::Path(&real));
     assert_eq!(page.inputs.len(), 2);
     std::fs::remove_dir_all(&folder).ok();
+}
+
+/// One codon for each amino acid (a second one for alanine when `alt`), as the letters a coding sequence is written with.
+fn coding(protein: &str, alt: bool) -> Vec<u8> {
+    protein
+        .bytes()
+        .flat_map(|a| {
+            match a {
+                b'M' => "ATG",
+                b'K' => "AAA",
+                b'T' => "ACC",
+                b'A' if alt => "GCT",
+                b'A' => "GCC",
+                b'Y' => "TAC",
+                b'I' => "ATC",
+                b'V' => "GTT",
+                b'Q' => "CAG",
+                b'R' => "CGT",
+                b'S' => "TCT",
+                b'F' => "TTC",
+                b'H' => "CAC",
+                _ => "NNN",
+            }
+            .bytes()
+        })
+        .collect()
+}
+
+/// Run the alignment the page is asked for to its end.
+fn wait_for_alignment(app: &mut App, ctx: &egui::Context) {
+    let end = Instant::now() + Duration::from_secs(60);
+    while app.platform.alignment.is_running() {
+        app.alignment_tick(ctx);
+        assert!(Instant::now() < end, "gave up waiting");
+        std::thread::sleep(Duration::from_millis(15));
+    }
+}
+
+fn coding_page(app: &mut App) -> Vec<(String, Vec<u8>)> {
+    let proteins = [
+        ("whole", "MKTAYIAKQRQISFVKSHFSRQ", false),
+        ("missing two", "MKTIAKQRQISFVKSHFSRQ", true),
+        ("one changed", "MKTAYVAKQRQISFVKSHFSRQ", false),
+        ("two more", "MKTAYIAKQKKRQISFVKSHFSRQ", true),
+    ];
+    let page = &mut app.platform.alignment;
+    page.clear_inputs();
+    let seqs: Vec<(String, Vec<u8>)> = proteins
+        .iter()
+        .map(|(n, p, alt)| (n.to_string(), coding(p, *alt)))
+        .collect();
+    seqs.iter().for_each(|(n, b)| page.add(n, b));
+    seqs
+}
+
+#[test]
+fn aligned_by_translation_the_dna_keeps_its_codons_whole_and_the_record_says_how_they_were_read() {
+    let mut app = App::new(Startup::default());
+    let ctx = egui::Context::default();
+    let seqs = coding_page(&mut app);
+    // the built-in method is chosen, which has no scores for amino acids: the proteins are aligned another way, and the result says so
+    app.platform.alignment.codons = Some(Codons::default());
+    app.start_alignment(&ctx);
+    wait_for_alignment(&mut app, &ctx);
+    let page = &app.platform.alignment;
+    let result = page.result.as_ref().expect("an alignment");
+    assert_eq!(result.rows.len(), 4);
+    for ((name, original), (got, row)) in seqs.iter().zip(&result.rows) {
+        assert_eq!(name, got);
+        let bases: Vec<u8> = row.iter().copied().filter(|&b| b != b'-').collect();
+        assert_eq!(&bases, original, "{name} loses or moves no base");
+        assert_eq!(row.len() % 3, 0);
+        for codon in row.chunks(3) {
+            let gaps = codon.iter().filter(|&&b| b == b'-').count();
+            assert!(gaps == 0 || gaps == 3, "{name}: {codon:?}");
+        }
+    }
+    // the two missing residues are one run of six gaps, and the two extra ones are six gaps in the other rows
+    let gaps = |name: &str| {
+        let row = &result.rows.iter().find(|r| r.0 == name).expect("a row").1;
+        row.iter().filter(|&&b| b == b'-').count()
+    };
+    assert_eq!((gaps("whole"), gaps("missing two")), (6, 12));
+    assert!(
+        result.engine.contains("carried back to the codons"),
+        "{}",
+        result.engine
+    );
+    assert!(
+        result.engine.contains("reading frame 1"),
+        "{}",
+        result.engine
+    );
+    let (record, _) = page.made.as_ref().expect("the record");
+    assert!(
+        record
+            .to_text()
+            .contains("reading frame 1, genetic code 1 (Standard)"),
+        "{}",
+        record.to_text()
+    );
+    // the viewer takes it for DNA
+    assert!(!crate::seq::alnstats::is_protein(
+        &result.rows.iter().map(|r| r.1.clone()).collect::<Vec<_>>()
+    ));
+}
+
+#[test]
+fn the_translation_is_kept_with_the_page_and_run_again_from_the_record() {
+    let mut app = App::new(Startup::default());
+    let ctx = egui::Context::default();
+    coding_page(&mut app);
+    app.platform.alignment.codons = Some(Codons { frame: 0, code: 1 });
+    app.start_alignment(&ctx);
+    wait_for_alignment(&mut app, &ctx);
+    // kept, and put back, it is the same choice; a line that says another thing than a choice leaves the page as it was
+    let kept = app.platform.alignment.kept();
+    assert!(kept.contains("codons\t0\t1"), "{kept}");
+    let mut back = AlignmentPage::default();
+    back.put_back(&kept).expect("put back");
+    assert_eq!(back.codons, Some(Codons { frame: 0, code: 1 }));
+    let odd = kept.replace("codons\t0\t1", "codons\t7\t1");
+    let mut other = AlignmentPage::default();
+    other.put_back(&odd).expect("put back");
+    assert_eq!(other.codons, None);
+    let before = app.platform.alignment.stamp();
+    app.platform.alignment.codons = Some(Codons { frame: 1, code: 1 });
+    assert_ne!(app.platform.alignment.stamp(), before);
+    // run again takes the choice from the record of what is shown, not from what the page shows now
+    app.platform.alignment.codons = None;
+    let mut out = Vec::new();
+    app.apply_alignment_clicks(
+        Clicks {
+            made: made_ui::Asks {
+                again: true,
+                ..made_ui::Asks::default()
+            },
+            ..Clicks::default()
+        },
+        &ctx,
+        &mut out,
+    );
+    assert_eq!(
+        app.platform.alignment.codons,
+        Some(Codons { frame: 0, code: 1 })
+    );
+    wait_for_alignment(&mut app, &ctx);
+    let engine = &app
+        .platform
+        .alignment
+        .result
+        .as_ref()
+        .expect("an alignment")
+        .engine;
+    assert!(
+        engine.contains("genetic code 2 (Vertebrate mitochondrial)"),
+        "{engine}"
+    );
+}
+
+#[test]
+fn a_protein_or_a_sequence_without_a_codon_is_refused_on_the_page_with_the_reason() {
+    let mut app = App::new(Startup::default());
+    let ctx = egui::Context::default();
+    let page = &mut app.platform.alignment;
+    page.add("dna", &coding("MKTAYIAKQ", false));
+    page.add("protein", b"MKVLAAGIVGLLLAQPDEFHKRSTW");
+    page.codons = Some(Codons::default());
+    app.start_alignment(&ctx);
+    wait_for_alignment(&mut app, &ctx);
+    let page = &app.platform.alignment;
+    assert!(page.result.is_none());
+    assert!(
+        page.message.contains("protein does not look like DNA"),
+        "{}",
+        page.message
+    );
+    // and the same when it is one codon short
+    let page = &mut app.platform.alignment;
+    page.clear_inputs();
+    page.add("dna", &coding("MKTAYIAKQ", false));
+    page.add("short", b"AT");
+    app.start_alignment(&ctx);
+    wait_for_alignment(&mut app, &ctx);
+    assert!(
+        app.platform
+            .alignment
+            .message
+            .contains("short has no whole codon"),
+        "{}",
+        app.platform.alignment.message
+    );
+}
+
+#[test]
+fn the_choice_is_on_the_page_with_the_frame_and_the_code_once_it_is_ticked() {
+    let mut app = App::new(Startup::default());
+    app.workspace = crate::ui::platform::Workspace::Alignment;
+    let mut screen = crate::ui::testing::Screen::new();
+    screen.settle(&mut app);
+    assert!(screen.text().contains("Align by the translation"));
+    assert!(!screen.text().contains("Reading frame"));
+    app.platform.alignment.codons = Some(Codons::default());
+    screen.settle(&mut app);
+    let text = screen.text();
+    assert!(
+        text.contains("Reading frame") && text.contains("Genetic code"),
+        "{text}"
+    );
 }

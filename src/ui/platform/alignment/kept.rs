@@ -6,6 +6,8 @@ use crate::kept::{fields, line, value, word};
 use crate::pipeline::steps::Aligned;
 use crate::provenance::Provenance;
 use crate::seq::clustal::{Guide, Options, MOST_REFINE};
+use crate::seq::codonalign::Codons;
+use crate::seq::dna::GENETIC_CODES;
 use crate::ui::platform::alnview::Colouring;
 use std::hash::{Hash, Hasher};
 
@@ -91,7 +93,7 @@ impl AlignmentPage {
         let mut hasher = std::collections::hash_map::DefaultHasher::new();
         (self.listed, self.revision).hash(&mut hasher);
         (self.result.is_some(), self.made.is_some()).hash(&mut hasher);
-        (self.engine_now(), self.progressive).hash(&mut hasher);
+        (self.engine_now(), self.progressive, self.codons).hash(&mut hasher);
         word(&COLOURINGS, self.colouring).hash(&mut hasher);
         word(&SCORES, self.score).hash(&mut hasher);
         for input in &self.inputs {
@@ -104,6 +106,9 @@ impl AlignmentPage {
     pub(in crate::ui) fn kept(&self) -> String {
         let mut text = line(&["engine", &engine_code(self.engine_now())]);
         text += &line(&["progressive", &options_code(&self.progressive)]);
+        if let Some(c) = self.codons {
+            text += &line(&["codons", &c.frame.to_string(), &c.code.to_string()]);
+        }
         text += &line(&["colouring", word(&COLOURINGS, self.colouring)]);
         text += &line(&["score", word(&SCORES, self.score)]);
         for input in &self.inputs {
@@ -148,6 +153,15 @@ impl AlignmentPage {
                     if let Some(options) = options_of(code) {
                         back.progressive = options;
                     }
+                }
+                ["codons", frame, code] => {
+                    // a choice that is none of the page's leaves it as it was
+                    back.codons = frame
+                        .parse::<usize>()
+                        .ok()
+                        .zip(code.parse::<usize>().ok())
+                        .filter(|&(f, c)| f <= 2 && c < GENETIC_CODES.len())
+                        .map(|(frame, code)| Codons { frame, code });
                 }
                 ["colouring", name] => {
                     back.colouring = value(&COLOURINGS, name).unwrap_or(back.colouring)

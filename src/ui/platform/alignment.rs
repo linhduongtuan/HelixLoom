@@ -5,14 +5,19 @@ use super::alnview::{self, Colouring};
 use super::route::Source;
 use super::workstation::{run_button, ComputeView, Place};
 use super::Workspace;
-use crate::pipeline::steps::{align, align_progressive, fasta_text, read_fasta, Aligned, Named};
+use crate::pipeline::steps::{
+    align, align_by_translation, align_progressive, carry_back, fasta_text, read_fasta, Aligned,
+    Named,
+};
 use crate::pipeline::tools::{self, Installed};
 use crate::provenance::{self, Asked, Provenance};
 use crate::remote::tasks::{Request, Response};
 use crate::remote::weight::Weight;
 use crate::seq::alnstats::{self, Column, Summary};
 use crate::seq::clustal::{self, aln};
+use crate::seq::codonalign::{self, Codons};
 use crate::seq::conservation::{self, Block, Method, Settings};
+use crate::seq::dna::GENETIC_CODES;
 use crate::seq::io;
 use crate::ui::app::{Action, App};
 use crate::ui::design::{self, Look, Tone};
@@ -142,6 +147,8 @@ pub struct AlignmentPage {
     listed: u64,
     paste: String,
     engine: Engine,
+    /// Align DNA by its translation: how the codons are read (none: align the letters as they are).
+    pub codons: Option<Codons>,
     /// The settings of the progressive method that the page shows (they go into `engine` when that is the choice).
     progressive: clustal::Options,
     colouring: Colouring,
@@ -179,6 +186,7 @@ impl Default for AlignmentPage {
             listed: 0,
             paste: String::new(),
             engine: Engine::default(),
+            codons: None,
             progressive: clustal::Options::default(),
             colouring: Colouring::ByType,
             score: Score::default(),
@@ -321,6 +329,9 @@ impl AlignmentPage {
                 ),
                 ("refinement passes".to_string(), o.refine.to_string()),
             ]);
+        }
+        if let Some(c) = self.codons {
+            settings.push(("align by translation".to_string(), c.describe()));
         }
         (inputs, settings)
     }
@@ -577,11 +588,16 @@ impl App {
         }
         if c.made.again {
             // with the engine the alignment that is shown was made with
-            if let Some((_, engine)) = &page.made {
+            if let Some((made, engine)) = &page.made {
                 page.engine = *engine;
                 if let Engine::Progressive(options) = engine {
                     page.progressive = *options;
                 }
+                page.codons = made
+                    .parameters
+                    .iter()
+                    .find(|(k, _)| k == "align by translation")
+                    .and_then(|(_, v)| Codons::parse(v));
             }
         }
         self.checks_win.open |= c.made.checks;
@@ -674,6 +690,7 @@ impl App {
             Engine::Progressive(options) => Some(options),
             _ => None,
         };
+        let codons = page.codons;
         let (inputs, parameters) = page.as_it_is();
         let ran_on = if matches!(place, Place::There(_)) {
             "the workstation"
@@ -691,23 +708,58 @@ impl App {
         ));
         let Place::There(remote) = place else {
             page.message = "Aligning…".into();
-            page.job = Some(Job::spawn(ctx, move || match progressive {
-                Some(options) => align_progressive(&seqs, &options),
-                None => {
-                    let dir = tools::WorkFolder::new("align")?;
-                    align(&seqs, mafft.as_ref(), &dir)
+            page.job = Some(Job::spawn(ctx, move || {
+                let plain = |seqs: &[Named]| match progressive {
+                    Some(options) => align_progressive(seqs, &options),
+                    None => {
+                        let dir = tools::WorkFolder::new("align")?;
+                        align(seqs, mafft.as_ref(), &dir)
+                    }
+                };
+                match codons {
+                    None => plain(&seqs),
+                    // the centre-star method has no scores for amino acids: the proteins go to the progressive method then
+                    Some(c) => align_by_translation(&seqs, &c, |proteins| {
+                        match (progressive, mafft.is_some()) {
+                            (None, false) => {
+                                align_progressive(proteins, &clustal::Options::default())
+                            }
+                            _ => plain(proteins),
+                        }
+                    }),
                 }
             }));
             return;
         };
+        // on the workstation the proteins are what is sent: the translating and the putting back are done here
+        let started = web_time::Instant::now();
+        let (seqs, translated) = match codons {
+            None => (seqs, None),
+            Some(c) => match codonalign::translate_all(&seqs, &c) {
+                Ok(t) => (t.proteins.clone(), Some((t, c))),
+                Err(why) => {
+                    (page.message, page.asked) = (why, None);
+                    return;
+                }
+            },
+        };
+        let progressive = match (&translated, progressive, mafft.is_some()) {
+            (Some(_), None, false) => Some(clustal::Options::default()),
+            _ => progressive,
+        };
         page.message = "Aligning on the workstation…".into();
         let label = format!(
-            "Alignment of {} sequences ({})",
+            "Alignment of {} sequences ({}{})",
             seqs.len(),
             match (mafft.is_some(), progressive.is_some()) {
                 (true, _) => "MAFFT",
                 (false, true) => "progressive",
                 (false, false) => "built-in",
+            },
+            if translated.is_some() {
+                ", by translation"
+            } else {
+                ""
             }
         );
         let request = Request::Align {
@@ -716,10 +768,14 @@ impl App {
             progressive,
         };
         page.job = Some(Job::spawn_async(ctx, async move {
-            remote
+            let aligned = remote
                 .run_async(&request, &label)
                 .await
-                .and_then(Response::into_align)
+                .and_then(Response::into_align)?;
+            match translated {
+                Some((t, c)) => carry_back(&t, aligned, &c, started),
+                None => Ok(aligned),
+            }
         }));
     }
 
@@ -844,6 +900,7 @@ fn inputs_panel(
             .on_hover_text("Handles DNA and proteins, and distant sequences");
     });
     progressive_choice(ui, look, page);
+    translation_choice(ui, look, page);
     let state = (kept >= 2, page.is_running());
     c.align = run_button(ui, look, view, "Align", state);
     // right under the button, where a failure (the workstation cannot be reached, say) is seen
@@ -870,6 +927,41 @@ fn inputs_panel(
         "Differences from the consensus",
     );
     ui.radio_value(&mut page.colouring, Colouring::Plain, "Plain");
+}
+
+/// The choice to align DNA by its translation, and how the codons are read.
+fn translation_choice(ui: &mut Ui, look: &Look, page: &mut AlignmentPage) {
+    let mut on = page.codons.is_some();
+    let changed = ui
+        .checkbox(&mut on, "Align by the translation (keep codons whole)")
+        .on_hover_text("For coding DNA: every sequence is translated, the proteins are aligned, and the codons are put back, so that gaps come in whole codons and a column holds codons of one amino acid")
+        .changed();
+    if changed {
+        page.codons = on.then(Codons::default);
+    }
+    let Some(c) = &mut page.codons else { return };
+    ui.horizontal(|ui| {
+        ui.label(RichText::new("Reading frame").size(11.5).color(look.dim));
+        for frame in 0..3 {
+            ui.radio_value(&mut c.frame, frame, (frame + 1).to_string());
+        }
+    });
+    ui.horizontal(|ui| {
+        ui.label(RichText::new("Genetic code").size(11.5).color(look.dim));
+        let shown = GENETIC_CODES.get(c.code).map_or("", |g| g.name);
+        egui::ComboBox::from_id_salt("aln_genetic_code")
+            .selected_text(shown)
+            .show_ui(ui, |ui| {
+                for (k, g) in GENETIC_CODES.iter().enumerate() {
+                    ui.selectable_value(&mut c.code, k, format!("{} {}", g.id, g.name));
+                }
+            });
+    });
+    ui.label(
+        RichText::new("The proteins are aligned by MAFFT when it is chosen, else by the progressive method (the centre-star method has no scores for amino acids).")
+            .size(11.5)
+            .color(look.dim),
+    );
 }
 
 /// The choice of the built-in progressive method, and, when it is chosen, its settings.

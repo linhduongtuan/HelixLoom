@@ -6,6 +6,7 @@ pub mod alnstats;
 pub mod assemble;
 pub mod astral;
 pub mod clustal;
+pub mod codonalign;
 pub mod conservation;
 pub mod copyspecial;
 pub mod diagnostic;

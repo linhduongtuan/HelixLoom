@@ -140,6 +140,40 @@ pub const CHECKS: &[Check] = &[
     },
     Check {
         group: ALIGNMENT,
+        analysis: "Aligning DNA by its translation (codons kept whole)",
+        standard: Standard::Known,
+        against: "Sequences written by hand from a protein with one codon for each amino acid (a second codon for alanine in two of them), with two residues missing in one, one changed and two extra in another; translations worked out by hand for three reading frames, for the standard and the vertebrate mitochondrial code (TGA is a stop in one and tryptophan in the other), and with an ambiguous base, lower case, U and gaps; 300 random cases of random sequences with random gaps put in their proteins by a stand-in aligner.",
+        result: "The proteins are those worked out; the alignment of the DNA has no base lost or moved (without its gaps every row is the sequence given), every gap is three, the two missing residues are six gaps, heads line up and tails are padded; an aligner that changes, shortens or lengthens a sequence is refused with the sequence named; a protein, a sequence with no whole codon and a frame or code that does not exist are refused with the reason.",
+        limits: "Not compared with pal2nal, TranslatorX or MACSE: none was run. One reading frame for all the sequences, no frame shifts or introns, the frame is not found, and a stop codon is aligned as X. The progressive method was run on the proteins of one small family; MAFFT and the workstation path were not run on proteins in the tests (the workstation sends the proteins and the program puts the codons back).",
+        tests: &[
+            (
+                "src/seq/codonalign/tests.rs",
+                "the_alignment_of_the_proteins_is_carried_back_as_whole_codons",
+            ),
+            (
+                "src/seq/codonalign/tests.rs",
+                "for_random_sequences_no_base_is_lost_or_moved_and_every_gap_is_a_whole_codon",
+            ),
+            (
+                "src/seq/codonalign/tests.rs",
+                "what_the_aligner_changes_or_leaves_out_is_refused_with_the_sequence_named",
+            ),
+            (
+                "src/seq/codonalign/tests.rs",
+                "the_reading_frame_leaves_a_head_and_a_tail_and_the_genetic_code_changes_the_protein",
+            ),
+            (
+                "src/ui/platform/alignment/tests.rs",
+                "aligned_by_translation_the_dna_keeps_its_codons_whole_and_the_record_says_how_they_were_read",
+            ),
+            (
+                "src/ui/platform/alignment/tests.rs",
+                "the_translation_is_kept_with_the_page_and_run_again_from_the_record",
+            ),
+        ],
+    },
+    Check {
+        group: ALIGNMENT,
         analysis: "Primers and probes picked from an alignment",
         standard: Standard::Known,
         against: "Alignments made by hand from a template of 1,000 bases that primer3's own tests use: rows that agree everywhere (the pairs must be the ones primer3's rules give for the sequence, with the same penalties), one row with one changed base (no oligo may lie on that column, and the longest run of usable columns is counted), a lower share of agreeing rows (the oligo that lies on the variable column is counted as fitting 4 of 5 rows exactly and all 5 with a mismatch), a mismatch placed at each of the last five bases of a primer's 3' end, for the left and the right primer, and in a probe (not tolerated in a primer, tolerated in a probe), gaps counted as mismatches, a majority of gaps that leaves a column out of the consensus, a gap inside the amplicon (the product is 3 bases shorter in that row), positions counted in the first row's own bases, RNA and lower case, a region, and rows that share nothing.",

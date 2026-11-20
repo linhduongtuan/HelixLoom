@@ -659,6 +659,10 @@ TreeGraph 2 paper and returned feature lists in their own words; the code was wr
   and bars by annotations with a legend (`seq::treestyle`); an axis in distance, time before the tips or dates; highlight, find, rotate,
   order, root on a branch, take out weak branches, rename tips, cut out a clade (`seq::treeedit`); support values from other trees: the
   share of replicates with each branch, its strongest rival, or the value on the same branch of another tree.
+* **Built, 20 November 2026: align DNA by its translation (`docs/CODON_ALIGNMENT.md`)**, asked by the owner after the first look at the
+  primers window: the Alignment page's *Align by the translation* translates every sequence (reading frame 1 to 3, any genetic code the
+  program has), has the proteins aligned (MAFFT when chosen, else the progressive method) and puts the codons back (`seq::codonalign`). Not
+  done: choosing a frame for each sequence, finding the frame, frame shifts and introns, a protein view of the result, the command line.
 * **Built: primers and probes from an alignment (`docs/ALIGNMENT_PRIMERS.md`):** the button *Pick primers and probes…* on the Alignment
   page; oligos only on columns that enough sequences share, each laid against every sequence, a ranking by the sequences covered, the oligos
   marked on the alignment, the consensus opened with them as features, a table to copy or save.

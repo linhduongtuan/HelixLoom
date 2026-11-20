@@ -4,6 +4,7 @@
 
 use super::tools::{self, Installed};
 use crate::seq::clustal;
+use crate::seq::codonalign::{self, Codons, Translated};
 use crate::seq::msa::{center_star, Msa};
 use crate::seq::newick::NwTree;
 use crate::seq::primer3::Settings;
@@ -112,6 +113,38 @@ pub fn align(seqs: &[Named], mafft: Option<&Installed>, dir: &Path) -> Result<Al
     Ok(Aligned {
         rows,
         engine,
+        seconds: start.elapsed().as_secs_f64(),
+    })
+}
+
+/// Align DNA by its translation (`seq::codonalign`): translate, align the proteins with `proteins` (whatever aligns them) and carry the
+/// alignment back to the codons.
+pub fn align_by_translation(
+    seqs: &[Named],
+    codons: &Codons,
+    proteins: impl FnOnce(&[Named]) -> Result<Aligned, String>,
+) -> Result<Aligned, String> {
+    let start = Instant::now();
+    let translated = codonalign::translate_all(seqs, codons)?;
+    let aligned = proteins(&translated.proteins)?;
+    carry_back(&translated, aligned, codons, start)
+}
+
+/// The alignment of the proteins of `translated`, put back to codons; the time counts from `start`.
+pub fn carry_back(
+    translated: &Translated,
+    aligned: Aligned,
+    codons: &Codons,
+    start: Instant,
+) -> Result<Aligned, String> {
+    let rows = codonalign::back_translate(translated, &aligned.rows)?;
+    Ok(Aligned {
+        rows,
+        engine: format!(
+            "{} of the translations, carried back to the codons ({})",
+            aligned.engine,
+            codons.describe()
+        ),
         seconds: start.elapsed().as_secs_f64(),
     })
 }
