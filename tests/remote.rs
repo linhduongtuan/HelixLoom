@@ -396,6 +396,7 @@ fn alignment() -> String {
 }
 
 /// A job that takes far longer than a test does: the longest Bayesian run the server accepts.
+#[cfg(unix)]
 fn long_tree_job() -> Vec<u8> {
     let alignment = alignment();
     container(&[
@@ -543,6 +544,7 @@ fn a_job_ends_by_itself_when_its_server_is_gone() {
     }
 }
 
+#[cfg(unix)]
 fn fold_job(label: &str) -> Vec<u8> {
     fold_job_saying(&format!("kind=fold\nlabel={label}\n"))
 }
@@ -553,6 +555,7 @@ fn fold_job_asking(label: &str, gpus: usize) -> Vec<u8> {
     fold_job_saying(&format!("kind=fold\nlabel={label}\ngpus={gpus}\n"))
 }
 
+#[cfg(unix)]
 fn fold_job_saying(job: &str) -> Vec<u8> {
     container(&[
         ("meta", b"local=1\n"),
@@ -562,6 +565,7 @@ fn fold_job_saying(job: &str) -> Vec<u8> {
 }
 
 /// What GPUs are given to a job's process: "0", "0,1", ..., or nothing for a job that uses none.
+#[cfg(unix)]
 fn gpu_of(line: &[String]) -> &str {
     &line[6]
 }

@@ -356,6 +356,7 @@ fn make_work_folder(label: &str) -> Result<PathBuf, String> {
     ));
     // not `create_dir_all`: a folder that is there is somebody else's. The temporary folder is everyone's on many
     // computers, and a run writes sequences here: only the person who runs it may look in
+    #[cfg_attr(not(unix), allow(unused_mut))] // only the Unix branch below changes it
     let mut builder = std::fs::DirBuilder::new();
     #[cfg(unix)]
     {

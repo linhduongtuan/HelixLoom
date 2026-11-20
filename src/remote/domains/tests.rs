@@ -1,4 +1,6 @@
 use super::*;
+// only the tests that start a stand-in program use these, and a stand-in is a shell script (Unix)
+#[cfg(unix)]
 use crate::pipeline::domains::testing::{pressed_db, stand_in, Folder, TABLE};
 
 fn job() -> DomainsJob {

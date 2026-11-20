@@ -464,6 +464,33 @@ fn the_first_conversion_of_the_window_is_one_milligram_and_one_micromole() {
 
 const CALC: &str = include_str!("golden/calc.txt");
 
+/// Whether two written numbers are at most `ulps` units of the last place apart.
+fn within_ulps(a: &str, b: &str, ulps: u32) -> bool {
+    match (a.parse::<f64>(), b.parse::<f64>()) {
+        (Ok(a), Ok(b)) => (a - b).abs() <= f64::from(ulps) * f64::EPSILON * a.abs().max(b.abs()),
+        _ => false,
+    }
+}
+
+#[test]
+fn numbers_one_place_apart_in_the_last_digit_are_close_and_others_are_not() {
+    // what a Linux runner gave for `tanh(1.13e-3)`, and what the original gave on a Mac
+    assert!(within_ulps(
+        "0.0011299995190345788",
+        "0.001129999519034579",
+        4
+    ));
+    assert!(within_ulps(
+        "0.001129999519034579",
+        "0.0011299995190345788",
+        4
+    ));
+    assert!(!within_ulps("0.0011299995190345788", "0.00113", 4));
+    assert!(!within_ulps("1.0000000000000004", "1", 1));
+    assert!(within_ulps("1.0000000000000004", "1", 2));
+    assert!(!within_ulps("abc", "1", 4) && !within_ulps("1", "", 4));
+}
+
 #[test]
 fn lines_of_arithmetic_equal_what_the_original_gives() {
     use super::expr::calculate;
@@ -487,7 +514,17 @@ fn lines_of_arithmetic_equal_what_the_original_gives() {
             skipped += 1;
             continue;
         }
-        assert_eq!(calculate(text), want, "{text:?}");
+        let got = calculate(text);
+        // the original's numbers were written on a Mac: there they must match to the last digit. Another system's maths library
+        // (`tanh`, `exp`, `sin` …) may round the last place the other way, which is not a wrong answer
+        if cfg!(target_os = "macos") {
+            assert_eq!(got, want, "{text:?}");
+        } else {
+            assert!(
+                got == want || within_ulps(&got, want, 4),
+                "{text:?}: {got} for {want}"
+            );
+        }
         cases += 1;
     }
     assert_eq!(cases + skipped, 3000);
