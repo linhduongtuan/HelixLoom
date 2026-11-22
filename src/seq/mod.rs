@@ -27,6 +27,7 @@ pub mod interface;
 pub mod io;
 pub mod kmer;
 pub mod likelihood;
+pub mod minimap;
 pub mod molcalc;
 pub mod motif;
 pub mod msa;

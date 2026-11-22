@@ -140,6 +140,40 @@ pub const CHECKS: &[Check] = &[
     },
     Check {
         group: ALIGNMENT,
+        analysis: "Mapping reads and finding overlaps (after minimap2)",
+        standard: Standard::Known,
+        against: "A plain brute-force minimizer sketch written apart from the program (every window of every run, all k-mers of the smallest hash, for k from 1 to 32 and w from 1 to 400, with breaks, lower case and RNA); the paper's chaining formula and gap cost worked out by hand for lines of anchors, an indel, a gap past the bandwidth, two places and a cross-over; the paper's mapping quality formula; reads simulated from a known sequence (3 % each of substitutions, insertions and deletions) on both strands, inside a repeat of two nearly identical copies, across its edge, made of two distant places, from nowhere, and overlapping each other in known places; a CIGAR walked along the two sequences.",
+        result: "The sketch equals the plain one and mirrors under reverse complement; chain scores, gap costs and qualities are those worked out; the simulated reads are placed on the right strand within a window of where they were cut, with the repeat read at a low quality and the edge read at a high one, two primaries for the two-place read, one line for each overlapping pair with the overlap to within 250 bases, and the CIGAR consumes exactly the spans and agrees with its counts.",
+        limits: "Not compared with minimap2: it was not run (that needs a download), so no claim of the same output. The simulated genome is random, without repeats or low-complexity regions, so accuracy on a real genome is unknown; 1,500 such reads were all placed right (a test left out of the usual run: `cargo test --release minimap_accuracy -- --ignored --nocapture`). The ends of an alignment are not extended, there is no splice mode, no short-read mode, no SAM, and only the map-ont and ava-ont presets.",
+        tests: &[
+            (
+                "src/seq/minimap/sketch/tests.rs",
+                "the_sketch_is_the_plain_one_for_every_k_and_w_with_breaks_and_lower_case",
+            ),
+            (
+                "src/seq/minimap/sketch/tests.rs",
+                "the_reverse_complement_has_the_same_minimizers_mirrored_with_the_other_strand",
+            ),
+            (
+                "src/seq/minimap/chain/tests.rs",
+                "a_difference_between_the_gaps_costs_what_the_paper_says_and_a_great_one_breaks_the_chain",
+            ),
+            (
+                "src/seq/minimap/map/tests.rs",
+                "reads_from_a_known_place_are_mapped_there_on_the_strand_they_came_from",
+            ),
+            (
+                "src/seq/minimap/map/tests.rs",
+                "a_read_from_a_repeat_has_a_second_place_and_a_low_quality_while_one_across_its_edge_is_certain",
+            ),
+            (
+                "src/seq/minimap/tests.rs",
+                "overlaps_are_found_once_for_each_pair_with_the_earlier_read_as_the_query_and_never_with_itself",
+            ),
+        ],
+    },
+    Check {
+        group: ALIGNMENT,
         analysis: "Aligning DNA by its translation (codons kept whole)",
         standard: Standard::Known,
         against: "Sequences written by hand from a protein with one codon for each amino acid (a second codon for alanine in two of them), with two residues missing in one, one changed and two extra in another; translations worked out by hand for three reading frames, for the standard and the vertebrate mitochondrial code (TGA is a stop in one and tryptophan in the other), and with an ambiguous base, lower case, U and gaps; 300 random cases of random sequences with random gaps put in their proteins by a stand-in aligner.",

@@ -100,7 +100,7 @@ fn parse(args: &[String]) -> Result<Args, String> {
 }
 
 /// The sequences of an input: FASTA or FASTQ files, joined with commas.
-fn read_input(spec: &str) -> Result<Vec<(String, Vec<u8>)>, String> {
+pub(crate) fn read_input(spec: &str) -> Result<Vec<(String, Vec<u8>)>, String> {
     let mut out = Vec::new();
     for path in spec.split(',').filter(|p| !p.is_empty()) {
         let text =

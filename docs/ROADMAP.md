@@ -626,7 +626,11 @@ which needs the original's test data or its program: a download that waits for a
    written for them: G counted among the G and C, the plateau at the bottom of the valley, the start of the valley, the exact size and the height a half peak must have). The plan as written: a canonical k-mer counter, `hist`, `gcp`, `comp`, `sect`, a peak finder
    and a genome-size estimate (the textbook one: k-mers above the error valley over the homozygous peak, which is not KAT's own fit, whose
    method the pages do not give). The k-mer counter is the base of stage 5.
-3. **minimap2: minimizers, chaining, PAF** (MIT, from the paper): (w,k)-minimizers (k 15, w 10), an index, anchors, the chaining of the paper
+3. **minimap2: minimizers, chaining, PAF** (MIT, from the paper) — **built, 21 November 2026** (`docs/MAP.md`, `helixloom map`; checked by reads simulated from a known
+   sequence and by hand-worked cases; the code was broken on purpose in 47 places and all 47 were caught, 8 of them only after tests were written for
+   them (how the share of frequent minimizers rounds, the exact limits of a gap and of the bandwidth, a chain that runs into one taken before it, an overlap of
+   exactly half, the union of the bases the anchors cover, the divergence, and an anchor that follows the last on the read with a jump on the target);
+   **not compared with minimap2**; the ends are not extended, and splice, short reads, SAM and the other presets are not done). The plan as written: (w,k)-minimizers (k 15, w 10), an index, anchors, the chaining of the paper
    (gap cost 0.01·w̄·|l| + 0.5·log2|l|, 50 steps back), primary and secondary chains, mapping quality, PAF; the overlap mode (`ava-ont`);
    base-level alignment from HelixLoom's banded aligner. Out of reach for now: the SSE kernel, splice mode, paired short reads, parity with
    minimap2's output. Tested by reads simulated from a known sequence (the original's own examples need a download).
