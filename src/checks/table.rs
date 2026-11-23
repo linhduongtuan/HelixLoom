@@ -140,6 +140,40 @@ pub const CHECKS: &[Check] = &[
     },
     Check {
         group: ALIGNMENT,
+        analysis: "Assembling short reads with a de Bruijn graph (after SPAdes)",
+        standard: Standard::Known,
+        against: "Reads simulated from sequences of random bases, so that the answer is known: a line, a circle, a line with 1 % errors at 60 times, two copies that differ by a base, a chromosome and a plasmid at different depths, a repeat of 28 bases and one of 300 against reads of 100, a stretch at low coverage beside a genome; the k-mers against a plain count and the reverse complement against a plain one for every k; the links of the graph against the k-1 overlap.",
+        result: "A line and a circle come back whole at one k and at three, with errors the genome comes back and nothing else, a bulge is one contig with the coverage of both, a chromosome and a plasmid are two circles, a repeat shorter than the larger k is resolved by the iteration and one longer than the reads is not (and the graph shows it), a low-coverage stretch goes with the automatic cutoff and stays without, the strands and the runs give the same contigs, and every link overlaps by k-1 bases. In a throwaway run on random genomes, 100 kb and 1 Mb at 10 to 100 times with 0.1 to 1 % errors came back as one contig (two at 10 times) with no wrong 31-mer.",
+        limits: "Never run on real reads and never compared with SPAdes or any assembler. Only part of the two papers could be read in full, so the tip length, the bulge length and the isolated-path length are second-hand; the bulge similarity test and the automatic cutoff are this program's choices. No read correction, no paired reads (a repeat longer than a read stays a repeat), no scaffolds, no paths in the GFA, k to 63; the k-mers are in memory. The simulated genomes have no repeats beyond the ones made, errors are substitutions only, and coverage is even, so real data is harder.",
+        tests: &[
+            (
+                "src/seq/debruijn/tests.rs",
+                "perfect_reads_of_a_line_give_the_line_back_at_one_k_and_at_several",
+            ),
+            (
+                "src/seq/debruijn/tests.rs",
+                "errors_in_the_reads_are_cleaned_away_and_what_is_left_is_the_genome",
+            ),
+            (
+                "src/seq/debruijn/tests.rs",
+                "a_repeat_shorter_than_the_larger_k_is_resolved_by_it_and_not_by_the_smaller",
+            ),
+            (
+                "src/seq/debruijn/tests.rs",
+                "a_repeat_longer_than_the_reads_is_not_resolved_without_pairs_and_the_graph_shows_it",
+            ),
+            (
+                "src/seq/debruijn/clean/tests.rs",
+                "a_short_dead_end_with_little_coverage_beside_a_way_on_is_a_tip_and_is_removed",
+            ),
+            (
+                "src/seq/debruijn/pack/tests.rs",
+                "the_reverse_complement_is_what_revcom_gives_for_every_length",
+            ),
+        ],
+    },
+    Check {
+        group: ALIGNMENT,
         analysis: "Multi-locus sequence typing (after mlst)",
         standard: Standard::Known,
         against: "Made-up schemes of random alleles of 450 bases that differ from each other by a few bases, with five sequence types, and genomes of three contigs of random bases with alleles put in them on either strand: all the alleles of a type, exact alleles that are in no profile, an allele with three bases changed, an allele cut short by the end of a contig, an allele that is absent, two alleles at one locus, an allele 10 % unlike, one unknown base, an allele split over two contigs; the scores worked out by hand from the README's points (90, 63, 18 over the loci, 10 for a known type); the MD5 against the RFC 1321 test suite.",

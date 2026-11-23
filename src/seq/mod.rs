@@ -9,6 +9,7 @@ pub mod clustal;
 pub mod codonalign;
 pub mod conservation;
 pub mod copyspecial;
+pub mod debruijn;
 pub mod diagnostic;
 pub mod dna;
 pub mod doc;

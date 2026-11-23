@@ -638,7 +638,7 @@ which needs the original's test data or its program: a download that waits for a
    strands with HelixLoom's aligner, calls `n`, `~n`, `n?`, `-` and `n,m`, the score (+90/N exact, +63/N novel, +18/N partial, +10 for a known
    sequence type), the sequence type, TSV, CSV and JSON, novel alleles as FASTA with MD5 names. Which scheme is chosen automatically, and
    how ties go, is not documented: a stated guess.
-5. **A de Bruijn assembler, SPAdes-lite** (GPL, from the papers): k-mer counting, a graph at one k or several (21, 33, 55), tip clipping,
+5. **A de Bruijn assembler, SPAdes-lite** (GPL, from the papers) — **built, 23 November 2026** (`docs/DEBRUIJN.md`, `helixloom dbg`; only parts of the two papers could be read in full, the rest second-hand; checked on simulated reads of random sequences; **never run on real reads or compared with SPAdes**; 94 deliberate breakages, 80 caught at first and the rest closed with tests or a fix except four that change nothing; no error correction, no paired reads, k to 63). The plan as written: k-mer counting, a graph at one k or several (21, 33, 55), tip clipping,
    bubble removal, a depth filter, unitigs as GFA and FASTA. Useful for small, plasmid-scale reads only; BayesHammer-quality error
    correction, repeat resolution with read pairs and genome-scale speed are out of reach.
 6. **Hybrid bridging, Unicycler-lite** (GPL, from the paper): read a GFA, give each contig a multiplicity from its depth and links, bridge
