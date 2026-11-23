@@ -25,8 +25,8 @@ mod paf;
 pub(crate) mod sim;
 mod sketch;
 
-use index::Index;
-use map::map_read;
+pub(crate) use index::Index;
+pub(crate) use map::{map_read, Hit};
 use sketch::MAX_K;
 
 use crate::seq::par::par_map;

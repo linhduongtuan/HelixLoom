@@ -634,7 +634,7 @@ which needs the original's test data or its program: a download that waits for a
    (gap cost 0.01·w̄·|l| + 0.5·log2|l|, 50 steps back), primary and secondary chains, mapping quality, PAF; the overlap mode (`ava-ont`);
    base-level alignment from HelixLoom's banded aligner. Out of reach for now: the SSE kernel, splice mode, paired short reads, parity with
    minimap2's output. Tested by reads simulated from a known sequence (the original's own examples need a download).
-4. **mlst typing** (GPL, from the README): a scheme folder (profile table and one FASTA of alleles per locus), contigs scanned on both
+4. **mlst typing** (GPL, from the README) — **built, 22 November 2026** (`docs/MLST.md`, `helixloom mlst`; checked on made-up schemes and genomes, **not compared with mlst**; 61 deliberate breakages, all but one boundary caught after tests were added; the thresholds and the tie rule are stated guesses; no BLAST, no compressed input). The plan as written: a scheme folder (profile table and one FASTA of alleles per locus), contigs scanned on both
    strands with HelixLoom's aligner, calls `n`, `~n`, `n?`, `-` and `n,m`, the score (+90/N exact, +63/N novel, +18/N partial, +10 for a known
    sequence type), the sequence type, TSV, CSV and JSON, novel alleles as FASTA with MD5 names. Which scheme is chosen automatically, and
    how ties go, is not documented: a stated guess.

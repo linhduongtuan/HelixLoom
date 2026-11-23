@@ -140,6 +140,40 @@ pub const CHECKS: &[Check] = &[
     },
     Check {
         group: ALIGNMENT,
+        analysis: "Multi-locus sequence typing (after mlst)",
+        standard: Standard::Known,
+        against: "Made-up schemes of random alleles of 450 bases that differ from each other by a few bases, with five sequence types, and genomes of three contigs of random bases with alleles put in them on either strand: all the alleles of a type, exact alleles that are in no profile, an allele with three bases changed, an allele cut short by the end of a contig, an allele that is absent, two alleles at one locus, an allele 10 % unlike, one unknown base, an allele split over two contigs; the scores worked out by hand from the README's points (90, 63, 18 over the loci, 10 for a known type); the MD5 against the RFC 1321 test suite.",
+        result: "The calls are those of the README's notation (`n`, `~n`, `n?`, `-`, `n,m`) for every case, the closest allele is named for a novel one and its bases written under an MD5 name, the sequence type and the score of 100, 90 and the fractions are as worked out, the best of two schemes is chosen and a tie goes to the first, and the MD5 equals the RFC's.",
+        limits: "Not compared with mlst: neither it nor a scheme was run (a scheme is a download, and PubMLST's data may not be bundled). The README does not state the default identity and coverage (95 and 10 percent here), how schemes tie, or what happens at a contig end or a base N: those are this program's choices. BLAST is not used. An end base that does not match may be left out of the stretch, so such an allele can be partial where mlst may call it novel. Only the first 8 candidates at a place are aligned.",
+        tests: &[
+            (
+                "src/seq/mlst/tests.rs",
+                "a_genome_with_the_alleles_of_a_sequence_type_is_typed_as_it_with_all_the_points",
+            ),
+            (
+                "src/seq/mlst/tests.rs",
+                "an_allele_cut_short_by_the_end_of_a_contig_is_partial_and_one_that_is_not_there_is_missing",
+            ),
+            (
+                "src/seq/mlst/tests.rs",
+                "two_different_alleles_at_one_locus_are_both_called_in_order_and_there_is_no_type",
+            ),
+            (
+                "src/seq/mlst/call/tests.rs",
+                "the_limits_of_identity_and_coverage_are_themselves_allowed",
+            ),
+            (
+                "src/seq/mlst/call/tests.rs",
+                "the_score_is_ninety_sixty_three_and_eighteen_over_the_loci_and_ten_for_a_known_type",
+            ),
+            (
+                "src/seq/mlst/md5/tests.rs",
+                "the_digests_of_the_rfc_test_suite",
+            ),
+        ],
+    },
+    Check {
+        group: ALIGNMENT,
         analysis: "Mapping reads and finding overlaps (after minimap2)",
         standard: Standard::Known,
         against: "A plain brute-force minimizer sketch written apart from the program (every window of every run, all k-mers of the smallest hash, for k from 1 to 32 and w from 1 to 400, with breaks, lower case and RNA); the paper's chaining formula and gap cost worked out by hand for lines of anchors, an indel, a gap past the bandwidth, two places and a cross-over; the paper's mapping quality formula; reads simulated from a known sequence (3 % each of substitutions, insertions and deletions) on both strands, inside a repeat of two nearly identical copies, across its edge, made of two distant places, from nowhere, and overlapping each other in known places; a CIGAR walked along the two sequences.",

@@ -30,6 +30,7 @@ HelixLoom workstation server
   helixloom motif -i SEQUENCES     motifs that DNA sequences share, in MEME's text format, with no server (`motif --help`)
   helixloom gff ANNOTATION         read, filter and write GFF3/GTF, and cut transcripts, CDS and proteins out of a genome (`gff --help`)
   helixloom kat COMMAND INPUT...   k-mer analysis in the manner of KAT: hist, gcp, comp, sect (`kat --help`)
+  helixloom mlst --scheme DIR G.fa type a genome against a downloaded scheme (sequence type and allele calls; `mlst --help`)
   helixloom map TARGET READS       map reads to a reference in the manner of minimap2, PAF out; -x ava-ont for overlaps (`map --help`)
   helixloom update [--download]    look for a later release of HelixLoom on GitHub and, if asked, save its file, checked (`update --help`)
   helixloom pipeline run FILE DIR  run a pipeline file on a folder, keeping what was done so a stopped run resumes (`pipeline --help`)
@@ -780,6 +781,7 @@ pub fn dispatch(args: &[String]) -> Option<i32> {
         "update" => crate::update::cli::run(rest),
         "kat" => crate::seq::kmer::cli::run(rest),
         "map" | "minimap" => crate::seq::minimap::cli::run(rest),
+        "mlst" => crate::seq::mlst::cli::run(rest),
         "pipeline" => crate::pipeline::flow::cli::main(rest),
         "tools" => tools_report(rest),
         "checks" => checks_report(rest),
