@@ -477,7 +477,7 @@ items below.
   versioned, and runnable on one sample or a whole folder (batch). Why: this turns HelixLoom from a set of tools into a
   platform. Builds on `pipeline/` and the Snakemake/Nextflow export.
   **Built (November 2026), for the first target of the list above, *a folder of locus alignments → gene trees → species tree*:** a pipeline is a
-  text file of typed steps (`align`, `tree`, `species`; each must take what the one before gives, checked when the file is read), run on one file or on every file of a
+  text file of typed steps (`align`, `tree`, `species`, and `gfa-inspect` for graph evaluation; each must take what the one before gives, checked when the file is read), run on one file or on every file of a
   folder (the per-file steps on all the cores, the trees then gathered for the rest), from the window (**Pipelines ▸ Pipeline file**) or with
   `helixloom pipeline run FILE FOLDER`. The format, the steps and the limits are in `docs/PIPELINES.md`. **Not built:** a graph with branches or joins
   (a pipeline is a list; trees are gathered by one fixed rule), steps for the other tools (primers, reads, motifs, structure), a node canvas, and saving a pipeline
@@ -641,10 +641,20 @@ which needs the original's test data or its program: a download that waits for a
 5. **A de Bruijn assembler, SPAdes-lite** (GPL, from the papers) — **built, 23 November 2026** (`docs/DEBRUIJN.md`, `helixloom dbg`; only parts of the two papers could be read in full, the rest second-hand; checked on simulated reads of random sequences; **never run on real reads or compared with SPAdes**; 94 deliberate breakages, 80 caught at first and the rest closed with tests or a fix except four that change nothing; no error correction, no paired reads, k to 63). The plan as written: k-mer counting, a graph at one k or several (21, 33, 55), tip clipping,
    bubble removal, a depth filter, unitigs as GFA and FASTA. Useful for small, plasmid-scale reads only; BayesHammer-quality error
    correction, repeat resolution with read pairs and genome-scale speed are out of reach.
-6. **Hybrid bridging, Unicycler-lite** (GPL, from the paper): read a GFA, give each contig a multiplicity from its depth and links, bridge
+6. **Hybrid bridging, Unicycler-lite** (GPL, from the paper). **GFA input and inspection built, 24 November 2026.** `helixloom gfa inspect`
+   reads the segments and links written by `helixloom dbg`, checks their lengths and references, and reports connectivity.
+   **25 November 2026:** `helixloom gfa segments` now shows the recorded depth, k-mer count, length and number of incident link records for
+   each segment in a TSV table. Copy-number estimation and the subsequent assembly steps remain open. [Inspecting a graph](DEBRUIJN.md#inspecting-a-graph)
+
+   **Bridging built, 25 November 2026** (`docs/HYBRID.md`, `helixloom hybrid`): copy numbers from depth and links, joins from long reads (the program's mapper), bridges through the repeats or from the reads' own bases with a quality that is the program's own formula, three modes, circles, rotation to a start gene given as nucleotides. Written from the paper (read in part); **never run on real reads or compared with Unicycler**; no short-read bridges, no TBLASTN, no polishing.
+
+   The full plan is to read a GFA, give each contig a multiplicity from its depth and links, bridge
    single-copy contigs with long reads (stage 3), merge, detect and close circular replicons, rotate them to a start gene. The paper gives
    no bridge-scoring formula, so the scoring is this program's own and says so. No polishing (Racon, Pilon and Medaka stay external).
-7. **Pipelines** that say the routes of the Galaxy plasmid-collapse workflow (reads → trim → filter → short-read assembly → hybrid assembly
+7. **Pipelines**. **Graph evaluation built, 25 November 2026.** The typed `gfa-inspect` step checks each GFA file in a folder and gives its
+   own summary, on this computer or the workstation. The complete assembly workflows are still open. [Batch graph evaluation](PIPELINES.md#evaluating-a-folder-of-assembly-graphs)
+
+   The plan calls for pipelines that say the routes of the Galaxy plasmid-collapse workflow (reads → trim → filter → short-read assembly → hybrid assembly
    → evaluate; its multiplicity correction is a human step), of NanoSeq (Canu or Flye → concatemer check → circularisation check → rotate →
    Medaka; the 30 bp overlap and 95 % identity rules are in its README), and of the multiplex-MinION protocol (the paper's method), as pipeline
    files that call the external programs where they are installed and, as stages 2 to 6 are built, the built-in ones.

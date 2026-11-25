@@ -18,9 +18,10 @@
 use super::steps::{self, fasta_text, read_fasta, Aligned, Named};
 use super::tools::{self, Installed};
 use super::Available;
-use crate::seq::astral;
 use crate::seq::newick::NwTree;
 use crate::seq::par::par_queue;
+use crate::seq::{astral, gfa};
+use std::borrow::Cow;
 use std::fmt::Write as _;
 use std::path::{Path, PathBuf};
 use web_time::Instant;
@@ -39,6 +40,8 @@ pub enum Kind {
     Alignment,
     Tree,
     Trees,
+    Gfa,
+    GraphSummary,
 }
 
 impl Kind {
@@ -48,13 +51,22 @@ impl Kind {
             Kind::Alignment => "alignment",
             Kind::Tree => "tree",
             Kind::Trees => "trees",
+            Kind::Gfa => "gfa",
+            Kind::GraphSummary => "graph-summary",
         }
     }
 
     pub fn parse(word: &str) -> Option<Kind> {
-        [Kind::Sequences, Kind::Alignment, Kind::Tree, Kind::Trees]
-            .into_iter()
-            .find(|k| k.word() == word)
+        [
+            Kind::Sequences,
+            Kind::Alignment,
+            Kind::Tree,
+            Kind::Trees,
+            Kind::Gfa,
+            Kind::GraphSummary,
+        ]
+        .into_iter()
+        .find(|k| k.word() == word)
     }
 }
 
@@ -66,6 +78,9 @@ pub enum Value {
     /// Newick.
     Tree(String),
     Trees(Vec<String>),
+    /// Original graph text. The inspection step validates it and reports failures per input.
+    Gfa(String),
+    GraphSummary(gfa::Summary),
 }
 
 impl Value {
@@ -75,32 +90,44 @@ impl Value {
             Value::Alignment(_) => Kind::Alignment,
             Value::Tree(_) => Kind::Tree,
             Value::Trees(_) => Kind::Trees,
+            Value::Gfa(_) => Kind::Gfa,
+            Value::GraphSummary(_) => Kind::GraphSummary,
         }
     }
 
-    /// FASTA for sequences, Newick for trees (one to a line).
+    /// FASTA for sequences, Newick for trees, GFA for graphs and tab-separated metrics for summaries.
     pub fn to_text(&self) -> String {
+        self.as_text().into_owned()
+    }
+
+    /// Borrow raw GFA so hashing a graph does not need a second copy of it.
+    pub fn as_text(&self) -> Cow<'_, str> {
         match self {
-            Value::Sequences(rows) | Value::Alignment(rows) => fasta_text(rows),
-            Value::Tree(newick) => format!("{}\n", newick.trim()),
-            Value::Trees(all) => all.iter().map(|t| format!("{}\n", t.trim())).collect(),
+            Value::Sequences(rows) | Value::Alignment(rows) => Cow::Owned(fasta_text(rows)),
+            Value::Tree(newick) => Cow::Owned(format!("{}\n", newick.trim())),
+            Value::Trees(all) => {
+                Cow::Owned(all.iter().map(|t| format!("{}\n", t.trim())).collect())
+            }
+            Value::Gfa(text) => Cow::Borrowed(text),
+            Value::GraphSummary(summary) => Cow::Owned(summary.to_tsv()),
         }
     }
 
     pub fn from_text(kind: Kind, text: &str) -> Result<Value, String> {
         // a file made by some editors starts with a byte order mark, which is not part of the first name
-        let text = text.trim_start_matches('\u{feff}');
+        let without_bom = text.trim_start_matches('\u{feff}');
         let trees = || -> Vec<String> {
-            text.lines()
+            without_bom
+                .lines()
                 .map(str::trim)
                 .filter(|l| !l.is_empty())
                 .map(str::to_string)
                 .collect()
         };
         Ok(match kind {
-            Kind::Sequences => Value::Sequences(read_fasta(text)),
+            Kind::Sequences => Value::Sequences(read_fasta(without_bom)),
             Kind::Alignment => {
-                let rows = read_fasta(text);
+                let rows = read_fasta(without_bom);
                 let width = rows.first().map_or(0, |r| r.1.len());
                 if let Some(bad) = rows.iter().find(|r| r.1.len() != width) {
                     return Err(format!(
@@ -116,6 +143,8 @@ impl Value {
                 other => return Err(format!("Expected one tree, found {}.", other.len())),
             },
             Kind::Trees => Value::Trees(trees()),
+            Kind::Gfa => Value::Gfa(text.to_owned()),
+            Kind::GraphSummary => Value::GraphSummary(gfa::Summary::from_tsv(text)?),
         })
     }
 
@@ -130,6 +159,11 @@ impl Value {
             ),
             Value::Tree(_) => "a tree".to_string(),
             Value::Trees(all) => format!("{} trees", all.len()),
+            Value::Gfa(_) => "an assembly graph".to_owned(),
+            Value::GraphSummary(summary) => format!(
+                "{} segments, {} links, {} components",
+                summary.segments, summary.links, summary.components
+            ),
         }
     }
 }
@@ -144,6 +178,8 @@ pub enum Step {
     Tree { iqtree: bool, bootstrap: usize },
     /// Gene trees into the species tree that agrees with most of their quartets (the ASTRAL method).
     Species,
+    /// Validate one assembly graph and count its segments, links, components and known bases.
+    GfaInspect,
 }
 
 impl Step {
@@ -152,6 +188,7 @@ impl Step {
             Step::Align { .. } => "align",
             Step::Tree { .. } => "tree",
             Step::Species => "species",
+            Step::GfaInspect => "gfa-inspect",
         }
     }
 
@@ -160,6 +197,7 @@ impl Step {
             Step::Align { .. } => Kind::Sequences,
             Step::Tree { .. } => Kind::Alignment,
             Step::Species => Kind::Trees,
+            Step::GfaInspect => Kind::Gfa,
         }
     }
 
@@ -167,6 +205,7 @@ impl Step {
         match self {
             Step::Align { .. } => Kind::Alignment,
             Step::Tree { .. } | Step::Species => Kind::Tree,
+            Step::GfaInspect => Kind::GraphSummary,
         }
     }
 
@@ -184,7 +223,7 @@ impl Step {
                 engine(*iqtree, "iqtree"),
                 ("bootstrap", bootstrap.to_string()),
             ],
-            Step::Species => Vec::new(),
+            Step::Species | Step::GfaInspect => Vec::new(),
         }
     }
 
@@ -196,9 +235,10 @@ impl Step {
                 bootstrap: 0,
             },
             "species" => Step::Species,
+            "gfa-inspect" => Step::GfaInspect,
             other => {
                 return Err(format!(
-                    "there is no step called {other} (the steps are align, tree and species)"
+                    "there is no step called {other} (the steps are align, tree, species and gfa-inspect)"
                 ))
             }
         };
@@ -231,6 +271,15 @@ pub struct Pipeline {
 }
 
 impl Pipeline {
+    /// A separate graph summary for every GFA file in the input folder.
+    pub fn inspect_graphs() -> Pipeline {
+        Pipeline {
+            name: "Inspect assembly graphs".to_owned(),
+            input: Kind::Gfa,
+            steps: vec![Step::GfaInspect],
+        }
+    }
+
     /// The first target of the roadmap: a folder of loci, each an alignment, into gene trees and then the species tree.
     pub fn loci_to_species() -> Pipeline {
         Pipeline {
@@ -282,7 +331,7 @@ impl Pipeline {
             } else if let Some(rest) = line.strip_prefix("input:") {
                 let word = rest.trim();
                 input = Some(Kind::parse(word).ok_or(at(format!(
-                    "input must be sequences, alignment or trees, not {word}"
+                    "unknown input kind {word} (expected sequences, alignment, tree, trees or gfa)"
                 )))?);
             } else if let Some(rest) = line.strip_prefix("step") {
                 let mut words = rest.split_whitespace();
@@ -301,8 +350,9 @@ impl Pipeline {
         }
         let p = Pipeline {
             name,
-            input: input
-                .ok_or("The pipeline file says no input: (sequences, alignment or trees).")?,
+            input: input.ok_or(
+                "The pipeline file says no input: (sequences, alignment, tree, trees or gfa).",
+            )?,
             steps,
         };
         p.check()?;
@@ -428,7 +478,7 @@ pub fn key(step: &Step, tool_version: &str, input: &Value) -> String {
         env!("CARGO_PKG_VERSION"),
         step.name(),
         input.kind().word(),
-        digest(input.to_text().as_bytes())
+        digest(input.as_text().as_bytes())
     );
     format!("{}-{}", step.name(), digest(text.as_bytes()))
 }
@@ -566,9 +616,11 @@ pub struct StepReport {
 impl StepReport {
     /// The program that made the answer of an align or a tree step, as its note names it (the note of a tree step goes on
     /// with the model, and either can end with why the answer was not kept). None for a step that failed, and for the
-    /// species step, which this program does itself and whose note is of what it found.
+    /// species and graph inspection steps, whose notes describe their results.
     pub fn program(&self) -> Option<&str> {
-        if matches!(self.status, Status::Failed(_)) || self.step == Step::Species {
+        if matches!(self.status, Status::Failed(_))
+            || matches!(self.step, Step::Species | Step::GfaInspect)
+        {
             return None;
         }
         let named = self.note.split(NOT_KEPT).next()?;
@@ -704,14 +756,14 @@ fn do_step(
         );
     }
     let version = installed.map_or("", |i| i.version.as_str());
-    let key = key(step, version, input);
-    if let Some((value, note)) = cache.and_then(|c| c.get(&key, step.gives())) {
+    let cache = cache.map(|c| (c, key(step, version, input)));
+    if let Some((value, note)) = cache.as_ref().and_then(|(c, key)| c.get(key, step.gives())) {
         return (report(Status::Cached, 0.0, note), Some(value));
     }
     let start = Instant::now();
     match work(step, input, installed) {
         Ok((value, note)) => {
-            let saved = cache.map(|c| c.put(&key, &value, &note));
+            let saved = cache.map(|(c, key)| c.put(&key, &value, &note));
             let note = match saved {
                 Some(Err(why)) => format!("{note}{NOT_KEPT}: {why}"),
                 _ => note,
@@ -747,6 +799,11 @@ fn work(
         }
     };
     match (step, input) {
+        (Step::GfaInspect, Value::Gfa(text)) => {
+            let value = Value::GraphSummary(gfa::inspect(text.as_bytes())?);
+            let note = value.describe();
+            Ok((value, note))
+        }
         (Step::Align { .. }, Value::Sequences(rows)) => {
             let done = steps::align(rows, installed, &folder()?)?;
             Ok((Value::Alignment(done.rows), done.engine))
@@ -790,16 +847,16 @@ fn chain(
     available: &Available,
 ) -> (Vec<StepReport>, Option<Value>) {
     let mut reports = Vec::new();
-    let mut now = start.clone();
+    let mut now = Cow::Borrowed(start);
     for step in steps {
         let (report, value) = do_step(step, &now, cache, available);
         reports.push(report);
         match value {
-            Some(v) => now = v,
+            Some(v) => now = Cow::Owned(v),
             None => return (reports, None),
         }
     }
-    (reports, Some(now))
+    (reports, Some(now.into_owned()))
 }
 
 /// The fewest leaves a gene tree may have for the species-tree step to use it (the method's own limit).
@@ -949,6 +1006,8 @@ pub fn extensions(kind: Kind) -> &'static [&'static str] {
     match kind {
         Kind::Sequences | Kind::Alignment => &["fasta", "fa", "fas", "fna", "faa", "aln"],
         Kind::Tree | Kind::Trees => &["tre", "tree", "nwk", "newick", "nex"],
+        Kind::Gfa => &["gfa"],
+        Kind::GraphSummary => &["tsv"],
     }
 }
 
@@ -1015,8 +1074,7 @@ pub fn folder_stamp(dir: &Path, kind: Kind) -> Option<Stamp> {
     })
 }
 
-/// The files of `dir` that hold what the pipeline takes, by name, and what is in each: FASTA for sequences and alignments,
-/// Newick for trees.
+/// The named inputs in a folder, sorted by filename. GFA files retain their original text for the inspection step.
 pub fn read_folder(dir: &Path, kind: Kind) -> Result<Vec<(String, Value)>, String> {
     let mut files =
         accepted_files(dir, kind).map_err(|e| format!("Could not read {}: {e}", dir.display()))?;
@@ -1053,8 +1111,11 @@ pub fn read_folder(dir: &Path, kind: Kind) -> Result<Vec<(String, Value)>, Strin
                 .to_string();
             let text = std::fs::read_to_string(path)
                 .map_err(|e| format!("Could not read {}: {e}", path.display()))?;
-            let value = Value::from_text(kind, &text)
-                .map_err(|why| format!("{}: {why}", path.display()))?;
+            let value = if kind == Kind::Gfa {
+                Value::Gfa(text)
+            } else {
+                Value::from_text(kind, &text).map_err(|why| format!("{}: {why}", path.display()))?
+            };
             Ok((name, value))
         })
         .collect()

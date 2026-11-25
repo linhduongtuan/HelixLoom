@@ -140,6 +140,40 @@ pub const CHECKS: &[Check] = &[
     },
     Check {
         group: ALIGNMENT,
+        analysis: "Joining an assembly graph with long reads (after Unicycler)",
+        standard: Standard::Known,
+        against: "Circles of random bases with a repeat that short reads cannot span, graphs that the HelixLoom assembler makes of error-free short reads of them, and long reads simulated from them with 6 % errors on either strand; segments with a gap that the graph lacks; graphs and bridges made by hand with the sequences known; genes taken from the circle, on both strands and across the join.",
+        result: "A circle with a repeat twice in it becomes one circular segment equal to the genome in each of the three modes, a bridge quality that nothing reaches leaves the graph as it was, reads of another genome change nothing, a gap the graph lacks is closed with the reads' own bases and the ends stay the graph's, a segment lacking part of its circle is closed, the better of two bridges takes an end, and a start gene is found on either strand and turns the circle to start at it. In a throwaway run, a chromosome of 50 kb with three copies of a repeat and a plasmid of 9 kb with two came out as two circular replicons equal to their sequences.",
+        limits: "Never run on real reads and never compared with Unicycler. Only part of the paper could be read as text, and its README not at all; the bridge quality formula, every tolerance, the use of the mapper for the long-read alignment, the median read for a consensus and the nucleotide search for the start gene are this program's. A plasmid at another copy number than the chromosome is not bridged; a gap of nothing with no link is not bridged; no short-read bridges, no polishing, no TBLASTN.",
+        tests: &[
+            (
+                "src/seq/hybrid/tests.rs",
+                "long_reads_that_span_the_repeat_make_the_circle_one_circular_segment_in_every_mode",
+            ),
+            (
+                "src/seq/hybrid/assemble/tests.rs",
+                "two_segments_with_a_gap_between_them_that_no_graph_has_are_joined_by_the_reads_bases",
+            ),
+            (
+                "src/seq/hybrid/copies/tests.rs",
+                "single_copy_segments_have_one_copy_and_a_repeat_has_the_sum_of_what_leads_into_it",
+            ),
+            (
+                "src/seq/hybrid/route/tests.rs",
+                "a_repeat_between_is_passed_and_adds_its_length_less_two_overlaps",
+            ),
+            (
+                "src/seq/hybrid/apply/tests.rs",
+                "two_bridges_through_the_repeat_make_the_line_one_segment_and_use_the_repeat_up",
+            ),
+            (
+                "src/seq/hybrid/rotate/tests.rs",
+                "a_gene_on_the_other_strand_flips_the_circle_and_starts_there",
+            ),
+        ],
+    },
+    Check {
+        group: ALIGNMENT,
         analysis: "Assembling short reads with a de Bruijn graph (after SPAdes)",
         standard: Standard::Known,
         against: "Reads simulated from sequences of random bases, so that the answer is known: a line, a circle, a line with 1 % errors at 60 times, two copies that differ by a base, a chromosome and a plasmid at different depths, a repeat of 28 bases and one of 300 against reads of 100, a stretch at low coverage beside a genome; the k-mers against a plain count and the reverse complement against a plain one for every k; the links of the graph against the k-1 overlap.",
@@ -170,6 +204,21 @@ pub const CHECKS: &[Check] = &[
                 "src/seq/debruijn/pack/tests.rs",
                 "the_reverse_complement_is_what_revcom_gives_for_every_length",
             ),
+        ],
+    },
+    Check {
+        group: ALIGNMENT,
+        analysis: "Assembly graph inspection (GFA)",
+        standard: Standard::Known,
+        against: "Graphs with counts worked out by hand and a graph written by the HelixLoom assembler, passed to the command as a file.",
+        result: "Graph totals and incident link counts match the expected values. The segment table preserves declared order, recorded depths and k-mer counts. A missing segment gives an error before either report is printed.",
+        limits: "Covers header, segment and link records in GFA 1. The overlap check uses the lengths consumed at each end. Sequence identity and assembly accuracy are outside its scope.",
+        tests: &[
+            ("tests/gfa.rs", "inspects_the_graph_and_reports_segment_tags_written_by_dbg"),
+            ("tests/gfa.rs", "lists_segments_in_declaration_order_with_incident_records_and_unknown_fields"),
+            ("tests/gfa.rs", "resolves_forward_links_and_distinguishes_declared_and_unknown_lengths_on_stdin"),
+            ("tests/gfa.rs", "an_unresolved_link_fails_without_a_partial_report"),
+            ("tests/gfa.rs", "a_pipeline_folder_writes_the_same_tsv_as_inspect_and_reuses_unchanged_files"),
         ],
     },
     Check {

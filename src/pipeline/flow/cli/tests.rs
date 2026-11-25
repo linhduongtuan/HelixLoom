@@ -60,6 +60,8 @@ fn the_examples_are_files_that_read_back() {
         Pipeline::parse(&text),
         Ok(Pipeline::unaligned_loci_to_species())
     );
+    let (text, _) = say(&words("example gfa"));
+    assert_eq!(Pipeline::parse(&text), Ok(Pipeline::inspect_graphs()));
     assert!(work(&words("example nonsense")).is_err());
 }
 

@@ -87,6 +87,57 @@ fn the_job_goes_through_bytes_and_comes_back_as_it_was() {
 }
 
 #[test]
+fn graph_files_and_their_per_file_results_round_trip_on_the_flow_wire() {
+    let graph = "L\tx\t+\ty\t-\t*\r\nS\ty\t*\r\nS\tx\tAAA";
+    let job = FlowJob {
+        pipeline: Pipeline::inspect_graphs(),
+        loci: vec![
+            ("bad.gfa".into(), Value::Gfa("S\tx\tA\nS\tx\t*\n".into())),
+            ("valid.gfa".into(), Value::Gfa(graph.into())),
+        ],
+    };
+    let received = FlowJob::decode(&through_bytes(&job.encode())).expect("graph inputs");
+    assert_eq!(received, job);
+    let direct = engine::run(&job.pipeline, job.loci, None, &Default::default()).unwrap();
+    let done = run(received, None).expect("a mixed graph report");
+    let wire = through_bytes(&done.encode());
+    assert_eq!(wire.text("out_names"), Some("valid.gfa"));
+    let back = FlowResult::decode(&wire).unwrap();
+    assert_eq!(back, done);
+    assert_eq!(back.report.left_out, ["bad.gfa"]);
+    assert_eq!(back.report.items.len(), direct.items.len());
+    for (there, here) in back.report.items.iter().zip(direct.items) {
+        assert_eq!(there.name, here.name);
+        assert_eq!(there.output, here.output);
+        assert_eq!(there.steps[0].status, here.steps[0].status);
+    }
+    assert!(
+        matches!(&back.report.items[0].steps[0].status, Status::Failed(why) if why.contains("line 2"))
+    );
+    let Some(Value::GraphSummary(summary)) = &back.report.items[1].output else {
+        panic!("missing graph summary");
+    };
+    assert_eq!(
+        (
+            summary.segments,
+            summary.links,
+            summary.known_bases,
+            summary.unknown_lengths
+        ),
+        (2, 1, 3, 1)
+    );
+
+    // Corruption after a valid job should be diagnosed during readback.
+    let output = wire
+        .text("outputs")
+        .unwrap()
+        .replace("segments\t2", "segments\t?");
+    assert!(FlowResult::decode(&result_with(&wire, "outputs", &output))
+        .unwrap_err()
+        .contains("valid.gfa"));
+}
+
+#[test]
 fn a_request_that_does_not_add_up_is_refused_and_says_what_is_wrong() {
     let good = job(2).encode();
     let (names, sizes, body) = (

@@ -16,7 +16,7 @@ step species
 
 * The first line is the format and its version (a file of a later version is refused, with what to do).
 * `input:` is what each file of the folder holds: `sequences` (FASTA, not aligned), `alignment` (FASTA, rows of one length) or
-  `trees` (Newick).
+  `trees` (Newick), or `gfa` (an uncompressed GFA assembly graph).
 * `step NAME key=value …` are the steps, in order. A line that starts with `#` is a comment (a `#` after something is not).
 
 | Step | Takes | Gives | Settings |
@@ -24,6 +24,7 @@ step species
 | `align` | sequences | alignment | `engine=builtin` (centre-star) or `engine=mafft` |
 | `tree` | alignment | tree | `engine=builtin` (likelihood search) or `engine=iqtree`; `bootstrap=N` (only with `iqtree`) |
 | `species` | trees | tree | none (the ASTRAL method: `helixloom astral --help`) |
+| `gfa-inspect` | gfa | graph-summary | none. Produces the same six metrics as `helixloom gfa inspect`. |
 
 Each step must take what the one before gives; the file is refused otherwise, saying which step. **A tree made for each file is
 gathered into the list of trees that `species` takes**, so the steps before the first one that takes trees are done for each file
@@ -61,11 +62,30 @@ helixloom pipeline clear-cache ./cache
 helixloom pipeline export loci.txt ./loci --out-dir ./workflow   # a Snakefile and a main.nf for the same pipeline (below)
 ```
 
-In the window: **Pipelines ▸ Pipeline file** (next to *Fixed route*, at the right of the page's header): open or save a file, start from one of the two built in, choose the
+In the window: **Pipelines ▸ Pipeline file** (next to *Fixed route*, at the right of the page's header): open or save a file, start from a built-in example, choose the
 folder and the cache folder, and run. The page lists what each step did (run now, or from the cache), and the species tree can be
 copied or drawn in Trees. **The run that the page shows is kept with your session** (18 November 2026), in either mode of the page, with its
 record: the next start offers it again with the open sequences (`docs/WEB.md`, *What the page keeps*). The folder and the cache folder are not
 kept with it: choose them again to run again.
+
+### Evaluating a folder of assembly graphs
+
+```sh
+helixloom pipeline example gfa > inspect-graphs.txt
+helixloom pipeline run inspect-graphs.txt ./graphs --cache ./graph-cache --out-dir ./summaries
+```
+
+The pipeline takes `input: gfa` and runs `step gfa-inspect` once per file. For example, `graphs/sample.1.gfa` produces
+`summaries/sample.1.tsv`. Each TSV gives the segment, link, component and isolated-segment counts, the sum of known segment lengths,
+and the number of segments of unknown length. A malformed graph record is reported under its input file, while valid files still produce
+summaries. The command returns a failing exit status if any graph failed. As with other pipelines, an unreadable file or invalid UTF-8 stops
+folder loading. When you reuse an output folder, an older TSV for an input that now fails or has been removed can still be on disk.
+To check a single input and choose its output filename, pass that input file and `--out summary.tsv`.
+On a rerun the cache reuses summaries for unchanged inputs.
+The input folder's graph files are read into memory for the batch. [Supported GFA records and metric definitions](DEBRUIJN.md#inspecting-a-graph)
+
+On the desktop, choose the assembly graph preset under **Pipelines ▸ Pipeline file**, choose the input folder, and press **Run pipeline**.
+The **Graph summaries** table has one row per successful file. **Copy TSV** copies the six metrics for that file.
 
 ### Exporting to Snakemake and Nextflow
 
@@ -75,7 +95,8 @@ kept with it: choose them again to run again.
 together, and `helixloom astral -i … -m 4` (a gene tree of fewer than four leaves is left out, as the engine leaves it out). The programs are
 called by the names given (`iqtree2` for an older IQ-TREE, a path for `helixloom`); a name may hold letters, digits and `/ . _ + -` only.
 
-* **Only steps that other programs do can be exported.** A step with `engine=builtin` (the default) is done by this program's own code,
+* **Export requires a command for every step.** The graph pipeline uses `helixloom gfa inspect` and publishes a TSV for each input
+  in `results/summaries/`. An alignment or tree step with `engine=builtin` (the default) is done by this program's own code,
   which no other workflow engine can run, so the export is refused and says which step and what to change (`engine=mafft`,
   `engine=iqtree`) or to use `pipeline run`.
 * The workflow finds its files by **one ending** (`*.fasta`): a folder that has `.fa` and `.fasta` files is refused. The folder is written into the

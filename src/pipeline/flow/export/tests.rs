@@ -165,6 +165,40 @@ fn a_folder_of_tree_files_gets_a_species_tree_from_each_and_no_gene_tree_is_left
 }
 
 #[test]
+fn graph_workflows_call_the_inspector_and_publish_a_summary_for_each_input() {
+    let p = Pipeline::inspect_graphs();
+    let src = Source {
+        folder: "/data/graphs".into(),
+        ext: "gfa".into(),
+    };
+    let programs = Programs {
+        helixloom: "/opt/bin/helixloom".into(),
+        ..Programs::default()
+    };
+    let snake = snakefile(&p, &src, &programs).unwrap();
+    for expected in [
+        "It needs /opt/bin/helixloom on the PATH.",
+        "glob_wildcards(\"/data/graphs/{sample}.gfa\")",
+        "expand(\"results/summaries/{sample}.tsv\", sample=SAMPLES)",
+        "rule gfa_inspect:\n    input: \"/data/graphs/{sample}.gfa\"\n    output: \"results/summaries/{sample}.tsv\"",
+        "shell: \"/opt/bin/helixloom gfa inspect {input:q} > {output:q}\"",
+    ] {
+        assert!(snake.contains(expected), "{expected:?} missing from {snake}");
+    }
+    let flow = nextflow(&p, &src, &programs).unwrap();
+    for expected in [
+        "params.input = \"/data/graphs/*.gfa\"",
+        "publishDir \"${params.outdir}/summaries\", mode: 'copy', saveAs: { \"${sample}.tsv\" }",
+        "tuple val(sample), path('graph.gfa')",
+        "path 'summary.tsv'",
+        "/opt/bin/helixloom gfa inspect graph.gfa > summary.tsv",
+        "GFA_INSPECT(graphs.map { graph -> tuple(graph.baseName, graph) })",
+    ] {
+        assert!(flow.contains(expected), "{expected:?} missing from {flow}");
+    }
+}
+
+#[test]
 fn the_names_of_the_programs_are_the_ones_given() {
     let programs = Programs {
         mafft: "/opt/bin/mafft".into(),

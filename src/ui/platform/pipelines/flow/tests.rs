@@ -382,6 +382,36 @@ fn the_species_tree_can_be_drawn_in_trees() {
 }
 
 #[test]
+fn a_graph_folder_preset_displays_and_copies_the_validated_summary() {
+    let f = Folder::new();
+    let (mut app, mut screen) = page(&f);
+    std::fs::write(
+        f.0.join("loci/graph-one.gfa"),
+        "S\ta\tAC\nS\tb\t*\nL\ta\t+\tb\t-\t1M\n",
+    )
+    .unwrap();
+    screen.click(&mut app, &Pipeline::inspect_graphs().name);
+    assert_eq!(
+        app.platform.pipelines.flow.pipeline,
+        Pipeline::inspect_graphs()
+    );
+    screen.click(&mut app, "Run pipeline");
+    finish(&mut app, &mut screen);
+    let text = screen.text();
+    for label in [
+        "Graph summaries",
+        "graph-one",
+        "Known bases",
+        "Unknown lengths",
+        "Copy TSV",
+    ] {
+        assert!(text.contains(label), "{label} missing from {text}");
+    }
+    screen.click(&mut app, "Copy TSV");
+    assert_eq!(screen.copied(), Some("segments\t2\nlinks\t1\ncomponents\t1\nisolated_segments\t0\nknown_segment_bases\t2\nsegments_without_length\t1\n"));
+}
+
+#[test]
 fn a_folder_with_nothing_to_run_on_says_so_in_the_message() {
     let f = Folder::new();
     let (mut app, mut screen) = page(&f);

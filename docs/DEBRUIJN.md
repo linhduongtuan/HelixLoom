@@ -40,6 +40,53 @@ written once round, with the word `circular` after its name. `--min-length` (def
 change. The GFA (1.0) has every segment (`LN`, `KC`, the k-mer count, and `DP`, the depth, as the manual names them) and a link for each place two
 segments meet, overlapping by k-1 bases; there are no paths.
 
+## Inspecting a graph
+
+Run `helixloom gfa inspect assembly_graph.gfa` to check the file before passing it to another tool. Use `-` in place of the filename to read
+standard input. The command prints six tab-separated metric/value rows after reading the whole graph. An input error gives a diagnostic on
+standard error and a failing exit status.
+
+| Metric | What is counted |
+| --- | --- |
+| `segments` | Segment records, each with a unique name |
+| `links` | Link records as written, including self-links and repeated links |
+| `components` | Groups connected by links in either direction, including each isolated segment |
+| `isolated_segments` | Segments that appear in no link |
+| `known_segment_bases` | The sum of known segment lengths, before subtracting overlaps |
+| `segments_without_length` | Segments with both an omitted sequence (`*`) and no declared length (`LN`) |
+
+For example, two linked segments of lengths 6 and 4 plus a third, unlinked segment of unknown length give two components, one isolated
+segment and 10 known segment bases. That total includes bases shared by the linked segments.
+
+To evaluate a folder of graphs, use the `gfa-inspect` pipeline step. It writes one summary TSV per valid input and can reuse earlier
+summaries from the cache. [Batch graph evaluation](PIPELINES.md#evaluating-a-folder-of-assembly-graphs)
+
+To see the values for individual segments, save the table as a TSV file.
+
+```sh
+helixloom gfa segments assembly_graph.gfa > segments.tsv
+```
+
+The columns are `segment`, `length_bp`, `depth`, `kmer_count` and `link_records`. There is one row per segment, in the order of its
+`S` record. Depth comes from `DP:f` and k-mer count from `KC:i`. A dot in a numeric column means the file supplies no value. A measured
+zero is written as `0`. Each link record counts once for each segment it touches, so a self-link counts once and two repeated records
+count twice. The table uses the same checks as the summary, including when reading standard input with `helixloom gfa segments -`.
+
+The command-line tests read back a segment written by `dbg` with depth 1.333333 and k-mer count 4. On 80 graphs with shuffled records,
+the table matched an independent calculation for every row and column. The tests caught all 12 deliberate changes to table behavior,
+including counting a self-link twice, rounding a depth and printing rows before validation finished.
+
+The inspector reads uncompressed GFA 1 header, segment and link records. A link may precede its segments. Both orientations must be valid,
+and the number of bases the CIGAR consumes at each end must fit its known length. Sequence identity across an overlap is outside this check.
+The reader checks the header version when present and checks segment length (`LN`), k-mer count (`KC`) and depth (`DP`) tags. For other
+optional tags it checks the field structure and uniqueness only. Additional record types, including paths and walks, produce an error.
+[GFA 1 format specification](https://gfa-spec.github.io/GFA-spec/GFA1.html)
+
+The command-line tests read a graph produced by `helixloom dbg` and hand-written inputs with known totals. In a separate check, all six
+counts matched an independent traversal on 100 generated graphs. The tests caught 24 deliberate changes to the reader, including a merge
+that split a connected group and a parser that accepted an invalid orientation. The inspector has been checked against HelixLoom output
+and generated examples. Compatibility with files from other assemblers remains unverified.
+
 ## What is from the papers, and what is this program's choice
 
 Only part of the papers could be read in full: of Bankevich et al. 2012 the abstract, sections 1 to 4.4 and figures 1 to 3; of Nurk et al. 2013 the

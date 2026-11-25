@@ -115,7 +115,7 @@ pub fn settings_of(pipeline: &Pipeline, folder: &str) -> Vec<(String, String)> {
 fn inputs_of(items: &[(String, engine::Value)]) -> Vec<Input> {
     items
         .iter()
-        .map(|(name, value)| Input::of(name, value.to_text().as_bytes()))
+        .map(|(name, value)| Input::of(name, value.as_text().as_bytes()))
         .collect()
 }
 
@@ -274,10 +274,11 @@ pub struct FlowClicks {
 }
 
 /// The pipelines the page offers to start from.
-fn presets() -> [Pipeline; 2] {
+fn presets() -> [Pipeline; 3] {
     [
         Pipeline::loci_to_species(),
         Pipeline::unaligned_loci_to_species(),
+        Pipeline::inspect_graphs(),
     ]
 }
 
@@ -351,7 +352,7 @@ pub(super) fn options(
     }
     ui.label(
         RichText::new(format!(
-            "One file of {} for each locus ({}).",
+            "Input files: {} ({}).",
             page.pipeline.input.word(),
             engine::extensions(page.pipeline.input).join(", ")
         ))
@@ -413,10 +414,64 @@ fn status_text(look: &Look, s: &Status, seconds: f64) -> RichText {
     }
 }
 
+fn graph_summaries(ui: &mut Ui, look: &Look, report: &Report) {
+    let mut graphs = report
+        .items
+        .iter()
+        .filter_map(|item| match &item.output {
+            Some(engine::Value::GraphSummary(summary)) => Some((&item.name, summary)),
+            _ => None,
+        })
+        .peekable();
+    if graphs.peek().is_none() {
+        return;
+    }
+    design::titled_card(ui, look, "Graph summaries", |ui| {
+        egui::ScrollArea::horizontal().show(ui, |ui| {
+            egui::Grid::new("flow_graph_summaries")
+                .striped(true)
+                .show(ui, |ui| {
+                    for label in [
+                        "File",
+                        "Segments",
+                        "Links",
+                        "Components",
+                        "Isolated",
+                        "Known bases",
+                        "Unknown lengths",
+                    ] {
+                        ui.strong(label);
+                    }
+                    ui.end_row();
+                    for (name, graph) in graphs {
+                        ui.label(name);
+                        ui.label(graph.segments.to_string());
+                        ui.label(graph.links.to_string());
+                        ui.label(graph.components.to_string());
+                        ui.label(graph.isolated.to_string());
+                        ui.label(graph.known_bases.to_string());
+                        ui.label(graph.unknown_lengths.to_string());
+                        if ui
+                            .small_button("Copy TSV")
+                            .on_hover_text(format!("Copy the summary for {name}"))
+                            .clicked()
+                        {
+                            ui.ctx().copy_text(graph.to_tsv());
+                        }
+                        ui.end_row();
+                    }
+                });
+        });
+    });
+    ui.add_space(design::CARD_GAP);
+}
+
 pub(super) fn results(ui: &mut Ui, look: &Look, page: &FlowPage, c: &mut FlowClicks) {
     let Some(report) = &page.report else {
         let message = if page.is_running() {
             "Working… the page stays free while the pipeline runs."
+        } else if page.pipeline.input == engine::Kind::Gfa {
+            "Choose a folder of .gfa files and press Run pipeline to see a summary for each graph."
         } else {
             "Choose the folder of loci and press Run pipeline. The gene trees and the species tree appear here, \
              with what each step did: run now, or found in the cache from an earlier run."
@@ -456,12 +511,14 @@ pub(super) fn results(ui: &mut Ui, look: &Look, page: &FlowPage, c: &mut FlowCli
                     }
                 });
                 if !report.left_out.is_empty() {
+                    let label = if report.gathered.is_empty() {
+                        "Failed inputs"
+                    } else {
+                        "Left out of what was gathered"
+                    };
                     ui.label(
-                        RichText::new(format!(
-                            "Left out of what was gathered: {}",
-                            report.left_out.join(", ")
-                        ))
-                        .color(look.bad),
+                        RichText::new(format!("{label}: {}", report.left_out.join(", ")))
+                            .color(look.bad),
                     );
                 }
                 for warning in &report.warnings {
@@ -469,6 +526,7 @@ pub(super) fn results(ui: &mut Ui, look: &Look, page: &FlowPage, c: &mut FlowCli
                 }
             });
             ui.add_space(design::CARD_GAP);
+            graph_summaries(ui, look, report);
             design::titled_card(ui, look, "What each step did", |ui| {
                 egui::Grid::new("flow_steps")
                     .striped(true)
@@ -561,7 +619,7 @@ impl App {
             }
         }
         if c.folder && !busy {
-            if let Some(f) = choose_folder("Choose the folder of loci") {
+            if let Some(f) = choose_folder("Choose the input folder") {
                 page.folder = Some(f);
                 page.forget_run();
                 page.count_files();
@@ -615,7 +673,7 @@ impl App {
     pub(in crate::ui) fn start_flow(&mut self, ctx: &egui::Context) {
         let page = &mut self.platform.pipelines.flow;
         let Some(folder) = page.folder.clone() else {
-            page.message = "Choose the folder of loci first.".into();
+            page.message = "Choose an input folder first.".into();
             return;
         };
         // the folder may have changed since it was chosen, and how big it is says where the run goes

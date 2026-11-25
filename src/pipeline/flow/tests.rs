@@ -82,6 +82,7 @@ fn a_pipeline_is_written_and_read_back_the_same() {
     for p in [
         Pipeline::loci_to_species(),
         Pipeline::unaligned_loci_to_species(),
+        Pipeline::inspect_graphs(),
     ] {
         assert_eq!(Pipeline::parse(&p.to_text()), Ok(p));
     }
@@ -126,7 +127,7 @@ fn a_file_that_cannot_be_read_says_which_line_and_why() {
         .contains("no input"));
     assert!(Pipeline::parse("helixloom-pipeline 1\ninput: dna\n")
         .unwrap_err()
-        .contains("sequences, alignment or trees"));
+        .contains("sequences, alignment, tree, trees or gfa"));
     assert!(Pipeline::parse("").unwrap_err().contains("empty"));
 }
 
@@ -161,6 +162,21 @@ fn trees_are_gathered_for_a_step_that_takes_many_but_never_made_up() {
         steps: vec![Step::Species],
     };
     assert!(p.check().unwrap_err().contains("takes trees"));
+}
+
+#[test]
+fn gfa_inspection_takes_only_graphs_and_its_result_is_a_summary() {
+    let p = Pipeline::parse("helixloom-pipeline 1\ninput: gfa\nstep gfa-inspect").unwrap();
+    assert_eq!(p.steps, [Step::GfaInspect]);
+    assert_eq!(p.check(), Ok(Kind::GraphSummary));
+    assert_eq!(p.per_file(), 1);
+    assert_eq!(p.split_text(), None);
+    assert_eq!(Kind::parse("graph-summary"), Some(Kind::GraphSummary));
+    let rejected =
+        |body: &str| Pipeline::parse(&format!("helixloom-pipeline 1\n{body}")).unwrap_err();
+    assert!(rejected("input: alignment\nstep gfa-inspect").contains("takes gfa"));
+    assert!(rejected("input: gfa\nstep gfa-inspect\nstep tree").contains("graph-summary"));
+    assert!(rejected("input: gfa\nstep gfa-inspect option=1").contains("no setting called option"));
 }
 
 #[test]
@@ -590,6 +606,104 @@ fn a_folder_of_loci_runs_end_to_end_from_files() {
     let report = run(&Pipeline::loci_to_species(), items, Some(&cache), &none()).unwrap();
     assert_eq!((report.ran(), report.failed()), (4, 0));
     assert_eq!(report.items[0].name, "gene1");
+}
+
+#[test]
+fn a_folder_of_graphs_preserves_input_and_resumes_one_failed_inspection() {
+    let f = Folder::new();
+    let cache = f.cache();
+    let p = Pipeline::inspect_graphs();
+    let good = "L\ta\t+\tb\t-\t1M\r\nS\ta\tAC\r\nS\tb\t*\r\nS\tc\t*\tLN:i:4";
+    let invalid = "H\tVN:Z:1.0\nL\tx\t+\tx\t+\t0M";
+    f.file("good.GFA", good);
+    f.file("bad.gfa", invalid);
+    f.file("unrelated.tsv", "old report");
+    let inputs = read_folder(&f.0, Kind::Gfa).unwrap();
+    assert_eq!(inputs[1], ("good".into(), Value::Gfa(good.into())));
+    assert_eq!(inputs.len(), 2);
+    let run_folder = || {
+        run(
+            &p,
+            read_folder(&f.0, p.input).unwrap(),
+            Some(&cache),
+            &none(),
+        )
+        .unwrap()
+    };
+    let first = run_folder();
+    assert_eq!((first.ran(), first.failed(), first.cached()), (1, 1, 0));
+    assert_eq!(first.left_out, ["bad"]);
+    assert!(first.items[0].output.is_none());
+    assert!(first
+        .lines()
+        .iter()
+        .any(|l| l.contains("bad: gfa-inspect: FAILED: line 2")));
+    let expected = "segments\t3\nlinks\t1\ncomponents\t2\nisolated_segments\t1\nknown_segment_bases\t6\nsegments_without_length\t1\n";
+    let checked = first.items[1].output.as_ref().unwrap();
+    assert_eq!(checked.to_text(), expected);
+    assert_eq!(checked.kind(), Kind::GraphSummary);
+    assert_eq!(first.items[1].steps[0].program(), None);
+    assert_eq!(cache.len(), 1);
+
+    f.file("bad.gfa", "H\tVN:Z:1.0\n");
+    let second = run_folder();
+    assert_eq!((second.ran(), second.failed(), second.cached()), (1, 0, 1));
+    assert_eq!(second.items[1].output.as_ref(), Some(checked));
+    assert_eq!(
+        second.items[0].output,
+        Some(Value::GraphSummary(gfa::Summary::default()))
+    );
+    f.file("good.GFA", &format!("# changed\n{good}"));
+    let third = run_folder();
+    assert_eq!((third.ran(), third.failed(), third.cached()), (1, 0, 1));
+    assert_eq!(third.items[1].output.as_ref(), Some(checked));
+}
+
+#[test]
+fn gfa_and_graph_summary_keep_their_formats_in_the_cache_and_wire_values() {
+    let marked = "\u{feff}H\tVN:Z:1.0\n";
+    let graph = Value::from_text(Kind::Gfa, marked).unwrap();
+    assert_eq!(graph.as_text(), marked);
+    assert!(work(&Step::GfaInspect, &graph, None)
+        .unwrap_err()
+        .contains("line 1"));
+    assert!(work(&Step::GfaInspect, &Value::Gfa(String::new()), None).is_err());
+    let f = Folder::new();
+    let cache = f.cache();
+    let input = Value::Gfa("S\ts\tAC".into());
+    let cache_key = key(&Step::GfaInspect, "", &input);
+    let saved = run(
+        &Pipeline::inspect_graphs(),
+        vec![("graph".into(), input.clone())],
+        Some(&cache),
+        &none(),
+    )
+    .unwrap();
+    let item = saved.output.unwrap();
+    assert_eq!(
+        Value::from_text(Kind::GraphSummary, &item.to_text()),
+        Ok(item.clone())
+    );
+    assert_eq!(cache.get(&cache_key, Kind::GraphSummary).unwrap().0, item);
+    let malformed = "segments\t0\n";
+    std::fs::write(
+        cache.file(&cache_key),
+        format!(
+            "{CACHE_HEAD}\nkind: graph-summary\nnote: old\ndigest: {}\n{malformed}",
+            digest(malformed.as_bytes())
+        ),
+    )
+    .unwrap();
+    assert!(cache.get(&cache_key, Kind::GraphSummary).is_none());
+    let again = run(
+        &Pipeline::inspect_graphs(),
+        vec![("graph".into(), input)],
+        Some(&cache),
+        &none(),
+    )
+    .unwrap();
+    assert_eq!((again.ran(), again.cached()), (1, 0));
+    assert_eq!(again.output, Some(item));
 }
 
 // --- what the review found ------------------------------------------------------------------------------------------------------

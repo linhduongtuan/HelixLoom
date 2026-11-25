@@ -33,6 +33,9 @@ HelixLoom workstation server
   helixloom mlst --scheme DIR G.fa type a genome against a downloaded scheme (sequence type and allele calls; `mlst --help`)
   helixloom map TARGET READS       map reads to a reference in the manner of minimap2, PAF out; -x ava-ont for overlaps (`map --help`)
   helixloom dbg READS...           assemble short reads with a de Bruijn graph in the manner of SPAdes: contigs as FASTA, the graph as GFA (`dbg --help`)
+  helixloom hybrid GRAPH.gfa LONG  join a short-read assembly graph with long reads in the manner of Unicycler (bridges, circles, start gene; `hybrid --help`)
+  helixloom gfa inspect FILE       check a GFA assembly graph and print its segment, link and component counts (`gfa --help`)
+  helixloom gfa segments FILE      list each GFA segment with its length, recorded depth, k-mer count and link count
   helixloom update [--download]    look for a later release of HelixLoom on GitHub and, if asked, save its file, checked (`update --help`)
   helixloom pipeline run FILE DIR  run a pipeline file on a folder, keeping what was done so a stopped run resumes (`pipeline --help`)
   helixloom checks [WORDS…]        how each analysis was checked: what it was compared with, how close it came, what was not checked
@@ -784,6 +787,8 @@ pub fn dispatch(args: &[String]) -> Option<i32> {
         "map" | "minimap" => crate::seq::minimap::cli::run(rest),
         "mlst" => crate::seq::mlst::cli::run(rest),
         "dbg" | "debruijn" | "spades" => crate::seq::debruijn::cli::run(rest),
+        "hybrid" | "unicycler" => crate::seq::hybrid::cli::run(rest),
+        "gfa" => crate::seq::gfa::cli::run(rest),
         "pipeline" => crate::pipeline::flow::cli::main(rest),
         "tools" => tools_report(rest),
         "checks" => checks_report(rest),

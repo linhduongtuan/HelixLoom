@@ -1086,7 +1086,11 @@ fn loci_files() -> Vec<(String, String)> {
 
 /// A pipeline-file job over the loci: gene trees with the built-in search, then the species tree.
 fn flow_job(label: &str) -> Vec<u8> {
-    let files = loci_files();
+    let pipeline = "helixloom-pipeline 1\nname: loci\ninput: alignment\nstep tree\nstep species\n";
+    flow_request(label, pipeline, &loci_files())
+}
+
+fn flow_request(label: &str, pipeline: &str, files: &[(String, String)]) -> Vec<u8> {
     let names = files
         .iter()
         .map(|f| f.0.as_str())
@@ -1098,16 +1102,65 @@ fn flow_job(label: &str) -> Vec<u8> {
         .collect::<Vec<_>>()
         .join("\n");
     let body: String = files.iter().map(|f| f.1.as_str()).collect();
-    let pipeline = "helixloom-pipeline 1\nname: loci\ninput: alignment\nstep tree\nstep species\n";
     let job = format!("kind=flow\nlabel={label}\n");
+    let meta = format!("files={}\n", files.len());
     container(&[
-        ("meta", b"files=4\n"),
+        ("meta", meta.as_bytes()),
         ("pipeline", pipeline.as_bytes()),
         ("names", names.as_bytes()),
         ("sizes", sizes.as_bytes()),
         ("loci", body.as_bytes()),
         ("job", job.as_bytes()),
     ])
+}
+
+#[test]
+fn graph_qc_reports_each_uploaded_file_and_reuses_only_unchanged_results() {
+    let folder = Folder::new("graph-qc");
+    let token = folder.file("token.txt", TOKEN);
+    let server = start(&folder, &token, &[]);
+    let send = |second: &str| {
+        let files = [
+            ("one.gfa".into(), "S\ta\tAAA\nL\ta\t+\ta\t+\t*".into()),
+            ("two.gfa".into(), second.into()),
+        ];
+        let pipeline = "helixloom-pipeline 1\ninput: gfa\nstep gfa-inspect\n";
+        let id = submit(&server.address, &flow_request("graph QC", pipeline, &files));
+        assert_eq!(wait_over(&server.address, &id)[2], "done");
+        parse(&result(&server.address, &id))
+    };
+    let first = send("S\tb\t*\nL\tb\t+\tmissing\t+\t*");
+    let first_report = section(&first, "report");
+    assert!(
+        first_report.contains("item\tone.gfa\t1\nstep\t0\tran\t"),
+        "{first_report}"
+    );
+    assert!(
+        first_report.contains("item\ttwo.gfa\t0\nstep\t0\tfailed\t")
+            && first_report.contains("line 2"),
+        "{first_report}"
+    );
+    assert_eq!(section(&first, "out_names"), "one.gfa");
+    let one = "segments\t1\nlinks\t1\ncomponents\t1\nisolated_segments\t0\nknown_segment_bases\t3\nsegments_without_length\t0\n";
+    assert_eq!(section(&first, "outputs"), one);
+
+    let second = send("S\tb\t*");
+    let second_report = section(&second, "report");
+    assert!(
+        second_report.contains("item\tone.gfa\t1\nstep\t0\tcached\t"),
+        "{second_report}"
+    );
+    assert!(
+        second_report.contains("item\ttwo.gfa\t1\nstep\t0\tran\t"),
+        "{second_report}"
+    );
+    assert_eq!(section(&second, "out_names"), "one.gfa\ntwo.gfa");
+    let two = "segments\t1\nlinks\t0\ncomponents\t1\nisolated_segments\t1\nknown_segment_bases\t0\nsegments_without_length\t1\n";
+    assert_eq!(section(&second, "outputs"), format!("{one}{two}"));
+    assert_eq!(
+        section(&second, "out_sizes"),
+        format!("{}\n{}", one.len(), two.len())
+    );
 }
 
 #[test]

@@ -146,6 +146,12 @@ impl Graph {
         }
     }
 
+    /// Take one link out (and the link between the reverse complements that goes with it); the segments stay.
+    pub fn remove_link(&mut self, a: Handle, b: Handle) {
+        self.succ[a].retain(|&x| x != b);
+        self.succ[rc(b)].retain(|&x| x != rc(a));
+    }
+
     /// Take a segment out, with every link to and from it.
     pub fn remove(&mut self, id: usize) {
         for h in [handle(id, false), handle(id, true)] {
@@ -181,15 +187,21 @@ impl Graph {
         self.succ[f] == [f] && self.succ[r] == [r]
     }
 
-    /// Where `a` leads to one segment only, and that segment is reached from `a` only: the two are one run.
-    fn next(&self, a: Handle) -> Option<Handle> {
+    /// Where `a` leads to one segment only, that segment is reached from `a` only, and `joinable` (asked of the two segments' numbers) says
+    /// they may be joined: the two are one run.
+    fn next(&self, a: Handle, joinable: &dyn Fn(usize, usize) -> bool) -> Option<Handle> {
         let b = *self.succ[a].first().filter(|_| self.succ[a].len() == 1)?;
-        (self.succ[rc(b)].len() == 1 && seg(a) != seg(b)).then_some(b)
+        (self.succ[rc(b)].len() == 1 && seg(a) != seg(b) && joinable(seg(a), seg(b))).then_some(b)
     }
 
     /// The graph with each run of segments that has no branch in it made one segment (the numbers change). The bases of a run are those of
     /// its segments, each joined to the one before without the k-1 that they share; the weights add.
     pub fn compact(&self) -> Graph {
+        self.compact_where(&|_, _| true)
+    }
+
+    /// `compact`, joining two segments only where `joinable` allows it (asked of their numbers, so it must not depend on the direction).
+    pub fn compact_where(&self, joinable: &dyn Fn(usize, usize) -> bool) -> Graph {
         let n = self.segs.len();
         let mut place: Vec<Option<(usize, usize)>> = vec![None; n];
         let mut chains: Vec<Vec<Handle>> = Vec::new();
@@ -199,7 +211,7 @@ impl Graph {
             }
             // back to where the run starts (a run that is a ring has no start: any place will do)
             let mut start = handle(s, false);
-            while let Some(p) = self.next(rc(start)).map(rc) {
+            while let Some(p) = self.next(rc(start), joinable).map(rc) {
                 if seg(p) == s {
                     break;
                 }
@@ -209,7 +221,7 @@ impl Graph {
             let mut chain = vec![start];
             place[seg(start)] = Some((chain_no, 0));
             let mut cur = start;
-            while let Some(b) = self.next(cur) {
+            while let Some(b) = self.next(cur, joinable) {
                 if place[seg(b)].is_some() {
                     break;
                 }

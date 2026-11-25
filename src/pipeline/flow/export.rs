@@ -1,7 +1,5 @@
 //! A pipeline file as the workflow files other engines run: a `Snakefile` for Snakemake and a `main.nf` for Nextflow, each calling
-//! MAFFT, IQ-TREE and `helixloom astral` for every file of a folder, with the settings the engine itself uses (`pipeline::steps`).
-//! Only the steps that other programs do can be exported: a step done by this program's own code (`engine=builtin`) has no command
-//! another engine could run, so it is refused with what to change (`docs/PIPELINES.md`).
+//! MAFFT, IQ-TREE or a HelixLoom command with the settings the engine uses. Export requires a command for each step.
 
 use super::{accepted_files, extensions, Kind, Pipeline, Step};
 use std::path::{Path, PathBuf};
@@ -110,6 +108,7 @@ struct Plan {
 enum Each {
     Align,
     Tree { bootstrap: usize },
+    GfaInspect,
 }
 
 #[derive(Clone, Copy, PartialEq)]
@@ -144,6 +143,7 @@ impl Plan {
                     bootstrap: *bootstrap,
                 }),
                 Step::Species => None,
+                Step::GfaInspect => Some(Each::GfaInspect),
             })
             .collect();
         let species = p.steps.iter().any(|s| matches!(s, Step::Species)).then(|| {
@@ -169,7 +169,7 @@ impl Plan {
         if self.has_tree() {
             names.push(programs.iqtree.as_str());
         }
-        if self.species.is_some() {
+        if self.species.is_some() || self.each.iter().any(|e| matches!(e, Each::GfaInspect)) {
             names.push(programs.helixloom.as_str());
         }
         match names.as_slice() {
@@ -220,6 +220,14 @@ pub fn snakefile(p: &Pipeline, src: &Source, programs: &Programs) -> Result<Stri
                 "align",
                 "results/aligned/{sample}.fasta".to_string(),
                 format!("{} --auto --quiet {{input}} > {{output}}", programs.mafft),
+            ),
+            Each::GfaInspect => (
+                "gfa_inspect",
+                "results/summaries/{sample}.tsv".to_string(),
+                format!(
+                    "{} gfa inspect {{input:q}} > {{output:q}}",
+                    programs.helixloom
+                ),
             ),
             Each::Tree { bootstrap } => (
                 "tree",
@@ -274,10 +282,29 @@ pub fn nextflow(p: &Pipeline, src: &Source, programs: &Programs) -> Result<Strin
             "\nprocess {name} {{\n    publishDir {publish}, mode: 'copy'\n    input:\n    path {input}\n    output:\n    path \"{output}\"\n    script:\n    \"\"\"\n{command}\n    \"\"\"\n}}\n"
         )
     };
-    let mut calls = String::from("    loci = Channel.fromPath(params.input)\n");
-    let mut channel = "loci".to_string();
+    let mut channel = if p.input == Kind::Gfa {
+        "graphs"
+    } else {
+        "loci"
+    }
+    .to_string();
+    let mut calls = format!("    {channel} = Channel.fromPath(params.input)\n");
     for e in &plan.each {
         match e {
+            Each::GfaInspect => {
+                // Keep sample names out of shell commands. Nextflow stages a fixed input name
+                // and assigns the per-sample name when publishing the completed summary.
+                t.push_str(&format!(concat!(
+                    "\nprocess GFA_INSPECT {{\n",
+                    "    publishDir \"${{params.outdir}}/summaries\", mode: 'copy', saveAs: {{ \"${{sample}}.tsv\" }}\n",
+                    "    input:\n    tuple val(sample), path('graph.gfa')\n",
+                    "    output:\n    path 'summary.tsv'\n",
+                    "    script:\n    \"\"\"\n    {} gfa inspect graph.gfa > summary.tsv\n    \"\"\"\n}}\n"
+                ), programs.helixloom));
+                calls.push_str(&format!(
+                    "    GFA_INSPECT({channel}.map {{ graph -> tuple(graph.baseName, graph) }})\n"
+                ));
+            }
             Each::Align => {
                 t.push_str(&process(
                     "ALIGN",

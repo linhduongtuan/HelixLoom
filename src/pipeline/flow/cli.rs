@@ -12,16 +12,16 @@ helixloom pipeline: pipelines as files of steps (`docs/PIPELINES.md`)
       settings have not changed is not run again, so a run that stopped is resumed by running it again
   helixloom pipeline export PIPELINE INPUT [--out-dir DIR] [--mafft NAME] [--iqtree NAME] [--helixloom NAME]
       write the pipeline as a Snakefile and a main.nf (Nextflow) into DIR (default: workflow) that run it on the files of the
-      folder INPUT with MAFFT, IQ-TREE and `helixloom astral`; only steps with engine=mafft or engine=iqtree can be exported
+      folder INPUT using the command-line programs for its steps
   helixloom pipeline check PIPELINE
       read the file and say what it does
-  helixloom pipeline example [unaligned]
-      print a pipeline file to start from: loci that are alignments, or loci that are not aligned yet
+  helixloom pipeline example [unaligned|gfa]
+      print a pipeline file for aligned loci, unaligned loci, or a folder of GFA graphs
   helixloom pipeline clear-cache DIR
       forget what a cache holds
 
---out FILE       write what the whole run gives (the species tree) to FILE
---out-dir DIR    write what each input gives (its gene tree, its alignment) to DIR, named after the input
+--out FILE       write a single result (such as a species tree or one graph's summary) to FILE
+--out-dir DIR    write each input's result (tree, alignment or graph summary) to DIR, named after the input
 ";
 
 struct Run {
@@ -132,6 +132,8 @@ fn extension(v: &Value) -> &'static str {
     match v {
         Value::Sequences(_) | Value::Alignment(_) => "fasta",
         Value::Tree(_) | Value::Trees(_) => "tre",
+        Value::Gfa(_) => "gfa",
+        Value::GraphSummary(_) => "tsv",
     }
 }
 
@@ -190,7 +192,11 @@ fn work(args: &[String]) -> Result<(String, bool), String> {
             let p = match rest {
                 [] => Pipeline::loci_to_species(),
                 [word] if word == "unaligned" => Pipeline::unaligned_loci_to_species(),
-                _ => return Err("example takes nothing, or the word unaligned.".into()),
+                [word] if word == "gfa" => Pipeline::inspect_graphs(),
+                _ => return Err(
+                    "Use pipeline example, pipeline example unaligned, or pipeline example gfa."
+                        .into(),
+                ),
             };
             Ok((p.to_text(), true))
         }

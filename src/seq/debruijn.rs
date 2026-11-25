@@ -16,11 +16,11 @@ pub mod assemble;
 mod clean;
 pub mod cli;
 pub mod graph;
-mod output;
+pub mod output;
 pub mod pack;
 pub mod reads;
 #[cfg(test)]
-mod sim;
+pub(crate) mod sim;
 #[cfg(test)]
 mod tests;
 mod unitig;
