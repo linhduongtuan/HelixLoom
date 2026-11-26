@@ -654,6 +654,8 @@ which needs the original's test data or its program: a download that waits for a
 7. **Pipelines**. **Graph evaluation built, 25 November 2026.** The typed `gfa-inspect` step checks each GFA file in a folder and gives its
    own summary, on this computer or the workstation. The complete assembly workflows are still open. [Batch graph evaluation](PIPELINES.md#evaluating-a-folder-of-assembly-graphs)
 
+   **Routes built, 26 November 2026** (`docs/ROUTES.md`, `helixloom pipeline example plasmid|plasmid-short|plasmid-long|nanopore-plasmid|minion-reads`): new typed input `reads` and the steps `trim`, `filter`, `assemble`, `hybrid`, `flye`, `concatemer`, `circularize`, `rotate`, `medaka`. The Galaxy route runs whole on simulated reads (one circular plasmid, cached on the second run); the human step is the place where it is cut in two. **The NanoSeq README could not be found again** (its order and numbers are the roadmap's note, unverified; its checks are this program's own), the Galaxy paper could not be fetched, **Flye and Medaka were not run** (tried on stand-ins), never run on real reads, not exported to Snakemake/Nextflow, no evaluation or read-QC steps.
+
    The plan calls for pipelines that say the routes of the Galaxy plasmid-collapse workflow (reads → trim → filter → short-read assembly → hybrid assembly
    → evaluate; its multiplicity correction is a human step), of NanoSeq (Canu or Flye → concatemer check → circularisation check → rotate →
    Medaka; the 30 bp overlap and 95 % identity rules are in its README), and of the multiplex-MinION protocol (the paper's method), as pipeline

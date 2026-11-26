@@ -15,9 +15,11 @@
 //! The steps up to the first one that takes many trees are done for each file of the folder (each locus); the trees that come
 //! out are gathered, and the rest of the steps are done once on all of them.
 
+use super::asm::AsmStep;
 use super::steps::{self, fasta_text, read_fasta, Aligned, Named};
 use super::tools::{self, Installed};
 use super::Available;
+use crate::seq::fastq::{parse_fastq, to_fastq, FastqRead};
 use crate::seq::newick::NwTree;
 use crate::seq::par::par_queue;
 use crate::seq::{astral, gfa};
@@ -36,6 +38,8 @@ const ENGINE: u32 = 1;
 /// The kind of what flows from one step to the next.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Kind {
+    /// Short or long reads with their qualities, as FASTQ.
+    Reads,
     Sequences,
     Alignment,
     Tree,
@@ -47,6 +51,7 @@ pub enum Kind {
 impl Kind {
     pub fn word(self) -> &'static str {
         match self {
+            Kind::Reads => "reads",
             Kind::Sequences => "sequences",
             Kind::Alignment => "alignment",
             Kind::Tree => "tree",
@@ -58,6 +63,7 @@ impl Kind {
 
     pub fn parse(word: &str) -> Option<Kind> {
         [
+            Kind::Reads,
             Kind::Sequences,
             Kind::Alignment,
             Kind::Tree,
@@ -72,6 +78,7 @@ impl Kind {
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Value {
+    Reads(Vec<FastqRead>),
     Sequences(Vec<Named>),
     /// Rows of one length.
     Alignment(Vec<Named>),
@@ -86,6 +93,7 @@ pub enum Value {
 impl Value {
     pub fn kind(&self) -> Kind {
         match self {
+            Value::Reads(_) => Kind::Reads,
             Value::Sequences(_) => Kind::Sequences,
             Value::Alignment(_) => Kind::Alignment,
             Value::Tree(_) => Kind::Tree,
@@ -103,6 +111,7 @@ impl Value {
     /// Borrow raw GFA so hashing a graph does not need a second copy of it.
     pub fn as_text(&self) -> Cow<'_, str> {
         match self {
+            Value::Reads(reads) => Cow::Owned(to_fastq(reads)),
             Value::Sequences(rows) | Value::Alignment(rows) => Cow::Owned(fasta_text(rows)),
             Value::Tree(newick) => Cow::Owned(format!("{}\n", newick.trim())),
             Value::Trees(all) => {
@@ -125,6 +134,7 @@ impl Value {
                 .collect()
         };
         Ok(match kind {
+            Kind::Reads => Value::Reads(parse_fastq(without_bom)?),
             Kind::Sequences => Value::Sequences(read_fasta(without_bom)),
             Kind::Alignment => {
                 let rows = read_fasta(without_bom);
@@ -151,6 +161,11 @@ impl Value {
     /// A few words for a report: "6 sequences, 600 columns".
     pub fn describe(&self) -> String {
         match self {
+            Value::Reads(reads) => format!(
+                "{} reads, {} bases",
+                reads.len(),
+                reads.iter().map(|r| r.seq.len()).sum::<usize>()
+            ),
             Value::Sequences(rows) => format!("{} sequences", rows.len()),
             Value::Alignment(rows) => format!(
                 "{} sequences, {} columns",
@@ -180,6 +195,8 @@ pub enum Step {
     Species,
     /// Validate one assembly graph and count its segments, links, components and known bases.
     GfaInspect,
+    /// A step of the assembly routes (`pipeline::asm`, `docs/ROUTES.md`).
+    Asm(AsmStep),
 }
 
 impl Step {
@@ -189,6 +206,7 @@ impl Step {
             Step::Tree { .. } => "tree",
             Step::Species => "species",
             Step::GfaInspect => "gfa-inspect",
+            Step::Asm(a) => a.name(),
         }
     }
 
@@ -198,6 +216,7 @@ impl Step {
             Step::Tree { .. } => Kind::Alignment,
             Step::Species => Kind::Trees,
             Step::GfaInspect => Kind::Gfa,
+            Step::Asm(a) => a.takes(),
         }
     }
 
@@ -206,6 +225,7 @@ impl Step {
             Step::Align { .. } => Kind::Alignment,
             Step::Tree { .. } | Step::Species => Kind::Tree,
             Step::GfaInspect => Kind::GraphSummary,
+            Step::Asm(a) => a.gives(),
         }
     }
 
@@ -224,6 +244,7 @@ impl Step {
                 ("bootstrap", bootstrap.to_string()),
             ],
             Step::Species | Step::GfaInspect => Vec::new(),
+            Step::Asm(a) => a.params(),
         }
     }
 
@@ -237,9 +258,12 @@ impl Step {
             "species" => Step::Species,
             "gfa-inspect" => Step::GfaInspect,
             other => {
-                return Err(format!(
-                    "there is no step called {other} (the steps are align, tree, species and gfa-inspect)"
-                ))
+                return match AsmStep::parse(other, params)? {
+                    Some(step) => Ok(Step::Asm(step)),
+                    None => Err(format!(
+                        "there is no step called {other} (the steps are align, tree, species, gfa-inspect, trim, filter, assemble, hybrid, flye, concatemer, circularize, rotate and medaka)"
+                    )),
+                }
             }
         };
         for (key, value) in params {
@@ -331,7 +355,7 @@ impl Pipeline {
             } else if let Some(rest) = line.strip_prefix("input:") {
                 let word = rest.trim();
                 input = Some(Kind::parse(word).ok_or(at(format!(
-                    "unknown input kind {word} (expected sequences, alignment, tree, trees or gfa)"
+                    "unknown input kind {word} (expected reads, sequences, alignment, tree, trees or gfa)"
                 )))?);
             } else if let Some(rest) = line.strip_prefix("step") {
                 let mut words = rest.split_whitespace();
@@ -351,7 +375,7 @@ impl Pipeline {
         let p = Pipeline {
             name,
             input: input.ok_or(
-                "The pipeline file says no input: (sequences, alignment, tree, trees or gfa).",
+                "The pipeline file says no input: (reads, sequences, alignment, tree, trees or gfa).",
             )?,
             steps,
         };
@@ -719,10 +743,14 @@ impl Report {
 /// Do one step on `input`, or take its answer from the cache.
 fn do_step(
     step: &Step,
+    name: &str,
     input: &Value,
     cache: Option<&Cache>,
     available: &Available,
 ) -> (StepReport, Option<Value>) {
+    if let Step::Asm(asm) = step {
+        return do_asm_step(step, asm, name, input, cache);
+    }
     let installed: Option<&Installed> = match step {
         Step::Align { mafft: true } => available.mafft.as_ref(),
         Step::Tree { iqtree: true, .. } => available.iqtree.as_ref(),
@@ -762,6 +790,52 @@ fn do_step(
     }
     let start = Instant::now();
     match work(step, input, installed) {
+        Ok((value, note)) => {
+            let saved = cache.map(|(c, key)| c.put(&key, &value, &note));
+            let note = match saved {
+                Some(Err(why)) => format!("{note}{NOT_KEPT}: {why}"),
+                _ => note,
+            };
+            (
+                report(Status::Ran, start.elapsed().as_secs_f64(), note),
+                Some(value),
+            )
+        }
+        Err(why) => (
+            report(
+                Status::Failed(why),
+                start.elapsed().as_secs_f64(),
+                String::new(),
+            ),
+            None,
+        ),
+    }
+}
+
+/// A step of the assembly routes: like `do_step`, with the program it calls (if one) checked first, and what it reads besides its input
+/// (a file of long reads, of genes) in the key of its answer.
+fn do_asm_step(
+    step: &Step,
+    asm: &AsmStep,
+    name: &str,
+    input: &Value,
+    cache: Option<&Cache>,
+) -> (StepReport, Option<Value>) {
+    let report = |status, seconds, note: String| StepReport {
+        step: step.clone(),
+        status,
+        seconds,
+        note,
+    };
+    if let Err(why) = asm.ready() {
+        return (report(Status::Failed(why), 0.0, String::new()), None);
+    }
+    let cache = cache.map(|c| (c, key(step, &asm.context(name), input)));
+    if let Some((value, note)) = cache.as_ref().and_then(|(c, key)| c.get(key, step.gives())) {
+        return (report(Status::Cached, 0.0, note), Some(value));
+    }
+    let start = Instant::now();
+    match asm.work(input, name) {
         Ok((value, note)) => {
             let saved = cache.map(|(c, key)| c.put(&key, &value, &note));
             let note = match saved {
@@ -842,6 +916,7 @@ fn work(
 /// Do `steps` one after the other on `start`; the reports, and the answer when none failed.
 fn chain(
     steps: &[Step],
+    name: &str,
     start: &Value,
     cache: Option<&Cache>,
     available: &Available,
@@ -849,7 +924,7 @@ fn chain(
     let mut reports = Vec::new();
     let mut now = Cow::Borrowed(start);
     for step in steps {
-        let (report, value) = do_step(step, &now, cache, available);
+        let (report, value) = do_step(step, name, &now, cache, available);
         reports.push(report);
         match value {
             Some(v) => now = Cow::Owned(v),
@@ -926,7 +1001,7 @@ pub fn run(
     let split = pipeline.per_file();
     let each = par_queue(&items, |(name, value)| {
         let (steps, output) = guarded(&pipeline.steps[..split], pipeline.steps.first(), || {
-            chain(&pipeline.steps[..split], value, cache, available)
+            chain(&pipeline.steps[..split], name, value, cache, available)
         });
         ItemReport {
             name: name.clone(),
@@ -973,7 +1048,7 @@ pub fn run(
             let gathered = Value::Trees(trees);
             let (reports, output) =
                 guarded(&pipeline.steps[split..], pipeline.steps.get(split), || {
-                    chain(&pipeline.steps[split..], &gathered, cache, available)
+                    chain(&pipeline.steps[split..], "", &gathered, cache, available)
                 });
             report.gathered = reports;
             report.output = output;
@@ -1004,6 +1079,7 @@ pub fn available_for(p: &Pipeline) -> Available {
 /// The endings of the names of files that hold `kind`.
 pub fn extensions(kind: Kind) -> &'static [&'static str] {
     match kind {
+        Kind::Reads => &["fastq", "fq"],
         Kind::Sequences | Kind::Alignment => &["fasta", "fa", "fas", "fna", "faa", "aln"],
         Kind::Tree | Kind::Trees => &["tre", "tree", "nwk", "newick", "nex"],
         Kind::Gfa => &["gfa"],

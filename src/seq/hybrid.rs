@@ -17,11 +17,13 @@ mod bridges;
 pub mod cli;
 mod copies;
 pub mod input;
-mod output;
+pub mod output;
 mod quality;
-mod rotate;
+pub mod rotate;
 mod route;
+pub use apply::Mode;
+
 #[cfg(test)]
-mod sim;
+pub(crate) mod sim;
 #[cfg(test)]
 mod tests;

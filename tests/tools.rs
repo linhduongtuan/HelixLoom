@@ -27,6 +27,8 @@ fn the_tools_command_lists_every_program_with_its_licence_and_how_to_install_it(
         "curl",
         "Snakemake",
         "Nextflow",
+        "Flye",
+        "Medaka",
     ] {
         assert!(text.contains(&format!("{label} — ")), "{label} in {text}");
     }
@@ -38,7 +40,7 @@ fn the_tools_command_lists_every_program_with_its_licence_and_how_to_install_it(
         text.contains("licence: BSD-3-Clause") && text.contains("install: brew install"),
         "{text}"
     );
-    assert!(text.contains(" of 8 found."), "{text}");
+    assert!(text.contains(" of 10 found."), "{text}");
     // an argument it does not take is said, and nothing is listed
     let bad = Command::new(env!("CARGO_BIN_EXE_helixloom"))
         .args(["tools", "--all"])

@@ -2,6 +2,7 @@
 //! primer3 when they are there and with the built-in engines when they are not, and exported as Snakemake and
 //! Nextflow files for running elsewhere.
 
+pub mod asm;
 pub mod domains;
 pub mod export;
 pub mod flow;

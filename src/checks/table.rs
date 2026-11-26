@@ -140,6 +140,40 @@ pub const CHECKS: &[Check] = &[
     },
     Check {
         group: ALIGNMENT,
+        analysis: "Assembly routes as pipeline files (Galaxy plasmid collapse, NanoSeq, multiplex MinION)",
+        standard: Standard::Known,
+        against: "Reads and contigs of random bases: the adapter, quality tail and length of short reads, the paper's selection of long reads by length and by the worst window of 100 bases, a concatemer of two to five copies, a contig with an overlap of 30 bases and of 25, a start gene on either strand; every setting that is refused; the Galaxy route run whole on simulated short and long reads of a circle with a repeat; stand-in programs that write the files Flye and Medaka write.",
+        result: "The short-read route gives the plasmid as one circular replicon of its own length, equal to it up to where the circle is cut, and a second run finds all three steps in the cache while other long reads make only the joining run again; the long-read selection keeps the reads the paper's rule keeps; a concatemer is cut to one unit, a circle is closed at 30 bases and 95 % and not at 25, and a start gene turns the circle to begin at it; the routes have the steps, in the order, and with the numbers that the three sources give, and (in tests that only run on Unix, so that this page cannot name them) Flye and Medaka stand-ins are called with the arguments their documentation gives and their contigs and circles are read back.",
+        limits: "Never run on real reads; none of the routes was compared with the program it follows. Flye and Medaka were not run (neither is installed here). The NanoSeq README could not be found again, so its order and numbers are the roadmap's note and how the concatemer and circle checks work is this program's own; the Galaxy paper could not be fetched (only its README was read). No demultiplexing, no basecalling, no evaluation or read quality steps, one file for each sample (pairs joined first), not exported to Snakemake or Nextflow, and the workstation would read the files of the settings from its own disk.",
+        tests: &[
+            (
+                "src/pipeline/asm/tests.rs",
+                "the_galaxy_route_runs_whole_and_gives_the_plasmid_as_one_circle_and_the_cache_keeps_it",
+            ),
+            (
+                "src/pipeline/asm/tests.rs",
+                "the_nanopore_checks_collapse_a_concatemer_close_the_circle_and_turn_it_to_the_gene",
+            ),
+            (
+                "src/pipeline/asm/reads/tests.rs",
+                "the_long_reads_are_selected_as_the_paper_does",
+            ),
+            (
+                "src/seq/circular/tests.rs",
+                "an_end_that_repeats_the_start_is_an_overlap_of_that_length",
+            ),
+            (
+                "src/seq/circular/tests.rs",
+                "a_contig_of_copies_of_a_unit_is_found_with_its_unit_and_the_number_of_copies",
+            ),
+            (
+                "src/pipeline/asm/tests.rs",
+                "the_routes_have_the_steps_of_their_papers_in_order",
+            ),
+        ],
+    },
+    Check {
+        group: ALIGNMENT,
         analysis: "Joining an assembly graph with long reads (after Unicycler)",
         standard: Standard::Known,
         against: "Circles of random bases with a repeat that short reads cannot span, graphs that the HelixLoom assembler makes of error-free short reads of them, and long reads simulated from them with 6 % errors on either strand; segments with a gap that the graph lacks; graphs and bridges made by hand with the sequences known; genes taken from the circle, on both strands and across the join.",

@@ -16,7 +16,7 @@ step species
 
 * The first line is the format and its version (a file of a later version is refused, with what to do).
 * `input:` is what each file of the folder holds: `sequences` (FASTA, not aligned), `alignment` (FASTA, rows of one length) or
-  `trees` (Newick), or `gfa` (an uncompressed GFA assembly graph).
+  `trees` (Newick), or `gfa` (an uncompressed GFA assembly graph), or `reads` (FASTQ, names ending in `.fastq` or `.fq`).
 * `step NAME key=value …` are the steps, in order. A line that starts with `#` is a comment (a `#` after something is not).
 
 | Step | Takes | Gives | Settings |
@@ -25,6 +25,7 @@ step species
 | `tree` | alignment | tree | `engine=builtin` (likelihood search) or `engine=iqtree`; `bootstrap=N` (only with `iqtree`) |
 | `species` | trees | tree | none (the ASTRAL method: `helixloom astral --help`) |
 | `gfa-inspect` | gfa | graph-summary | none. Produces the same six metrics as `helixloom gfa inspect`. |
+| `trim`, `filter`, `assemble`, `hybrid`, `flye`, `concatemer`, `circularize`, `rotate`, `medaka` | reads, gfa or sequences | reads, gfa or sequences | the assembly routes: see `docs/ROUTES.md`. |
 
 Each step must take what the one before gives; the file is refused otherwise, saying which step. **A tree made for each file is
 gathered into the list of trees that `species` takes**, so the steps before the first one that takes trees are done for each file

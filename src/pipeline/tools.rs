@@ -74,6 +74,26 @@ pub const FASTP: Program = Program {
     homebrew: "fastp",
     conda: "fastp",
 };
+/// Flye assembles long reads (`pipeline::asm`). Its licence is as its own page gives it; the Bioconda package is `flye`.
+pub const FLYE: Program = Program {
+    label: "Flye",
+    names: &["flye"],
+    version_args: &["--version"],
+    role: "assembling nanopore reads (the long-read route of Pipelines)",
+    licence: "BSD-3-Clause",
+    homebrew: "",
+    conda: "flye",
+};
+/// Medaka polishes an assembly with the reads (`pipeline::asm`). The Bioconda package is `medaka`.
+pub const MEDAKA: Program = Program {
+    label: "Medaka",
+    names: &["medaka"],
+    version_args: &["--version"],
+    role: "polishing a nanopore assembly with its reads (the long-read route of Pipelines)",
+    licence: "MPL-2.0",
+    homebrew: "",
+    conda: "medaka",
+};
 /// Used for the online structure prediction (a web request, so no network library is linked in).
 pub const CURL: Program = Program {
     label: "curl",
@@ -104,8 +124,8 @@ pub const NEXTFLOW: Program = Program {
 };
 
 /// Every program the platform looks for.
-pub const ALL: [&Program; 8] = [
-    &MAFFT, &IQTREE, &HMMSCAN, &PRIMER3, &FASTP, &CURL, &SNAKEMAKE, &NEXTFLOW,
+pub const ALL: [&Program; 10] = [
+    &MAFFT, &IQTREE, &HMMSCAN, &PRIMER3, &FASTP, &CURL, &SNAKEMAKE, &NEXTFLOW, &FLYE, &MEDAKA,
 ];
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -428,7 +448,11 @@ mod tests {
         for p in ALL {
             assert!(!p.role.is_empty() && !p.licence.is_empty(), "{}", p.label);
             // a program with nothing to install it by must at least be one that is usually there
-            assert!(!p.homebrew.is_empty() || p.label == "curl", "{}", p.label);
+            assert!(
+                !p.homebrew.is_empty() || !p.conda.is_empty() || p.label == "curl",
+                "{}",
+                p.label
+            );
             // the names go into a line for people to copy: plain
             assert!(
                 p.homebrew

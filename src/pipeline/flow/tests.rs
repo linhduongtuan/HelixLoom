@@ -975,3 +975,21 @@ const GOLDEN: [&str; 3] = [
     "0e9111598a620c18e817255c4e7649c6",
     "9cab2bcd39c5246534216dfd21069706",
 ];
+
+#[test]
+fn a_folder_of_reads_is_read_whether_its_files_end_in_fastq_or_fq() {
+    let d = std::env::temp_dir().join(format!("helixloom-reads-endings-{}", std::process::id()));
+    std::fs::remove_dir_all(&d).ok();
+    std::fs::create_dir_all(&d).unwrap();
+    std::fs::write(d.join("a.fastq"), "@r\nACGT\n+\nIIII\n").unwrap();
+    std::fs::write(d.join("b.fq"), "@r\nACGT\n+\nIIII\n").unwrap();
+    std::fs::write(d.join("c.txt"), "not read").unwrap();
+    let items = read_folder(&d, Kind::Reads).unwrap();
+    assert_eq!(
+        items.iter().map(|i| i.0.as_str()).collect::<Vec<_>>(),
+        ["a", "b"]
+    );
+    assert!(items.iter().all(|i| matches!(i.1, Value::Reads(_))));
+    assert_eq!(extensions(Kind::Reads), ["fastq", "fq"]);
+    std::fs::remove_dir_all(&d).ok();
+}

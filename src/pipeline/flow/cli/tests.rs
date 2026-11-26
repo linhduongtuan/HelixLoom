@@ -296,3 +296,75 @@ fn an_export_that_cannot_be_made_says_why_and_writes_nothing() {
     assert!(bad_name.contains("program name"), "{bad_name}");
     assert!(!folder.0.join("wf").exists());
 }
+
+#[test]
+fn the_routes_are_examples_that_read_back_and_an_unknown_name_lists_them() {
+    for (name, _) in crate::pipeline::asm::routes::NAMES {
+        let (text, ok) = say(&words(&format!("example {name}")));
+        assert!(ok, "{name}");
+        let p = Pipeline::parse(&text).unwrap_or_else(|e| panic!("{name}: {e}"));
+        assert_eq!(Some(p), crate::pipeline::asm::routes::named(name), "{name}");
+    }
+    let e = work(&words("example nothing")).unwrap_err();
+    assert!(
+        e.contains("plasmid") && e.contains("nanopore-plasmid") && e.contains("minion-reads"),
+        "{e}"
+    );
+    assert!(work(&words("example plasmid more"))
+        .unwrap_err()
+        .contains("takes one name"));
+}
+
+#[test]
+fn check_says_what_a_route_does_step_by_step() {
+    let f = Folder::new();
+    f.write("p.txt", &crate::pipeline::asm::routes::plasmid().to_text());
+    let (text, ok) = say(&["check".to_string(), f.path("p.txt")]);
+    assert!(ok);
+    assert!(text.contains("input: reads"), "{text}");
+    assert!(
+        text.contains(
+            "1. trim adapter=AGATCGGAAGAGC quality=20 min-length=20 cut=tail  (reads to reads)"
+        ),
+        "{text}"
+    );
+    assert!(
+        text.contains("2. assemble ks=auto cov-cutoff=auto min-qual=10  (reads to gfa)"),
+        "{text}"
+    );
+    assert!(text.contains("3. hybrid long=long-reads"), "{text}");
+    assert!(text.ends_with("ends with sequences.\n"), "{text}");
+}
+
+#[test]
+fn a_folder_of_long_reads_is_selected_and_written_as_fastq_named_after_each_file() {
+    let f = Folder::new();
+    std::fs::create_dir_all(f.0.join("reads")).unwrap();
+    let read = |len: usize, q: char| {
+        let seq = "ACGT".repeat(len / 4);
+        format!("@r\n{seq}\n+\n{}\n", q.to_string().repeat(seq.len()))
+    };
+    f.write(
+        "reads/barcode01.fastq",
+        &format!("{}{}", read(3000, 'I'), read(500, 'I')),
+    );
+    f.write("reads/barcode02.fastq", &read(2400, '5'));
+    f.write(
+        "p.txt",
+        &crate::pipeline::asm::routes::minion_reads().to_text(),
+    );
+    let (text, ok) = say(&[
+        "run".to_string(),
+        f.path("p.txt"),
+        f.path("reads"),
+        "--out-dir".to_string(),
+        f.path("out"),
+    ]);
+    assert!(ok, "{text}");
+    let one = std::fs::read_to_string(f.0.join("out/barcode01.fastq")).unwrap();
+    // the short read is gone, the long one is there
+    assert_eq!(one.lines().count(), 4);
+    assert!(std::fs::read_to_string(f.0.join("out/barcode02.fastq"))
+        .unwrap()
+        .starts_with("@r\n"));
+}

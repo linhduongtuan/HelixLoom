@@ -127,6 +127,13 @@ impl Plan {
             let (name, fix) = match step {
                 Step::Align { mafft: false } => ("align", "engine=mafft"),
                 Step::Tree { iqtree: false, .. } => ("tree", "engine=iqtree"),
+                Step::Asm(a) => {
+                    return Err(format!(
+                        "Step {} ({}) is a step of the assembly routes, which `helixloom pipeline run` does and no Snakefile or main.nf is written for.",
+                        k + 1,
+                        a.name()
+                    ))
+                }
                 _ => continue,
             };
             return Err(format!(
@@ -144,6 +151,8 @@ impl Plan {
                 }),
                 Step::Species => None,
                 Step::GfaInspect => Some(Each::GfaInspect),
+                // refused above
+                Step::Asm(_) => None,
             })
             .collect();
         let species = p.steps.iter().any(|s| matches!(s, Step::Species)).then(|| {

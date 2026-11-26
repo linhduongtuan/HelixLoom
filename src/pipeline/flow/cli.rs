@@ -2,6 +2,7 @@
 
 use super::export::{source_of, write_folder, Programs};
 use super::{available_for, read_folder, run, Cache, Pipeline, Report, Status, Value};
+use crate::pipeline::asm;
 use std::path::{Path, PathBuf};
 
 pub const USAGE: &str = "\
@@ -15,8 +16,8 @@ helixloom pipeline: pipelines as files of steps (`docs/PIPELINES.md`)
       folder INPUT using the command-line programs for its steps
   helixloom pipeline check PIPELINE
       read the file and say what it does
-  helixloom pipeline example [unaligned|gfa]
-      print a pipeline file for aligned loci, unaligned loci, or a folder of GFA graphs
+  helixloom pipeline example [unaligned|gfa|plasmid|plasmid-short|plasmid-long|nanopore-plasmid|minion-reads]
+      print a pipeline file for aligned loci, unaligned loci, a folder of GFA graphs, or one of the assembly routes (`docs/ROUTES.md`)
   helixloom pipeline clear-cache DIR
       forget what a cache holds
 
@@ -130,6 +131,7 @@ fn describe(p: &Pipeline) -> String {
 /// The extension a value is written with.
 fn extension(v: &Value) -> &'static str {
     match v {
+        Value::Reads(_) => "fastq",
         Value::Sequences(_) | Value::Alignment(_) => "fasta",
         Value::Tree(_) | Value::Trees(_) => "tre",
         Value::Gfa(_) => "gfa",
@@ -193,10 +195,14 @@ fn work(args: &[String]) -> Result<(String, bool), String> {
                 [] => Pipeline::loci_to_species(),
                 [word] if word == "unaligned" => Pipeline::unaligned_loci_to_species(),
                 [word] if word == "gfa" => Pipeline::inspect_graphs(),
-                _ => return Err(
-                    "Use pipeline example, pipeline example unaligned, or pipeline example gfa."
-                        .into(),
-                ),
+                [word] => asm::routes::named(word).ok_or_else(|| {
+                    let routes: Vec<&str> = asm::routes::NAMES.iter().map(|n| n.0).collect();
+                    format!(
+                        "Use pipeline example, pipeline example unaligned, pipeline example gfa, or pipeline example with one of {}.",
+                        routes.join(", ")
+                    )
+                })?,
+                _ => return Err("pipeline example takes one name, or none.".into()),
             };
             Ok((p.to_text(), true))
         }
