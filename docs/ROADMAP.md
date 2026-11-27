@@ -598,6 +598,7 @@ items below.
   HelixLoom is MIT (question 6), so each is written from its paper, as the ASTRAL core was.
 * **Reads and variants (L).** fastp and MultiQC reports, minimap2 or bwa-mem2 mapping, samtools, bcftools or DeepVariant
   calling, assembly of long reads (Flye) and polishing (Medaka), taxonomic profiling (Kraken2).
+  **Started, 26 November 2026: SAM, pileup, consensus and variants for one copy of a sequence (2.9, `docs/VARIANTS.md`).**
 * **Structure (M).** AlphaFold DB lookup, ColabFold, structure alignment (TM-align, Foldseek), pocket detection.
 
 ### 2.7 Genome assembly, mapping, typing and annotation tools (asked on 19 November 2026)
@@ -689,6 +690,74 @@ TreeGraph 2 paper and returned feature lists in their own words; the code was wr
 * **Not done:** see the end of `docs/TREES.md` (fish-eye zoom, polar controls, taxon colours in NEXUS, tip-annotation import with
   ancestral states, pie charts, separate labels with their own formats, PhyloXML, NeXML, XTG, cut and paste of nodes, a command line) and
   the limits of `docs/ALIGNMENT_PRIMERS.md` (no degenerate oligos, no genome check). The `helixloom` command line has nothing for either.
+
+### 2.9 Reads, SAM, consensus and variants (continuing "Reads and variants" of 2.3; asked as "continue following the roadmap" on 26 November 2026)
+
+The list of 2.7 being finished, the next unbuilt item that needs no licence decision and follows the owner's answer to question 2 (pipelines
+first) is the "Reads and variants" bullet of 2.3, taken for what a plasmid or small-genome user needs: the mapper of stage 3 gives alignments,
+and nothing yet turns them into a SAM file, a consensus or a list of differences. **The licences**: the SAM and VCF specifications are open;
+samtools and bcftools are MIT (Expat) with some optional GPL files, and fastp is MIT, but MultiQC and FastQC are GPL, so each stage is written
+from the specification, the paper and the manual, and no source is read for copying.
+
+1. **SAM, the pileup, the consensus and the calls (haploid): built, 26 November 2026** (`docs/VARIANTS.md`, `helixloom variants`, `helixloom map -a`,
+   `src/seq/variants/`). The paper (Li 2011) was read as text but its formulas are images, so the model (a likelihood from base qualities with
+   independent errors, a prior, a likelihood ratio for indels from the share of reads) is the program's own and says so; the defaults of
+   `bcftools mpileup` (base quality 13, mapping quality 0, depth 250) are used where the manual names them. Checked by hand-worked numbers and
+   by reads simulated with a planted substitution, deletion and insertion; in a throwaway sweep of 150 runs no false call, and every planted
+   difference found at 6 % error and 30 times depth; the code was broken on purpose in 103 places and all 103 were caught, 13 of them only after tests were
+   written for them (a quality cap, a tie between bases, the exact quality at which a call is made, the depth of an insertion, the `NM` tag and others);
+   **never compared with bcftools and never run on real reads**; one copy only; no BAQ, no BAM.
+2. **A sequence-verification report** (planned, M): map Sanger or nanopore reads to the expected sequence, call the consensus, list the
+   differences, and say pass or fail with the evidence (coverage, positions not covered, differences, the identity of the consensus to the
+   reference), as a service's report does: built on stage 1.
+3. **A read-QC report** (planned, S to M): what `seq::fastq` already counts (length, GC, quality by position), with the length and quality
+   distributions, adapter content and duplication, as a table and an HTML page, in the manner of fastp's report (fastp is MIT).
+4. **Pipeline steps** (planned, M): `map`, `variants` and `verify` as typed steps of the pipeline engine, with the reference as a setting (a side
+   file, as `hybrid` takes its long reads), so that the routes of `docs/ROUTES.md` can end in a check against the expected plasmid.
+
+**Not planned**: BAM and CRAM (a binary format in compressed blocks), diploid and population calling, DeepVariant (a neural network that needs
+weights), structural variant calling, short-read mapping with an FM-index (bwa-mem2), and anything that needs GPL source.
+
+### 2.10 Read counting and long-read assembly, after Subread and NECAT (asked on 26 November 2026)
+
+The owner asked to take https://github.com/ShiLab-Bioinformatics/subread and https://github.com/xiaochuanle/NECAT as references for the code,
+and to go on with the roadmap. **Their pages were read, not their source** (three readers and the users' guide of Subread).
+
+* **Subread** (Liao, Smyth and Shi): a seed-and-vote aligner for short reads (`subread-align`), a junction aligner (`subjunc`), the read counter
+  `featureCounts`, a SNP caller (`exactSNP`) and utilities. **Licence: GPL, version 3 or later** (as the Bioconductor page of its R version states;
+  the repository has no licence file). HelixLoom is MIT, so it is rebuilt **from the papers and the users' guide only**.
+* **NECAT** (Chen et al., *Nature Communications* 2021, 12:60): correction and assembly of noisy nanopore reads. **Licence: none stated** (no
+  licence file, none in its README), so, as with the multiplex-MinION repository, **only the method as the paper describes it** is used: nothing of
+  its code or text. The paper was read in its open copy (PMC7782737); its supplementary notes, where the numbers of the overlap filtering are, were not.
+
+**What each adds to HelixLoom**: counting reads over genes (there is SAM from 2.9 and GFF/GTF from stage 1 of 2.7, but no counting); correction of
+long reads and a long-read assembler (the routes of `docs/ROUTES.md` call Flye outside, which is not installed here, and the program's own
+assembler is for short reads); a short-read aligner (the program's mapper is for long reads). The order is by what each needs: counting needs only
+what exists and its rules are written down exactly, so it is first.
+
+1. **Counting reads over genes, after featureCounts: built, 26 November 2026** (`docs/COUNT.md`, `helixloom count`, `src/seq/count/`): GTF,
+   GFF3 or SAF; genes from exons; the overlap rules, filters in their order, strand, multi-mapping and multi-overlap with fractions; the count
+   table and the summary. **Not run against featureCounts.** Paired reads are not counted as fragments (they are refused unless each read is
+   asked to be counted), no BAM, no junction counts. With it, the SAM of `helixloom map -a` flags the further places of a split read
+   supplementary and gives `NH`. The code was broken on purpose in 61 places and all are caught, 2 of them only after tests were added (and one
+   breakage, which did not compile, rewritten).
+2. **Correction of long reads, after NECAT: built, 27 November 2026** (`docs/CORRECT.md`, `helixloom correct`, `src/seq/correct/`): for each read
+   the best candidates that chain to it (the program's mapper in place of the paper's DDF scoring), a threshold of identity per read (the mean of
+   the best 50 less five standard deviations, never under 0.5: a reading of a formula that could not be read), at most 200 candidates and a
+   coverage of 12, a consensus **of the program's own** (a vote per position; the paper names FALCON's without describing it), two rounds: the
+   first keeps every read whole and counts alignments over their good blocks of 500, the last writes only supported stretches. On simulated reads
+   of a 20,000-base genome, 12 % errors at 30 times depth went to 0.11 % (two rounds); a repeat whose copies differ is blurred a little.
+   The code was broken on purpose in 57 places and all 56 that change something are caught (6 only after tests were added); an independent reading
+   found five faults in stages 1 of 2.9 and 2.10 and here (U letters of RNA, a quadratic name check, an unsure N, a SAM position 0, an insertion
+   after a skip), all fixed. **Never run on real reads or compared with NECAT**; small genomes only.
+3. **Assembly of the corrected reads** (planned, L): overlaps, filtering of reads and overlaps by coverage, identity and overhang, a string
+   graph (transitive edges removed; the best edge in and out of each node), tips and bubbles, contigs; then bridging of contigs with the raw reads
+   (reads grouped by the length of the gap, within 1,000 bases), and the routes of `docs/ROUTES.md` able to use it in place of Flye.
+4. **A short-read aligner after seed-and-vote** (planned, M to L): 16-base seeds indexed every third base, ten seeds from a read voting for
+   places, at least three votes, seeds seen more than 24 times ignored, indels from the shift between the seeds on either side, SAM out.
+
+**Not planned**: spliced alignment (`subjunc`) and junction discovery, single-cell counting (`cellCounts`), `exactSNP` (the variant caller of
+2.9 does that work with another model), the SV and long-indel assembly of Subread, NECAT's grid and scale for large genomes, and polishing.
 
 ### 2.4 Trust
 * ★ **A benchmark page (M).** For every analysis, say how it was checked and how accurate it is (the golden tests already

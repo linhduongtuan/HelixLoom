@@ -528,6 +528,52 @@ fn from_gtf(recs: &[Rec]) -> Vec<Transcript> {
         .collect()
 }
 
+/// One line of a file with its attributes read (a GFF3 value un-escaped), for counting reads over features (`seq::count`).
+pub(crate) struct Line {
+    pub seqname: String,
+    pub kind: String,
+    /// From 1, the end included.
+    pub start: usize,
+    pub end: usize,
+    pub strand: Strand,
+    pub attributes: Vec<(String, String)>,
+}
+
+/// The lines of a GFF3 or GTF text, up to a `##FASTA` section.
+pub(crate) fn lines(text: &str) -> Result<Vec<Line>, String> {
+    let annotation = match text.find("\n##FASTA") {
+        Some(at) => &text[..at],
+        None => text,
+    };
+    let recs = records(annotation)?;
+    if recs.is_empty() {
+        return Err("There is no annotation in this file: no line with nine columns.".into());
+    }
+    // a file whose format cannot be told (a GTF with no transcript_id, say) is read as GTF: a missing attribute is then said by name
+    let gff3 = matches!(format_of(annotation, &recs), Ok(Format::Gff3));
+    Ok(recs
+        .into_iter()
+        .map(|r| {
+            let attributes = if gff3 {
+                gff3_attributes(&r.attrs)
+                    .into_iter()
+                    .map(|(k, v)| (k, decode(&v)))
+                    .collect()
+            } else {
+                gtf_attributes(&r.attrs)
+            };
+            Line {
+                seqname: r.seqname,
+                kind: r.feature,
+                start: r.start,
+                end: r.end,
+                strand: r.strand,
+                attributes,
+            }
+        })
+        .collect())
+}
+
 /// The transcripts of a GFF3 or GTF text; why not, when a line cannot be read or the file holds none.
 pub fn parse(text: &str) -> Result<Annotation, String> {
     let recs = records(text)?;

@@ -31,7 +31,10 @@ HelixLoom workstation server
   helixloom gff ANNOTATION         read, filter and write GFF3/GTF, and cut transcripts, CDS and proteins out of a genome (`gff --help`)
   helixloom kat COMMAND INPUT...   k-mer analysis in the manner of KAT: hist, gcp, comp, sect (`kat --help`)
   helixloom mlst --scheme DIR G.fa type a genome against a downloaded scheme (sequence type and allele calls; `mlst --help`)
-  helixloom map TARGET READS       map reads to a reference in the manner of minimap2, PAF out; -x ava-ont for overlaps (`map --help`)
+  helixloom map TARGET READS       map reads to a reference in the manner of minimap2, PAF out (-a for SAM); -x ava-ont for overlaps (`map --help`)
+  helixloom variants REF READS     the differences between reads and a reference, and the consensus, for one copy of a sequence: VCF, FASTA (`variants --help`)
+  helixloom count -a ANN SAM...    the reads on each gene, from SAM files and a GTF, GFF3 or SAF annotation, after featureCounts (`count --help`)
+  helixloom correct READS...       correct long noisy reads with the reads that overlap them, after NECAT: FASTA out (`correct --help`)
   helixloom dbg READS...           assemble short reads with a de Bruijn graph in the manner of SPAdes: contigs as FASTA, the graph as GFA (`dbg --help`)
   helixloom hybrid GRAPH.gfa LONG  join a short-read assembly graph with long reads in the manner of Unicycler (bridges, circles, start gene; `hybrid --help`)
   helixloom gfa inspect FILE       check a GFA assembly graph and print its segment, link and component counts (`gfa --help`)
@@ -786,6 +789,9 @@ pub fn dispatch(args: &[String]) -> Option<i32> {
         "kat" => crate::seq::kmer::cli::run(rest),
         "map" | "minimap" => crate::seq::minimap::cli::run(rest),
         "mlst" => crate::seq::mlst::cli::run(rest),
+        "variants" | "call" | "bcftools" => crate::seq::variants::cli::run(rest),
+        "count" | "featurecounts" => crate::seq::count::cli::run(rest),
+        "correct" | "necat" => crate::seq::correct::cli::run(rest),
         "dbg" | "debruijn" | "spades" => crate::seq::debruijn::cli::run(rest),
         "hybrid" | "unicycler" => crate::seq::hybrid::cli::run(rest),
         "gfa" => crate::seq::gfa::cli::run(rest),

@@ -140,3 +140,61 @@ fn what_cannot_be_run_says_why_and_the_help_is_the_help() {
     assert!(USAGE.contains("-x PRESET") && USAGE.contains("docs/MAP.md"));
     std::fs::remove_dir_all(&dir).ok();
 }
+
+#[test]
+fn with_a_the_answer_is_sam_with_the_header_the_qualities_and_a_line_for_a_read_that_did_not_map() {
+    let dir = folder("sam");
+    let g = genome(9_000, 72);
+    let mut r = Rng::new(4);
+    let good = read(&g, 2000, 2500, true, 0.03, &mut r);
+    let junk = genome(1200, 999);
+    let text = |name: &str, bases: &[u8], q: char| {
+        format!(
+            "@{name}\n{}\n+\n{}\n",
+            String::from_utf8_lossy(bases),
+            q.to_string().repeat(bases.len())
+        )
+    };
+    let (t, q, out) = (
+        dir.join("ref.fa"),
+        dir.join("reads.fq"),
+        dir.join("out.sam"),
+    );
+    std::fs::write(&t, format!(">ref\n{}\n", String::from_utf8_lossy(&g))).unwrap();
+    std::fs::write(&q, text("good", &good, '5') + &text("junk", &junk, 'I')).unwrap();
+    let a = args(&[
+        "-a",
+        "-o",
+        out.to_str().unwrap(),
+        t.to_str().unwrap(),
+        q.to_str().unwrap(),
+    ]);
+    assert!(parse(&a).unwrap().sam);
+    assert!(parse(&a).unwrap().options.cigar);
+    assert_eq!(run(&a), 0);
+    let sam = std::fs::read_to_string(&out).unwrap();
+    let lines: Vec<&str> = sam.lines().collect();
+    assert_eq!(lines[0], "@HD\tVN:1.6\tSO:unsorted");
+    assert_eq!(lines[1], "@SQ\tSN:ref\tLN:9000");
+    let rows: Vec<Vec<&str>> = lines
+        .iter()
+        .filter(|l| !l.starts_with('@'))
+        .map(|l| l.split('\t').collect())
+        .collect();
+    let on = rows
+        .iter()
+        .find(|f| f[0] == "good" && f[1] == "16")
+        .expect("the read maps on the other strand");
+    assert_eq!(on[2], "ref");
+    assert!(on[5].contains('M'));
+    // the qualities are the file's, '5' is 20
+    assert_eq!(on[9].len(), on[10].len());
+    assert!(on[10].bytes().all(|b| b == b'5'));
+    let lost = rows.iter().find(|f| f[0] == "junk").unwrap();
+    assert_eq!(&lost[1..6], ["4", "*", "0", "0", "*"]);
+    // the others: overlaps are PAF and a single file is not enough
+    let ava = args(&["-a", "-x", "ava-ont", q.to_str().unwrap()]);
+    assert_eq!(run(&ava), 1);
+    assert_eq!(run(&args(&["-a", q.to_str().unwrap()])), 1);
+    std::fs::remove_dir_all(&dir).ok();
+}

@@ -174,6 +174,100 @@ pub const CHECKS: &[Check] = &[
     },
     Check {
         group: ALIGNMENT,
+        analysis: "Variants and consensus of reads against a reference, and SAM (after samtools and bcftools)",
+        standard: Standard::Known,
+        against: "Reads simulated from a random reference with a substitution, a deletion of two bases and an insertion of one planted, with the substitutions, insertions and deletions of nanopore reads at 3 to 12 % in all, on either strand; pileups and SAM lines made by hand; qualities worked out apart from the code (212.5 for ten bases of quality 20, 3.18 for two of quality 13, 17.3 and 36.3 for 13 and 14 of 20 reads showing a deletion).",
+        result: "The planted substitution, deletion and insertion come out as a VCF at the right places with the right bases and the consensus of the sample, and nothing else; the VCF made from the SAM that the first run wrote is the same one; in a throwaway sweep of 150 runs (3 to 12 % error, depth 15 to 60) there was no false call, and at 6 % error and 30 times depth every planted difference was found, while at 12 % error some insertions and deletions were missed; a read on the other strand is written as its reverse complement with its qualities turned and the bases that were not aligned as soft clips; an insertion is kept after the base before it and not after a deletion or at the start of a read.",
+        limits: "The model is this program's own (the paper's formulas could not be read); one copy of the sequence only; base alignment quality is not done and the errors of reads are taken as independent, so qualities are too sure at high depth; insertions are found by the exact bases that reads write; neither samtools nor bcftools was run and nothing was run on real reads (the simulated errors are at random places, which real nanopore errors are not); no BAM, no genotype likelihoods, no pipeline step yet.",
+        tests: &[
+            (
+                "src/seq/variants/call/tests.rs",
+                "a_base_that_every_read_shows_is_a_substitution_with_the_quality_that_the_model_gives",
+            ),
+            (
+                "src/seq/variants/call/tests.rs",
+                "a_deletion_that_few_reads_show_is_not_called_and_where_the_line_is_depends_on_the_reads_that_do_not",
+            ),
+            (
+                "src/seq/variants/call/tests.rs",
+                "an_insertion_that_the_reads_show_is_written_after_the_base_before_it",
+            ),
+            (
+                "src/seq/variants/pileup/tests.rs",
+                "an_insertion_with_no_base_before_it_is_not_counted",
+            ),
+            (
+                "src/seq/variants/sam/tests.rs",
+                "a_read_that_maps_on_the_other_strand_is_written_as_its_reverse_complement_with_the_qualities_turned",
+            ),
+            (
+                "src/seq/variants/cli/tests.rs",
+                "reads_of_a_sample_with_three_planted_differences_give_those_and_the_consensus_of_the_sample",
+            ),
+        ],
+    },
+    Check {
+        group: ALIGNMENT,
+        analysis: "Counting reads over genes (after featureCounts)",
+        standard: Standard::Known,
+        against: "Annotations and alignments made by hand, with each overlap at its first and last base and each rule at its exact limit; reads simulated inside three genes of a random sequence and mapped by the program's mapper.",
+        result: "An alignment counts for the gene its aligned bases overlap, once however many exons it spans; the filters stop an alignment in the order the users' guide gives; the fractions are one over the places and one over the genes; a run on simulated reads counts exactly the reads simulated in each gene and none from between them.",
+        limits: "featureCounts was not run, so no count has been compared with it; written from its users' guide and paper (Subread is under the GPL; none of its source was read). Pairs are not counted as fragments (they are refused unless each read is asked to be counted), no BAM, no junction counts, no read shifting or extension; never run on real data.",
+        tests: &[
+            (
+                "src/seq/count/assign/tests.rs",
+                "only_aligned_bases_overlap",
+            ),
+            (
+                "src/seq/count/assign/tests.rs",
+                "the_filters_come_in_the_order_of_the_guide",
+            ),
+            (
+                "src/seq/count/assign/tests.rs",
+                "an_overlap_must_be_enough_in_every_way_that_is_asked",
+            ),
+            (
+                "src/seq/count/assign/tests.rs",
+                "a_fraction_shares_a_count_between_the_places_and_the_genes",
+            ),
+            (
+                "src/seq/count/cli/tests.rs",
+                "reads_simulated_from_genes_and_mapped_are_counted_on_the_genes_they_came_from",
+            ),
+        ],
+    },
+    Check {
+        group: ALIGNMENT,
+        analysis: "Correction of long reads (after NECAT)",
+        standard: Standard::Known,
+        against: "Hand-made alignments for each rule of the consensus; reads simulated from random genomes with 6 to 18 % of substitutions, insertions and deletions, measured against the bases each came from.",
+        result: "The threshold, the coverage limit and the votes behave as written; on simulated reads the errors fall from over 8 % to under 1 %, and in a throwaway sweep 12 % errors at 30 times depth became 0.11 % after two rounds (1.9 % after one), 8 times depth lost a fifth of the bases, and a repeat whose copies differ at 1 base in 100 was corrected a little less well.",
+        limits: "Never run on real reads, whose errors are not at random places, and never compared with NECAT (which states no licence: only its paper was used). The consensus is the program's own; reads of near-identical repeats or mixed samples are blurred; every read is held in memory, so small genomes only.",
+        tests: &[
+            (
+                "src/seq/correct/tests.rs",
+                "reads_of_a_genome_with_errors_come_out_with_far_fewer",
+            ),
+            (
+                "src/seq/correct/select/tests.rs",
+                "the_threshold_is_the_mean_less_five_deviations_and_never_under_the_floor",
+            ),
+            (
+                "src/seq/correct/select/tests.rs",
+                "a_candidate_is_passed_over_only_when_all_of_its_span_is_covered",
+            ),
+            (
+                "src/seq/correct/consensus/tests.rs",
+                "a_position_is_left_out_when_more_reads_delete_it_than_have_a_base_there",
+            ),
+            (
+                "src/seq/correct/consensus/tests.rs",
+                "pieces_are_the_corrected_stretches_that_are_long_enough",
+            ),
+        ],
+    },
+    Check {
+        group: ALIGNMENT,
         analysis: "Joining an assembly graph with long reads (after Unicycler)",
         standard: Standard::Known,
         against: "Circles of random bases with a repeat that short reads cannot span, graphs that the HelixLoom assembler makes of error-free short reads of them, and long reads simulated from them with 6 % errors on either strand; segments with a gap that the graph lacks; graphs and bridges made by hand with the sequences known; genes taken from the circle, on both strands and across the join.",

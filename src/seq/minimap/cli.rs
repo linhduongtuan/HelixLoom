@@ -38,6 +38,8 @@ Usage: helixloom map [options] TARGET [READS]
   -N N          keep at most this many secondary mappings (default 5)
   -M FLOAT      a mapping is secondary to one it overlaps on the read by this share of the shorter (default 0.5)
   -c            align the bases along each chain: the CIGAR, NM, and exact matches (slower; the alignment runs from the first anchor to the last)
+  -a            write SAM in place of PAF (with -c; the bases before the first anchor and after the last are soft clips; a read that does
+                not map has a line of its own). READS keep their qualities.
   -o FILE       where to write the PAF (the standard output when left out)
   -h, --help    this text
 ";
@@ -50,6 +52,7 @@ fn number<T: std::str::FromStr>(flag: &str, value: &str) -> Result<T, String> {
 
 struct Args {
     options: Options,
+    sam: bool,
     output: Option<String>,
     inputs: Vec<String>,
 }
@@ -65,7 +68,7 @@ fn parse(args: &[String]) -> Result<Args, String> {
             format!("{name} is not a preset this program has: map-ont or ava-ont.")
         })?;
     }
-    let (mut output, mut inputs) = (None, Vec::new());
+    let (mut output, mut inputs, mut sam) = (None, Vec::new(), false);
     let mut it = args.iter();
     while let Some(flag) = it.next() {
         let mut value = |name: &str| {
@@ -88,6 +91,10 @@ fn parse(args: &[String]) -> Result<Args, String> {
             "-N" => options.max_secondary = number("-N", &value("-N")?)?,
             "-M" => options.mask_level = number("-M", &value("-M")?)?,
             "-c" => options.cigar = true,
+            "-a" => {
+                options.cigar = true;
+                sam = true;
+            }
             "-o" => output = Some(value("-o")?),
             other if other.starts_with('-') && other.len() > 1 => {
                 return Err(format!(
@@ -105,6 +112,7 @@ fn parse(args: &[String]) -> Result<Args, String> {
     }
     Ok(Args {
         options,
+        sam,
         output,
         inputs,
     })
@@ -127,6 +135,14 @@ pub fn run(args: &[String]) -> i32 {
 fn run_inner(args: &[String]) -> Result<(), String> {
     let a = parse(args)?;
     let paf = match (a.options.overlaps, a.inputs.as_slice()) {
+        _ if a.sam => match a.inputs.as_slice() {
+            [target, reads] => {
+                let reads = crate::seq::variants::reads::load(reads)?;
+                let sam = crate::seq::variants::mapped::map_to_sam(&sequences(target)?, &reads, &a.options)?;
+                crate::seq::variants::sam::write(&sam)
+            }
+            _ => return Err("Name a target and a file of reads: helixloom map -a TARGET READS.".into()),
+        },
         (true, [reads]) => overlap_text(&sequences(reads)?, &a.options)?,
         (true, _) => return Err("Overlaps (-x ava-ont) take one file of reads, which is mapped to itself.".into()),
         (false, [target, reads]) => map_text(&sequences(target)?, &sequences(reads)?, &a.options)?,
