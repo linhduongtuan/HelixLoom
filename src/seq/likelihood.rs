@@ -122,10 +122,10 @@ impl Sites {
     /// Whether the likelihood is worked out on the processor: there are no GPUs for it, or a card failed and the processor has taken over.
     fn on_processor(&self) -> bool {
         #[cfg(all(feature = "gpu", not(target_arch = "wasm32")))]
-        if self.accel.as_ref().is_some_and(|e| !e.broken()) {
-            return false;
-        }
-        true
+        let on_the_cards = self.accel.as_ref().is_some_and(|e| !e.broken());
+        #[cfg(not(all(feature = "gpu", not(target_arch = "wasm32"))))]
+        let on_the_cards = false;
+        !on_the_cards
     }
 
     /// Where the likelihood was computed, as `accelerate` said, or that a card failed and the processor finished it.
